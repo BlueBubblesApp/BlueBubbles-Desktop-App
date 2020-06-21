@@ -1,0 +1,9 @@
+.RightCol {
+    height: 100%;
+    flex-grow: 1;
+    background-color: #4c4c4c;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 250px;
+}

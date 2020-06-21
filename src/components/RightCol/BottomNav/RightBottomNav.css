@@ -1,0 +1,45 @@
+.RightBottomNav {
+    height: 45px;
+    display: flex;
+}
+
+#messageField{
+    flex-grow: 1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#messageFieldInput[type='text'] {
+    height: 19px;
+    background-color: #4c4c4c;
+    background-repeat: no-repeat;
+    border-radius: 25px;
+    border: none;
+    width: 97%;
+    padding: 3px 5px 3px 8px;
+    font-family: 'SF UI Display Bold';
+    font-size: 15px;
+    color: white;
+    outline: none;
+    border: 3px solid #454545;
+    margin: 0px 12px 0px 12px;
+}
+
+*::placeholder{
+    color: #939292;
+}
+
+#rightBottomButton{
+    margin-right: 10px;
+    width: 45px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#sendIcon{
+    height: 28px;
+}
