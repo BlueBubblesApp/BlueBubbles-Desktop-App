@@ -1,0 +1,16 @@
+.BottomLeftNav{
+    min-height: 30px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 10px;
+    border-top: 1px solid gray;
+}
+
+#returnIconLink{
+    height: 23px;
+}
+
+#returnIcon{
+    height: 23px;
+}

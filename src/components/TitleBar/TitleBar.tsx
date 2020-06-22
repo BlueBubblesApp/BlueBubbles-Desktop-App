@@ -3,7 +3,7 @@ import './TitleBar.css'
 
 const ipcRenderer = window.require('electron').ipcRenderer
 
-const Titlebar = () => {
+const TitleBar = () => {
 
     const [isActive, setIsActive] = useState()
     const [isMaximized, setIsMaximized] = useState()
@@ -56,4 +56,4 @@ const Titlebar = () => {
     )
 }
 
-export default Titlebar
+export default TitleBar

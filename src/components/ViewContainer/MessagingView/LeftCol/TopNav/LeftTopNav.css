@@ -15,7 +15,7 @@
     align-items: flex-end;
 }
 
-#leftTopButton {
+.leftTopButton {
     width: 25%;
     height: 100%;
     display: flex;
@@ -50,8 +50,12 @@
     padding: 1px 7px 2px 9px;
     border-radius: 3px;
     margin-bottom: 8px;
+    width: 17px;
+    height: 100%;
+    color: transparent;
 }
 
 #composeIcon{
     height: 17px;
+    z-index: -1;
 }

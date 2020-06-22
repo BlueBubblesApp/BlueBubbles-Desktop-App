@@ -1,7 +1,6 @@
 .LeftCol {
     height: 100%;
     min-width: 275px;
-    max-width: 275px;
     background-color: #323232;
     display: flex;
     flex-direction: column;

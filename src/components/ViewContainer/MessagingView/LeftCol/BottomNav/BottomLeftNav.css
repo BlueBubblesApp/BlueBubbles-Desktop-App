@@ -1,0 +1,16 @@
+.BottomLeftNav{
+    height: 35px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 10px;
+    border-top: 1px solid gray;
+}
+
+#settingsIconLink{
+    height: 25px;
+}
+
+#settingsIcon{
+    height: 25px;
+}
