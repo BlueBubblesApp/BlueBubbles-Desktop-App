@@ -28,11 +28,27 @@
     justify-content: flex-end;
 }
 
-#recipDiv > p{
+#recipDiv > div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* background-color: rgba(0,122,255,0.8); */
+    margin: 0 0 15px 3px;
+}
+
+#recipDiv > div:hover {
+    background-color: rgba(0,122,255,0.8);
+}
+
+#recipDiv > div > p{
     color: white;
     font-family: 'SF UI Display Bold';
     font-size: 14px;
-    margin: 0px 0px 14px 5px;
+    margin: 0px 0px 0px 0px;
+}
+
+#recipDiv > div > p:hover{
+    background: rgba(0,122,255,0.8);
 }
 
 #convoDetailsDiv {
@@ -48,4 +64,23 @@
     font-family: 'SF UI Display Light';
     font-size: 15px;
     margin-bottom: 13px;
+}
+
+#convoDetailsDiv > p:hover {
+    color: #1a55c2;
+    cursor: pointer;
+}
+
+#contactModalOpen{
+    position: relative;
+    height: 10px;
+    width: 10px;
+    margin: 0px 4px 0px 2px;
+}
+
+#contactModalOpen{
+    position: relative;
+    height: 10px;
+    width: 10px;
+    margin: 0px 4px 0px 2px;
 }

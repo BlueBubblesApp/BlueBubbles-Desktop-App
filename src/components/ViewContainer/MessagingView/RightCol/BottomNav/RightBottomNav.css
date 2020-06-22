@@ -3,7 +3,7 @@
     display: flex;
 }
 
-#messageField{
+#messageField {
     flex-grow: 1;
     height: 100%;
     display: flex;
@@ -27,11 +27,11 @@
     margin: 0px 12px 0px 12px;
 }
 
-*::placeholder{
+*::placeholder {
     color: #939292;
 }
 
-#rightBottomButton{
+#rightBottomButton {
     margin-right: 10px;
     width: 45px;
     height: 100%;
@@ -40,6 +40,69 @@
     align-items: center;
 }
 
-#sendIcon{
+#sendIcon {
+    margin-bottom: 2px;
     height: 28px;
+    transition:all 0.3s ease;
+}
+
+@-webkit-keyframes swingY {
+    15% {
+        -webkit-transform: translateY(3px);
+        transform: translateY(3px);
+    }
+    30% {
+        -webkit-transform: translateY(-3px);
+        transform: translateY(-3px);
+    }
+    50% {
+        -webkit-transform: translateY(2px);
+        transform: translateY(2px);
+    }
+    65% {
+        -webkit-transform: translateY(-2px);
+        transform: translateY(-1px);
+    }
+    80% {
+        -webkit-transform: translateY(1px);
+        transform: translateY(1px);
+    }
+    100% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+@keyframes swingY {
+    15% {
+        -webkit-transform: translateY(3px);
+        transform: translateY(3px);
+    }
+    30% {
+        -webkit-transform: translateY(-px);
+        transform: translateY(-3px);
+    }
+    50% {
+        -webkit-transform: translateY(2px);
+        transform: translateY(2px);
+    }
+    65% {
+        -webkit-transform: translateY(-1px);
+        transform: translateY(1px);
+    }
+    80% {
+        -webkit-transform: translateY(1px);
+        transform: translateY(1px);
+    }
+    100% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+#sendIcon:hover
+{
+    -webkit-animation: swingY 1s ease;
+    animation: swingY 1s ease;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    cursor: pointer;
 }

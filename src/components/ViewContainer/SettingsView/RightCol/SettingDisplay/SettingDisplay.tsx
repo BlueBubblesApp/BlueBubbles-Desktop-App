@@ -21,8 +21,9 @@ function SettingDisplay() {
             <Tab3 />
           </Route>
             <Route path="/settings/tab4" component={Tab4}>
-            <Tab4 />
+            <Tab4/>
           </Route>
+          <Tab1></Tab1>
         </Switch>
     </div>
   );

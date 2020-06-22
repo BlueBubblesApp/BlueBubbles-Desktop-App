@@ -9,11 +9,6 @@ import {
 //These need to be expanded
 
 function SettingTitles() {
-  function Tab1Handler() {
-  
-
-  }
-
   return (
     <div className="SettingTitles">
         <NavLink exact to="/settings/tab1" activeClassName="active"><Setting title="General" subTitle="Connection, Notifications, Features "></Setting></NavLink>

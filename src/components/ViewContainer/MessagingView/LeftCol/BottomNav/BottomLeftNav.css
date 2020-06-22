@@ -9,7 +9,13 @@
 
 #settingsIconLink{
     height: 25px;
+    transition: transform .7s;
 }
+
+#settingsIconLink:hover{
+    transform: rotate(180deg);
+}
+
 
 #settingsIcon{
     height: 25px;

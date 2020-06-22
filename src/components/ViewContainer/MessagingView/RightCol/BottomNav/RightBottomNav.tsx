@@ -3,12 +3,17 @@ import '../BottomNav/RightBottomNav.css';
 import SendIcon from '../../../../../assets/send-icon.png';
 
 function RightBottomNav() {
+  function SendMessage() {
+    //Ping server to send message here
+    console.log('Send Message')
+  }
+
   return (
     <div className="RightBottomNav">
       <div id="messageField"><input id="messageFieldInput" type="text" name="message field"
           placeholder="iMessage"></input>
       </div>
-      <div id="rightBottomButton"><a id="sendMessage" href=""><img id="sendIcon" src={SendIcon}></img></a>
+      <div id="rightBottomButton"><img id="sendIcon" onClick={SendMessage} src={SendIcon}></img>
       </div>
     </div>
   );

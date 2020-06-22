@@ -7,7 +7,7 @@ import { BrowserRouter, Route, Link } from "react-router-dom";
 function BottomLeftNav() {
   return (
     <div className="BottomLeftNav">
-        <Link id="settingsIconLink" to="/settings"><img id="settingsIcon"
+        <Link id="settingsIconLink" to="/settings/tab1"><img id="settingsIcon"
                             src={SettingsIcon}></img></Link>
     </div>
   );
