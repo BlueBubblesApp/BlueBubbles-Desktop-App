@@ -1,7 +1,7 @@
 import React from 'react';
 import '../Conversation/Conversation.css';
-import ContactImage from '../../../assets/contact-icon.png'
-import ConversationCloseIcon from '../../../assets/conversation-close-icon.png';
+import ContactImage from '../../../../../assets/contact-icon.png'
+import ConversationCloseIcon from '../../../../../assets/conversation-close-icon.png';
 
 
 //LOAD IN FROM BACKEND

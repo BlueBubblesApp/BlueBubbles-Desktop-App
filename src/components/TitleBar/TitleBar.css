@@ -1,0 +1,58 @@
+.TitleBar{
+    width: 100%;
+    min-height: 25px;
+    display: flex;
+    border-radius: 5px 5px 0px 0px;
+}
+
+#TitleBarLeft{
+    min-width: 275px;
+    height: 100%;
+    background-color: #323232;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 5px 0px 0px 0px;
+}
+
+#TitleButtonsDiv{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 5px 0px 0px 0px;
+}
+
+#TitleScrollableLeft{
+    -webkit-app-region: drag;
+    flex-grow: 1;
+    height: 100%;
+}
+
+#TitleBarRight{
+    -webkit-app-region: drag;
+    flex-grow: 1;
+    height: 100%;
+    background-color: #4c4c4c;
+    border-radius: 0px 5px 0px 0px;
+}
+
+.title-button{
+    width: 12px;
+    height: 12px;
+    border-radius: 25px;
+}
+
+#close-button{
+    margin-left: 10px;
+    background-color: #fc4e50;
+}
+
+#minimize-button{
+    background-color: #febe30;
+    margin: 0 8px 0 8px;
+}
+
+#maximize-button{
+    background-color: #38d744;
+
+}

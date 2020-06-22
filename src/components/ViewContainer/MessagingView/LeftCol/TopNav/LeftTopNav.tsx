@@ -1,6 +1,6 @@
 import React from 'react';
 import '../TopNav/LeftTopNav.css';
-import ComposeIcon from '../../../assets/compose-icon.png';
+import ComposeIcon from '../../../../../assets/compose-icon.png';
 
 function LeftTopNav() {
   return (

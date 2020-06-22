@@ -1,9 +1,9 @@
 .LeftTopNav {
-    height: 55px;
+    height: 35px;
     width: 100%;
     background-color: #323232;
     display: flex;
-    justify-content: center;
+    justify-content: center; 
 }
 
 #leftTopSearch {
@@ -28,7 +28,7 @@
     height: 19px;
     margin-bottom: 8px;
     background-color: #545454;
-    background-image: url('../../../assets/search-icon.png');
+    background-image: url('../../../../../assets/search-icon.png');
     background-position: 3px 4px;
     background-size: 17px;
     background-repeat: no-repeat;

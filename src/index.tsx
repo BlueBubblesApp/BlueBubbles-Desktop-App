@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import LeftCol from './components/LeftCol/LeftCol';
-import RightCol from './components/RightCol/RightCol';
+import TitleBar from './components/TitleBar/TitleBar';
+import ViewContainer from './components/ViewContainer/ViewContainer';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
   <React.StrictMode>
-    <LeftCol />
-    <RightCol />
+    <TitleBar />
+    <ViewContainer />
   </React.StrictMode>,
   document.getElementsByTagName("BODY")[0]
 );
