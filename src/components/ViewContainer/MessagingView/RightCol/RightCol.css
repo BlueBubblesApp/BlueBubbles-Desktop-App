@@ -6,4 +6,5 @@
     flex-direction: column;
     justify-content: space-between;
     min-width: 250px;
+    border-radius: 0px 0px 5px 0px;
 }
