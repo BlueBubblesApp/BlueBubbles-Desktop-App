@@ -5,7 +5,6 @@ import Tab2 from './Tab2/Tab2';
 import Tab3 from './Tab3/Tab3';
 import Tab4 from './Tab4/Tab4';
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import { AnimatedSwitch } from 'react-router-transition';
 
 
 function SettingDisplay() {
