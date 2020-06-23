@@ -54,6 +54,7 @@ ipcMain.handle('maximize-event', () => {
 
 ipcMain.handle('unmaximize-event', () => {
     mainWindow.unmaximize()
+    console.log("unmaximize")
 })
 
 ipcMain.handle('close-event', () => {

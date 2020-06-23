@@ -4,24 +4,24 @@ import './TitleBar.css'
 const ipcRenderer = window.require('electron').ipcRenderer
 
 const TitleBar = () => {
-
-    const [isActive, setIsActive] = useState()
-    const [isMaximized, setIsMaximized] = useState()
+    var isActive;
+    var isMaximized = false;
 
     ipcRenderer.on('focused', () => {
-        const setIsActive = true
+        isActive = true
     })
 
     ipcRenderer.on('blurred', () => {
-        const setIsActive = false
+        isActive = false
     })
 
     ipcRenderer.on('maximized', () => {
-        const setIsMaximized = true
+        isMaximized = true
+
     })
 
     ipcRenderer.on('unmaximized', () => {
-        const setIsMaximized = false
+        isMaximized = false
     })
 
     const minimizeHandler = () => {
@@ -30,10 +30,22 @@ const TitleBar = () => {
 
     const maximizeHandler = () => {
         ipcRenderer.invoke('maximize-event')
+        isMaximized = true
+        const maximizeButton = document.getElementById('maximize-button')
+        maximizeButton?.classList.toggle("hide")
+
+        const unmaximizeButton = document.getElementById('unmaximize-button')
+        unmaximizeButton?.classList.toggle("hide")
     }
 
-    const unmaximizeHandler = () => {
+    const unmaximizeHandler =() => {
         ipcRenderer.invoke('unmaximize-event')
+        isMaximized = false
+        const unmaximizeButton = document.getElementById('unmaximize-button')
+        unmaximizeButton?.classList.toggle("hide")
+
+        const maximizeButton = document.getElementById('maximize-button')
+        maximizeButton?.classList.toggle("hide")
     }
 
     const closeHandler = () => {
@@ -46,8 +58,8 @@ const TitleBar = () => {
                 <div id="TitleButtonsDiv">
                     <div onClick={closeHandler} id="close-button" className="title-button"></div>
                     <div onClick={minimizeHandler} id="minimize-button" className="title-button"></div>
-                    {isMaximized ? <div onClick={maximizeHandler} id="maximize-button" className="title-button"></div>
-                    :<div onClick={maximizeHandler} id="maximize-button" className="title-button"></div>}
+                    <div onClick={unmaximizeHandler} id="unmaximize-button" className="title-button hide"></div>
+                    <div onClick={maximizeHandler} id="maximize-button" className="title-button"></div>
                 </div>
                 <div id="TitleScrollableLeft"></div>
             </div>

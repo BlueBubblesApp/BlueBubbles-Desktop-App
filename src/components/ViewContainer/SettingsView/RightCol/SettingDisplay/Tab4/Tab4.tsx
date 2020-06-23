@@ -8,7 +8,6 @@ function Tab4() {
     <div className="Tab4">
         <TopTitle title="About"></TopTitle>
         <SettingTitle title="Version" subTitle="alpha"></SettingTitle>
-        <SettingTitle title="Developers" subTitle="open source"></SettingTitle>
     </div>
   );
 }

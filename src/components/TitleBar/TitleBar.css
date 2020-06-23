@@ -54,5 +54,12 @@
 
 #maximize-button{
     background-color: #38d744;
+}
 
+#unmaximize-button{
+    background-color: red;
+}
+
+.hide{
+    display: none;
 }

@@ -8,7 +8,6 @@ function Tab1() {
     <div className="Tab1">
         <TopTitle title="General"></TopTitle>
         <SettingTitle title="Remote Server URL" subTitle="https://181g2a3442.ngrock.io"></SettingTitle>
-        <SettingTitle title="Remote Server Port" subTitle="3000"></SettingTitle>
     </div>
   );
 }
