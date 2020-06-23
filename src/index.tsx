@@ -1,16 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import * as serviceWorker from './serviceWorker';
 import TitleBar from './components/TitleBar/TitleBar';
 import ViewContainer from './components/ViewContainer/ViewContainer';
-import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(
   <React.StrictMode>
-    <TitleBar />
-    <ViewContainer />
+    <TitleBar></TitleBar>
+    <ViewContainer></ViewContainer>
   </React.StrictMode>,
-  document.getElementsByTagName("BODY")[0]
+  document.getElementById('root')
 );
 
 // If you want your app to work offline and load faster, you can change

@@ -1,0 +1,8 @@
+.SettingDisplay{
+    flex-grow: 1;
+    background-color: #1e1e1e;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    margin: 0;
+}

@@ -1,0 +1,127 @@
+.StorageInfo{
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; */
+    align-items: center;
+    height: 200px;
+}
+
+.StorageInfo > h1 {
+    color: white;
+    margin-top: 20px;
+    font-size: 26px;
+    font-family: "SF UI Display Bold";
+}
+
+#barWrapper{
+    width: 60%;
+    background-color: white;
+    height: 30px;
+    border-radius: 3px;
+    display: flex;
+}
+
+#totalBaseApp{
+    background-color: #3ee75a;
+    height: 30px;
+    border-radius: 3px 0px 0px 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#totalTexts{
+    background-color: #227ae2;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#totalAttachments{
+    background-color: #dc4444;
+    height: 30px;
+    border-radius: 0 3px 3px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.storage-percent{
+    color: white;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+}
+
+#keyWrapper{
+    width: 60%;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.key-child:nth-child(1){
+    height: 13px;
+    width: 13px;
+    background-color: #3ee75a;
+}
+
+.key-child:nth-child(3){
+    height: 13px;
+    width: 13px;
+    background-color: #227ae2;
+}
+
+.key-child:nth-child(5){
+    height: 13px;
+    width: 13px;
+    background-color: #dc4444;
+}
+
+
+#key-label-1{
+    color: white;
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    margin: 0 15px 0 3px;
+}
+
+#key-label-2{
+    color: white;
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    margin: 0 15px 0 3px;
+}
+
+#key-label-3{
+    color: white;
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    margin: 0 0px 0 3px;
+}
+
+@media only screen and (max-width: 800px) {
+    #key-label-1{
+        margin: 0 5px 0 3px;
+        font-size: 12px;
+    }
+    
+    #key-label-2{
+        margin: 0 5px 0 3px;
+        font-size: 12px;
+    }
+    #key-label-3{
+        font-size: 12px;
+    }
+    #barWrapper{
+        width: 80%;
+    }
+    #keyWrapper{
+        width: 80%;
+    }
+    .StorageInfo > h1{
+        font-size: 20px;
+    }
+}

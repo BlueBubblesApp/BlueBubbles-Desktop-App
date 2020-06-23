@@ -12,14 +12,14 @@ const createWindow = () => {
         width: 1200,
         height: 750,
         minWidth: 550,
-        minHeight: 350,
+        minHeight: 300,
         transparent: true,
         frame: false,
         webPreferences: { nodeIntegration: true }
     });
 
+    //Main Icon
     mainWindow.setIcon('./public/logo64.png')
-
 
     mainWindow.setMenu(null)
 
@@ -29,9 +29,9 @@ const createWindow = () => {
         mainWindow.loadFile('build/index.html')
     }
 
-    // if (isDev) {
-    //     mainWindow.webContents.openDevTools();
-    // }
+    if (isDev) {
+        mainWindow.webContents.openDevTools();
+    }
 
     mainWindow.on('closed', () => mainWindow = null);
 
@@ -54,6 +54,7 @@ ipcMain.handle('maximize-event', () => {
 
 ipcMain.handle('unmaximize-event', () => {
     mainWindow.unmaximize()
+    console.log("unmaximize")
 })
 
 ipcMain.handle('close-event', () => {
