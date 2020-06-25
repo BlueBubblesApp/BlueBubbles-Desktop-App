@@ -1,11 +1,11 @@
-import * as React from 'react';
-import './RightCol.css';
-import SettingDisplay from './SettingDisplay/SettingDisplay';
+import * as React from "react";
+import "./RightCol.css";
+import SettingDisplay from "./SettingDisplay/SettingDisplay";
 
 function RightCol() {
     return (
         <div className="RightCol-Set">
-            <SettingDisplay></SettingDisplay>
+            <SettingDisplay />
         </div>
     );
 }

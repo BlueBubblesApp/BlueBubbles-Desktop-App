@@ -1,15 +1,15 @@
-import * as React from 'react';
-import './LeftCol.css';
-import SettingTitles from './SettingTitles/SettingTitles';
-import LeftTopNav from './TopNav/LeftTopNav';
-import BottomLeftNav from './BottomNav/BottomLeftNav';
+import * as React from "react";
+import "./LeftCol.css";
+import SettingTitles from "./SettingTitles/SettingTitles";
+import LeftTopNav from "./TopNav/LeftTopNav";
+import BottomLeftNav from "./BottomNav/BottomLeftNav";
 
 function LeftCol() {
     return (
         <div className="LeftCol-Set">
-            <LeftTopNav></LeftTopNav>
-            <SettingTitles></SettingTitles>
-            <BottomLeftNav></BottomLeftNav>
+            <LeftTopNav />
+            <SettingTitles />
+            <BottomLeftNav />
         </div>
     );
 }

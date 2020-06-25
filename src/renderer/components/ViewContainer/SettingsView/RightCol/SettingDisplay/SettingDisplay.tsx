@@ -1,10 +1,10 @@
-import * as React from 'react';
-import './SettingDisplay.css';
-import Tab1 from './Tab1/Tab1';
-import Tab2 from './Tab2/Tab2';
-import Tab3 from './Tab3/Tab3';
-import Tab4 from './Tab4/Tab4';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import * as React from "react";
+import "./SettingDisplay.css";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import Tab1 from "./Tab1/Tab1";
+import Tab2 from "./Tab2/Tab2";
+import Tab3 from "./Tab3/Tab3";
+import Tab4 from "./Tab4/Tab4";
 
 function SettingDisplay() {
     return (
@@ -22,7 +22,7 @@ function SettingDisplay() {
                 <Route path="/settings/tab4" component={Tab4}>
                     <Tab4 />
                 </Route>
-                <Tab1></Tab1>
+                <Tab1 />
             </Switch>
         </div>
     );
