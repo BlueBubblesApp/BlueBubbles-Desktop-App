@@ -1,18 +1,15 @@
 import * as React from 'react';
+import { BrowserRouter as Router, Route, HashRouter } from 'react-router-dom';
 import './ViewContainer.css';
 import MessagingView from './MessagingView/MessagingView';
 import SettingsView from './SettingsView/SettingsView';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+
 const { AnimatedSwitch } = require('react-router-transition');
-
-//First show TutorialView, then once done show MessagingView
-
-//SettingsView can be accessed from MessagingView
 
 function ViewContainer() {
     return (
         <div className="ViewContainer">
-            <Router>
+            <HashRouter>
                 <AnimatedSwitch
                     atEnter={{ opacity: 0.1 }}
                     atLeave={{ opacity: 0 }}
@@ -26,7 +23,7 @@ function ViewContainer() {
                         <SettingsView />
                     </Route>
                 </AnimatedSwitch>
-            </Router>
+            </HashRouter>
         </div>
     );
 }

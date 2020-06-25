@@ -10,7 +10,7 @@ module.exports = merge.smart(baseConfig, {
         }
     },
     devServer: {
-        port: 2003,
+        port: 2004,
         compress: true,
         noInfo: true,
         stats: 'errors-only',

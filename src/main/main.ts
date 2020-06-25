@@ -31,7 +31,7 @@ const createWindow = async () => {
 
     if (process.env.NODE_ENV !== 'production') {
         process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = '1'; // eslint-disable-line require-atomic-updates
-        win.loadURL(`http://localhost:2003`);
+        win.loadURL(`http://localhost:2004`);
     } else {
         win.loadURL(
             url.format({
@@ -54,24 +54,24 @@ const createWindow = async () => {
     });
 
     win.on('maximize', () => {
-        win.webContents.send('maximized');
+        if (win && win.webContents) win.webContents.send('maximized');
     });
 
     win.on('unmaximize', () => {
-        win.webContents.send('unmaximized');
+        if (win && win.webContents) win.webContents.send('unmaximized');
     });
 };
 
 ipcMain.handle('minimize-event', () => {
-    win.minimize();
+    if (win && win.webContents) win.minimize();
 });
 
 ipcMain.handle('maximize-event', () => {
-    win.maximize();
+    if (win && win.webContents) win.maximize();
 });
 
 ipcMain.handle('unmaximize-event', () => {
-    win.unmaximize();
+    if (win && win.webContents) win.unmaximize();
     console.log('unmaximize');
 });
 
@@ -80,11 +80,11 @@ ipcMain.handle('close-event', () => {
 });
 
 app.on('browser-window-focus', () => {
-    win.webContents.send('focused');
+    if (win && win.webContents) win.webContents.send('focused');
 });
 
 app.on('browser-window-blur', () => {
-    win.webContents.send('blurred');
+    if (win && win.webContents) win.webContents.send('blurred');
 });
 
 app.on('ready', createWindow);

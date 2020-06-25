@@ -27,10 +27,10 @@
     },
     "lint-staged": {
         "{src,test,mocks}/**/*.{json,css,scss,md}": [
-            "prettier --config ./.prettierrc --write"
+            "prettier --config ./.prettierrc --ignore-path ./.prettierignore --write"
         ],
         "{src,test,mocks}/**/*.{js,ts,tsx}": [
-            "prettier --config ./.prettierrc --write",
+            "prettier --config ./.prettierrc --ignore-path ./.prettierignore --write",
             "eslint --ext=jsx,js,ts,tsx --fix src"
         ]
     },
@@ -80,7 +80,7 @@
         "name": "Your name",
         "email": "Your email"
     },
-    "license": "SEE LICENSE",
+    "license": "APACHE",
     "bugs": {
         "url": "https://github.com/Robinfr/electron-react-typescript/issues"
     },
@@ -106,9 +106,9 @@
         "babel-loader": "^8.0.6",
         "cross-env": "^5.1.3",
         "css-loader": "^2.1.1",
-        "electron": "^3.1.9",
-        "electron-builder": "^22.3.2",
-        "electron-devtools-installer": "^2.2.4",
+        "electron": "^9.0.5",
+        "electron-builder": "^22.7.0",
+        "electron-devtools-installer": "^3.0.0",
         "eslint": "^6.5.1",
         "eslint-config-airbnb": "^18.0.1",
         "eslint-config-prettier": "^6.4.0",
@@ -142,11 +142,11 @@
     },
     "dependencies": {
         "@types/react-router-dom": "^5.1.5",
-        "react": "^16.8.6",
-        "react-dom": "^16.8.6",
-        "react-redux": "^7.0.3",
+        "react": "^16.13.1",
+        "react-dom": "^16.13.1",
+        "react-redux": "^7.2.0",
         "react-router-dom": "^5.2.0",
         "react-router-transition": "^2.0.0",
-        "redux": "^4.0.1"
+        "redux": "^4.0.5"
     }
 }
