@@ -31,7 +31,7 @@
         ],
         "{src,test,mocks}/**/*.{js,ts,tsx}": [
             "prettier --config ./.prettierrc --ignore-path ./.prettierignore --write",
-            "eslint --ext=jsx,js,ts,tsx --fix src"
+            "eslint -c ./.eslintrc.json --ext=jsx,js,ts,tsx --fix src"
         ]
     },
     "jest": {

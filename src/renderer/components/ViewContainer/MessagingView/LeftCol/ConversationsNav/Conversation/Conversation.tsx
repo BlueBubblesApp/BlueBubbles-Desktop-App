@@ -1,20 +1,20 @@
-import * as React from 'react';
-import './Conversation.css';
-import ContactImage from '../../../../../../assets/icons/contact-icon.png';
-import ConversationCloseIcon from '../../../../../../assets/icons/conversation-close-icon.png';
+import * as React from "react";
+import "./Conversation.css";
+import ContactImage from "../../../../../../assets/icons/contact-icon.png";
+import ConversationCloseIcon from "../../../../../../assets/icons/conversation-close-icon.png";
 
-//LOAD IN FROM BACKEND
+// LOAD IN FROM BACKEND
 const messagePreview = {
-    recipients: 'Maxwell Fortney',
-    recentMessage: 'Thanks for the message!',
-    recentMessageTimestamps: '3:13 PM'
+    recipients: "Maxwell Fortney",
+    recentMessage: "Thanks for the message!",
+    recentMessageTimestamps: "3:13 PM"
 };
 
 function Conversation() {
     return (
         <div className="Conversation">
             <div className="contact-card">
-                <img className="contact-icon" src={ContactImage}></img>
+                <img className="contact-icon" src={ContactImage} alt="contact" />
             </div>
             <div className="message-prev">
                 <div className="prev-top">
@@ -25,9 +25,7 @@ function Conversation() {
                     </div>
                     <div className="message-time">
                         <div>
-                            <p className="message-time-example">
-                                {messagePreview.recentMessageTimestamps}
-                            </p>
+                            <p className="message-time-example">{messagePreview.recentMessageTimestamps}</p>
                         </div>
                     </div>
                 </div>
@@ -38,7 +36,7 @@ function Conversation() {
                         </div>
                     </div>
                     <div className="message-del">
-                        <img className="message-del-conversation" src={ConversationCloseIcon}></img>
+                        <img className="message-del-conversation" src={ConversationCloseIcon} alt="delete" />
                     </div>
                 </div>
             </div>
