@@ -1,0 +1,22 @@
+.BottomLeftNav-Mes {
+    height: 44px;
+    min-height: 44px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 10px;
+    border-top: 1px solid gray;
+}
+
+#settingsIconLink {
+    height: 25px;
+    transition: transform 0.7s;
+}
+
+#settingsIconLink:hover {
+    transform: rotate(180deg);
+}
+
+#settingsIcon {
+    height: 25px;
+}

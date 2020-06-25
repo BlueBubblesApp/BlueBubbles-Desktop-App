@@ -1,0 +1,105 @@
+.Conversation {
+    height: 65px;
+    min-height: 65px;
+    width: 100%;
+    display: flex;
+    z-index: 1;
+    border-bottom: 1px solid grey;
+}
+
+.contact-card {
+    width: 30%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.contact-icon {
+    height: 58px;
+}
+
+.message-prev {
+    width: 70%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.prev-top {
+    height: 20px;
+    width: 100%;
+    display: flex;
+}
+
+.message-recip {
+    width: 72%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+}
+
+.message-time {
+    width: 28%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+}
+
+.prev-bottom {
+    height: 45px;
+    width: 100%;
+    display: flex;
+}
+
+.message-snip {
+    width: 88%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.message-del {
+    width: 12%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.message-del-conversation {
+    height: 11px;
+    width: 11px;
+    margin-top: 4px;
+    visibility: hidden;
+}
+
+.message-snip-example {
+    font-family: 'SF UI Display Bold';
+    color: #b5b5b5;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: auto;
+    margin-top: 2px;
+}
+
+.message-recip-example {
+    font-family: 'SF UI Display Bold';
+    color: white;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: auto;
+}
+
+.message-time-example {
+    font-family: 'SF UI Display Bold';
+    color: #b5b5b5;
+    font-size: 13px;
+    white-space: nowrap;
+    margin: auto;
+}

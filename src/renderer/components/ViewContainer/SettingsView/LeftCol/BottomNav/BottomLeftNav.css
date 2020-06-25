@@ -1,0 +1,79 @@
+.BottomLeftNav-Set {
+    height: 44px;
+    min-height: 44px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 10px;
+    border-top: 1px solid gray;
+}
+
+#returnIconLink {
+    height: 23px;
+    transition: all 0.3s ease;
+}
+
+#returnIcon {
+    margin-bottom: 2px;
+    height: 23px;
+}
+
+@-webkit-keyframes swingX {
+    15% {
+        -webkit-transform: translateX(3px);
+        transform: translateX(3px);
+    }
+    30% {
+        -webkit-transform: translateX(-3px);
+        transform: translateX(-3px);
+    }
+    50% {
+        -webkit-transform: translateX(2px);
+        transform: translateX(2px);
+    }
+    65% {
+        -webkit-transform: translateX(-2px);
+        transform: translateX(-1px);
+    }
+    80% {
+        -webkit-transform: translateX(1px);
+        transform: translateX(1px);
+    }
+    100% {
+        -webkit-transform: translateX(0);
+        transform: translateX(0);
+    }
+}
+@keyframes swingX {
+    15% {
+        -webkit-transform: translateX(3px);
+        transform: translateX(3px);
+    }
+    30% {
+        -webkit-transform: translateX(-px);
+        transform: translateX(-3px);
+    }
+    50% {
+        -webkit-transform: translateX(2px);
+        transform: translateX(2px);
+    }
+    65% {
+        -webkit-transform: translateX(-1px);
+        transform: translateX(1px);
+    }
+    80% {
+        -webkit-transform: translateX(1px);
+        transform: translateX(1px);
+    }
+    100% {
+        -webkit-transform: translateX(0);
+        transform: translateX(0);
+    }
+}
+#returnIconLink:hover {
+    -webkit-animation: swingX 1s ease;
+    animation: swingX 1s ease;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    cursor: pointer;
+}
