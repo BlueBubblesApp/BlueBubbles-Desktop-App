@@ -1,9 +1,8 @@
 const electron = require('electron');
 const ipcMain = require('electron').ipcMain;
-const BrowserWindow = electron.BrowserWindow;
-
+const server = require('./src/main/main.js');
 const isDev = require('electron-is-dev');
-
+const BrowserWindow = electron.BrowserWindow;
 const app = electron.app;
 let mainWindow;
 

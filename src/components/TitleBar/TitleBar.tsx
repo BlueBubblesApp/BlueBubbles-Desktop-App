@@ -4,33 +4,12 @@ import './TitleBar.css'
 const ipcRenderer = window.require('electron').ipcRenderer
 
 const TitleBar = () => {
-    var isActive;
-    var isMaximized = false;
-
-    ipcRenderer.on('focused', () => {
-        isActive = true
-    })
-
-    ipcRenderer.on('blurred', () => {
-        isActive = false
-    })
-
-    ipcRenderer.on('maximized', () => {
-        isMaximized = true
-
-    })
-
-    ipcRenderer.on('unmaximized', () => {
-        isMaximized = false
-    })
-
     const minimizeHandler = () => {
         ipcRenderer.invoke('minimize-event')
     }
 
     const maximizeHandler = () => {
         ipcRenderer.invoke('maximize-event')
-        isMaximized = true
         const maximizeButton = document.getElementById('maximize-button')
         maximizeButton?.classList.toggle("hide")
 
@@ -40,7 +19,6 @@ const TitleBar = () => {
 
     const unmaximizeHandler =() => {
         ipcRenderer.invoke('unmaximize-event')
-        isMaximized = false
         const unmaximizeButton = document.getElementById('unmaximize-button')
         unmaximizeButton?.classList.toggle("hide")
 

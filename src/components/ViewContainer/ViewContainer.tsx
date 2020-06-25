@@ -2,8 +2,8 @@ import React from 'react';
 import './ViewContainer.css';
 import MessagingView from './MessagingView/MessagingView';
 import SettingsView from './SettingsView/SettingsView';
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import { fade, AnimatedSwitch } from 'react-router-transition';
+import { BrowserRouter as Router, Route } from "react-router-dom";
+const {AnimatedSwitch } = require('react-router-transition');
 
 //First show TutorialView, then once done show MessagingView
 

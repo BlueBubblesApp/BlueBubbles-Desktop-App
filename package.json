@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "main": "electron.js",
+  "homepage": ".",
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -13,12 +14,17 @@
     "@types/react-dom": "^16.9.0",
     "@types/react-router-dom": "^5.1.5",
     "@types/socket.io-client": "^1.4.33",
+    "cors": "^2.8.5",
     "electron-is-dev": "^1.2.0",
+    "electron-packager": "^14.2.1",
+    "electron-settings": "^4.0.1",
+    "express": "^4.17.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
     "react-router-transition": "^2.0.0",
     "react-scripts": "3.4.1",
+    "socket.io-client": "^2.3.0",
     "typescript": "~3.7.2"
   },
   "scripts": {
@@ -26,7 +32,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron-dev": "concurrently \"yarn start BROWSER=none\" \"wait-on http://localhost:3000 && electron .\""
+    "electron-dev": "concurrently \"yarn start BROWSER=none\" \"wait-on http://localhost:3000 && electron .\"",
+    "build-electron": "robocopy src build/src",
+    "package": "electron-builder build --win -c.extraMetadata.main=build/electron.js --publish never"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -48,5 +56,16 @@
     "electron": "^9.0.4",
     "electron-builder": "^22.7.0",
     "wait-on": "^5.0.1"
+  },
+  "build": {
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "publish": {
+      "provider": "github",
+      "repo": "electron-cra-example",
+      "owner": "johndyer24"
+    }
   }
 }
