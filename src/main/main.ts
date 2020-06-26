@@ -1,21 +1,21 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import * as path from 'path';
-import * as url from 'url';
+import { app, BrowserWindow, ipcMain } from "electron";
+import * as path from "path";
+import * as url from "url";
+//TypeORM
+import "reflect-metadata";
 
 let win: BrowserWindow | null;
 
 const installExtensions = async () => {
-    const installer = require('electron-devtools-installer');
+    const installer = require("electron-devtools-installer");
     const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-    const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
+    const extensions = ["REACT_DEVELOPER_TOOLS", "REDUX_DEVTOOLS"];
 
-    return Promise.all(
-        extensions.map(name => installer.default(installer[name], forceDownload))
-    ).catch(console.log); // eslint-disable-line no-console
+    return Promise.all(extensions.map(name => installer.default(installer[name], forceDownload))).catch(console.log); // eslint-disable-line no-console
 };
 
 const createWindow = async () => {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
         await installExtensions();
     }
 
@@ -29,73 +29,73 @@ const createWindow = async () => {
         webPreferences: { nodeIntegration: true }
     });
 
-    if (process.env.NODE_ENV !== 'production') {
-        process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = '1'; // eslint-disable-line require-atomic-updates
+    if (process.env.NODE_ENV !== "production") {
+        process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "1"; // eslint-disable-line require-atomic-updates
         win.loadURL(`http://localhost:2004`);
     } else {
         win.loadURL(
             url.format({
-                pathname: path.join(__dirname, 'index.html'),
-                protocol: 'file:',
+                pathname: path.join(__dirname, "index.html"),
+                protocol: "file:",
                 slashes: true
             })
         );
     }
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
         // Open DevTools, see https://github.com/electron/electron/issues/12438 for why we wait for dom-ready
-        win.webContents.once('dom-ready', () => {
+        win.webContents.once("dom-ready", () => {
             win!.webContents.openDevTools();
         });
     }
 
-    win.on('closed', () => {
+    win.on("closed", () => {
         win = null;
     });
 
-    win.on('maximize', () => {
-        if (win && win.webContents) win.webContents.send('maximized');
+    win.on("maximize", () => {
+        if (win && win.webContents) win.webContents.send("maximized");
     });
 
-    win.on('unmaximize', () => {
-        if (win && win.webContents) win.webContents.send('unmaximized');
+    win.on("unmaximize", () => {
+        if (win && win.webContents) win.webContents.send("unmaximized");
     });
 };
 
-ipcMain.handle('minimize-event', () => {
+ipcMain.handle("minimize-event", () => {
     if (win && win.webContents) win.minimize();
 });
 
-ipcMain.handle('maximize-event', () => {
+ipcMain.handle("maximize-event", () => {
     if (win && win.webContents) win.maximize();
 });
 
-ipcMain.handle('unmaximize-event', () => {
+ipcMain.handle("unmaximize-event", () => {
     if (win && win.webContents) win.unmaximize();
-    console.log('unmaximize');
 });
 
-ipcMain.handle('close-event', () => {
+ipcMain.handle("close-event", () => {
     app.quit();
+    app.exit(0);
 });
 
-app.on('browser-window-focus', () => {
-    if (win && win.webContents) win.webContents.send('focused');
+app.on("browser-window-focus", () => {
+    if (win && win.webContents) win.webContents.send("focused");
 });
 
-app.on('browser-window-blur', () => {
-    if (win && win.webContents) win.webContents.send('blurred');
+app.on("browser-window-blur", () => {
+    if (win && win.webContents) win.webContents.send("blurred");
 });
 
-app.on('ready', createWindow);
+app.on("ready", createWindow);
 
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
         app.quit();
     }
 });
 
-app.on('activate', () => {
+app.on("activate", () => {
     if (win === null) {
         createWindow();
     }

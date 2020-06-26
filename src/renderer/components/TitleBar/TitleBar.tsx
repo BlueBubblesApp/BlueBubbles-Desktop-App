@@ -11,23 +11,33 @@ const TitleBar = () => {
 
     const maximizeHandler = () => {
         ipcRenderer.invoke("maximize-event");
+
         const maximizeButton = document.getElementById("maximize-button");
-        maximizeButton?.classList.toggle("hide");
+        if (maximizeButton != null) {
+            maximizeButton.classList.toggle("hide");
+        }
 
         const unmaximizeButton = document.getElementById("unmaximize-button");
-        unmaximizeButton?.classList.toggle("hide");
+        if (unmaximizeButton != null) {
+            unmaximizeButton.classList.toggle("hide");
+        }
     };
 
     const unmaximizeHandler = () => {
         ipcRenderer.invoke("unmaximize-event");
         const unmaximizeButton = document.getElementById("unmaximize-button");
-        unmaximizeButton?.classList.toggle("hide");
+        if (unmaximizeButton != null) {
+            unmaximizeButton.classList.toggle("hide");
+        }
 
         const maximizeButton = document.getElementById("maximize-button");
-        maximizeButton?.classList.toggle("hide");
+        if (maximizeButton != null) {
+            maximizeButton.classList.toggle("hide");
+        }
     };
 
     const closeHandler = () => {
+        console.log("trying to click close button");
         ipcRenderer.invoke("close-event");
     };
 
