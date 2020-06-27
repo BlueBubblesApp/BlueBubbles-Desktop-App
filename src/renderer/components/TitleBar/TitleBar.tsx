@@ -2,7 +2,7 @@
 import * as React from "react";
 import "./TitleBar.css";
 
-const { ipcRenderer } = window.require("electron");
+const { ipcRenderer } = require("electron");
 
 const TitleBar = () => {
     const minimizeHandler = () => {

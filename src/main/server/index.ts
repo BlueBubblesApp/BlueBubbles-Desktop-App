@@ -1,18 +1,15 @@
 import "reflect-metadata";
-import { ConnectionOptions, createConnection } from "typeorm"
-import {Handle} from './entities/messaging/Handle';
+import {createConnection} from "typeorm";
+import {Handle} from "./entities/messaging/Handle";
 
-const options: ConnectionOptions = {
-  type: "sqlite",
-  database: `./data/chatDb.sqlite`,
-  entities: [Handle],
-  logging: true
-}
-
-async function main () {
-  const connection = await createConnection(options)
-  console.log(connection);
-  console.log("done!!!!!");
-}
-
-main().catch(console.error)
+createConnection({
+    type: "sqlite",
+    database: "db/messaging.sqlite",
+    entities: [
+        Handle
+    ],
+    synchronize: true,
+    logging: false
+}).then(connection => {
+    // here you can start to work with your entities
+}).catch(error => console.log(error));

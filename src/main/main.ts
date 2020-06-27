@@ -2,8 +2,8 @@ import "reflect-metadata";
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import * as url from "url";
-//TypeORM
-// const server = require('./server/index');
+
+const server = require("./server/index");
 
 let win: BrowserWindow | null;
 
@@ -61,6 +61,7 @@ const createWindow = async () => {
     win.on("unmaximize", () => {
         if (win && win.webContents) win.webContents.send("unmaximized");
     });
+    
 };
 
 ipcMain.handle("minimize-event", () => {
