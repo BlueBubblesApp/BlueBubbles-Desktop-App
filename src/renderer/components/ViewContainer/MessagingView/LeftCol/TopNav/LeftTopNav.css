@@ -1,7 +1,6 @@
 .LeftTopNav-Mes {
     height: 35px;
     min-height: 35px;
-    width: 100%;
     background-color: #323232;
     display: flex;
     justify-content: center;
@@ -48,9 +47,10 @@
 
 #newMessage {
     background-color: #848484;
-    padding: 1px 7px 2px 9px;
+    padding: 2px 7px 0px 9px;
     border-radius: 3px;
-    margin-bottom: 8px;
+    margin-bottom: 9px;
+    margin-top: 1px;
     width: 17px;
     height: 100%;
     color: transparent;

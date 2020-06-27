@@ -2,15 +2,15 @@ import { Entity, PrimaryColumn, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
 export class Handle {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn("increment")
     ROWID: number;
 
-    @Column()
+    @Column("text")
     address: string;
 
-    @Column()
+    @Column("text")
     country: string;
 
-    @Column()
+    @Column("text")
     uncanonicalizedId: string;
 }

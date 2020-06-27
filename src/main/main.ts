@@ -1,8 +1,9 @@
+import "reflect-metadata";
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import * as url from "url";
 //TypeORM
-import "reflect-metadata";
+// const server = require('./server/index');
 
 let win: BrowserWindow | null;
 

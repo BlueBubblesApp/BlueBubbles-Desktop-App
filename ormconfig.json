@@ -1,18 +1,10 @@
 {
-    "type": "mysql",
-    "host": "localhost",
-    "port": 3306,
-    "username": "root",
-    "password": "admin",
-    "database": "test",
-    "synchronize": true,
-    "logging": false,
-    "entities": ["src/main/server/entities/**/*.ts"],
-    "migrations": ["src/main/server/migration/**/*.ts"],
-    "subscribers": ["src/main/server/subscriber/**/*.ts"],
-    "cli": {
-        "entitiesDir": "src/main/server/entities",
-        "migrationsDir": "src/main/server/migration",
-        "subscribersDir": "src/main/server/subscriber"
-    }
+   "type": "sqlite",
+   "database": "src/main/server/database/messaging.sqlite",
+   "synchronize": true,
+   "logging": false,
+   "entities": "src/main/server/entities/**/*.ts",
+   "cli": {
+      "entitiesDir": "src/main/server/entities"
+   }
 }

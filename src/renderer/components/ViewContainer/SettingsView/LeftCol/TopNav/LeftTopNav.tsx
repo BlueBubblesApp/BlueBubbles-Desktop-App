@@ -9,11 +9,6 @@ function LeftTopNav() {
             <div id="leftTopSearch">
                 <input id="messageSearch" type="text" name="search" placeholder="Search" />
             </div>
-            <div id="leftTopButton">
-                <Link id="newMessage" to="/">
-                    <img id="composeIcon" src={ComposeIcon} alt="compose" />
-                </Link>
-            </div>
         </div>
     );
 }

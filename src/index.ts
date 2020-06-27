@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { ConnectionOptions, createConnection } from "typeorm"
-import {Handle} from './entities/messaging/Handle';
+import {Handle} from './main/server/entities/messaging/Handle';
 
 const options: ConnectionOptions = {
   type: "sqlite",
