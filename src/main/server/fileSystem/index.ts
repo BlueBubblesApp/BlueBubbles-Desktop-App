@@ -9,8 +9,7 @@ export class FileSystem {
         this.setupDirectories();
     }
 
-
-    //Creates required directories
+    // Creates required directories
     setupDirectories(): void {
         if (!fs.existsSync(this.attachmentsDir)) fs.mkdirSync(this.attachmentsDir);
     }
