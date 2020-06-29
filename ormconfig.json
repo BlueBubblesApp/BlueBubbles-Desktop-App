@@ -1,8 +1,7 @@
 {
    "type": "sqlite",
    "synchronize": true,
-   "logging": true,
-   "logger": "simple-console",
+   "logging": false,
    "database": "src/main/server/db/messaging.sqlite",
    "entities": "src/main/server/entities/**/*.ts",
    "cli": {

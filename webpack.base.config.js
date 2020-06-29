@@ -13,7 +13,11 @@ module.exports = {
         __filename: false
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js', '.json']
+        extensions: ['.tsx', '.ts', '.js', '.json'],
+        alias: {
+            "@server": path.resolve(__dirname, "src/main/server"),
+            "@renderer": path.resolve(__dirname, "src/renderer")
+        }
     },
     devtool: 'source-map',
     plugins: [

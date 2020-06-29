@@ -3,9 +3,10 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import * as url from "url";
 
-const server = require("./server/index");
+import { BackendServer } from '@server/index';
 
 let win: BrowserWindow | null;
+const BlueBubbles = new BackendServer(win);
 
 const installExtensions = async () => {
     const installer = require("electron-devtools-installer");
@@ -14,6 +15,8 @@ const installExtensions = async () => {
 
     return Promise.all(extensions.map(name => installer.default(installer[name], forceDownload))).catch(console.log); // eslint-disable-line no-console
 };
+
+BlueBubbles.start();
 
 const createWindow = async () => {
     if (process.env.NODE_ENV !== "production") {
