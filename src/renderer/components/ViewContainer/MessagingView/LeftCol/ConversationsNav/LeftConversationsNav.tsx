@@ -1,61 +1,62 @@
 import * as React from "react";
 import "./LeftConversationsNav.css";
 import Conversation from "./Conversation/Conversation";
-import { BrowserRouter as Router, NavLink, RouteComponentProps } from "react-router-dom";
-import { ipcRenderer } from 'electron';
 
-interface IProps {
+interface State {
+    chatPrevs: Array<any>;
 }
 
-interface IState {
-  chatPrevs: Array<any>;
-}
-
-class LeftConversationsNav extends React.Component<IProps, IState> {
-    constructor(props: IProps) {
+class LeftConversationsNav extends React.Component<{}, State> {
+    constructor(props: {}) {
         super(props);
-    
+
         this.state = {
-          chatPrevs: []
+            chatPrevs: []
         };
-      }
-    
-        //Fetch All Conversations
+    }
+
+    // Fetch All Conversations
     componentDidMount() {
+        console.log(this.state.chatPrevs);
         // fetch('http://localhost:4000/chatPrevs')
         //     .then(res => res.json())
         //     .then(res => this.setState({
         //         chatPrevs: res,
         //     }))
         // ipcRenderer.on('sendChatPrevs', function (event,data) {
-            
-        // });
 
-             
+        // });
     }
 
-    render(){
+    render() {
         // const chatPrevs = this.state.chatPrevs;
         // const chatPrevs = ipcRenderer.sendSync('sendChatPrevs', "chatPrevs");
-        // console.log();   
+        // console.log();
 
-    return (
-        
-        <div className="LeftConversationsNav">
-             <Conversation chatParticipants="+1 (703) 201-7026" lastMessage="Test Message" lastMessageTime="3:13 PM"/>
-            {/* {chatPrevs.map(chatPrev => 
-                <Conversation chatParticipants={chatPrev.address} lastMessage={chatPrev.country} lastMessageTime={chatPrev.uncanonicalizedId}/>
+        return (
+            <div className="LeftConversationsNav">
+                <Conversation
+                    chatParticipants="+1 (703) 201-7026"
+                    lastMessage="Test Message"
+                    lastMessageTime="3:13 PM"
+                />
+                {/* {chatPrevs.map(chatPrev => 
+                <Conversation
+                  chatParticipants={chatPrev.address}
+                  lastMessage={chatPrev.country}
+                  lastMessageTime={chatPrev.uncanonicalizedId}
+                />
                 )} */}
-        </div>
-    );
+            </div>
+        );
     }
-};
+}
 
-export interface chatPrev {
+export interface ChatPrev {
     ROWID: number;
     address: string;
     country: string;
     uncanonicalizedId: string;
-  }
+}
 
 export default LeftConversationsNav;

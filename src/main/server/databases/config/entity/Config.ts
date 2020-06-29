@@ -1,7 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn } from "typeorm";
+import { Entity, Column, PrimaryColumn } from "typeorm";
 
 @Entity()
-export class GeneralSettings {
+export class Config {
     @PrimaryColumn("text", { name: "name" })
     name: string;
 

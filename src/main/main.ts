@@ -3,26 +3,13 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import * as url from "url";
 
-import { BackendServer } from '@server/index';
+import { BackendServer } from "@server/index";
 
 let win: BrowserWindow | null;
 const BlueBubbles = new BackendServer(win);
-
-const installExtensions = async () => {
-    const installer = require("electron-devtools-installer");
-    const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-    const extensions = ["REACT_DEVELOPER_TOOLS", "REDUX_DEVTOOLS"];
-
-    return Promise.all(extensions.map(name => installer.default(installer[name], forceDownload))).catch(console.log); // eslint-disable-line no-console
-};
-
 BlueBubbles.start();
 
 const createWindow = async () => {
-    if (process.env.NODE_ENV !== "production") {
-        await installExtensions();
-    }
-
     win = new BrowserWindow({
         width: 1200,
         height: 750,
@@ -64,7 +51,6 @@ const createWindow = async () => {
     win.on("unmaximize", () => {
         if (win && win.webContents) win.webContents.send("unmaximized");
     });
-    
 };
 
 ipcMain.handle("minimize-event", () => {
