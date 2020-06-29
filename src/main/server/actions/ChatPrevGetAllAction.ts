@@ -1,14 +1,13 @@
-  
-import {Request, Response} from "express";
-import {getManager} from "typeorm";
-import {Handle} from "../entities/messaging/Handle";
-const { ipcMain } = require('electron')
+import { ipcMain } from "electron";
+import { Request, Response } from "express";
+import { getManager } from "typeorm";
+
+import { Handle } from "@server/databases/chat/entity/Handle";
 
 /**
  * LOAD ALL CHAT PREVIEWS FROM DB
  */
 export async function chatPrevGetAllAction(request: Request, response: Response) {
-
     // get a post repository to perform operations with post
     const postRepository = getManager().getRepository(Handle);
 
@@ -19,9 +18,9 @@ export async function chatPrevGetAllAction(request: Request, response: Response)
     // response.send(posts);
     // console.log(posts[0].address);
 
-    ipcMain.on('sendChatPrevs', (event, arg) => {
-        console.log(arg)
-        
-        event.returnValue = posts;
-      })
+    ipcMain.on("sendChatPrevs", (event, arg) => {
+        console.log(arg);
+
+        return posts;
+    });
 }

@@ -1,45 +1,47 @@
 import { ipcMain, BrowserWindow } from "electron";
-import { createConnection, Connection } from "typeorm";
+import { Connection } from "typeorm";
 
-//Config and FileSystem Imports
-import { Config } from "@server/entities/settings/Config";
+// Config and FileSystem Imports
+import { Config } from "@server/databases/config/entity/Config";
 import { FileSystem } from "@server/fileSystem";
 import { DEFAULT_GENERAL_ITEMS } from "@server/constants";
 
-//Database Imports
-import { MessagingRepository } from '@server/db/messaging';
-import { SettingsRepository } from '@server/db/settings';
+// Database Imports
+import { ConfigRepository } from "@server/databases/config";
+import { ChatRepository } from "@server/databases/chat";
 
-//Service Imports
-import { SocketService } from '@server/services';
+// Service Imports
+import { SocketService } from "@server/services";
 
-// import {Attachment} from "./entities/messaging/Attachment";
-// import {Chat} from "./entities/messaging/Chat";
-import {Handle} from "./entities/messaging/Handle";
-// import {Message} from "./entities/messaging/Message";
+import { Handle } from "./databases/chat/entity/Handle";
 
 export class BackendServer {
     window: BrowserWindow;
+
     db: Connection;
-    messagingRepo: MessagingRepository;
-    settingsRepo: SettingsRepository;
-    ngrokServer: string;
+
+    chatRepo: ChatRepository;
+
+    configRepo: ConfigRepository;
+
     socketService: SocketService;
+
     config: { [key: string]: any };
+
     fs: FileSystem;
+
     hasSetup: boolean;
+
     hasStarted: boolean;
 
     constructor(window: BrowserWindow) {
         this.window = window;
 
         // Databases
-        this.db = null;
-        this.messagingRepo = null;
-        this.settingsRepo = null;
+        this.chatRepo = null;
+        this.configRepo = null;
 
         // Other helpers
-        this.ngrokServer = null;
         this.config = {};
         this.fs = null;
 
@@ -50,34 +52,33 @@ export class BackendServer {
         this.hasStarted = false;
     }
 
-    async start(this: any): Promise<void> {
+    /**
+     * Starts the back-end "server"
+     */
+    async start(): Promise<void> {
         console.log("Starting BlueBubbles Backend...");
-        await this.setup();  
+        await this.setup();
         await this.startServices();
-    
+
         console.log("Starting Configuration IPC Listeners...");
         this.startConfigIpcListeners();
-    
-        if (this.hasStarted === false) {
-            console.log("Connecting to Ngrok...");
-            await this.connectToNgrok();
-        }
     }
-    
-    //Initial App Setup
+
+    /**
+     * Sets up the server by initializing a "filesystem" and other
+     * tasks such as setting up the databases and internal services
+     */
     private async setup(): Promise<void> {
         console.log("Performing Setup...");
-        // this.db = await this.settingsRepo.initialize();
-        await this.initializeDatabase();
+        await this.initializeDatabases();
         await this.setupDefaults();
-        // this.db = await this.messagingRepo.initialize();
 
         try {
             console.log("Initializing filesystem...");
             this.fs = new FileSystem();
             this.fs.setup();
         } catch (ex) {
-            console.log("Failed to setup filesystem! " + ex.message);
+            console.log(`!Failed to setup filesystem! ${ex.message}`);
         }
 
         console.log("Initializing configuration database...");
@@ -94,23 +95,27 @@ export class BackendServer {
         }
     }
 
-    //Initialize Database
-    private async initializeDatabase(): Promise<void> {
+    private async initializeDatabases() {
         try {
-            this.db = await createConnection({
-                name: "settings",
-                type: "sqlite",
-                database: `@server/db/settings/settings.db`,
-                entities: [Config],
-                synchronize: false,
-                logging: false
-            });
+            console.log("Connecting to messaging database...");
+            this.chatRepo = new ChatRepository();
+            await this.chatRepo.initialize();
         } catch (ex) {
-            console.log("Failed to connect to configuration database!" + ex.message);
+            console.log(`Failed to connect to messaging database! ${ex.message}`);
+        }
+
+        try {
+            console.log("Connecting to settings database...");
+            this.configRepo = new ConfigRepository();
+            await this.configRepo.initialize();
+        } catch (ex) {
+            console.log(`Failed to connect to settings database! ${ex.message}`);
         }
     }
 
-    //Setup Default Values
+    /**
+     * Sets up default database values for configuration items
+     */
     private async setupDefaults(): Promise<void> {
         try {
             const repo = this.db.getRepository(Config);
@@ -119,40 +124,27 @@ export class BackendServer {
                 if (!item) await this.addConfigItem(key, DEFAULT_GENERAL_ITEMS[key]());
             }
         } catch (ex) {
-            console.log("Failed to setup default configurations!" + ex.message);
+            console.log(`Failed to setup default configurations! ${ex.message}`);
         }
     }
 
+    /**
+     * Sets up any internal services that need to be instantiated and configured
+     */
     private async setupServices() {
         if (this.hasSetup) return;
 
         try {
-            console.log("Connecting to messaging database...");
-            this.messagingRepo = new MessagingRepository();
-            await this.messagingRepo.initialize();
-        } catch (ex) {
-            console.log("Failed to connect to messaging database! " + ex.message);
-        }
-
-        try {
-            console.log("Connecting to settings database...");
-            this.settingsRepo = new SettingsRepository();
-            await this.settingsRepo.initialize();
-        } catch (ex) {
-            console.log("Failed to connect to settings database! " + ex.message);
-        }
-
-        try {
             console.log("Initializing up sockets...");
             this.socketService = new SocketService(
-                this.db,
-                this.messagingRepo,
-                this.settingsRepo,
+                this.chatRepo,
+                this.configRepo,
                 this.fs,
-                this.config.ngrokServer
+                this.config.server_address,
+                this.config.passphrase
             );
         } catch (ex) {
-            console.log("Failed to setup socket service! " + ex.message);
+            console.log(`Failed to setup socket service! ${ex.message}`);
         }
 
         this.hasSetup = true;
@@ -181,8 +173,9 @@ export class BackendServer {
 
     private startIpcListener() {
         ipcMain.handle("getChatPrevs", async (event, args) => {
-            if (!this.messagingRepo.db) return 0;
-            const count = await this.messagingRepo.getChatPrevs();
+            if (!this.chatRepo.db) return 0;
+            // TODO: Fill this out
+            const count = 0; // await this.chatRepo.getChatPrevs();
             return count;
         });
     }
@@ -194,8 +187,8 @@ export class BackendServer {
                     this.config[item] = args[item];
                 }
                 // Update in class
-                if (this.config[item]){
-                     await this.setConfig(item, args[item]);
+                if (this.config[item]) {
+                    await this.setConfig(item, args[item]);
                 }
             }
 
@@ -205,7 +198,7 @@ export class BackendServer {
     }
 
     private async setConfig(name: string, value: string): Promise<void> {
-        this.db = await this.settingsRepo.initialize();
+        this.db = await this.configRepo.initialize();
         await this.db.getRepository(Config).update({ name }, { value });
         this.config[name] = value;
         this.emitToUI("config-update", this.config);
@@ -214,12 +207,4 @@ export class BackendServer {
     private emitToUI(event: string, data: any) {
         if (this.window) this.window.webContents.send(event, data);
     }
-    
-
-
-
-
-
-
-
 }

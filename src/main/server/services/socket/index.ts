@@ -1,12 +1,11 @@
-
 import * as io from "socket.io-client";
 
-//Internal Libs
+// Internal Libraries
 import { FileSystem } from "@server/fileSystem";
 
-//Database Dependency Imports
-import { SettingsRepository } from "@server/db/settings";
-import { MessagingRepository } from "@server/db/messaging";
+// Database Dependency Imports
+import { ConfigRepository } from "@server/databases/config";
+import { ChatRepository } from "@server/databases/chat";
 import { Connection } from "typeorm";
 
 export class SocketService {
@@ -14,57 +13,50 @@ export class SocketService {
 
     socketServer: any;
 
-    messagingRepo: MessagingRepository;
+    chatRepo: ChatRepository;
 
-    settingsRepo: SettingsRepository;
+    configRepo: ConfigRepository;
 
     fs: FileSystem;
+
+    serverAddress: string;
 
     /**
      * Starts up the initial Socket.IO connection and initializes other
      * required classes and variables
      *
-     * @param db The configuration database
-     * @param iMessageRepo The iMessage database repository
+     * @param chatRepo The iMessage database repository
+     * @param configRepo The app's settings repository
      * @param fs The filesystem class handler
-     * @param port The initial port for Socket.IO
+     * @param serverAddress The server we are connecting to
+     * @param passphrase The passphrase to connect to the server
      */
     constructor(
-        db: Connection,
-        messagingRepo: MessagingRepository,
-        settingsRepo: SettingsRepository,
+        chatRepo: ChatRepository,
+        configRepo: ConfigRepository,
         fs: FileSystem,
-        ngrokServer: string
+        serverAddress: string,
+        passphrase: string
     ) {
-        this.db = db;
-
-        this.socketServer = io(ngrokServer,{
+        this.socketServer = io(serverAddress, {
             query: {
-                guid: ""
+                guid: passphrase
             }
         });
 
-        this.messagingRepo = messagingRepo;
-        this.settingsRepo = settingsRepo;
+        this.chatRepo = chatRepo;
+        this.configRepo = configRepo;
         this.fs = fs;
+        this.serverAddress = serverAddress;
     }
 
-    //Inital Socket Connection Handler
+    /**
+     * Sets up the socket listeners
+     */
     async start() {
+        console.log(`TODO: Starting socket connection handler for ${this.serverAddress}`);
     }
-
-
-
-
-
-
 }
-
-
-
-
-
-
 
 // import {createConnection, getManager} from "typeorm";
 // import {Handle} from "../entities/messaging/Handle";
@@ -72,7 +64,7 @@ export class SocketService {
 
 // //Connect to server with socket
 // export async function ConnectToServer(url, aGuid){
-    
+
 // }
 
 // createConnection({
@@ -145,25 +137,19 @@ export class SocketService {
 //                 } catch (err){
 //                     console.log(err);
 //                 }
-                
+
 //             }
 //         }
-            
 
 //             return data
 //         })
 //     }
 
-    
-
 // }).catch(error => console.log("TypeORM connection error: ", error));
-
 
 // // const initFromServer = {
 
 // // }
-    
-
 
 // //Get A Single Chat by guid
 // function GetSingleChat(guid){
@@ -210,7 +196,7 @@ export class SocketService {
 //     socket.emit("get-participants",{identifier: guid}, (data) =>{
 //         console.log(data)
 //         return data
-//     })   
+//     })
 // }
 
 // //Send A Message
@@ -218,7 +204,7 @@ export class SocketService {
 //     socket.emit("send-message",{guid: chatGuid, message: myMessage}, (data) =>{
 //         console.log(data)
 //         return data
-//     })  
+//     })
 // }
 
 // //Send A Message With Chunked Attachments
@@ -226,7 +212,7 @@ export class SocketService {
 //     socket.emit("send-message-chunk",{guid: guid, message: myMessage, attachmentData: myAttachmentData}, (data) =>{
 //         console.log(data)
 //         return data
-//     }) 
+//     })
 // }
 
 // //Start A Chat
@@ -234,7 +220,7 @@ export class SocketService {
 //     socket.emit("start-chat",{identifier: guid, participants: chatParticipants}, (data) =>{
 //         console.log(data)
 //         return data
-//     }) 
+//     })
 // }
 
 // //Rename A Group Chat
@@ -242,7 +228,7 @@ export class SocketService {
 //     socket.emit("rename-group",{identifier: guid, newName: newGroupName}, (data) =>{
 //         console.log(data)
 //         return data
-//     }) 
+//     })
 // }
 
 // //Add A Participant To Chat
@@ -250,7 +236,7 @@ export class SocketService {
 //     socket.emit("add-participant",{identifier: guid, address: participantAddress}, (data) =>{
 //         console.log(data)
 //         return data
-//     }) 
+//     })
 // }
 
 // //Remove A Participant To Chat
@@ -258,12 +244,12 @@ export class SocketService {
 //     socket.emit("remove-participant",{identifier: guid, address: participantAddress}, (data) =>{
 //         console.log(data)
 //         return data
-//     }) 
+//     })
 // }
 
 // //Send Reaction (NOT IMPLEMENTED IN SERVER)
 // function SendReaction(guid) {
 //     socket.emit("send-reaction",{identifier: guid}, (data) =>{
 //         console.log(data)
-//     }) 
+//     })
 // }
