@@ -2,42 +2,42 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
 export class Attachment {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn("increment")
     ROWID: number;
 
-    @Column()
+    @Column("text")
     guid: string;
 
-    @Column()
+    @Column("text")
     uti: string;
 
-    @Column()
+    @Column("text")
     mimeType: string;
 
-    @Column()
+    @Column("int")
     transferState: number;
 
-    @Column()
+    @Column("int")
     isOutgoing: number;
 
-    @Column()
+    @Column("int")
     transferName: number;
 
-    @Column()
+    @Column("int")
     totalBytes: number;
 
-    @Column()
+    @Column("int")
     isSticker: number;
 
-    @Column()
+    @Column("int")
     hideAttachment: number;
 
-    @Column()
+    @Column("int")
     blurhash: number;
 
-    @Column()
+    @Column("int")
     height: number;
 
-    @Column()
+    @Column("int")
     width: number;
 }

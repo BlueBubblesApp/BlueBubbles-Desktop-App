@@ -32,12 +32,15 @@ export class SocketService {
      * @param passphrase The passphrase to connect to the server
      */
     constructor(
+        db: Connection,
         chatRepo: ChatRepository,
         configRepo: ConfigRepository,
         fs: FileSystem,
         serverAddress: string,
         passphrase: string
     ) {
+        this.db = db;
+        
         this.socketServer = io(serverAddress, {
             query: {
                 guid: passphrase
@@ -54,7 +57,8 @@ export class SocketService {
      * Sets up the socket listeners
      */
     async start() {
-        console.log(`TODO: Starting socket connection handler for ${this.serverAddress}`);
+        //Connect to server
+        
     }
 }
 

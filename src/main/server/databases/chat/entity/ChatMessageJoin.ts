@@ -5,6 +5,6 @@ export class ChatMessageJoin {
     @PrimaryGeneratedColumn()
     ROWID: number;
 
-    @Column()
+    @Column("text")
     guid: string;
 }

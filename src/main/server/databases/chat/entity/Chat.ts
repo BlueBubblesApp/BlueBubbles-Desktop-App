@@ -1,22 +1,23 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, Unique } from "typeorm";
 
 @Entity()
+@Unique(["guid"])
 export class Chat {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn("increment")
     ROWID: number;
 
-    @Column()
+    @Column("text")
     guid: string;
 
-    @Column()
+    @Column("int")
     style: number;
 
-    @Column()
+    @Column("text")
     chatIdentifier: string;
 
-    @Column()
+    @Column("int")
     isArchived: number;
 
-    @Column()
+    @Column("text")
     displayName: string;
 }

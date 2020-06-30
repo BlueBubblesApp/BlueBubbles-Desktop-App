@@ -1,91 +1,96 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, OneToOne} from "typeorm";
+import { Handle } from "@server/databases/chat/entity/";
 
 @Entity()
 export class Message {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn("increment")
     ROWID: number;
 
-    @Column()
+    @Column("int")
     handleId: number;
 
-    @Column()
+    @Column("text")
     guid: string;
 
-    @Column()
+    @Column("text")
     text: string;
 
-    @Column()
+    @Column("text")
     subject: string;
 
-    @Column()
+    @Column("text")
     country: string;
 
-    @Column()
+    @Column("int")
     error: number;
 
-    @Column()
+    @Column("int")
     dateCreated: number;
 
-    @Column()
+    @Column("int")
     dateRead: number;
 
-    @Column()
+    @Column("int")
     dateDelivered: number;
 
-    @Column()
+    @Column("int")
     isFromMe: number;
 
-    @Column()
+    @Column("int")
     isDelayed: number;
 
-    @Column()
+    @Column("int")
     isAutoReply: number;
 
-    @Column()
+    @Column("int")
     isSystemMessage: number;
 
-    @Column()
+    @Column("int")
     isServiceMessage: number;
 
-    @Column()
+    @Column("int")
     isForward: number;
 
-    @Column()
+    @Column("int")
     isArchived: number;
 
-    @Column()
+    @Column("text")
     cacheRoomnames: string;
 
-    @Column()
+    @Column("int")
     isAudioMessage: number;
 
-    @Column()
+    @Column("int")
     datePlayed: number;
 
-    @Column()
+    @Column("int")
     itemType: number;
 
-    @Column()
+    @Column("text")
     groupTitle: string;
 
-    @Column()
+    @Column("int")
     groupActionType: number;
 
-    @Column()
+    @Column("int")
     isExpired: number;
 
-    @Column()
+    @Column("text")
     associatedMessageGuid: string;
 
-    @Column()
+    @Column("text")
     associatedMessageType: string;
 
-    @Column()
+    @Column("text")
     expressiveSendStyleId: string;
 
-    @Column()
+    @Column("int")
     timeExpressiveSendStyleId: number;
 
-    @Column()
+    @Column("int")
     hasAttachments: number;
+
+    @OneToOne(type => Handle)
+    @JoinColumn()
+    handle: Handle;
 }

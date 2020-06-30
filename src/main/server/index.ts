@@ -82,7 +82,7 @@ export class BackendServer {
         }
 
         console.log("Initializing configuration database...");
-        const cfg = await this.db.getRepository(Config).find();
+        const cfg = await this.configRepo.db.getRepository(Config).find();
         cfg.forEach(item => {
             this.config[item.name] = item.value;
         });
@@ -118,7 +118,7 @@ export class BackendServer {
      */
     private async setupDefaults(): Promise<void> {
         try {
-            const repo = this.db.getRepository(Config);
+            const repo = this.configRepo.db.getRepository(Config);
             for (const key of Object.keys(DEFAULT_GENERAL_ITEMS)) {
                 const item = await repo.findOne({ name: key });
                 if (!item) await this.addConfigItem(key, DEFAULT_GENERAL_ITEMS[key]());
@@ -137,6 +137,7 @@ export class BackendServer {
         try {
             console.log("Initializing up sockets...");
             this.socketService = new SocketService(
+                this.db,
                 this.chatRepo,
                 this.configRepo,
                 this.fs,
@@ -167,7 +168,7 @@ export class BackendServer {
         const item = new Config();
         item.name = name;
         item.value = String(value);
-        await this.db.getRepository(Config).save(item);
+        await this.configRepo.db.getRepository(Config).save(item);
         return item;
     }
 
@@ -199,7 +200,7 @@ export class BackendServer {
 
     private async setConfig(name: string, value: string): Promise<void> {
         this.db = await this.configRepo.initialize();
-        await this.db.getRepository(Config).update({ name }, { value });
+        await this.configRepo.db.getRepository(Config).update({ name }, { value });
         this.config[name] = value;
         this.emitToUI("config-update", this.config);
     }
