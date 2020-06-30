@@ -3,21 +3,21 @@ import { Entity, PrimaryGeneratedColumn, Column, Unique } from "typeorm";
 @Entity()
 @Unique(["guid"])
 export class Chat {
-    @PrimaryGeneratedColumn("increment")
+    @PrimaryGeneratedColumn()
     ROWID: number;
 
     @Column("text")
     guid: string;
 
-    @Column("int")
+    @Column("integer")
     style: number;
 
     @Column("text")
     chatIdentifier: string;
 
-    @Column("int")
+    @Column("integer")
     isArchived: number;
 
-    @Column("text")
+    @Column({ type: "text", nullable: true })
     displayName: string;
 }

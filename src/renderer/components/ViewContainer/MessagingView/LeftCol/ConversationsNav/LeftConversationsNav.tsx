@@ -6,8 +6,8 @@ interface State {
     chatPrevs: Array<any>;
 }
 
-class LeftConversationsNav extends React.Component<{}, State> {
-    constructor(props: {}) {
+class LeftConversationsNav extends React.Component<unknown, State> {
+    constructor(props: unknown) {
         super(props);
 
         this.state = {

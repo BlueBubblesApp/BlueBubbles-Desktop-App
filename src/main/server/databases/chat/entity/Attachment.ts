@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
 export class Attachment {
-    @PrimaryGeneratedColumn("increment")
+    @PrimaryGeneratedColumn()
     ROWID: number;
 
     @Column("text")
@@ -14,30 +14,30 @@ export class Attachment {
     @Column("text")
     mimeType: string;
 
-    @Column("int")
+    @Column("integer")
     transferState: number;
 
-    @Column("int")
+    @Column("integer")
     isOutgoing: number;
 
-    @Column("int")
+    @Column("integer")
     transferName: number;
 
-    @Column("int")
+    @Column("integer")
     totalBytes: number;
 
-    @Column("int")
+    @Column("integer")
     isSticker: number;
 
-    @Column("int")
+    @Column("integer")
     hideAttachment: number;
 
-    @Column("int")
+    @Column("integer")
     blurhash: number;
 
-    @Column("int")
+    @Column("integer")
     height: number;
 
-    @Column("int")
+    @Column("integer")
     width: number;
 }

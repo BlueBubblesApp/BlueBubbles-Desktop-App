@@ -1,12 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, OneToOne} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, OneToOne } from "typeorm";
 import { Handle } from "@server/databases/chat/entity/";
+import { BooleanTransformer } from "@server/databases/transformers";
 
 @Entity()
 export class Message {
-    @PrimaryGeneratedColumn("increment")
+    @PrimaryGeneratedColumn()
     ROWID: number;
 
-    @Column("int")
+    @Column("integer")
     handleId: number;
 
     @Column("text")
@@ -15,80 +16,80 @@ export class Message {
     @Column("text")
     text: string;
 
-    @Column("text")
+    @Column({ type: "text", nullable: true })
     subject: string;
 
-    @Column("text")
+    @Column({ type: "text", nullable: true })
     country: string;
 
-    @Column("int")
+    @Column("integer")
     error: number;
 
-    @Column("int")
+    @Column({ type: "integer", nullable: false })
     dateCreated: number;
 
-    @Column("int")
+    @Column({ type: "integer", nullable: false, default: 0 })
     dateRead: number;
 
-    @Column("int")
+    @Column({ type: "integer", nullable: false, default: 0 })
     dateDelivered: number;
 
-    @Column("int")
-    isFromMe: number;
+    @Column({ type: "integer", transformer: BooleanTransformer })
+    isFromMe: boolean;
 
-    @Column("int")
-    isDelayed: number;
+    @Column({ type: "integer", transformer: BooleanTransformer })
+    isDelayed: boolean;
 
-    @Column("int")
-    isAutoReply: number;
+    @Column({ type: "integer", transformer: BooleanTransformer })
+    isAutoReply: boolean;
 
-    @Column("int")
-    isSystemMessage: number;
+    @Column({ type: "integer", transformer: BooleanTransformer })
+    isSystemMessage: boolean;
 
-    @Column("int")
-    isServiceMessage: number;
+    @Column({ type: "integer", transformer: BooleanTransformer })
+    isServiceMessage: boolean;
 
-    @Column("int")
-    isForward: number;
+    @Column({ type: "integer", transformer: BooleanTransformer })
+    isForward: boolean;
 
-    @Column("int")
-    isArchived: number;
+    @Column({ type: "integer", transformer: BooleanTransformer })
+    isArchived: boolean;
 
-    @Column("text")
+    @Column({ type: "text", nullable: true })
     cacheRoomnames: string;
 
-    @Column("int")
-    isAudioMessage: number;
+    @Column({ type: "integer", transformer: BooleanTransformer, default: false })
+    isAudioMessage: boolean;
 
-    @Column("int")
+    @Column("integer")
     datePlayed: number;
 
-    @Column("int")
+    @Column("integer")
     itemType: number;
 
-    @Column("text")
+    @Column({ type: "text", nullable: true })
     groupTitle: string;
 
-    @Column("int")
+    @Column("integer")
     groupActionType: number;
 
-    @Column("int")
-    isExpired: number;
+    @Column({ type: "integer", transformer: BooleanTransformer, default: false })
+    isExpired: boolean;
 
-    @Column("text")
+    @Column({ type: "text", nullable: true })
     associatedMessageGuid: string;
 
-    @Column("text")
-    associatedMessageType: string;
+    @Column({ type: "text", nullable: false, default: 0 })
+    associatedMessageType: number;
 
-    @Column("text")
+    @Column({ type: "text", nullable: true })
     expressiveSendStyleId: string;
 
-    @Column("int")
+    @Column({ type: "integer", nullable: false, default: 0 })
     timeExpressiveSendStyleId: number;
 
-    @Column("int")
-    hasAttachments: number;
+    @Column({ type: "integer", transformer: BooleanTransformer, default: false })
+    hasAttachments: boolean;
 
     @OneToOne(type => Handle)
     @JoinColumn()

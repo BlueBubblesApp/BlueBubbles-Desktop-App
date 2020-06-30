@@ -2,9 +2,12 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
 export class AttachmentMessageJoin {
-    @PrimaryGeneratedColumn("increment")
+    @PrimaryGeneratedColumn()
     ROWID: number;
 
-    @Column("text")
-    guid: string;
+    @Column("integer")
+    attachmentId: number;
+
+    @Column("integer")
+    messageId: number;
 }
