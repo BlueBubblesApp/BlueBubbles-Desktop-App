@@ -2,16 +2,19 @@ import * as io from "socket.io-client";
 
 // Internal Libraries
 import { FileSystem } from "@server/fileSystem";
+import { ResponseFormat, ChatResponse, MessageResponse } from "@server/types";
 
 // Database Dependency Imports
 import { ConfigRepository } from "@server/databases/config";
 import { ChatRepository } from "@server/databases/chat";
 import { Connection } from "typeorm";
 
+import { GetChatsParams, GetChatMessagesParams } from "./types";
+
 export class SocketService {
     db: Connection;
 
-    socketServer: any;
+    socketServer: SocketIOClient.Socket;
 
     chatRepo: ChatRepository;
 
@@ -20,6 +23,8 @@ export class SocketService {
     fs: FileSystem;
 
     serverAddress: string;
+
+    passphrase: string;
 
     /**
      * Starts up the initial Socket.IO connection and initializes other
@@ -40,25 +45,75 @@ export class SocketService {
         passphrase: string
     ) {
         this.db = db;
-        
-        this.socketServer = io(serverAddress, {
-            query: {
-                guid: passphrase
-            }
-        });
 
+        this.socketServer = null;
         this.chatRepo = chatRepo;
         this.configRepo = configRepo;
         this.fs = fs;
         this.serverAddress = serverAddress;
+        this.passphrase = passphrase;
     }
 
     /**
      * Sets up the socket listeners
      */
-    async start() {
-        //Connect to server
-        
+    async start(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            this.socketServer = io(this.serverAddress, {
+                query: {
+                    guid: this.passphrase
+                }
+            });
+
+            this.socketServer.on("connect", () => {
+                console.log("Connected to server via socket.");
+                resolve(true);
+            });
+
+            this.socketServer.on("disconnect", () => {
+                console.log("Disconnected from socket server.");
+                reject(new Error("Disconnected from socket."));
+            });
+        });
+    }
+
+    async getChats({ withParticipants = true }: GetChatsParams): Promise<ChatResponse[]> {
+        return new Promise<ChatResponse[]>((resolve, reject) => {
+            this.socketServer.emit("get-chats", { withParticipants }, (res: ResponseFormat) => {
+                if ([200, 201].includes(res.status)) {
+                    resolve(res.data as ChatResponse[]);
+                } else {
+                    reject(res.message);
+                }
+            });
+        });
+    }
+
+    async getChatMessages(
+        identifier: string,
+        { offset = 0, limit = 25, after = null, before = null, withChats = false, sort = "DESC" }: GetChatMessagesParams
+    ): Promise<MessageResponse[]> {
+        return new Promise<MessageResponse[]>((resolve, reject) => {
+            this.socketServer.emit(
+                "get-chat-messages",
+                {
+                    identifier,
+                    offset,
+                    limit,
+                    after,
+                    before,
+                    withChats,
+                    sort
+                },
+                res => {
+                    if ([200, 201].includes(res.status)) {
+                        resolve(res.data as MessageResponse[]);
+                    } else {
+                        reject(res.message);
+                    }
+                }
+            );
+        });
     }
 }
 

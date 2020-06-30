@@ -2,6 +2,12 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
 export class ChatHandleJoin {
-    @PrimaryGeneratedColumn("increment")
+    @PrimaryGeneratedColumn()
     ROWID: number;
+
+    @Column("integer")
+    chatId: number;
+
+    @Column("integer")
+    handleId: number;
 }

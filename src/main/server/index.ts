@@ -13,7 +13,8 @@ import { ChatRepository } from "@server/databases/chat";
 // Service Imports
 import { SocketService } from "@server/services";
 
-import { Handle } from "./databases/chat/entity/Handle";
+import { ResponseFormat, ChatResponse, MessageResponse } from "./types";
+import { GetChatMessagesParams } from "./services/socket/types";
 
 export class BackendServer {
     window: BrowserWindow;
@@ -25,8 +26,6 @@ export class BackendServer {
     configRepo: ConfigRepository;
 
     socketService: SocketService;
-
-    config: { [key: string]: any };
 
     fs: FileSystem;
 
@@ -42,7 +41,6 @@ export class BackendServer {
         this.configRepo = null;
 
         // Other helpers
-        this.config = {};
         this.fs = null;
 
         // Services
@@ -62,6 +60,10 @@ export class BackendServer {
 
         console.log("Starting Configuration IPC Listeners...");
         this.startConfigIpcListeners();
+
+        // Fetch the chats upon start
+        console.log("Syncing initial chats...");
+        await this.fetchChats();
     }
 
     /**
@@ -80,12 +82,6 @@ export class BackendServer {
         } catch (ex) {
             console.log(`!Failed to setup filesystem! ${ex.message}`);
         }
-
-        console.log("Initializing configuration database...");
-        const cfg = await this.configRepo.db.getRepository(Config).find();
-        cfg.forEach(item => {
-            this.config[item.name] = item.value;
-        });
 
         try {
             console.log("Launching Services..");
@@ -121,7 +117,7 @@ export class BackendServer {
             const repo = this.configRepo.db.getRepository(Config);
             for (const key of Object.keys(DEFAULT_GENERAL_ITEMS)) {
                 const item = await repo.findOne({ name: key });
-                if (!item) await this.addConfigItem(key, DEFAULT_GENERAL_ITEMS[key]());
+                if (!item) await this.configRepo.setConfigItem(key, DEFAULT_GENERAL_ITEMS[key]());
             }
         } catch (ex) {
             console.log(`Failed to setup default configurations! ${ex.message}`);
@@ -141,8 +137,8 @@ export class BackendServer {
                 this.chatRepo,
                 this.configRepo,
                 this.fs,
-                this.config.server_address,
-                this.config.passphrase
+                "http://127.0.0.1:1234", // this.config.server_address,
+                "162514cc-d030-4eca-aa4b-119015703645" // this.config.passphrase
             );
         } catch (ex) {
             console.log(`Failed to setup socket service! ${ex.message}`);
@@ -154,7 +150,7 @@ export class BackendServer {
     private async startServices() {
         if (this.hasStarted === false) {
             console.log("Starting socket service...");
-            this.socketService.start();
+            await this.socketService.start();
 
             // this.log("Starting chat listener...");
             // this.startChatListener();
@@ -164,12 +160,60 @@ export class BackendServer {
         this.hasStarted = true;
     }
 
-    private async addConfigItem(name: string, value: string | number): Promise<Config> {
-        const item = new Config();
-        item.name = name;
-        item.value = String(value);
-        await this.configRepo.db.getRepository(Config).save(item);
-        return item;
+    /**
+     * Fetches chats from the server based on the last time we fetched data.
+     * This is what the server itself calls when it is refreshed or reloaded.
+     * The front-end _should not_ call this function.
+     */
+    async fetchChats(): Promise<void> {
+        const now = new Date();
+        const lastFetch = this.configRepo.getConfigItem("lastFetch") as number;
+        const chats: ChatResponse[] = await this.socketService.getChats({});
+        console.log(`Got ${chats.length} chats from the server. Fetching messages since ${new Date(lastFetch)}`);
+
+        // Iterate over each chat and fetch their messages
+        for (const chat of chats) {
+            // First, emit the chat to the front-end
+            this.emitToUI("chat", chat);
+
+            // Second, save the chat to the database
+            const chatObj = ChatRepository.createChatFromResponse(chat);
+            const savedChat = await this.chatRepo.saveChat(chatObj);
+
+            // Third, save the participants for the chat
+            for (const participant of chat.participants ?? []) {
+                const handle = ChatRepository.createHandleFromResponse(participant);
+                await this.chatRepo.saveHandle(savedChat, handle);
+            }
+
+            // Build message request params
+            const payload: GetChatMessagesParams = { withChats: false };
+            if (lastFetch) {
+                payload.after = lastFetch;
+                // Since we are fetching after a date, we want to get as much as we can
+                payload.limit = 1000;
+            }
+
+            // Third, let's fetch the messages from the DB
+            const messages: MessageResponse[] = await this.socketService.getChatMessages(chat.guid, payload);
+            console.log(
+                `Got ${messages.length} messages for chat, [${chat.displayName || chat.chatIdentifier}] the server.`
+            );
+
+            // Fourth, let's save the messages to the DB
+            for (const message of messages) {
+                const msg = ChatRepository.createMessageFromResponse(message);
+                await this.chatRepo.saveMessage(savedChat, msg);
+            }
+
+            // Lastly, save the attachments (if any)
+            // TODO
+        }
+
+        // Save the last fetch date
+        const later = new Date();
+        console.log(`Finished fetching messages from socket server in [${later.getTime() - now.getTime()} ms].`);
+        this.configRepo.setConfigItem("lastFetch", now);
     }
 
     private startIpcListener() {
@@ -184,25 +228,15 @@ export class BackendServer {
     private startConfigIpcListeners() {
         ipcMain.handle("set-config", async (event, args) => {
             for (const item of Object.keys(args)) {
-                if (this.config[item] && this.config[item] !== args[item]) {
-                    this.config[item] = args[item];
-                }
-                // Update in class
-                if (this.config[item]) {
-                    await this.setConfig(item, args[item]);
+                const hasConfig = this.configRepo.hasConfigItem(item);
+                if (hasConfig && this.configRepo.getConfigItem(item) !== args[item]) {
+                    await this.configRepo.setConfigItem(item, args[item]);
                 }
             }
 
-            this.emitToUI("config-update", this.config);
-            return this.config;
+            this.emitToUI("config-update", this.configRepo.config);
+            return this.configRepo.config;
         });
-    }
-
-    private async setConfig(name: string, value: string): Promise<void> {
-        this.db = await this.configRepo.initialize();
-        await this.configRepo.db.getRepository(Config).update({ name }, { value });
-        this.config[name] = value;
-        this.emitToUI("config-update", this.config);
     }
 
     private emitToUI(event: string, data: any) {
