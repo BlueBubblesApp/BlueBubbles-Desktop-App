@@ -1601,12 +1601,14 @@ class BackendServer {
 
 
       const messages = await this.socketService.getChatMessages(chat.guid, payload);
-      console.log(`Got ${messages.length} messages for chat, [${chat.displayName || chat.chatIdentifier}] the server.`); // Lastly, let's save the messages to the DB
+      console.log(`Got ${messages.length} messages for chat, [${chat.displayName || chat.chatIdentifier}] the server.`); // Fourth, let's save the messages to the DB
 
       for (const message of messages) {
         const msg = _server_databases_chat__WEBPACK_IMPORTED_MODULE_5__["ChatRepository"].createMessageFromResponse(message);
         await this.chatRepo.saveMessage(savedChat, msg);
-      }
+      } // Lastly, save the attachments (if any)
+      // TODO
+
     } // Save the last fetch date
 
 

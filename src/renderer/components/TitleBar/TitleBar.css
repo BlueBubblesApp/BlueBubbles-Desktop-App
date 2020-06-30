@@ -38,29 +38,90 @@
 }
 
 .title-button {
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     border-radius: 25px;
 }
 
 #close-button {
     margin-left: 10px;
     background-color: #fc4e50;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #minimize-button {
     background-color: #febe30;
     margin: 0 8px 0 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #maximize-button {
     background-color: #38d744;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #unmaximize-button {
     background-color: #38d744;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+
 .hide {
+    display: none !important;
+}
+
+#close-button > img {
+    height: 9px;
+}
+
+#close-button .hideIcon {
     display: none;
+}
+
+#close-button:hover .hideIcon {
+    display: block;
+}
+
+#minimize-button > img {
+    height: 11px;
+}
+
+#minimize-button .hideIcon {
+    display: none;
+}
+
+#minimize-button:hover .hideIcon {
+    display: block;
+}
+
+#maximize-button > img {
+    height: 11px;
+}
+
+#maximize-button .hideIcon {
+    display: none;
+}
+
+#maximize-button:hover .hideIcon {
+    display: block;
+}
+
+#unmaximize-button > img {
+    height: 11px;
+}
+
+#unmaximize-button .hideIcon {
+    display: none;
+}
+
+#unmaximize-button:hover .hideIcon {
+    display: block;
 }
