@@ -1,0 +1,182 @@
+.LoginView{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: #323232;
+}
+
+#loginContainer{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+#loginContainer > h1 {
+    color: white;
+    font-family: "SF UI Display Bold";
+}
+
+#loadingContainer > h1 {
+  color: white;
+  font-family: "SF UI Display Bold";
+}
+
+#loginForm > button {
+    background-color: #007aff;
+    outline: none;
+    border: none;
+    text-decoration: none;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    margin-top: 20px;
+    border-radius: 10px;
+    padding: 7px 13px 7px 13px;
+    color: white;
+}
+
+#loginContainer > form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#loginForm > input {
+    margin: 10px 0 10px 0;
+    outline: none;
+    border: none;
+    text-decoration: none;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    padding: 7px;
+    border-radius: 10px;
+    width: 100%;
+}
+
+#loadingContainer{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    background-color: #323232;
+    animation: ease-in-out 3s; 
+}
+
+#loader {
+    font-size: 10px;
+    margin: 50px auto;
+    text-indent: -9999em;
+    width: 4em;
+    height: 4em;
+    border-radius: 50%;
+    background: #007aff;
+    background: -moz-linear-gradient(left, #007aff 10%, rgba(0,122,255, 0) 42%);
+    background: -webkit-linear-gradient(left, #007aff 10%, rgba(0,122,255, 0) 42%);
+    background: -o-linear-gradient(left, #007aff 10%, rgba(0,122,255, 0) 42%);
+    background: -ms-linear-gradient(left, #007aff 10%, rgba(0,122,255, 0) 42%);
+    background: linear-gradient(to right, #007aff 10%, rgba(0,122,255, 0) 42%);
+    position: relative;
+    -webkit-animation: load3 1.4s infinite linear;
+    animation: load3 1.4s infinite linear;
+    -webkit-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  #loader:before {
+    width: 50%;
+    height: 50%;
+    background: #007aff;
+    border-radius: 100% 0 0 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    content: '';
+  }
+  #loader:after {
+    background: #323232;
+    width: 75%;
+    height: 75%;
+    border-radius: 50%;
+    content: '';
+    margin: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+  }
+  @-webkit-keyframes load3 {
+    0% {
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes load3 {
+    0% {
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+  
+
+.loginTitleBarRight{
+    background-color: #323232 !important;
+}
+
+/* Progress bar */
+#progressBar { 
+	height: 8px;  /* Can be anything */
+	position: relative;
+	background: #555;
+	-moz-border-radius: 25px;
+	-webkit-border-radius: 25px;
+	border-radius: 25px;
+    max-width: 25%;
+    width: 25%;
+}
+
+#progressBar > span {
+    display: block;
+    height: 100%;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+    background-color: white;
+    position: relative;
+    overflow: hidden;
+    /* width: 25%; */
+}
+
+
+@media (max-width: 750px) {
+    #progressBar { 
+        width: 100%;
+    }
+ }
+
+@media (max-width: 500px) {
+    #progressBar { 
+        width: 45%;
+    }
+ }
+
+ #skipToMessaging{
+   margin-top: 20px;
+   color: aqua;
+ }

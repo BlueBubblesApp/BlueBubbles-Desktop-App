@@ -2,9 +2,9 @@
     height: 44px;
     min-height: 44px;
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
-    padding-left: 10px;
+    padding: 0 10px 0 10px;
     border-top: 1px solid gray;
 }
 
@@ -19,4 +19,8 @@
 
 #settingsIcon {
     height: 25px;
+}
+
+#logoutButton{
+    color: aqua;
 }

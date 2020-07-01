@@ -9,6 +9,7 @@ function BottomLeftNav() {
             <Link id="settingsIconLink" to="/settings/tab1">
                 <img id="settingsIcon" src={SettingsIcon} alt="settings" />
             </Link>
+            <Link id="logoutButton" to="/">Skip to Login</Link>
         </div>
     );
 }

@@ -4,3 +4,7 @@
     display: flex;
     border-radius: 25px;
 }
+
+.messagingTitleBarRight{
+    background-color: #4c4c4c !important;
+}

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, HashRouter } from 'react-router-dom';
 import './ViewContainer.css';
 import MessagingView from './MessagingView/MessagingView';
 import SettingsView from './SettingsView/SettingsView';
+import LoginView from './LoginView/LoginView';
 
 const { AnimatedSwitch } = require('react-router-transition');
 
@@ -16,7 +17,10 @@ function ViewContainer() {
                     atActive={{ opacity: 1 }}
                     className="switch-wrapper"
                 >
-                    <Route exact path="/" component={MessagingView}>
+                    <Route exact path="/" component={LoginView}>
+                        <LoginView />
+                    </Route>
+                    <Route exact path="/messaging" component={MessagingView}>
                         <MessagingView />
                     </Route>
                     <Route path="/settings" component={SettingsView}>

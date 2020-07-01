@@ -1459,6 +1459,7 @@ class BackendServer {
 
 
   async start() {
+    //ADD AWAIT VERIFY USER ENTERED CONFIG
     console.log("Starting BlueBubbles Backend...");
     await this.setup();
     await this.startServices();
