@@ -46,7 +46,7 @@ export class SocketService {
     /**
      * Sets up the socket listeners
      */
-    async start(): Promise<boolean> {
+    async start(firstConnect = false): Promise<boolean> {
         if (
             !this.configRepo ||
             !this.configRepo.getConfigItem("serverAddress") ||
@@ -73,8 +73,11 @@ export class SocketService {
                 reject(new Error("Disconnected from socket."));
             });
 
-            this.socketServer.on("error", () => {
+            this.socketServer.on("connect_error", () => {
                 console.log("Unable to connect to server.");
+
+                // If this is the first/initial connect, disconnect if there is an error
+                if (firstConnect) this.socketServer.disconnect();
                 reject(new Error("Unable to connect to server."));
             });
         });

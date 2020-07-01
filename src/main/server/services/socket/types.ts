@@ -8,5 +8,6 @@ export type GetChatMessagesParams = {
     after?: Date | number;
     before?: Date | number;
     withChats?: boolean;
+    withBlurhash?: boolean;
     sort?: "DESC" | "ASC";
 };

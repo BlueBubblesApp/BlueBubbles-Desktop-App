@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "typeorm";
+import { Message } from "@server/databases/chat/entity";
 
 @Entity()
 export class Attachment {
@@ -32,12 +33,16 @@ export class Attachment {
     @Column("integer")
     hideAttachment: number;
 
-    @Column("integer")
-    blurhash: number;
+    @Column("text")
+    blurhash: string;
 
     @Column("integer")
     height: number;
 
     @Column("integer")
     width: number;
+
+    @ManyToMany(type => Message)
+    @JoinTable()
+    messages: Message[];
 }

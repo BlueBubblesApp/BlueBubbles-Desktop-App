@@ -2,7 +2,8 @@ import { app } from "electron";
 import { createConnection, Connection } from "typeorm";
 import { ChatResponse, HandleResponse, MessageResponse } from "@server/types";
 
-import { Attachment, AttachmentMessageJoin, Chat, Handle, ChatHandleJoin, Message, ChatMessageJoin } from "./entity";
+import { Attachment, Chat, Handle, Message } from "./entity";
+import { GetMessagesParams } from "./types";
 
 export class ChatRepository {
     db: Connection = null;
@@ -26,12 +27,91 @@ export class ChatRepository {
             name: "chat",
             type: "sqlite",
             database: dbPath,
-            entities: [Attachment, AttachmentMessageJoin, Chat, Handle, ChatHandleJoin, Message, ChatMessageJoin],
+            entities: [Attachment, Chat, Handle, Message],
             synchronize: true,
             logging: false
         });
 
         return this.db;
+    }
+
+    async getChats() {
+        const repo = this.db.getRepository(Chat);
+        return repo.find();
+    }
+
+    async getMessages({
+        chatGuid = null,
+        offset = 0,
+        limit = 100,
+        after = null,
+        before = null,
+        withChats = false,
+        withAttachments = true,
+        withHandle = true,
+        sort = "DESC",
+        where = [
+            {
+                statement: "message.text IS NOT NULL",
+                args: null
+            }
+        ]
+    }: GetMessagesParams) {
+        // Sanitize some params
+        // eslint-disable-next-line no-param-reassign
+        if (after && typeof after === "number") after = new Date(after);
+        // eslint-disable-next-line no-param-reassign
+        if (before && typeof before === "number") before = new Date(before);
+
+        // Get messages with sender and the chat it's from
+        const query = this.db.getRepository(Message).createQueryBuilder("message");
+
+        if (withHandle) query.leftJoinAndSelect("message.handle", "handle");
+
+        if (withAttachments)
+            query.leftJoinAndSelect(
+                "message.attachments",
+                "attachment",
+                "message.ROWID = message_attachment.messageId AND " +
+                    "attachment.ROWID = message_attachment.attachmentId"
+            );
+
+        // Inner-join because all messages will have a chat
+        if (chatGuid) {
+            query
+                .innerJoinAndSelect(
+                    "message.chats",
+                    "chat",
+                    "message.ROWID = message_chat.messageId AND chat.ROWID = message_chat.chatId"
+                )
+                .andWhere("chat.guid = :guid", { guid: chatGuid });
+        } else if (withChats) {
+            query.innerJoinAndSelect(
+                "message.chats",
+                "chat",
+                "message.ROWID = message_chat.messageId AND chat.ROWID = message_chat.chatId"
+            );
+        }
+
+        // Add date restraints
+        if (after)
+            query.andWhere("message.date >= :after", {
+                after: after as Date
+            });
+        if (before)
+            query.andWhere("message.date < :before", {
+                before: before as Date
+            });
+
+        if (where && where.length > 0) for (const item of where) query.andWhere(item.statement, item.args);
+
+        // Add pagination params
+        query.orderBy("message.date", sort);
+        query.offset(offset);
+        query.limit(limit);
+
+        const messages = await query.getMany();
+        return messages;
     }
 
     static createChatFromResponse(res: ChatResponse): Chat {
@@ -41,6 +121,8 @@ export class ChatRepository {
         chat.displayName = res.displayName;
         chat.isArchived = res.isArchived ? 1 : 0;
         chat.style = res.style;
+        chat.messages = (res.messages ?? []).map(msg => ChatRepository.createMessageFromResponse(msg));
+        chat.participants = (res.participants ?? []).map(handle => ChatRepository.createHandleFromResponse(handle));
         return chat;
     }
 
@@ -49,12 +131,14 @@ export class ChatRepository {
         handle.address = res.address;
         handle.country = res.country;
         handle.uncanonicalizedId = res.uncanonicalizedId;
+        handle.chats = (res.chats ?? []).map(chat => ChatRepository.createChatFromResponse(chat));
+        handle.messages = (res.messages ?? []).map(msg => ChatRepository.createMessageFromResponse(msg));
         return handle;
     }
 
     static createMessageFromResponse(res: MessageResponse): Message {
         const message = new Message();
-        message.handleId = res.handleId;
+        message.handleId = res.handleId || res.handleId === 0 ? null : res.handleId;
         message.guid = res.guid;
         message.text = res.text;
         message.subject = res.subject;
@@ -83,6 +167,8 @@ export class ChatRepository {
         message.expressiveSendStyleId = res.expressiveSendStyleId;
         message.timeExpressiveSendStyleId = res.timeExpressiveSendStyleId ?? 0;
         message.hasAttachments = Object.keys(res).includes("attachments") && res.attachments.length > 0;
+        message.chats = (res.chats ?? []).map(chat => ChatRepository.createChatFromResponse(chat));
+        message.handle = res.handle ? ChatRepository.createHandleFromResponse(res.handle) : null;
         return message;
     }
 
@@ -105,47 +191,52 @@ export class ChatRepository {
     async saveHandle(chat: Chat, handle: Handle): Promise<Handle> {
         // Always save the chat first
         const savedChat = await this.saveChat(chat);
-
-        // Save the handle
         const repo = this.db.getRepository(Handle);
-        const existing = handle.ROWID ? handle : await repo.findOne({ address: handle.address });
-        if (existing) return existing;
+        let theHandle: Handle = null;
 
-        // We don't ever really need to update a handle
-        // so only save it when it doesn't exist
-        const joinRepo = this.db.getRepository(ChatHandleJoin);
-        const saved: Handle = await repo.save(handle);
+        // If the handle doesn't have a ROWID, try to find it
+        if (!handle.ROWID) {
+            theHandle = await repo.findOne({ address: handle.address }, { relations: ["chats"] });
+        }
 
-        // Create the join table data
-        console.log(saved.ROWID);
-        console.log(savedChat.ROWID);
-        const chj: ChatHandleJoin = new ChatHandleJoin();
-        chj.chatId = savedChat.ROWID;
-        chj.handleId = saved.ROWID;
-        await joinRepo.save(chj);
+        // If the handle wasn't found, set it to the input handle
+        if (!theHandle && !handle.ROWID) {
+            theHandle = await repo.save(handle);
+        }
 
-        // Return the results
-        return saved;
+        // Add the handle to the chat if it doesn't already exist
+        if (!theHandle.chats.find(i => i.ROWID === savedChat.ROWID)) {
+            await repo
+                .createQueryBuilder()
+                .relation(Handle, "chats")
+                .of(theHandle)
+                .add(savedChat);
+        }
+
+        return theHandle;
     }
 
     async saveMessage(chat: Chat, message: Message): Promise<Message> {
         // Always save the chat first
         const savedChat = await this.saveChat(chat);
-
-        // Save the handle
         const repo = this.db.getRepository(Message);
-        const existing = message.ROWID ? message : await repo.findOne({ guid: message.guid });
+        let theMessage = null;
+
+        // If the message doesn't have a ROWID, try to find it
+        if (!message.ROWID) {
+            theMessage = await repo.findOne({ guid: message.guid });
+        }
 
         // If it exists, check if anything has really changed before updating
-        if (existing) {
+        if (theMessage) {
             if (
-                existing.dateDelivered !== message.dateDelivered ||
-                existing.dateRead !== message.dateRead ||
-                existing.error !== message.error ||
-                existing.isArchived !== message.isArchived ||
-                existing.datePlayed !== message.datePlayed
+                theMessage.dateDelivered !== message.dateDelivered ||
+                theMessage.dateRead !== message.dateRead ||
+                theMessage.error !== message.error ||
+                theMessage.isArchived !== message.isArchived ||
+                theMessage.datePlayed !== message.datePlayed
             ) {
-                await repo.update(existing, {
+                await repo.update(theMessage, {
                     dateDelivered: message.datePlayed,
                     dateRead: message.dateRead,
                     error: message.error,
@@ -154,20 +245,54 @@ export class ChatRepository {
                 });
             }
 
-            return existing;
+            return theMessage;
         }
 
-        // We don't ever really need to update a handle
-        // so only save it when it doesn't exist
-        const joinRepo = this.db.getRepository(ChatMessageJoin);
-        const saved: Message = await repo.save(message);
+        // Add handle to the message
+        if (message.handle) {
+            // eslint-disable-next-line no-param-reassign
+            message.handle = await this.saveHandle(chat, message.handle);
+        }
 
-        // Create the join table data
-        const cmj: ChatMessageJoin = new ChatMessageJoin();
-        cmj.chatId = savedChat.ROWID;
-        cmj.messageId = saved.ROWID;
-        await joinRepo.save(cmj);
+        // If the message wasn't found, set it to the input message
+        theMessage = await repo.save(message);
 
-        return saved;
+        // Add the message to the chat if it doesn't already exist
+        if (!theMessage.chats.find(i => i.ROWID === savedChat.ROWID)) {
+            await repo
+                .createQueryBuilder()
+                .relation(Message, "chats")
+                .of(theMessage)
+                .add(savedChat);
+        }
+
+        return theMessage;
+    }
+
+    async saveAttachment(chat: Chat, message: Message, attachment: Attachment): Promise<Attachment> {
+        // Always save the chat first
+        const savedChat = await this.saveChat(chat);
+        const savedMessage = await this.saveMessage(savedChat, message);
+        const repo = this.db.getRepository(Attachment);
+        let theAttachment = null;
+
+        // If the attachment doesn't have a ROWID, try to find it
+        if (!attachment.ROWID) {
+            theAttachment = await repo.findOne({ guid: attachment.guid }, { relations: ["messages"] });
+        }
+
+        // If the message wasn't found, set it to the input message
+        if (!theAttachment) theAttachment = await repo.save(attachment);
+
+        // Add the message to the chat if it doesn't already exist
+        if (!theAttachment.messages.find(i => i.ROWID === savedMessage.ROWID)) {
+            await repo
+                .createQueryBuilder()
+                .relation(Attachment, "messages")
+                .of(theAttachment)
+                .add(savedMessage);
+        }
+
+        return theAttachment;
     }
 }

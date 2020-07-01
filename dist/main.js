@@ -195,8 +195,8 @@ electron__WEBPACK_IMPORTED_MODULE_1__["app"].on("activate", () => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_GENERAL_ITEMS", function() { return DEFAULT_GENERAL_ITEMS; });
 const DEFAULT_GENERAL_ITEMS = {
-  ngockServer: () => "",
-  guid: () => "",
+  serverAddress: () => "",
+  passphrase: () => "",
   lastFetch: () => 0
 };
 
@@ -214,7 +214,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Attachment", function() { return Attachment; });
 /* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! typeorm */ "typeorm");
 /* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(typeorm__WEBPACK_IMPORTED_MODULE_0__);
-var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13, _temp;
+/* harmony import */ var _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @server/databases/chat/entity */ "./src/main/server/databases/chat/entity/index.ts");
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _dec15, _dec16, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13, _descriptor14, _temp;
 
 function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
 
@@ -223,7 +224,8 @@ function _applyDecoratedDescriptor(target, property, decorators, descriptor, con
 function _initializerWarningHelper(descriptor, context) { throw new Error('Decorating class property failed. Please ensure that ' + 'proposal-class-properties is enabled and runs after the decorators transform.'); }
 
 
-let Attachment = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec8 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec11 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec12 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec13 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec14 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec(_class = (_class2 = (_temp = class Attachment {
+
+let Attachment = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec8 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec11 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec12 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec13 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec14 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec15 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Message"]), _dec16 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec(_class = (_class2 = (_temp = class Attachment {
   constructor() {
     _initializerDefineProperty(this, "ROWID", _descriptor, this);
 
@@ -250,6 +252,8 @@ let Attachment = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(
     _initializerDefineProperty(this, "height", _descriptor12, this);
 
     _initializerDefineProperty(this, "width", _descriptor13, this);
+
+    _initializerDefineProperty(this, "messages", _descriptor14, this);
   }
 
 }, _temp), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "ROWID", [_dec2], {
@@ -317,51 +321,7 @@ let Attachment = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(
   enumerable: true,
   writable: true,
   initializer: null
-})), _class2)) || _class);
-
-/***/ }),
-
-/***/ "./src/main/server/databases/chat/entity/AttachmentMessageJoin.ts":
-/*!************************************************************************!*\
-  !*** ./src/main/server/databases/chat/entity/AttachmentMessageJoin.ts ***!
-  \************************************************************************/
-/*! exports provided: AttachmentMessageJoin */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AttachmentMessageJoin", function() { return AttachmentMessageJoin; });
-/* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! typeorm */ "typeorm");
-/* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(typeorm__WEBPACK_IMPORTED_MODULE_0__);
-var _dec, _dec2, _dec3, _dec4, _class, _class2, _descriptor, _descriptor2, _descriptor3, _temp;
-
-function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
-
-function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) { var desc = {}; Object.keys(descriptor).forEach(function (key) { desc[key] = descriptor[key]; }); desc.enumerable = !!desc.enumerable; desc.configurable = !!desc.configurable; if ('value' in desc || desc.initializer) { desc.writable = true; } desc = decorators.slice().reverse().reduce(function (desc, decorator) { return decorator(target, property, desc) || desc; }, desc); if (context && desc.initializer !== void 0) { desc.value = desc.initializer ? desc.initializer.call(context) : void 0; desc.initializer = undefined; } if (desc.initializer === void 0) { Object.defineProperty(target, property, desc); desc = null; } return desc; }
-
-function _initializerWarningHelper(descriptor, context) { throw new Error('Decorating class property failed. Please ensure that ' + 'proposal-class-properties is enabled and runs after the decorators transform.'); }
-
-
-let AttachmentMessageJoin = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec(_class = (_class2 = (_temp = class AttachmentMessageJoin {
-  constructor() {
-    _initializerDefineProperty(this, "ROWID", _descriptor, this);
-
-    _initializerDefineProperty(this, "attachmentId", _descriptor2, this);
-
-    _initializerDefineProperty(this, "messageId", _descriptor3, this);
-  }
-
-}, _temp), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "ROWID", [_dec2], {
-  configurable: true,
-  enumerable: true,
-  writable: true,
-  initializer: null
-}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, "attachmentId", [_dec3], {
-  configurable: true,
-  enumerable: true,
-  writable: true,
-  initializer: null
-}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, "messageId", [_dec4], {
+}), _descriptor14 = _applyDecoratedDescriptor(_class2.prototype, "messages", [_dec15, _dec16], {
   configurable: true,
   enumerable: true,
   writable: true,
@@ -382,7 +342,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Chat", function() { return Chat; });
 /* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! typeorm */ "typeorm");
 /* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(typeorm__WEBPACK_IMPORTED_MODULE_0__);
-var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _temp;
+/* harmony import */ var _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @server/databases/chat/entity */ "./src/main/server/databases/chat/entity/index.ts");
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _temp;
 
 function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
 
@@ -391,10 +352,11 @@ function _applyDecoratedDescriptor(target, property, decorators, descriptor, con
 function _initializerWarningHelper(descriptor, context) { throw new Error('Decorating class property failed. Please ensure that ' + 'proposal-class-properties is enabled and runs after the decorators transform.'); }
 
 
+
 let Chat = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Unique"])(["guid"]), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec8 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])({
   type: "text",
   nullable: true
-}), _dec(_class = _dec2(_class = (_class2 = (_temp = class Chat {
+}), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Handle"]), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec11 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Message"]), _dec12 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec(_class = _dec2(_class = (_class2 = (_temp = class Chat {
   constructor() {
     _initializerDefineProperty(this, "ROWID", _descriptor, this);
 
@@ -407,6 +369,10 @@ let Chat = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _de
     _initializerDefineProperty(this, "isArchived", _descriptor5, this);
 
     _initializerDefineProperty(this, "displayName", _descriptor6, this);
+
+    _initializerDefineProperty(this, "participants", _descriptor7, this);
+
+    _initializerDefineProperty(this, "messages", _descriptor8, this);
   }
 
 }, _temp), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "ROWID", [_dec3], {
@@ -439,105 +405,17 @@ let Chat = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _de
   enumerable: true,
   writable: true,
   initializer: null
+}), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, "participants", [_dec9, _dec10], {
+  configurable: true,
+  enumerable: true,
+  writable: true,
+  initializer: null
+}), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, "messages", [_dec11, _dec12], {
+  configurable: true,
+  enumerable: true,
+  writable: true,
+  initializer: null
 })), _class2)) || _class) || _class);
-
-/***/ }),
-
-/***/ "./src/main/server/databases/chat/entity/ChatHandleJoin.ts":
-/*!*****************************************************************!*\
-  !*** ./src/main/server/databases/chat/entity/ChatHandleJoin.ts ***!
-  \*****************************************************************/
-/*! exports provided: ChatHandleJoin */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ChatHandleJoin", function() { return ChatHandleJoin; });
-/* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! typeorm */ "typeorm");
-/* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(typeorm__WEBPACK_IMPORTED_MODULE_0__);
-var _dec, _dec2, _dec3, _dec4, _class, _class2, _descriptor, _descriptor2, _descriptor3, _temp;
-
-function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
-
-function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) { var desc = {}; Object.keys(descriptor).forEach(function (key) { desc[key] = descriptor[key]; }); desc.enumerable = !!desc.enumerable; desc.configurable = !!desc.configurable; if ('value' in desc || desc.initializer) { desc.writable = true; } desc = decorators.slice().reverse().reduce(function (desc, decorator) { return decorator(target, property, desc) || desc; }, desc); if (context && desc.initializer !== void 0) { desc.value = desc.initializer ? desc.initializer.call(context) : void 0; desc.initializer = undefined; } if (desc.initializer === void 0) { Object.defineProperty(target, property, desc); desc = null; } return desc; }
-
-function _initializerWarningHelper(descriptor, context) { throw new Error('Decorating class property failed. Please ensure that ' + 'proposal-class-properties is enabled and runs after the decorators transform.'); }
-
-
-let ChatHandleJoin = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec(_class = (_class2 = (_temp = class ChatHandleJoin {
-  constructor() {
-    _initializerDefineProperty(this, "ROWID", _descriptor, this);
-
-    _initializerDefineProperty(this, "chatId", _descriptor2, this);
-
-    _initializerDefineProperty(this, "handleId", _descriptor3, this);
-  }
-
-}, _temp), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "ROWID", [_dec2], {
-  configurable: true,
-  enumerable: true,
-  writable: true,
-  initializer: null
-}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, "chatId", [_dec3], {
-  configurable: true,
-  enumerable: true,
-  writable: true,
-  initializer: null
-}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, "handleId", [_dec4], {
-  configurable: true,
-  enumerable: true,
-  writable: true,
-  initializer: null
-})), _class2)) || _class);
-
-/***/ }),
-
-/***/ "./src/main/server/databases/chat/entity/ChatMessageJoin.ts":
-/*!******************************************************************!*\
-  !*** ./src/main/server/databases/chat/entity/ChatMessageJoin.ts ***!
-  \******************************************************************/
-/*! exports provided: ChatMessageJoin */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ChatMessageJoin", function() { return ChatMessageJoin; });
-/* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! typeorm */ "typeorm");
-/* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(typeorm__WEBPACK_IMPORTED_MODULE_0__);
-var _dec, _dec2, _dec3, _dec4, _class, _class2, _descriptor, _descriptor2, _descriptor3, _temp;
-
-function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
-
-function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) { var desc = {}; Object.keys(descriptor).forEach(function (key) { desc[key] = descriptor[key]; }); desc.enumerable = !!desc.enumerable; desc.configurable = !!desc.configurable; if ('value' in desc || desc.initializer) { desc.writable = true; } desc = decorators.slice().reverse().reduce(function (desc, decorator) { return decorator(target, property, desc) || desc; }, desc); if (context && desc.initializer !== void 0) { desc.value = desc.initializer ? desc.initializer.call(context) : void 0; desc.initializer = undefined; } if (desc.initializer === void 0) { Object.defineProperty(target, property, desc); desc = null; } return desc; }
-
-function _initializerWarningHelper(descriptor, context) { throw new Error('Decorating class property failed. Please ensure that ' + 'proposal-class-properties is enabled and runs after the decorators transform.'); }
-
-
-let ChatMessageJoin = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec(_class = (_class2 = (_temp = class ChatMessageJoin {
-  constructor() {
-    _initializerDefineProperty(this, "ROWID", _descriptor, this);
-
-    _initializerDefineProperty(this, "chatId", _descriptor2, this);
-
-    _initializerDefineProperty(this, "messageId", _descriptor3, this);
-  }
-
-}, _temp), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "ROWID", [_dec2], {
-  configurable: true,
-  enumerable: true,
-  writable: true,
-  initializer: null
-}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, "chatId", [_dec3], {
-  configurable: true,
-  enumerable: true,
-  writable: true,
-  initializer: null
-}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, "messageId", [_dec4], {
-  configurable: true,
-  enumerable: true,
-  writable: true,
-  initializer: null
-})), _class2)) || _class);
 
 /***/ }),
 
@@ -553,7 +431,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Handle", function() { return Handle; });
 /* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! typeorm */ "typeorm");
 /* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(typeorm__WEBPACK_IMPORTED_MODULE_0__);
-var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _temp;
+/* harmony import */ var _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @server/databases/chat/entity */ "./src/main/server/databases/chat/entity/index.ts");
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _temp;
 
 function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
 
@@ -562,13 +441,17 @@ function _applyDecoratedDescriptor(target, property, decorators, descriptor, con
 function _initializerWarningHelper(descriptor, context) { throw new Error('Decorating class property failed. Please ensure that ' + 'proposal-class-properties is enabled and runs after the decorators transform.'); }
 
 
+
 let Handle = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Unique"])(["address"]), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])({
   type: "text",
   nullable: true
 }), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])({
   type: "text",
   nullable: true
-}), _dec(_class = _dec2(_class = (_class2 = (_temp = class Handle {
+}), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["OneToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Message"], message => message.handle), _dec8 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinColumn"])({
+  name: "ROWID",
+  referencedColumnName: "handleId"
+}), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Chat"]), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec(_class = _dec2(_class = (_class2 = (_temp = class Handle {
   constructor() {
     _initializerDefineProperty(this, "ROWID", _descriptor, this);
 
@@ -577,6 +460,10 @@ let Handle = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _
     _initializerDefineProperty(this, "country", _descriptor3, this);
 
     _initializerDefineProperty(this, "uncanonicalizedId", _descriptor4, this);
+
+    _initializerDefineProperty(this, "messages", _descriptor5, this);
+
+    _initializerDefineProperty(this, "chats", _descriptor6, this);
   }
 
 }, _temp), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "ROWID", [_dec3], {
@@ -599,6 +486,16 @@ let Handle = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _
   enumerable: true,
   writable: true,
   initializer: null
+}), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, "messages", [_dec7, _dec8], {
+  configurable: true,
+  enumerable: true,
+  writable: true,
+  initializer: null
+}), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, "chats", [_dec9, _dec10], {
+  configurable: true,
+  enumerable: true,
+  writable: true,
+  initializer: null
 })), _class2)) || _class) || _class);
 
 /***/ }),
@@ -617,7 +514,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var typeorm__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(typeorm__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _server_databases_chat_entity___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @server/databases/chat/entity/ */ "./src/main/server/databases/chat/entity/index.ts");
 /* harmony import */ var _server_databases_transformers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @server/databases/transformers */ "./src/main/server/databases/transformers/index.ts");
-var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _dec15, _dec16, _dec17, _dec18, _dec19, _dec20, _dec21, _dec22, _dec23, _dec24, _dec25, _dec26, _dec27, _dec28, _dec29, _dec30, _dec31, _dec32, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13, _descriptor14, _descriptor15, _descriptor16, _descriptor17, _descriptor18, _descriptor19, _descriptor20, _descriptor21, _descriptor22, _descriptor23, _descriptor24, _descriptor25, _descriptor26, _descriptor27, _descriptor28, _descriptor29, _descriptor30, _temp;
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _dec15, _dec16, _dec17, _dec18, _dec19, _dec20, _dec21, _dec22, _dec23, _dec24, _dec25, _dec26, _dec27, _dec28, _dec29, _dec30, _dec31, _dec32, _dec33, _dec34, _dec35, _dec36, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13, _descriptor14, _descriptor15, _descriptor16, _descriptor17, _descriptor18, _descriptor19, _descriptor20, _descriptor21, _descriptor22, _descriptor23, _descriptor24, _descriptor25, _descriptor26, _descriptor27, _descriptor28, _descriptor29, _descriptor30, _descriptor31, _descriptor32, _temp;
 
 function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
 
@@ -628,7 +525,10 @@ function _initializerWarningHelper(descriptor, context) { throw new Error('Decor
 
 
 
-let Message = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])({
+let Message = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])({
+  type: "integer",
+  nullable: true
+}), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])({
   type: "text",
   nullable: true
 }), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])({
@@ -698,7 +598,10 @@ let Message = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), 
   type: "integer",
   transformer: _server_databases_transformers__WEBPACK_IMPORTED_MODULE_2__["BooleanTransformer"],
   default: false
-}), _dec31 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["OneToOne"])(type => _server_databases_chat_entity___WEBPACK_IMPORTED_MODULE_1__["Handle"]), _dec32 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinColumn"])(), _dec(_class = (_class2 = (_temp = class Message {
+}), _dec31 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToOne"])(type => _server_databases_chat_entity___WEBPACK_IMPORTED_MODULE_1__["Handle"]), _dec32 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinColumn"])({
+  name: "handleId",
+  referencedColumnName: "ROWID"
+}), _dec33 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity___WEBPACK_IMPORTED_MODULE_1__["Chat"]), _dec34 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec35 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity___WEBPACK_IMPORTED_MODULE_1__["Attachment"]), _dec36 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec(_class = (_class2 = (_temp = class Message {
   constructor() {
     _initializerDefineProperty(this, "ROWID", _descriptor, this);
 
@@ -759,6 +662,10 @@ let Message = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), 
     _initializerDefineProperty(this, "hasAttachments", _descriptor29, this);
 
     _initializerDefineProperty(this, "handle", _descriptor30, this);
+
+    _initializerDefineProperty(this, "chats", _descriptor31, this);
+
+    _initializerDefineProperty(this, "attachments", _descriptor32, this);
   }
 
 }, _temp), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "ROWID", [_dec2], {
@@ -911,6 +818,16 @@ let Message = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), 
   enumerable: true,
   writable: true,
   initializer: null
+}), _descriptor31 = _applyDecoratedDescriptor(_class2.prototype, "chats", [_dec33, _dec34], {
+  configurable: true,
+  enumerable: true,
+  writable: true,
+  initializer: null
+}), _descriptor32 = _applyDecoratedDescriptor(_class2.prototype, "attachments", [_dec35, _dec36], {
+  configurable: true,
+  enumerable: true,
+  writable: true,
+  initializer: null
 })), _class2)) || _class);
 
 /***/ }),
@@ -919,7 +836,7 @@ let Message = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), 
 /*!********************************************************!*\
   !*** ./src/main/server/databases/chat/entity/index.ts ***!
   \********************************************************/
-/*! exports provided: Attachment, AttachmentMessageJoin, Chat, Handle, ChatHandleJoin, Message, ChatMessageJoin */
+/*! exports provided: Attachment, Chat, Handle, Message */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -927,26 +844,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Attachment__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Attachment */ "./src/main/server/databases/chat/entity/Attachment.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Attachment", function() { return _Attachment__WEBPACK_IMPORTED_MODULE_0__["Attachment"]; });
 
-/* harmony import */ var _AttachmentMessageJoin__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AttachmentMessageJoin */ "./src/main/server/databases/chat/entity/AttachmentMessageJoin.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AttachmentMessageJoin", function() { return _AttachmentMessageJoin__WEBPACK_IMPORTED_MODULE_1__["AttachmentMessageJoin"]; });
+/* harmony import */ var _Chat__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Chat */ "./src/main/server/databases/chat/entity/Chat.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Chat", function() { return _Chat__WEBPACK_IMPORTED_MODULE_1__["Chat"]; });
 
-/* harmony import */ var _Chat__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Chat */ "./src/main/server/databases/chat/entity/Chat.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Chat", function() { return _Chat__WEBPACK_IMPORTED_MODULE_2__["Chat"]; });
+/* harmony import */ var _Handle__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Handle */ "./src/main/server/databases/chat/entity/Handle.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Handle", function() { return _Handle__WEBPACK_IMPORTED_MODULE_2__["Handle"]; });
 
-/* harmony import */ var _Handle__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Handle */ "./src/main/server/databases/chat/entity/Handle.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Handle", function() { return _Handle__WEBPACK_IMPORTED_MODULE_3__["Handle"]; });
-
-/* harmony import */ var _ChatHandleJoin__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ChatHandleJoin */ "./src/main/server/databases/chat/entity/ChatHandleJoin.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ChatHandleJoin", function() { return _ChatHandleJoin__WEBPACK_IMPORTED_MODULE_4__["ChatHandleJoin"]; });
-
-/* harmony import */ var _Message__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Message */ "./src/main/server/databases/chat/entity/Message.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Message", function() { return _Message__WEBPACK_IMPORTED_MODULE_5__["Message"]; });
-
-/* harmony import */ var _ChatMessageJoin__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./ChatMessageJoin */ "./src/main/server/databases/chat/entity/ChatMessageJoin.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ChatMessageJoin", function() { return _ChatMessageJoin__WEBPACK_IMPORTED_MODULE_6__["ChatMessageJoin"]; });
-
-
-
+/* harmony import */ var _Message__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Message */ "./src/main/server/databases/chat/entity/Message.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Message", function() { return _Message__WEBPACK_IMPORTED_MODULE_3__["Message"]; });
 
 
 
@@ -996,36 +901,98 @@ class ChatRepository {
       name: "chat",
       type: "sqlite",
       database: dbPath,
-      entities: [_entity__WEBPACK_IMPORTED_MODULE_2__["Attachment"], _entity__WEBPACK_IMPORTED_MODULE_2__["AttachmentMessageJoin"], _entity__WEBPACK_IMPORTED_MODULE_2__["Chat"], _entity__WEBPACK_IMPORTED_MODULE_2__["Handle"], _entity__WEBPACK_IMPORTED_MODULE_2__["ChatHandleJoin"], _entity__WEBPACK_IMPORTED_MODULE_2__["Message"], _entity__WEBPACK_IMPORTED_MODULE_2__["ChatMessageJoin"]],
+      entities: [_entity__WEBPACK_IMPORTED_MODULE_2__["Attachment"], _entity__WEBPACK_IMPORTED_MODULE_2__["Chat"], _entity__WEBPACK_IMPORTED_MODULE_2__["Handle"], _entity__WEBPACK_IMPORTED_MODULE_2__["Message"]],
       synchronize: true,
       logging: false
     });
     return this.db;
   }
 
+  async getChats() {
+    const repo = this.db.getRepository(_entity__WEBPACK_IMPORTED_MODULE_2__["Chat"]);
+    return repo.find();
+  }
+
+  async getMessages({
+    chatGuid = null,
+    offset = 0,
+    limit = 100,
+    after = null,
+    before = null,
+    withChats = false,
+    withAttachments = true,
+    withHandle = true,
+    sort = "DESC",
+    where = [{
+      statement: "message.text IS NOT NULL",
+      args: null
+    }]
+  }) {
+    // Sanitize some params
+    // eslint-disable-next-line no-param-reassign
+    if (after && typeof after === "number") after = new Date(after); // eslint-disable-next-line no-param-reassign
+
+    if (before && typeof before === "number") before = new Date(before); // Get messages with sender and the chat it's from
+
+    const query = this.db.getRepository(_entity__WEBPACK_IMPORTED_MODULE_2__["Message"]).createQueryBuilder("message");
+    if (withHandle) query.leftJoinAndSelect("message.handle", "handle");
+    if (withAttachments) query.leftJoinAndSelect("message.attachments", "attachment", "message.ROWID = message_attachment.message_id AND " + "attachment.ROWID = message_attachment.attachment_id"); // Inner-join because all messages will have a chat
+
+    if (chatGuid) {
+      query.innerJoinAndSelect("message.chats", "chat", "message.ROWID = message_chat.message_id AND chat.ROWID = message_chat.chat_id").andWhere("chat.guid = :guid", {
+        guid: chatGuid
+      });
+    } else if (withChats) {
+      query.innerJoinAndSelect("message.chats", "chat", "message.ROWID = message_chat.message_id AND chat.ROWID = message_chat.chat_id");
+    } // Add date restraints
+
+
+    if (after) query.andWhere("message.date >= :after", {
+      after: after
+    });
+    if (before) query.andWhere("message.date < :before", {
+      before: before
+    });
+    if (where && where.length > 0) for (const item of where) query.andWhere(item.statement, item.args); // Add pagination params
+
+    query.orderBy("message.date", sort);
+    query.offset(offset);
+    query.limit(limit);
+    const messages = await query.getMany();
+    return messages;
+  }
+
   static createChatFromResponse(res) {
+    var _res$messages, _res$participants;
+
     const chat = new _entity__WEBPACK_IMPORTED_MODULE_2__["Chat"]();
     chat.guid = res.guid;
     chat.chatIdentifier = res.chatIdentifier;
     chat.displayName = res.displayName;
     chat.isArchived = res.isArchived ? 1 : 0;
     chat.style = res.style;
+    chat.messages = ((_res$messages = res.messages) !== null && _res$messages !== void 0 ? _res$messages : []).map(msg => ChatRepository.createMessageFromResponse(msg));
+    chat.participants = ((_res$participants = res.participants) !== null && _res$participants !== void 0 ? _res$participants : []).map(handle => ChatRepository.createHandleFromResponse(handle));
     return chat;
   }
 
   static createHandleFromResponse(res) {
+    var _res$chats, _res$messages2;
+
     const handle = new _entity__WEBPACK_IMPORTED_MODULE_2__["Handle"]();
     handle.address = res.address;
     handle.country = res.country;
     handle.uncanonicalizedId = res.uncanonicalizedId;
+    handle.chats = ((_res$chats = res.chats) !== null && _res$chats !== void 0 ? _res$chats : []).map(chat => ChatRepository.createChatFromResponse(chat));
+    handle.messages = ((_res$messages2 = res.messages) !== null && _res$messages2 !== void 0 ? _res$messages2 : []).map(msg => ChatRepository.createMessageFromResponse(msg));
     return handle;
   }
 
   static createMessageFromResponse(res) {
-    var _res$dateCreated, _res$dateRead, _res$dateDelivered, _res$datePlayed, _res$associatedMessag, _res$timeExpressiveSe;
+    var _res$dateCreated, _res$dateRead, _res$dateDelivered, _res$datePlayed, _res$associatedMessag, _res$timeExpressiveSe, _res$chats2;
 
     const message = new _entity__WEBPACK_IMPORTED_MODULE_2__["Message"]();
-    message.handleId = res.handleId;
+    message.handleId = res.handleId || res.handleId === 0 ? null : res.handleId;
     message.guid = res.guid;
     message.text = res.text;
     message.subject = res.subject;
@@ -1054,6 +1021,8 @@ class ChatRepository {
     message.expressiveSendStyleId = res.expressiveSendStyleId;
     message.timeExpressiveSendStyleId = (_res$timeExpressiveSe = res.timeExpressiveSendStyleId) !== null && _res$timeExpressiveSe !== void 0 ? _res$timeExpressiveSe : 0;
     message.hasAttachments = Object.keys(res).includes("attachments") && res.attachments.length > 0;
+    message.chats = ((_res$chats2 = res.chats) !== null && _res$chats2 !== void 0 ? _res$chats2 : []).map(chat => ChatRepository.createChatFromResponse(chat));
+    message.handle = res.handle ? ChatRepository.createHandleFromResponse(res.handle) : null;
     return message;
   }
 
@@ -1080,40 +1049,47 @@ class ChatRepository {
 
   async saveHandle(chat, handle) {
     // Always save the chat first
-    const savedChat = await this.saveChat(chat); // Save the handle
-
+    const savedChat = await this.saveChat(chat);
     const repo = this.db.getRepository(_entity__WEBPACK_IMPORTED_MODULE_2__["Handle"]);
-    const existing = handle.ROWID ? handle : await repo.findOne({
-      address: handle.address
-    });
-    if (existing) return existing; // We don't ever really need to update a handle
-    // so only save it when it doesn't exist
+    let theHandle = null; // If the handle doesn't have a ROWID, try to find it
 
-    const joinRepo = this.db.getRepository(_entity__WEBPACK_IMPORTED_MODULE_2__["ChatHandleJoin"]);
-    const saved = await repo.save(handle); // Create the join table data
+    if (!handle.ROWID) {
+      theHandle = await repo.findOne({
+        address: handle.address
+      }, {
+        relations: ["chats"]
+      });
+    } // If the handle wasn't found, set it to the input handle
 
-    console.log(saved.ROWID);
-    console.log(savedChat.ROWID);
-    const chj = new _entity__WEBPACK_IMPORTED_MODULE_2__["ChatHandleJoin"]();
-    chj.chatId = savedChat.ROWID;
-    chj.handleId = saved.ROWID;
-    await joinRepo.save(chj); // Return the results
 
-    return saved;
+    if (!theHandle && !handle.ROWID) {
+      theHandle = await repo.save(handle);
+    } // Add the handle to the chat if it doesn't already exist
+
+
+    if (!theHandle.chats.find(i => i.ROWID === savedChat.ROWID)) {
+      await repo.createQueryBuilder().relation(_entity__WEBPACK_IMPORTED_MODULE_2__["Handle"], "chats").of(theHandle).add(savedChat);
+    }
+
+    return theHandle;
   }
 
   async saveMessage(chat, message) {
     // Always save the chat first
-    const savedChat = await this.saveChat(chat); // Save the handle
-
+    const savedChat = await this.saveChat(chat);
     const repo = this.db.getRepository(_entity__WEBPACK_IMPORTED_MODULE_2__["Message"]);
-    const existing = message.ROWID ? message : await repo.findOne({
-      guid: message.guid
-    }); // If it exists, check if anything has really changed before updating
+    let theMessage = null; // If the message doesn't have a ROWID, try to find it
 
-    if (existing) {
-      if (existing.dateDelivered !== message.dateDelivered || existing.dateRead !== message.dateRead || existing.error !== message.error || existing.isArchived !== message.isArchived || existing.datePlayed !== message.datePlayed) {
-        await repo.update(existing, {
+    if (!message.ROWID) {
+      theMessage = await repo.findOne({
+        guid: message.guid
+      });
+    } // If it exists, check if anything has really changed before updating
+
+
+    if (theMessage) {
+      if (theMessage.dateDelivered !== message.dateDelivered || theMessage.dateRead !== message.dateRead || theMessage.error !== message.error || theMessage.isArchived !== message.isArchived || theMessage.datePlayed !== message.datePlayed) {
+        await repo.update(theMessage, {
           dateDelivered: message.datePlayed,
           dateRead: message.dateRead,
           error: message.error,
@@ -1122,19 +1098,23 @@ class ChatRepository {
         });
       }
 
-      return existing;
-    } // We don't ever really need to update a handle
-    // so only save it when it doesn't exist
+      return theMessage;
+    } // Add handle to the message
 
 
-    const joinRepo = this.db.getRepository(_entity__WEBPACK_IMPORTED_MODULE_2__["ChatMessageJoin"]);
-    const saved = await repo.save(message); // Create the join table data
+    if (message.handle) {
+      // eslint-disable-next-line no-param-reassign
+      message.handle = await this.saveHandle(chat, message.handle);
+    } // If the message wasn't found, set it to the input message
 
-    const cmj = new _entity__WEBPACK_IMPORTED_MODULE_2__["ChatMessageJoin"]();
-    cmj.chatId = savedChat.ROWID;
-    cmj.messageId = saved.ROWID;
-    await joinRepo.save(cmj);
-    return saved;
+
+    theMessage = await repo.save(message); // Add the message to the chat if it doesn't already exist
+
+    if (!theMessage.chats.find(i => i.ROWID === savedChat.ROWID)) {
+      await repo.createQueryBuilder().relation(_entity__WEBPACK_IMPORTED_MODULE_2__["Message"], "chats").of(theMessage).add(savedChat);
+    }
+
+    return theMessage;
   }
 
 }
@@ -1504,6 +1484,7 @@ class BackendServer {
       await this.chatRepo.initialize();
     } catch (ex) {
       console.log(`Failed to connect to messaging database! ${ex.message}`);
+      console.log(ex);
     }
 
     try {
@@ -1602,7 +1583,10 @@ class BackendServer {
 
 
       const payload = {
-        withChats: false
+        withChats: false,
+        limit: 25,
+        offset: 0,
+        withBlurhash: true
       };
 
       if (lastFetch) {
@@ -1612,8 +1596,11 @@ class BackendServer {
       } // Third, let's fetch the messages from the DB
 
 
+      const one = new Date();
       const messages = await this.socketService.getChatMessages(chat.guid, payload);
-      emitData.loadingMessage = `Got ${messages.length} messages for chat, [${chat.displayName || chat.chatIdentifier}] the server.`;
+      const two = new Date();
+      console.log(`Fetch took ${two.getTime() - one.getTime()} ms`);
+      emitData.loadingMessage = `Syncing ${messages.length} messages for ${count} of ${chats.length} chats`;
       console.log(emitData.loadingMessage); // Fourth, let's save the messages to the DB
 
       for (const message of messages) {
@@ -1623,7 +1610,8 @@ class BackendServer {
       // TODO
 
 
-      emitData.syncProgress = Math.floor(count / chats.length * 100);
+      emitData.syncProgress = Math.ceil(count / chats.length * 100);
+      if (emitData.syncProgress > 100) emitData.syncProgress = 100;
       this.emitToUI("setup-update", emitData);
       count += 1;
     } // Tell the UI we are finished
@@ -1654,7 +1642,7 @@ class BackendServer {
     });
     electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("start-socket-setup", async (_, args) => {
       const errData = {
-        loading: false,
+        loading: true,
         syncProgress: 0,
         loginIsValid: false,
         loadingMessage: "Setup is starting..."
@@ -1671,12 +1659,14 @@ class BackendServer {
 
       try {
         // If we can't even connect, GTFO
-        await this.socketService.start();
+        await this.socketService.start(true);
       } catch {
         errData.loadingMessage = "Could not connect to the server!";
         return this.emitToUI("setup-update", errData);
-      } // If credentials are incorrect, you are disconnected right away. So check that
+      } // Wait 1 second to see if we got disconnected
 
+
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Now check if we are disconnected. If creds are wrong, we will get disconnected here
 
       if (!this.socketService.socketServer.connected) {
         errData.loadingMessage = "Disconnected from socket server! Credentials may be incorrect!";
@@ -1756,7 +1746,7 @@ class SocketService {
    */
 
 
-  async start() {
+  async start(firstConnect = false) {
     if (!this.configRepo || !this.configRepo.getConfigItem("serverAddress") || !this.configRepo.getConfigItem("passphrase")) {
       console.error("Setup has not been completed!");
       return false;
@@ -1776,8 +1766,10 @@ class SocketService {
         console.log("Disconnected from socket server.");
         reject(new Error("Disconnected from socket."));
       });
-      this.socketServer.on("error", () => {
-        console.log("Unable to connect to server.");
+      this.socketServer.on("connect_error", () => {
+        console.log("Unable to connect to server."); // If this is the first/initial connect, disconnect if there is an error
+
+        if (firstConnect) this.socketServer.disconnect();
         reject(new Error("Unable to connect to server."));
       });
     });
