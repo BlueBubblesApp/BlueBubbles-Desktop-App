@@ -93,6 +93,7 @@ class LoginView extends React.Component<object, LoginViewState>{
                             <input type="password" name="enteredPassword" value={this.state.enteredPassword} onChange={this.handlePasswordChange} placeholder="Password"></input>
                             <button>Connect</button>
                         </form>
+                        <p id="versionNumber">V1.0</p>
                     </div>
                 )}
             </div>

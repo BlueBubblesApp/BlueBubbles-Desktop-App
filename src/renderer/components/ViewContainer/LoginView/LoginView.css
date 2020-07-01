@@ -146,8 +146,8 @@
 	-moz-border-radius: 25px;
 	-webkit-border-radius: 25px;
 	border-radius: 25px;
-    max-width: 25%;
-    width: 25%;
+  max-width: 25%;
+  width: 25%;
 }
 
 #progressBar > span {
@@ -160,13 +160,12 @@
     background-color: white;
     position: relative;
     overflow: hidden;
-    /* width: 25%; */
 }
 
 
 @media (max-width: 750px) {
     #progressBar { 
-        width: 100%;
+        width: 40%;
     }
  }
 
@@ -176,7 +175,23 @@
     }
  }
 
+ @media (max-height: 500px) {
+  #loginContainer > h1 {
+    margin-top: 0;
+}
+}
+
  #skipToMessaging{
    margin-top: 20px;
    color: aqua;
+ }
+
+ #versionNumber{
+   color: white;
+   font-family: "SF UI Display Bold";
+    font-size: 15px;
+    justify-self: flex-start;
+    position: absolute;
+    bottom: 8px;
+    margin: 0;
  }

@@ -118,7 +118,7 @@ const createWindow = async () => {
     width: 1200,
     height: 750,
     minWidth: 550,
-    minHeight: 300,
+    minHeight: 350,
     transparent: true,
     frame: false,
     webPreferences: {
