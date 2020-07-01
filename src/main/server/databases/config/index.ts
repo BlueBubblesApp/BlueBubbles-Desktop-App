@@ -91,7 +91,7 @@ export class ConfigRepository {
      */
     private static convertFromDbValue(input: string): any {
         if (input === "1" || input === "0") return Boolean(Number(input));
-        if (!Number.isNaN(input)) return Number(input);
+        if (/^-{0,1}\d+$/.test(input)) return Number(input);
         return input;
     }
 

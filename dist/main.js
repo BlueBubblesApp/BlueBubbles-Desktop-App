@@ -148,6 +148,7 @@ const createWindow = async () => {
   win.on("unmaximize", () => {
     if (win && win.webContents) win.webContents.send("unmaximized");
   });
+  BlueBubbles.window = win;
 };
 
 electron__WEBPACK_IMPORTED_MODULE_1__["ipcMain"].handle("minimize-event", () => {
@@ -1319,7 +1320,7 @@ class ConfigRepository {
 
   static convertFromDbValue(input) {
     if (input === "1" || input === "0") return Boolean(Number(input));
-    if (!Number.isNaN(input)) return Number(input);
+    if (/^-{0,1}\d+$/.test(input)) return Number(input);
     return input;
   }
   /**
@@ -1440,8 +1441,8 @@ class BackendServer {
     this.configRepo = void 0;
     this.socketService = void 0;
     this.fs = void 0;
-    this.hasSetup = void 0;
-    this.hasStarted = void 0;
+    this.setupComplete = void 0;
+    this.servicesStarted = void 0;
     this.window = window; // Databases
 
     this.chatRepo = null;
@@ -1450,8 +1451,8 @@ class BackendServer {
     this.fs = null; // Services
 
     this.socketService = null;
-    this.hasSetup = false;
-    this.hasStarted = false;
+    this.setupComplete = false;
+    this.servicesStarted = false;
   }
   /**
    * Starts the back-end "server"
@@ -1459,12 +1460,18 @@ class BackendServer {
 
 
   async start() {
-    //ADD AWAIT VERIFY USER ENTERED CONFIG
     console.log("Starting BlueBubbles Backend...");
     await this.setup();
-    await this.startServices();
+
+    try {
+      console.log("Launching Services..");
+      await this.setupServices();
+    } catch (ex) {
+      console.log("Failed to launch server services.", "error");
+    }
+
     console.log("Starting Configuration IPC Listeners...");
-    this.startConfigIpcListeners(); // Fetch the chats upon start
+    this.startIpcListeners(); // Fetch the chats upon start
 
     console.log("Syncing initial chats...");
     await this.fetchChats();
@@ -1476,9 +1483,8 @@ class BackendServer {
 
 
   async setup() {
-    console.log("Performing Setup...");
+    console.log("Initializing database...");
     await this.initializeDatabases();
-    await this.setupDefaults();
 
     try {
       console.log("Initializing filesystem...");
@@ -1488,12 +1494,7 @@ class BackendServer {
       console.log(`!Failed to setup filesystem! ${ex.message}`);
     }
 
-    try {
-      console.log("Launching Services..");
-      await this.setupServices();
-    } catch (ex) {
-      console.log("Failed to launch server services.", "error");
-    }
+    this.setupComplete = true;
   }
 
   async initializeDatabases() {
@@ -1512,6 +1513,8 @@ class BackendServer {
     } catch (ex) {
       console.log(`Failed to connect to settings database! ${ex.message}`);
     }
+
+    await this.setupDefaults();
   }
   /**
    * Sets up default database values for configuration items
@@ -1537,30 +1540,19 @@ class BackendServer {
    */
 
 
-  async setupServices() {
-    if (this.hasSetup) return;
+  async setupServices(override = false) {
+    if (this.servicesStarted && !override) return;
 
     try {
-      console.log("Initializing up sockets...");
-      this.socketService = new _server_services__WEBPACK_IMPORTED_MODULE_6__["SocketService"](this.db, this.chatRepo, this.configRepo, this.fs, "http://127.0.0.1:1234", // this.config.server_address,
-      "162514cc-d030-4eca-aa4b-119015703645" // this.config.passphrase
-      );
+      console.log("Initializing up socket connection...");
+      this.socketService = new _server_services__WEBPACK_IMPORTED_MODULE_6__["SocketService"](this.db, this.chatRepo, this.configRepo, this.fs); // Start the socket service
+
+      await this.socketService.start();
     } catch (ex) {
       console.log(`Failed to setup socket service! ${ex.message}`);
     }
 
-    this.hasSetup = true;
-  }
-
-  async startServices() {
-    if (this.hasStarted === false) {
-      console.log("Starting socket service...");
-      await this.socketService.start(); // this.log("Starting chat listener...");
-      // this.startChatListener();
-      // this.startIpcListener();
-    }
-
-    this.hasStarted = true;
+    this.servicesStarted = true;
   }
   /**
    * Fetches chats from the server based on the last time we fetched data.
@@ -1570,10 +1562,29 @@ class BackendServer {
 
 
   async fetchChats() {
+    var _this$socketService, _this$socketService$s;
+
+    if (!((_this$socketService = this.socketService) === null || _this$socketService === void 0 ? void 0 : (_this$socketService$s = _this$socketService.socketServer) === null || _this$socketService$s === void 0 ? void 0 : _this$socketService$s.connected)) {
+      console.warn("Cannot fetch chats when no socket is connected!");
+      return;
+    }
+
+    const emitData = {
+      loading: true,
+      syncProgress: 0,
+      loginIsValid: true,
+      loadingMessage: "Connected to the server! Fetching chats...",
+      redirect: null
+    };
     const now = new Date();
     const lastFetch = this.configRepo.getConfigItem("lastFetch");
     const chats = await this.socketService.getChats({});
-    console.log(`Got ${chats.length} chats from the server. Fetching messages since ${new Date(lastFetch)}`); // Iterate over each chat and fetch their messages
+    emitData.syncProgress = 1;
+    emitData.loadingMessage = `Got ${chats.length} chats from the server. Fetching messages since ${new Date(lastFetch)}`;
+    console.log(emitData.loadingMessage);
+    this.emitToUI("setup-update", emitData); // Iterate over each chat and fetch their messages
+
+    let count = 1;
 
     for (const chat of chats) {
       // First, emit the chat to the front-end
@@ -1602,7 +1613,8 @@ class BackendServer {
 
 
       const messages = await this.socketService.getChatMessages(chat.guid, payload);
-      console.log(`Got ${messages.length} messages for chat, [${chat.displayName || chat.chatIdentifier}] the server.`); // Fourth, let's save the messages to the DB
+      emitData.loadingMessage = `Got ${messages.length} messages for chat, [${chat.displayName || chat.chatIdentifier}] the server.`;
+      console.log(emitData.loadingMessage); // Fourth, let's save the messages to the DB
 
       for (const message of messages) {
         const msg = _server_databases_chat__WEBPACK_IMPORTED_MODULE_5__["ChatRepository"].createMessageFromResponse(message);
@@ -1610,25 +1622,24 @@ class BackendServer {
       } // Lastly, save the attachments (if any)
       // TODO
 
-    } // Save the last fetch date
+
+      emitData.syncProgress = Math.floor(count / chats.length * 100);
+      this.emitToUI("setup-update", emitData);
+      count += 1;
+    } // Tell the UI we are finished
 
 
     const later = new Date();
-    console.log(`Finished fetching messages from socket server in [${later.getTime() - now.getTime()} ms].`);
+    emitData.redirect = "/messaging";
+    emitData.syncProgress = 100;
+    emitData.loadingMessage = `Finished fetching messages from socket server in [${later.getTime() - now.getTime()} ms].`;
+    console.log(emitData.loadingMessage);
+    this.emitToUI("setup-update", emitData); // Save the last fetch date
+
     this.configRepo.setConfigItem("lastFetch", now);
   }
 
-  startIpcListener() {
-    electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("getChatPrevs", async (event, args) => {
-      if (!this.chatRepo.db) return 0; // TODO: Fill this out
-
-      const count = 0; // await this.chatRepo.getChatPrevs();
-
-      return count;
-    });
-  }
-
-  startConfigIpcListeners() {
+  startIpcListeners() {
     electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("set-config", async (event, args) => {
       for (const item of Object.keys(args)) {
         const hasConfig = this.configRepo.hasConfigItem(item);
@@ -1641,9 +1652,46 @@ class BackendServer {
       this.emitToUI("config-update", this.configRepo.config);
       return this.configRepo.config;
     });
+    electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("start-socket-setup", async (_, args) => {
+      const errData = {
+        loading: false,
+        syncProgress: 0,
+        loginIsValid: false,
+        loadingMessage: "Setup is starting..."
+      }; // Make sure the config DB is setup
+
+      if (!this.configRepo || !this.configRepo.db.isConnected) {
+        errData.loadingMessage = "Configuration DB is not yet setup!";
+        return this.emitToUI("setup-update", errData);
+      } // Save the config items
+
+
+      await this.configRepo.setConfigItem("serverAddress", args.enteredServerAddress);
+      await this.configRepo.setConfigItem("passphrase", args.enteredPassword);
+
+      try {
+        // If we can't even connect, GTFO
+        await this.socketService.start();
+      } catch {
+        errData.loadingMessage = "Could not connect to the server!";
+        return this.emitToUI("setup-update", errData);
+      } // If credentials are incorrect, you are disconnected right away. So check that
+
+
+      if (!this.socketService.socketServer.connected) {
+        errData.loadingMessage = "Disconnected from socket server! Credentials may be incorrect!";
+        return this.emitToUI("setup-update", errData);
+      } // Start fetching the data
+
+
+      this.fetchChats();
+      return null; // Consistent return
+    });
   }
 
   emitToUI(event, data) {
+    console.log(this.window);
+    if (this.window) console.log("EMITTING");
     if (this.window) this.window.webContents.send(event, data);
   }
 
@@ -1690,10 +1738,8 @@ class SocketService {
    * @param chatRepo The iMessage database repository
    * @param configRepo The app's settings repository
    * @param fs The filesystem class handler
-   * @param serverAddress The server we are connecting to
-   * @param passphrase The passphrase to connect to the server
    */
-  constructor(db, chatRepo, configRepo, fs, serverAddress, passphrase) {
+  constructor(db, chatRepo, configRepo, fs) {
     this.db = void 0;
     this.socketServer = void 0;
     this.chatRepo = void 0;
@@ -1706,8 +1752,6 @@ class SocketService {
     this.chatRepo = chatRepo;
     this.configRepo = configRepo;
     this.fs = fs;
-    this.serverAddress = serverAddress;
-    this.passphrase = passphrase;
   }
   /**
    * Sets up the socket listeners
@@ -1715,10 +1759,15 @@ class SocketService {
 
 
   async start() {
+    if (!this.configRepo || !this.configRepo.getConfigItem("serverAddress") || !this.configRepo.getConfigItem("passphrase")) {
+      console.error("Setup has not been completed!");
+      return false;
+    }
+
     return new Promise((resolve, reject) => {
-      this.socketServer = socket_io_client__WEBPACK_IMPORTED_MODULE_0__(this.serverAddress, {
+      this.socketServer = socket_io_client__WEBPACK_IMPORTED_MODULE_0__(this.configRepo.getConfigItem("serverAddress"), {
         query: {
-          guid: this.passphrase
+          guid: this.configRepo.getConfigItem("passphrase")
         }
       });
       this.socketServer.on("connect", () => {
@@ -1728,6 +1777,10 @@ class SocketService {
       this.socketServer.on("disconnect", () => {
         console.log("Disconnected from socket server.");
         reject(new Error("Disconnected from socket."));
+      });
+      this.socketServer.on("error", () => {
+        console.log("Unable to connect to server.");
+        reject(new Error("Unable to connect to server."));
       });
     });
   }

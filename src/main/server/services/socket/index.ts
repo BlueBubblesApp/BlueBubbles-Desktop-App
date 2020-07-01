@@ -33,35 +33,33 @@ export class SocketService {
      * @param chatRepo The iMessage database repository
      * @param configRepo The app's settings repository
      * @param fs The filesystem class handler
-     * @param serverAddress The server we are connecting to
-     * @param passphrase The passphrase to connect to the server
      */
-    constructor(
-        db: Connection,
-        chatRepo: ChatRepository,
-        configRepo: ConfigRepository,
-        fs: FileSystem,
-        serverAddress: string,
-        passphrase: string
-    ) {
+    constructor(db: Connection, chatRepo: ChatRepository, configRepo: ConfigRepository, fs: FileSystem) {
         this.db = db;
 
         this.socketServer = null;
         this.chatRepo = chatRepo;
         this.configRepo = configRepo;
         this.fs = fs;
-        this.serverAddress = serverAddress;
-        this.passphrase = passphrase;
     }
 
     /**
      * Sets up the socket listeners
      */
     async start(): Promise<boolean> {
+        if (
+            !this.configRepo ||
+            !this.configRepo.getConfigItem("serverAddress") ||
+            !this.configRepo.getConfigItem("passphrase")
+        ) {
+            console.error("Setup has not been completed!");
+            return false;
+        }
+
         return new Promise((resolve, reject) => {
-            this.socketServer = io(this.serverAddress, {
+            this.socketServer = io(this.configRepo.getConfigItem("serverAddress") as string, {
                 query: {
-                    guid: this.passphrase
+                    guid: this.configRepo.getConfigItem("passphrase")
                 }
             });
 
@@ -73,6 +71,11 @@ export class SocketService {
             this.socketServer.on("disconnect", () => {
                 console.log("Disconnected from socket server.");
                 reject(new Error("Disconnected from socket."));
+            });
+
+            this.socketServer.on("error", () => {
+                console.log("Unable to connect to server.");
+                reject(new Error("Unable to connect to server."));
             });
         });
     }
