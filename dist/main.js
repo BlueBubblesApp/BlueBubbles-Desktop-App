@@ -1690,8 +1690,6 @@ class BackendServer {
   }
 
   emitToUI(event, data) {
-    console.log(this.window);
-    if (this.window) console.log("EMITTING");
     if (this.window) this.window.webContents.send(event, data);
   }
 

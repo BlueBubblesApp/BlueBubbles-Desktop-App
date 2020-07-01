@@ -24,6 +24,7 @@
 #loadingContainer > h1 {
   color: white;
   font-family: "SF UI Display Bold";
+  font-size: 2.3vw;
 }
 
 #loginForm > button {
@@ -145,8 +146,8 @@
 	background: #555;
 	-moz-border-radius: 25px;
 	-webkit-border-radius: 25px;
-	border-radius: 25px;
-  max-width: 25%;
+  border-radius: 25px;
+  min-width: 25%;
   width: 25%;
 }
 
@@ -163,9 +164,21 @@
 }
 
 
-@media (max-width: 750px) {
+
+
+
+@media (max-width: 1200px) {
+  #loadingContainer > h1 {
+    font-size: 3.2vw;
+  }
+}
+
+@media (max-width: 800px) {
     #progressBar { 
         width: 40%;
+    }
+    #loadingContainer > h1 {
+      font-size: 4.2vw;
     }
  }
 
@@ -173,12 +186,15 @@
     #progressBar { 
         width: 45%;
     }
+    #loadingContainer > h1 {
+      font-size: 5vw;
+    }
  }
 
  @media (max-height: 500px) {
   #loginContainer > h1 {
     margin-top: 0;
-}
+  }
 }
 
  #skipToMessaging{

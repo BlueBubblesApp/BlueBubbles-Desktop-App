@@ -90,13 +90,13 @@ class LoginView extends React.Component<object, LoginViewState> {
                 {this.state.loading ? (
                     <div id="loadingContainer">
                         {this.state.loginIsValid ? (
-                            <div>
+                            <>
                                 <h1>{this.state.loadingMessage}</h1>
                                 <div id="loader" />
                                 <div id="progressBar">
                                     <span style={setProgressPercent} id="progressBarSpan" />
                                 </div>
-                            </div>
+                            </>
                         ) : (
                             <div>
                                 <div id="loader" />
