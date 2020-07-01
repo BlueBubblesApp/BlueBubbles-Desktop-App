@@ -51,6 +51,8 @@ const createWindow = async () => {
     win.on("unmaximize", () => {
         if (win && win.webContents) win.webContents.send("unmaximized");
     });
+
+    BlueBubbles.window = win;
 };
 
 ipcMain.handle("minimize-event", () => {
