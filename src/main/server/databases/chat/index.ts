@@ -37,7 +37,7 @@ export class ChatRepository {
 
     async getChats() {
         const repo = this.db.getRepository(Chat);
-        return repo.find();
+        return repo.find({ relations: ["participants"] });
     }
 
     async getMessages({

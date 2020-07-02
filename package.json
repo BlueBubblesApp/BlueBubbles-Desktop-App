@@ -86,11 +86,11 @@
    "devDependencies": {
       "@babel/core": "^7.10.3",
       "@babel/plugin-proposal-class-properties": "^7.10.1",
+      "@babel/plugin-proposal-decorators": "^7.10.3",
       "@babel/polyfill": "^7.10.1",
       "@babel/preset-env": "^7.10.3",
       "@babel/preset-react": "^7.10.1",
       "@babel/preset-typescript": "^7.10.4",
-      "@babel/plugin-proposal-decorators": "^7.10.3",
       "@hot-loader/react-dom": "^16.13.0",
       "@types/electron-devtools-installer": "^2.2.0",
       "@types/jest": "^24.0.13",
@@ -154,6 +154,7 @@
       "react-router-transition": "^2.0.0",
       "redux": "^4.0.5",
       "reflect-metadata": "^0.1.10",
+      "s-ago": "^2.2.0",
       "socket.io-client": "^2.3.0",
       "sqlite3": "^4.2.0",
       "typeorm": "^0.2.25"
