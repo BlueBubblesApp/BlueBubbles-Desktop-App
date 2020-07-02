@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique } from "typeorm";
+import { Unique, Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "typeorm";
+import { Handle, Message } from "@server/databases/chat/entity";
 
 @Entity()
 @Unique(["guid"])
@@ -20,4 +21,12 @@ export class Chat {
 
     @Column({ type: "text", nullable: true })
     displayName: string;
+
+    @ManyToMany(type => Handle)
+    @JoinTable()
+    participants: Handle[];
+
+    @ManyToMany(type => Message)
+    @JoinTable()
+    messages: Message[];
 }

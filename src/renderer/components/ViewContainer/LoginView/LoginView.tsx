@@ -24,7 +24,7 @@ class LoginView extends React.Component<object, LoginViewState> {
             loginIsValid: true, // Used to show progress bar
             syncProgress: 0,
             redirect: null,
-            loadingMessage: "Syncing with iMessage Server..."
+            loadingMessage: "Connecting to iMessage Server..."
         };
     }
 
@@ -33,8 +33,6 @@ class LoginView extends React.Component<object, LoginViewState> {
 
         // Add listener for updating the state
         ipcRenderer.on("setup-update", (_, args) => {
-            console.log("GOT UPDATE");
-            console.log(args);
             if (!args) return;
             if (args?.redirect) document.getElementById("TitleBarRight").classList.remove("messagingTitleBarRight");
 
@@ -65,8 +63,14 @@ class LoginView extends React.Component<object, LoginViewState> {
         }
     };
 
-    goHome = () => {
-        this.setState({ redirect: "/" });
+    reset = () => {
+        this.setState({
+            loading: false,
+            loginIsValid: true,
+            syncProgress: 0,
+            redirect: null,
+            loadingMessage: "Connecting to iMessage Server..."
+        });
     };
 
     handleInputChange = event => {
@@ -98,10 +102,12 @@ class LoginView extends React.Component<object, LoginViewState> {
                                 </div>
                             </>
                         ) : (
-                            <div>
-                                <div id="loader" />
-                                <button onClick={this.goHome}>Go Back</button>
-                            </div>
+                            <>
+                                <h1>{this.state.loadingMessage}</h1>
+                                <button onClick={this.reset} id="backBtn">
+                                    Go Back
+                                </button>
+                            </>
                         )}
                         <NavLink id="skipToMessaging" to="/messaging">
                             Skip to Messaging
@@ -109,7 +115,7 @@ class LoginView extends React.Component<object, LoginViewState> {
                     </div>
                 ) : (
                     <div id="loginContainer">
-                        <h1>Connect to server</h1>
+                        <h1>Connect to iMessage server</h1>
                         <form id="loginForm" onSubmit={this.handleSubmit}>
                             <input
                                 type="url"

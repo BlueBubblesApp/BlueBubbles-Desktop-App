@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, OneToOne } from "typeorm";
-import { Handle } from "@server/databases/chat/entity/";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinTable, JoinColumn, ManyToMany } from "typeorm";
+import { Handle, Chat, Attachment } from "@server/databases/chat/entity/";
 import { BooleanTransformer } from "@server/databases/transformers";
 
 @Entity()
@@ -7,7 +7,7 @@ export class Message {
     @PrimaryGeneratedColumn()
     ROWID: number;
 
-    @Column("integer")
+    @Column({ type: "integer", nullable: true })
     handleId: number;
 
     @Column("text")
@@ -91,7 +91,15 @@ export class Message {
     @Column({ type: "integer", transformer: BooleanTransformer, default: false })
     hasAttachments: boolean;
 
-    @OneToOne(type => Handle)
-    @JoinColumn()
-    handle: Handle;
+    @ManyToOne(type => Handle)
+    @JoinColumn({ name: "handleId", referencedColumnName: "ROWID" })
+    handle: Handle | null;
+
+    @ManyToMany(type => Chat)
+    @JoinTable()
+    chats: Chat[];
+
+    @ManyToMany(type => Attachment)
+    @JoinTable()
+    attachments: Attachment[];
 }

@@ -98,6 +98,7 @@ export class BackendServer {
             await this.chatRepo.initialize();
         } catch (ex) {
             console.log(`Failed to connect to messaging database! ${ex.message}`);
+            console.log(ex);
         }
 
         try {
@@ -192,7 +193,7 @@ export class BackendServer {
             }
 
             // Build message request params
-            const payload: GetChatMessagesParams = { withChats: false };
+            const payload: GetChatMessagesParams = { withChats: false, limit: 25, offset: 0, withBlurhash: true };
             if (lastFetch) {
                 payload.after = lastFetch;
                 // Since we are fetching after a date, we want to get as much as we can
@@ -200,9 +201,11 @@ export class BackendServer {
             }
 
             // Third, let's fetch the messages from the DB
+            const one = new Date();
             const messages: MessageResponse[] = await this.socketService.getChatMessages(chat.guid, payload);
-            emitData.loadingMessage = `Got ${messages.length} messages for chat, [${chat.displayName ||
-                chat.chatIdentifier}] the server.`;
+            const two = new Date();
+            console.log(`Fetch took ${two.getTime() - one.getTime()} ms`);
+            emitData.loadingMessage = `Syncing ${messages.length} messages for ${count} of ${chats.length} chats`;
             console.log(emitData.loadingMessage);
 
             // Fourth, let's save the messages to the DB
@@ -214,7 +217,8 @@ export class BackendServer {
             // Lastly, save the attachments (if any)
             // TODO
 
-            emitData.syncProgress = Math.floor((count / chats.length) * 100);
+            emitData.syncProgress = Math.ceil((count / chats.length) * 100);
+            if (emitData.syncProgress > 100) emitData.syncProgress = 100;
             this.emitToUI("setup-update", emitData);
             count += 1;
         }
@@ -247,7 +251,7 @@ export class BackendServer {
 
         ipcMain.handle("start-socket-setup", async (_, args) => {
             const errData = {
-                loading: false,
+                loading: true,
                 syncProgress: 0,
                 loginIsValid: false,
                 loadingMessage: "Setup is starting..."
@@ -265,13 +269,16 @@ export class BackendServer {
 
             try {
                 // If we can't even connect, GTFO
-                await this.socketService.start();
+                await this.socketService.start(true);
             } catch {
                 errData.loadingMessage = "Could not connect to the server!";
                 return this.emitToUI("setup-update", errData);
             }
 
-            // If credentials are incorrect, you are disconnected right away. So check that
+            // Wait 1 second to see if we got disconnected
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Now check if we are disconnected. If creds are wrong, we will get disconnected here
             if (!this.socketService.socketServer.connected) {
                 errData.loadingMessage = "Disconnected from socket server! Credentials may be incorrect!";
                 return this.emitToUI("setup-update", errData);
