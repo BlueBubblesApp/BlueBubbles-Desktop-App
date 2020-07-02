@@ -14,13 +14,14 @@ export class ConfigRepository {
     }
 
     async initialize(): Promise<Connection> {
+        const isDev = process.env.NODE_ENV !== "production";
         if (this.db) {
             if (!this.db.isConnected) await this.db.connect();
             return this.db;
         }
 
         let dbPath = `${app.getPath("userData")}/config.db`;
-        if (process.env.NODE_ENV !== "production") {
+        if (isDev) {
             dbPath = `${app.getPath("userData")}/BlueBubbles-Desktop-App/config.db`;
         }
 
@@ -29,9 +30,12 @@ export class ConfigRepository {
             type: "sqlite",
             database: dbPath,
             entities: [Config],
-            synchronize: true,
+            synchronize: isDev,
             logging: false
         });
+
+        // Create the tables
+        if (!isDev) await this.db.synchronize();
 
         // Load default config items
         await this.loadConfig();
@@ -49,7 +53,7 @@ export class ConfigRepository {
      *
      * @param name The name of the item to check for
      */
-    hasConfigItem(name: string): boolean {
+    contains(name: string): boolean {
         return Object.keys(this.config).includes(name);
     }
 
@@ -58,7 +62,7 @@ export class ConfigRepository {
      *
      * @param name The name of the config item
      */
-    getConfigItem(name: string): Date | string | boolean | number {
+    get(name: string): Date | string | boolean | number {
         if (!Object.keys(this.config).includes(name)) return null;
         return ConfigRepository.convertFromDbValue(this.config[name]);
     }
@@ -69,15 +73,17 @@ export class ConfigRepository {
      * @param name The name of the config item
      * @param value The value for the config item
      */
-    async setConfigItem(name: string, value: Date | string | boolean | number): Promise<void> {
+    async set(name: string, value: Date | string | boolean | number): Promise<void> {
         const saniVal = ConfigRepository.convertToDbValue(value);
         const repo = this.db.getRepository(Config);
         const item = await repo.findOne({ name });
+
+        // Either change or create the new Config object
         if (item) {
-            item.value = saniVal;
-            await repo.save(item);
+            await repo.update(item, { value: saniVal });
         } else {
-            await repo.create({ name, value: saniVal });
+            const cfg = repo.create({ name, value: saniVal });
+            await repo.save(cfg);
         }
 
         this.config[name] = saniVal;

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Redirect, NavLink } from "react-router-dom";
+
 import "./LoginView.css";
 import { matchPath } from "react-router";
 import MessagingView from "../MessagingView/MessagingView";
@@ -30,16 +31,25 @@ class LoginView extends React.Component<object, LoginViewState> {
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         document.getElementById("TitleBarRight").classList.add("loginTitleBarRight");
 
         // Add listener for updating the state
         ipcRenderer.on("setup-update", (_, args) => {
-            if (!args) return;
             if (args?.redirect) document.getElementById("TitleBarRight").classList.remove("messagingTitleBarRight");
 
             this.setState(args);
         });
+
+        // Get the config, if we have a serverAddress and password, automatically
+        // invoke the "submit" method
+        const config = await ipcRenderer.invoke("get-config");
+        if (config.serverAddress && config.passphrase) {
+            this.setState({
+                enteredServerAddress: config.serverAddress,
+                enteredPassword: config.passphrase
+            });
+        }
     }
 
     handleServerChange = event => {

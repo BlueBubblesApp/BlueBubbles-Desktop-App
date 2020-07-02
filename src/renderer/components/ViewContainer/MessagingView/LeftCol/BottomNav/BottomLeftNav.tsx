@@ -1,6 +1,7 @@
 import * as React from "react";
+
 import "./BottomLeftNav.css";
-import { BrowserRouter, Route, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import SettingsIcon from "../../../../../assets/icons/settings-icon.png";
 
 function BottomLeftNav() {
@@ -9,7 +10,9 @@ function BottomLeftNav() {
             <Link id="settingsIconLink" to="/settings/tab1">
                 <img id="settingsIcon" src={SettingsIcon} alt="settings" />
             </Link>
-            <Link id="logoutButton" to="/">Skip to Login</Link>
+            <Link id="logoutButton" to="/">
+                Skip to Login
+            </Link>
         </div>
     );
 }

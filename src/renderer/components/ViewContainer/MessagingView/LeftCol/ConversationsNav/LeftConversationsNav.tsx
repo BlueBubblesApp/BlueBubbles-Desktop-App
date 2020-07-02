@@ -1,6 +1,5 @@
 import * as React from "react";
 import { ipcRenderer } from "electron";
-import * as Ago from "s-ago";
 
 import { Chat as DBChat, Message as DBMessage } from "@server/databases/chat/entity";
 
@@ -17,6 +16,20 @@ interface State {
 }
 
 class LeftConversationsNav extends React.Component<unknown, State> {
+    static getDateText(message: DBMessage) {
+        const now = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const msgDate = new Date(message.dateCreated);
+
+        console.log(now.toLocaleDateString());
+        if (now.toLocaleDateString() === msgDate.toLocaleDateString()) return "Today";
+        if (yesterday.toLocaleDateString() === msgDate.toLocaleDateString()) return "Yesterday";
+
+        const yearStr = String(msgDate.getFullYear());
+        return `${msgDate.getDay()}/${msgDate.getMonth()}/${yearStr.substring(2)}`;
+    }
+
     constructor(props: unknown) {
         super(props);
 
@@ -150,7 +163,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                             key={chat.guid}
                             chatParticipants={chatTitle}
                             lastMessage={lastText}
-                            lastMessageTime={Ago(new Date(chat.lastMessage.dateCreated))}
+                            lastMessageTime={LeftConversationsNav.getDateText(chat.lastMessage)}
                         />
                     );
                 })}

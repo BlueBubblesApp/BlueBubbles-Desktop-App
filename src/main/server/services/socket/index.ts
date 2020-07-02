@@ -47,19 +47,15 @@ export class SocketService {
      * Sets up the socket listeners
      */
     async start(firstConnect = false): Promise<boolean> {
-        if (
-            !this.configRepo ||
-            !this.configRepo.getConfigItem("serverAddress") ||
-            !this.configRepo.getConfigItem("passphrase")
-        ) {
+        if (!this.configRepo || !this.configRepo.get("serverAddress") || !this.configRepo.get("passphrase")) {
             console.error("Setup has not been completed!");
             return false;
         }
 
         return new Promise((resolve, reject) => {
-            this.socketServer = io(this.configRepo.getConfigItem("serverAddress") as string, {
+            this.socketServer = io(this.configRepo.get("serverAddress") as string, {
                 query: {
-                    guid: this.configRepo.getConfigItem("passphrase")
+                    guid: this.configRepo.get("passphrase")
                 }
             });
 
