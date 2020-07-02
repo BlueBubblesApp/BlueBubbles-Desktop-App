@@ -14,6 +14,7 @@
     align-items: center;
     height: 100%;
     width: 100%;
+    margin: 0;
 }
 
 #loginContainer > h1 {
@@ -67,8 +68,6 @@
     align-items: center;
     height: 100%;
     width: 100%;
-    margin-left: 3em;
-    margin-right: 1em;
     background-color: #323232;
     animation: ease-in-out 3s;
 }
@@ -116,6 +115,7 @@
     bottom: 0;
     right: 0;
 }
+
 @-webkit-keyframes load3 {
     0% {
         -webkit-transform: rotate(0deg);
@@ -139,30 +139,6 @@
 
 .loginTitleBarRight {
     background-color: #323232 !important;
-}
-
-/* Progress bar */
-#progressBar {
-    height: 8px; /* Can be anything */
-    position: relative;
-    background: #555;
-    -moz-border-radius: 25px;
-    -webkit-border-radius: 25px;
-    border-radius: 25px;
-    min-width: 25%;
-    width: 25%;
-}
-
-#progressBar > span {
-    display: block;
-    height: 100%;
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
-    border-top-left-radius: 20px;
-    border-bottom-left-radius: 20px;
-    background-color: white;
-    position: relative;
-    overflow: hidden;
 }
 
 @media (max-width: 1200px) {

@@ -1,6 +1,7 @@
 import * as React from "react";
 import "./LeftConversationsNav.css";
 import Conversation from "./Conversation/Conversation";
+import { ipcRenderer } from "electron";
 
 interface State {
     chatPrevs: Array<any>;
@@ -17,21 +18,20 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
     // Fetch All Conversations
     componentDidMount() {
-        console.log(this.state.chatPrevs);
-        // fetch('http://localhost:4000/chatPrevs')
-        //     .then(res => res.json())
-        //     .then(res => this.setState({
-        //         chatPrevs: res,
-        //     }))
-        // ipcRenderer.on('sendChatPrevs', function (event,data) {
+    }
 
-        // });
+    componentWillMount(){
+        ipcRenderer.on('chat', function (event,data) {
+            console.log("maxwell")
+            console.log(data);
+        });
     }
 
     render() {
-        // const chatPrevs = this.state.chatPrevs;
+        // const chatPrevs = this.state.chatPrevs;z
         // const chatPrevs = ipcRenderer.sendSync('sendChatPrevs', "chatPrevs");
         // console.log();
+        
 
         return (
             <div className="LeftConversationsNav">
