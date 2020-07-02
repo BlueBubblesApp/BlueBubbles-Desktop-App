@@ -1,10 +1,18 @@
 import * as React from "react";
-import "./LeftConversationsNav.css";
-import Conversation from "./Conversation/Conversation";
 import { ipcRenderer } from "electron";
 
+import { Chat as DBChat, Message as DBMessage } from "@server/databases/chat/entity";
+
+import "./LeftConversationsNav.css";
+import Conversation from "./Conversation/Conversation";
+
+type Chat = DBChat & {
+    lastMessage: DBMessage | null;
+};
+
 interface State {
-    chatPrevs: Array<any>;
+    chatPrevs: Chat[];
+    chatGuids: string[];
 }
 
 class LeftConversationsNav extends React.Component<unknown, State> {
@@ -12,26 +20,53 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         super(props);
 
         this.state = {
-            chatPrevs: []
+            chatPrevs: [],
+            chatGuids: []
         };
     }
 
-    // Fetch All Conversations
     componentDidMount() {
+        // First, let's register a handler for new chats
+        ipcRenderer.on("chat", (_, args) => {
+            this.addChatToState(args);
+        });
     }
 
-    componentWillMount(){
-        ipcRenderer.on('chat', function (event,data) {
-            console.log("maxwell")
-            console.log(data);
-        });
+    async addChatToState(chat: Chat) {
+        if (!this.state.chatGuids.includes(chat.guid)) {
+            this.setState({ chatGuids: [...this.state.chatGuids, chat.guid] });
+        }
+
+        const newChat = chat;
+        if (!chat.lastMessage) {
+            const lastMessage = await ipcRenderer.invoke("get-chat-messages", {
+                chatGuid: chat.guid,
+                withHandle: false,
+                withAttachments: false,
+                withChats: false,
+                offset: 0,
+                limit: 1
+            });
+
+            if (lastMessage && lastMessage.length > 0) {
+                [newChat.lastMessage] = lastMessage; // Destructure
+            }
+        }
+
+        const updatedChats = [...this.state.chatPrevs];
+        for (let i = 0; i < updatedChats.length; i += 1) {
+            if (newChat.lastMessage.dateCreated > updatedChats[i].lastMessage.dateCreated) {
+                updatedChats.splice(i, 0, newChat);
+            }
+        }
+
+        this.setState({ chatPrevs: updatedChats });
     }
 
     render() {
         // const chatPrevs = this.state.chatPrevs;z
         // const chatPrevs = ipcRenderer.sendSync('sendChatPrevs', "chatPrevs");
         // console.log();
-        
 
         return (
             <div className="LeftConversationsNav">

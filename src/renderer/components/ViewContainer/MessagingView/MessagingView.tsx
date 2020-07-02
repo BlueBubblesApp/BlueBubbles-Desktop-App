@@ -1,18 +1,18 @@
 import * as React from "react";
+import { ipcRenderer } from "electron";
+
 import "./MessagingView.css";
 import LeftCol from "./LeftCol/LeftCol";
 import RightCol from "./RightCol/RightCol";
-import { ipcRenderer } from "electron";
 
 interface MesagingViewState {
     doneLoading: boolean;
     loginIsValid: boolean;
     syncProgress: number;
-    redirect: string;
     loadingMessage: string;
 }
 
-class MessagingView extends React.Component<object, MesagingViewState>  {
+class MessagingView extends React.Component<object, MesagingViewState> {
     constructor(props) {
         super(props);
 
@@ -20,14 +20,12 @@ class MessagingView extends React.Component<object, MesagingViewState>  {
             doneLoading: false, // Used to show loading screen
             loginIsValid: true, // Used to show progress bar
             syncProgress: 0,
-            redirect: null,
             loadingMessage: "Fetching chats from iMessage Server..."
         };
     }
 
-    componentDidMount(){        
-        if(this.state.loginIsValid && !this.state.doneLoading){
-        } else{
+    componentDidMount() {
+        if (!this.state.loginIsValid || !this.state.doneLoading) {
             document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
             document.getElementById("TitleBarRight").classList.add("messagingTitleBarRight");
         }
@@ -44,8 +42,7 @@ class MessagingView extends React.Component<object, MesagingViewState>  {
             console.log(args);
         });
     }
-    
-    
+
     render() {
         const setProgressPercent = {
             // Set progress % by setting width % of progressBarSpan
@@ -55,18 +52,18 @@ class MessagingView extends React.Component<object, MesagingViewState>  {
         return (
             <div className="MessagingView">
                 {this.state.doneLoading ? (
-                <>
-                    <LeftCol />
-                    <RightCol />
-                </>                    
+                    <>
+                        <LeftCol />
+                        <RightCol />
+                    </>
                 ) : (
-                <div className="progressView">
-                    <h1>{this.state.loadingMessage}</h1>
-                    <div id="loader" />
-                    <div id="progressBar">
-                        <span style={setProgressPercent} id="progressBarSpan" />
+                    <div className="progressView">
+                        <h1>{this.state.loadingMessage}</h1>
+                        <div id="loader" />
+                        <div id="progressBar">
+                            <span style={setProgressPercent} id="progressBarSpan" />
+                        </div>
                     </div>
-                </div>
                 )}
             </div>
         );

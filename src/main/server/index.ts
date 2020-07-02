@@ -289,6 +289,12 @@ export class BackendServer {
             this.fetchChats();
             return null; // Consistent return
         });
+
+        // eslint-disable-next-line no-return-await
+        ipcMain.handle("get-chats", async (_, args) => await this.chatRepo.getChats());
+
+        // eslint-disable-next-line no-return-await
+        ipcMain.handle("get-chat-messages", async (_, args) => await this.chatRepo.getMessages(args));
     }
 
     private emitToUI(event: string, data: any) {
