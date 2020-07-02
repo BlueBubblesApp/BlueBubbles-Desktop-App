@@ -225,7 +225,17 @@ function _initializerWarningHelper(descriptor, context) { throw new Error('Decor
 
 
 
-let Attachment = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec8 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec11 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec12 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec13 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec14 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec15 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Message"]), _dec16 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec(_class = (_class2 = (_temp = class Attachment {
+let Attachment = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec8 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec11 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec12 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec13 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec14 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec15 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Message"], {
+  onDelete: "CASCADE"
+}), _dec16 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])({
+  name: "attachment_message_join",
+  joinColumns: [{
+    name: "attachmentId"
+  }],
+  inverseJoinColumns: [{
+    name: "messageId"
+  }]
+}), _dec(_class = (_class2 = (_temp = class Attachment {
   constructor() {
     _initializerDefineProperty(this, "ROWID", _descriptor, this);
 
@@ -356,7 +366,27 @@ function _initializerWarningHelper(descriptor, context) { throw new Error('Decor
 let Chat = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Unique"])(["guid"]), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec8 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])({
   type: "text",
   nullable: true
-}), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Handle"]), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec11 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Message"]), _dec12 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec(_class = _dec2(_class = (_class2 = (_temp = class Chat {
+}), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Handle"], {
+  onDelete: "CASCADE"
+}), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])({
+  name: "chat_handle_join",
+  joinColumns: [{
+    name: "chatId"
+  }],
+  inverseJoinColumns: [{
+    name: "handleId"
+  }]
+}), _dec11 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Message"], {
+  onDelete: "CASCADE"
+}), _dec12 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])({
+  name: "chat_message_join",
+  joinColumns: [{
+    name: "chatId"
+  }],
+  inverseJoinColumns: [{
+    name: "messageId"
+  }]
+}), _dec(_class = _dec2(_class = (_class2 = (_temp = class Chat {
   constructor() {
     _initializerDefineProperty(this, "ROWID", _descriptor, this);
 
@@ -451,7 +481,17 @@ let Handle = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _
 }), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["OneToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Message"], message => message.handle), _dec8 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinColumn"])({
   name: "ROWID",
   referencedColumnName: "handleId"
-}), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Chat"]), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec(_class = _dec2(_class = (_class2 = (_temp = class Handle {
+}), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Chat"], {
+  onDelete: "CASCADE"
+}), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])({
+  name: "chat_handle_join",
+  joinColumns: [{
+    name: "handleId"
+  }],
+  inverseJoinColumns: [{
+    name: "chatId"
+  }]
+}), _dec(_class = _dec2(_class = (_class2 = (_temp = class Handle {
   constructor() {
     _initializerDefineProperty(this, "ROWID", _descriptor, this);
 
@@ -601,7 +641,27 @@ let Message = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), 
 }), _dec31 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToOne"])(type => _server_databases_chat_entity___WEBPACK_IMPORTED_MODULE_1__["Handle"]), _dec32 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinColumn"])({
   name: "handleId",
   referencedColumnName: "ROWID"
-}), _dec33 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity___WEBPACK_IMPORTED_MODULE_1__["Chat"]), _dec34 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec35 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity___WEBPACK_IMPORTED_MODULE_1__["Attachment"]), _dec36 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec(_class = (_class2 = (_temp = class Message {
+}), _dec33 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity___WEBPACK_IMPORTED_MODULE_1__["Chat"], {
+  onDelete: "CASCADE"
+}), _dec34 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])({
+  name: "chat_message_join",
+  joinColumns: [{
+    name: "messageId"
+  }],
+  inverseJoinColumns: [{
+    name: "chatId"
+  }]
+}), _dec35 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity___WEBPACK_IMPORTED_MODULE_1__["Attachment"], {
+  onDelete: "CASCADE"
+}), _dec36 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])({
+  name: "attachment_message_join",
+  joinColumns: [{
+    name: "messageId"
+  }],
+  inverseJoinColumns: [{
+    name: "attachmentId"
+  }]
+}), _dec(_class = (_class2 = (_temp = class Message {
   constructor() {
     _initializerDefineProperty(this, "ROWID", _descriptor, this);
 
@@ -910,7 +970,9 @@ class ChatRepository {
 
   async getChats() {
     const repo = this.db.getRepository(_entity__WEBPACK_IMPORTED_MODULE_2__["Chat"]);
-    return repo.find();
+    return repo.find({
+      relations: ["participants"]
+    });
   }
 
   async getMessages({
@@ -947,19 +1009,18 @@ class ChatRepository {
     } // Add date restraints
 
 
-    if (after) query.andWhere("message.date >= :after", {
+    if (after) query.andWhere("message.dateCreated >= :after", {
       after: after
     });
-    if (before) query.andWhere("message.date < :before", {
+    if (before) query.andWhere("message.dateCreated < :before", {
       before: before
     });
     if (where && where.length > 0) for (const item of where) query.andWhere(item.statement, item.args); // Add pagination params
 
-    query.orderBy("message.date", sort);
+    query.orderBy("message.dateCreated", sort);
     query.offset(offset);
     query.limit(limit);
-    const messages = await query.getMany();
-    return messages;
+    return query.getMany();
   }
 
   static createChatFromResponse(res) {
@@ -1481,8 +1542,7 @@ class BackendServer {
     console.log("Syncing initial chats...");
     await this.fetchChats();
   }
-  /** https://0a561bfc47cb.ngrok.io
-   * dc04685f-7bc4-4966-9a08-e66a26365fd7
+  /**
    * Sets up the server by initializing a "filesystem" and other
    * tasks such as setting up the databases and internal services
    */
@@ -1702,7 +1762,11 @@ class BackendServer {
 
       this.fetchChats();
       return null; // Consistent return
-    });
+    }); // eslint-disable-next-line no-return-await
+
+    electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("get-chats", async (_, args) => await this.chatRepo.getChats()); // eslint-disable-next-line no-return-await
+
+    electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("get-chat-messages", async (_, args) => await this.chatRepo.getMessages(args));
   }
 
   emitToUI(event, data) {

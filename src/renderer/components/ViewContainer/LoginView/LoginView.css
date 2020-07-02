@@ -137,6 +137,30 @@
     }
 }
 
+/* Progress bar */
+#progressBar {
+    height: 8px; /* Can be anything */
+    position: relative;
+    background: #555;
+    -moz-border-radius: 25px;
+    -webkit-border-radius: 25px;
+    border-radius: 25px;
+    min-width: 25%;
+    width: 25%;
+}
+
+#progressBar > span {
+    display: block;
+    height: 100%;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+    background-color: white;
+    position: relative;
+    overflow: hidden;
+}
+
 .loginTitleBarRight {
     background-color: #323232 !important;
 }

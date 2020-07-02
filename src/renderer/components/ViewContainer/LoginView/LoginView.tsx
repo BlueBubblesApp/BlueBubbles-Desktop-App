@@ -86,12 +86,24 @@ class LoginView extends React.Component<object, LoginViewState> {
             return <Redirect to={this.state.redirect} />;
         }
 
+        const setProgressPercent = {
+            // Set progress % by setting width % of progressBarSpan
+            width: `${this.state.syncProgress}%`
+        };
+
         return (
             <div className="LoginView">
                 {this.state.loading ? (
                     <div id="loadingContainer">
                         <h1>{this.state.loadingMessage}</h1>
                         <div id="loader" />
+                        {this.state.loginIsValid ? (
+                            <div id="progressBar">
+                                <span style={setProgressPercent} id="progressBarSpan" />
+                            </div>
+                        ) : (
+                            <></>
+                        )}
                         <NavLink id="skipToMessaging" to="/messaging">
                             Skip to Downloading
                         </NavLink>

@@ -72,8 +72,7 @@ export class BackendServer {
         await this.fetchChats();
     }
 
-    /** https://0a561bfc47cb.ngrok.io
-     * dc04685f-7bc4-4966-9a08-e66a26365fd7
+    /**
      * Sets up the server by initializing a "filesystem" and other
      * tasks such as setting up the databases and internal services
      */
