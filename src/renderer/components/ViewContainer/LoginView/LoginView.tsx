@@ -2,8 +2,8 @@ import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Redirect, NavLink } from "react-router-dom";
 import "./LoginView.css";
-import MessagingView from '../MessagingView/MessagingView'
 import { matchPath } from "react-router";
+import MessagingView from "../MessagingView/MessagingView";
 
 interface LoginViewState {
     loading: boolean;
@@ -82,7 +82,6 @@ class LoginView extends React.Component<object, LoginViewState> {
     };
 
     render() {
-
         if (this.state.redirect) {
             return <Redirect to={this.state.redirect} />;
         }
@@ -92,7 +91,7 @@ class LoginView extends React.Component<object, LoginViewState> {
                 {this.state.loading ? (
                     <div id="loadingContainer">
                         <h1>{this.state.loadingMessage}</h1>
-                                <div id="loader" />
+                        <div id="loader" />
                         <NavLink id="skipToMessaging" to="/messaging">
                             Skip to Downloading
                         </NavLink>
