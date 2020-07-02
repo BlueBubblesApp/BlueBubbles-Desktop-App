@@ -225,7 +225,7 @@ function _initializerWarningHelper(descriptor, context) { throw new Error('Decor
 
 
 
-let Attachment = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec8 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec11 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec12 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec13 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec14 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec15 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Message"]), _dec16 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec(_class = (_class2 = (_temp = class Attachment {
+let Attachment = (_dec = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Entity"])(), _dec2 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["PrimaryGeneratedColumn"])(), _dec3 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec4 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec5 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec6 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec7 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec8 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec9 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec10 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec11 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec12 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("text"), _dec13 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec14 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["Column"])("integer"), _dec15 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["ManyToMany"])(type => _server_databases_chat_entity__WEBPACK_IMPORTED_MODULE_1__["Message"]), _dec16 = Object(typeorm__WEBPACK_IMPORTED_MODULE_0__["JoinTable"])(), _dec(_class = (_class2 = (_temp = class Attachment {
   constructor() {
     _initializerDefineProperty(this, "ROWID", _descriptor, this);
 
@@ -936,14 +936,14 @@ class ChatRepository {
 
     const query = this.db.getRepository(_entity__WEBPACK_IMPORTED_MODULE_2__["Message"]).createQueryBuilder("message");
     if (withHandle) query.leftJoinAndSelect("message.handle", "handle");
-    if (withAttachments) query.leftJoinAndSelect("message.attachments", "attachment", "message.ROWID = message_attachment.message_id AND " + "attachment.ROWID = message_attachment.attachment_id"); // Inner-join because all messages will have a chat
+    if (withAttachments) query.leftJoinAndSelect("message.attachments", "attachment", "message.ROWID = message_attachment.messageId AND " + "attachment.ROWID = message_attachment.attachmentId"); // Inner-join because all messages will have a chat
 
     if (chatGuid) {
-      query.innerJoinAndSelect("message.chats", "chat", "message.ROWID = message_chat.message_id AND chat.ROWID = message_chat.chat_id").andWhere("chat.guid = :guid", {
+      query.innerJoinAndSelect("message.chats", "chat", "message.ROWID = message_chat.messageId AND chat.ROWID = message_chat.chatId").andWhere("chat.guid = :guid", {
         guid: chatGuid
       });
     } else if (withChats) {
-      query.innerJoinAndSelect("message.chats", "chat", "message.ROWID = message_chat.message_id AND chat.ROWID = message_chat.chat_id");
+      query.innerJoinAndSelect("message.chats", "chat", "message.ROWID = message_chat.messageId AND chat.ROWID = message_chat.chatId");
     } // Add date restraints
 
 
@@ -1115,6 +1115,31 @@ class ChatRepository {
     }
 
     return theMessage;
+  }
+
+  async saveAttachment(chat, message, attachment) {
+    // Always save the chat first
+    const savedChat = await this.saveChat(chat);
+    const savedMessage = await this.saveMessage(savedChat, message);
+    const repo = this.db.getRepository(_entity__WEBPACK_IMPORTED_MODULE_2__["Attachment"]);
+    let theAttachment = null; // If the attachment doesn't have a ROWID, try to find it
+
+    if (!attachment.ROWID) {
+      theAttachment = await repo.findOne({
+        guid: attachment.guid
+      }, {
+        relations: ["messages"]
+      });
+    } // If the message wasn't found, set it to the input message
+
+
+    if (!theAttachment) theAttachment = await repo.save(attachment); // Add the message to the chat if it doesn't already exist
+
+    if (!theAttachment.messages.find(i => i.ROWID === savedMessage.ROWID)) {
+      await repo.createQueryBuilder().relation(_entity__WEBPACK_IMPORTED_MODULE_2__["Attachment"], "messages").of(theAttachment).add(savedMessage);
+    }
+
+    return theAttachment;
   }
 
 }
@@ -1456,7 +1481,8 @@ class BackendServer {
     console.log("Syncing initial chats...");
     await this.fetchChats();
   }
-  /**
+  /** https://0a561bfc47cb.ngrok.io
+   * dc04685f-7bc4-4966-9a08-e66a26365fd7
    * Sets up the server by initializing a "filesystem" and other
    * tasks such as setting up the databases and internal services
    */

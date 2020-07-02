@@ -2,6 +2,8 @@ import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Redirect, NavLink } from "react-router-dom";
 import "./LoginView.css";
+import MessagingView from '../MessagingView/MessagingView'
+import { matchPath } from "react-router";
 
 interface LoginViewState {
     loading: boolean;
@@ -21,10 +23,10 @@ class LoginView extends React.Component<object, LoginViewState> {
             loading: false, // Used to show circle loader
             enteredServerAddress: "",
             enteredPassword: "",
-            loginIsValid: true, // Used to show progress bar
+            loginIsValid: false, // Used to show progress bar
             syncProgress: 0,
             redirect: null,
-            loadingMessage: "Connecting to iMessage Server..."
+            loadingMessage: "Verifying server login..."
         };
     }
 
@@ -66,10 +68,10 @@ class LoginView extends React.Component<object, LoginViewState> {
     reset = () => {
         this.setState({
             loading: false,
-            loginIsValid: true,
+            loginIsValid: false,
             syncProgress: 0,
             redirect: null,
-            loadingMessage: "Connecting to iMessage Server..."
+            loadingMessage: "Verifying server login..."
         });
     };
 
@@ -80,10 +82,6 @@ class LoginView extends React.Component<object, LoginViewState> {
     };
 
     render() {
-        const setProgressPercent = {
-            // Set progress % by setting width % of progressBarSpan
-            width: `${this.state.syncProgress}%`
-        };
 
         if (this.state.redirect) {
             return <Redirect to={this.state.redirect} />;
@@ -93,24 +91,10 @@ class LoginView extends React.Component<object, LoginViewState> {
             <div className="LoginView">
                 {this.state.loading ? (
                     <div id="loadingContainer">
-                        {this.state.loginIsValid ? (
-                            <>
-                                <h1>{this.state.loadingMessage}</h1>
+                        <h1>{this.state.loadingMessage}</h1>
                                 <div id="loader" />
-                                <div id="progressBar">
-                                    <span style={setProgressPercent} id="progressBarSpan" />
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <h1>{this.state.loadingMessage}</h1>
-                                <button onClick={this.reset} id="backBtn">
-                                    Go Back
-                                </button>
-                            </>
-                        )}
                         <NavLink id="skipToMessaging" to="/messaging">
-                            Skip to Messaging
+                            Skip to Downloading
                         </NavLink>
                     </div>
                 ) : (
