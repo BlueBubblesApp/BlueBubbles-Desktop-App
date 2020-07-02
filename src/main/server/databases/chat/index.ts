@@ -37,7 +37,7 @@ export class ChatRepository {
 
     async getChats() {
         const repo = this.db.getRepository(Chat);
-        return repo.find();
+        return repo.find({ relations: ["participants"] });
     }
 
     async getMessages({
@@ -95,23 +95,22 @@ export class ChatRepository {
 
         // Add date restraints
         if (after)
-            query.andWhere("message.date >= :after", {
+            query.andWhere("message.dateCreated >= :after", {
                 after: after as Date
             });
         if (before)
-            query.andWhere("message.date < :before", {
+            query.andWhere("message.dateCreated < :before", {
                 before: before as Date
             });
 
         if (where && where.length > 0) for (const item of where) query.andWhere(item.statement, item.args);
 
         // Add pagination params
-        query.orderBy("message.date", sort);
+        query.orderBy("message.dateCreated", sort);
         query.offset(offset);
         query.limit(limit);
 
-        const messages = await query.getMany();
-        return messages;
+        return query.getMany();
     }
 
     static createChatFromResponse(res: ChatResponse): Chat {

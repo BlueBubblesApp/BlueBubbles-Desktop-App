@@ -42,7 +42,11 @@ export class Attachment {
     @Column("integer")
     width: number;
 
-    @ManyToMany(type => Message)
-    @JoinTable()
+    @ManyToMany(type => Message, { onDelete: "CASCADE" })
+    @JoinTable({
+        name: "attachment_message_join",
+        joinColumns: [{ name: "attachmentId" }],
+        inverseJoinColumns: [{ name: "messageId" }]
+    })
     messages: Message[];
 }

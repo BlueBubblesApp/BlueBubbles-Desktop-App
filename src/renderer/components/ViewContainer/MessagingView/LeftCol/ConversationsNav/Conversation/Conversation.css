@@ -13,7 +13,7 @@
     align-items: center;
 }
 
-.convo-wrap{
+.convo-wrap {
     width: 253px;
     min-width: 253px;
     height: 100%;
@@ -52,13 +52,17 @@
     height: 100%;
     display: flex;
     align-items: flex-end;
+    margin-right: 10px;
+    overflow-x: scroll;
 }
 
 .message-time {
-    width: 28%;
+    width: 40%;
     height: 100%;
     display: flex;
     align-items: flex-end;
+    text-align: right;
+    margin-right: 5px;
 }
 
 .message-time > div {
@@ -96,7 +100,7 @@
 }
 
 .message-snip-example {
-    font-family: 'SF UI Display Light';
+    font-family: "SF UI Display Light";
     color: #b5b5b5;
     font-size: 12.5px;
     text-overflow: ellipsis;
@@ -107,7 +111,7 @@
 }
 
 .message-recip-example {
-    font-family: 'SF UI Display Bold';
+    font-family: "SF UI Display Bold";
     color: white;
     font-size: 13px;
     text-overflow: ellipsis;
@@ -117,7 +121,7 @@
 }
 
 .message-time-example {
-    font-family: 'SF UI Display Light';
+    font-family: "SF UI Display Light";
     color: #cacaca;
     font-size: 13px;
     text-overflow: ellipsis;

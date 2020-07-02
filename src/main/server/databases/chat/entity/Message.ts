@@ -95,11 +95,19 @@ export class Message {
     @JoinColumn({ name: "handleId", referencedColumnName: "ROWID" })
     handle: Handle | null;
 
-    @ManyToMany(type => Chat)
-    @JoinTable()
+    @ManyToMany(type => Chat, { onDelete: "CASCADE" })
+    @JoinTable({
+        name: "chat_message_join",
+        joinColumns: [{ name: "messageId" }],
+        inverseJoinColumns: [{ name: "chatId" }]
+    })
     chats: Chat[];
 
-    @ManyToMany(type => Attachment)
-    @JoinTable()
+    @ManyToMany(type => Attachment, { onDelete: "CASCADE" })
+    @JoinTable({
+        name: "attachment_message_join",
+        joinColumns: [{ name: "messageId" }],
+        inverseJoinColumns: [{ name: "attachmentId" }]
+    })
     attachments: Attachment[];
 }

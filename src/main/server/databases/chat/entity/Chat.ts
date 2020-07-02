@@ -22,11 +22,19 @@ export class Chat {
     @Column({ type: "text", nullable: true })
     displayName: string;
 
-    @ManyToMany(type => Handle)
-    @JoinTable()
+    @ManyToMany(type => Handle, { onDelete: "CASCADE" })
+    @JoinTable({
+        name: "chat_handle_join",
+        joinColumns: [{ name: "chatId" }],
+        inverseJoinColumns: [{ name: "handleId" }]
+    })
     participants: Handle[];
 
-    @ManyToMany(type => Message)
-    @JoinTable()
+    @ManyToMany(type => Message, { onDelete: "CASCADE" })
+    @JoinTable({
+        name: "chat_message_join",
+        joinColumns: [{ name: "chatId" }],
+        inverseJoinColumns: [{ name: "messageId" }]
+    })
     messages: Message[];
 }

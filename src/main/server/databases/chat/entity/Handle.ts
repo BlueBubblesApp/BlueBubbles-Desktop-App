@@ -23,7 +23,11 @@ export class Handle {
     @JoinColumn({ name: "ROWID", referencedColumnName: "handleId" })
     messages: Message[];
 
-    @ManyToMany(type => Chat)
-    @JoinTable()
+    @ManyToMany(type => Chat, { onDelete: "CASCADE" })
+    @JoinTable({
+        name: "chat_handle_join",
+        joinColumns: [{ name: "handleId" }],
+        inverseJoinColumns: [{ name: "chatId" }]
+    })
     chats: Chat[];
 }
