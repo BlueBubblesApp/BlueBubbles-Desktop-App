@@ -14,7 +14,7 @@ import { GetChatsParams, GetChatMessagesParams } from "./types";
 export class SocketService {
     db: Connection;
 
-    socketServer: SocketIOClient.Socket;
+    server: SocketIOClient.Socket;
 
     chatRepo: ChatRepository;
 
@@ -37,7 +37,7 @@ export class SocketService {
     constructor(db: Connection, chatRepo: ChatRepository, configRepo: ConfigRepository, fs: FileSystem) {
         this.db = db;
 
-        this.socketServer = null;
+        this.server = null;
         this.chatRepo = chatRepo;
         this.configRepo = configRepo;
         this.fs = fs;
@@ -53,27 +53,27 @@ export class SocketService {
         }
 
         return new Promise((resolve, reject) => {
-            this.socketServer = io(this.configRepo.get("serverAddress") as string, {
+            this.server = io(this.configRepo.get("serverAddress") as string, {
                 query: {
                     guid: this.configRepo.get("passphrase")
                 }
             });
 
-            this.socketServer.on("connect", () => {
+            this.server.on("connect", () => {
                 console.log("Connected to server via socket.");
                 resolve(true);
             });
 
-            this.socketServer.on("disconnect", () => {
+            this.server.on("disconnect", () => {
                 console.log("Disconnected from socket server.");
                 reject(new Error("Disconnected from socket."));
             });
 
-            this.socketServer.on("connect_error", () => {
+            this.server.on("connect_error", () => {
                 console.log("Unable to connect to server.");
 
                 // If this is the first/initial connect, disconnect if there is an error
-                if (firstConnect) this.socketServer.disconnect();
+                if (firstConnect) this.server.disconnect();
                 reject(new Error("Unable to connect to server."));
             });
         });
@@ -81,7 +81,7 @@ export class SocketService {
 
     async getChats({ withParticipants = true }: GetChatsParams): Promise<ChatResponse[]> {
         return new Promise<ChatResponse[]>((resolve, reject) => {
-            this.socketServer.emit("get-chats", { withParticipants }, (res: ResponseFormat) => {
+            this.server.emit("get-chats", { withParticipants }, (res: ResponseFormat) => {
                 if ([200, 201].includes(res.status)) {
                     resolve(res.data as ChatResponse[]);
                 } else {
@@ -96,7 +96,7 @@ export class SocketService {
         { offset = 0, limit = 25, after = null, before = null, withChats = false, sort = "DESC" }: GetChatMessagesParams
     ): Promise<MessageResponse[]> {
         return new Promise<MessageResponse[]>((resolve, reject) => {
-            this.socketServer.emit(
+            this.server.emit(
                 "get-chat-messages",
                 {
                     identifier,

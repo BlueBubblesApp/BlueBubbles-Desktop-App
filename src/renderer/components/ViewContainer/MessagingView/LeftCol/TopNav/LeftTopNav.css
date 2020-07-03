@@ -24,24 +24,25 @@
     align-items: center;
 }
 
-#messageSearch[type='text'] {
+#messageSearch[type="text"] {
     height: 19px;
     margin-bottom: 8px;
     background-color: #545454;
-    background-image: url('../../../../../assets/icons/search-icon.png');
-    background-position: 3px 4px;
-    background-size: 17px;
+    background-image: url("../../../../../assets/icons/search-icon.png");
+    background-position: 5px 4px;
+    background-position-y: center;
+    background-size: 15px;
     background-repeat: no-repeat;
     border-radius: 5px;
     border: none;
     width: 80%;
     padding: 3px 5px 3px 25px;
-    font-family: 'SF UI Display Bold';
+    font-family: "SF UI Display Bold";
     color: white;
     outline: none;
 }
 
-#messageSearch[type='text']:focus {
+#messageSearch[type="text"]:focus {
     border: 2px solid #3c7ca8;
 }
 
@@ -57,6 +58,8 @@
 }
 
 #composeIcon {
-    height: 17px;
+    height: 15px;
     z-index: -1;
+    margin-top: 2px;
+    margin-left: 1px;
 }

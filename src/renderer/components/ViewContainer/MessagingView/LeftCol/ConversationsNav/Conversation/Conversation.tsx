@@ -12,33 +12,41 @@ type ConversationProps = {
     lastMessageTime?: string;
 };
 
-function setActiveChat(e){
-    try{
+function setActiveChat(e) {
+    try {
         document.getElementsByClassName("activeChat")[0].classList.remove("activeChat");
+    } catch {
+        /* Do nothing */
     }
-    catch {}
-    
-    document.getElementById(e.target.getAttribute('id')).classList.add("activeChat");
+
+    document.getElementById(e.target.getAttribute("id")).classList.add("activeChat");
 }
 
-function showDelMessage(e){
-    let id = e.target.getAttribute('id');
+function showDelMessage(e) {
+    let id = e.target.getAttribute("id");
     id = document.getElementById(id);
     id.getElementsByClassName("message-del-conversation")[0].classList.remove("hideDelMessage");
-    console.log()
+    console.log();
     // console.log(document.querySelector(id));
 }
 
-function hideDelMessage(e){
-    let id = e.target.getAttribute('id');
+function hideDelMessage(e) {
+    let id = e.target.getAttribute("id");
     id = document.getElementById(id);
     id.getElementsByClassName("message-del-conversation")[0].classList.add("hideDelMessage");
-    console.log()
+    console.log();
     // console.log(document.querySelector(id));
 }
 
 const Conversation = ({ aGuid, chatParticipants, lastMessage, lastMessageTime }: ConversationProps) => (
-    <div className="Conversation" id={aGuid} onClick={setActiveChat} onMouseOver={showDelMessage} onMouseOut={hideDelMessage}>
+    // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
+    <div
+        className="Conversation"
+        id={aGuid}
+        onClick={setActiveChat}
+        onMouseOver={showDelMessage}
+        onMouseOut={hideDelMessage}
+    >
         <div className="convo-wrap">
             <div className="contact-card">
                 {/* <img className="contact-icon" src={ContactImage} alt="contact" /> */}
@@ -66,7 +74,7 @@ const Conversation = ({ aGuid, chatParticipants, lastMessage, lastMessageTime }:
             <div className="message-prev">
                 <div className="prev-top">
                     <div className="message-recip">
-                            <p className="message-recip-example">{chatParticipants}</p>
+                        <p className="message-recip-example">{chatParticipants}</p>
                     </div>
                     <div className="message-time">
                         <div>
@@ -81,7 +89,11 @@ const Conversation = ({ aGuid, chatParticipants, lastMessage, lastMessageTime }:
                         </div>
                     </div>
                     <div className="message-del">
-                        <img className="message-del-conversation hideDelMessage" src={ConversationCloseIcon} alt="delete" />
+                        <img
+                            className="message-del-conversation hideDelMessage"
+                            src={ConversationCloseIcon}
+                            alt="delete"
+                        />
                     </div>
                 </div>
             </div>

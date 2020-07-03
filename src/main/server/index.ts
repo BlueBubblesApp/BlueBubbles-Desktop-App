@@ -152,7 +152,7 @@ export class BackendServer {
      * The front-end _should not_ call this function.
      */
     async fetchChats(): Promise<void> {
-        if (!this.socketService?.socketServer?.connected) {
+        if (!this.socketService?.server?.connected) {
             console.warn("Cannot fetch chats when no socket is connected!");
             return;
         }
@@ -172,7 +172,7 @@ export class BackendServer {
         emitData.syncProgress = 1;
         emitData.loadingMessage = `Got ${chats.length} chats from the server since last fetch at ${new Date(
             lastFetch
-        ).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}`;
+        ).toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}`;
         console.log(emitData.loadingMessage);
         this.emitToUI("setup-update", emitData);
 
@@ -278,7 +278,7 @@ export class BackendServer {
             await new Promise(resolve => setTimeout(resolve, 1000));
 
             // Now check if we are disconnected. If creds are wrong, we will get disconnected here
-            if (!this.socketService.socketServer.connected) {
+            if (!this.socketService.server.connected) {
                 errData.loadingMessage = "Disconnected from socket server! Credentials may be incorrect!";
                 return this.emitToUI("setup-update", errData);
             }
@@ -293,6 +293,12 @@ export class BackendServer {
 
         // eslint-disable-next-line no-return-await
         ipcMain.handle("get-chat-messages", async (_, args) => await this.chatRepo.getMessages(args));
+
+        // eslint-disable-next-line no-return-await
+        ipcMain.handle(
+            "get-socket-status",
+            (_, args) => this.socketService.server && this.socketService.server.connected
+        );
     }
 
     private emitToUI(event: string, data: any) {

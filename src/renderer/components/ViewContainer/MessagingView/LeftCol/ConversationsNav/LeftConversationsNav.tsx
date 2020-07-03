@@ -22,12 +22,14 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         yesterday.setDate(yesterday.getDate() - 1);
         const msgDate = new Date(message.dateCreated);
 
-        console.log(now.toLocaleDateString());
-        if (now.toLocaleDateString() === msgDate.toLocaleDateString()) return msgDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-        if (yesterday.toLocaleDateString() === msgDate.toLocaleDateString()) return "Yesterday";
+        const nowLocale = now.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
+        const msgLocale = msgDate.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
+        const yLocale = yesterday.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
 
-        const yearStr = String(msgDate.getFullYear());
-        return `${msgDate.getDay()}/${msgDate.getMonth()}/${yearStr.substring(2)}`;
+        if (nowLocale === msgLocale)
+            return msgDate.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
+        if (yLocale === msgLocale) return "Yesterday";
+        return msgDate.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" }).slice(0, -2);
     }
 
     constructor(props: unknown) {
