@@ -13,13 +13,14 @@ export class ChatRepository {
     }
 
     async initialize(): Promise<Connection> {
+        const isDev = process.env.NODE_ENV !== "production";
         if (this.db) {
             if (!this.db.isConnected) await this.db.connect();
             return this.db;
         }
 
         let dbPath = `${app.getPath("userData")}/chat.db`;
-        if (process.env.NODE_ENV !== "production") {
+        if (!isDev) {
             dbPath = `${app.getPath("userData")}/BlueBubbles-Desktop-App/chat.db`;
         }
 
@@ -28,9 +29,12 @@ export class ChatRepository {
             type: "sqlite",
             database: dbPath,
             entities: [Attachment, Chat, Handle, Message],
-            synchronize: true,
+            synchronize: isDev,
             logging: false
         });
+
+        // Create the tables
+        if (!isDev) await this.db.synchronize();
 
         return this.db;
     }

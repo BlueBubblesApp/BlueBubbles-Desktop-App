@@ -14,8 +14,8 @@
 }
 
 .convo-wrap {
-    width: 253px;
-    min-width: 253px;
+    width: 270px;
+    min-width: 270px;
     height: 100%;
     display: flex;
     border-bottom: 1px solid grey;
@@ -34,7 +34,7 @@
 }
 
 .message-prev {
-    width: 194px;
+    width: 205px;
     margin-left: 7px;
     margin-top: 3px;
     display: flex;
@@ -48,15 +48,15 @@
 }
 
 .message-recip {
-    width: 72%;
+    width: 250px;
     height: 100%;
     display: flex;
     align-items: flex-end;
-    margin-right: 10px;
     overflow-x: scroll;
 }
 
 .message-time {
+    margin-top: 5px;
     width: 40%;
     height: 100%;
     display: flex;
@@ -113,7 +113,7 @@
 .message-recip-example {
     font-family: "SF UI Display Bold";
     color: white;
-    font-size: 13px;
+    font-size: 12.5px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;

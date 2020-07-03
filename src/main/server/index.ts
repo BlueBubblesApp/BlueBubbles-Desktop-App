@@ -4,7 +4,7 @@ import { Connection } from "typeorm";
 // Config and FileSystem Imports
 import { Config } from "@server/databases/config/entity/Config";
 import { FileSystem } from "@server/fileSystem";
-import { DEFAULT_GENERAL_ITEMS } from "@server/constants";
+import { DEFAULT_CONFIG_ITEMS } from "@server/constants";
 
 // Database Imports
 import { ConfigRepository } from "@server/databases/config";
@@ -117,10 +117,10 @@ export class BackendServer {
      */
     private async setupDefaults(): Promise<void> {
         try {
-            const repo = this.configRepo.db.getRepository(Config);
-            for (const key of Object.keys(DEFAULT_GENERAL_ITEMS)) {
-                const item = await repo.findOne({ name: key });
-                if (!item) await this.configRepo.setConfigItem(key, DEFAULT_GENERAL_ITEMS[key]());
+            for (const key of Object.keys(DEFAULT_CONFIG_ITEMS)) {
+                if (!this.configRepo.contains(key)) {
+                    await this.configRepo.set(key, DEFAULT_CONFIG_ITEMS[key]());
+                }
             }
         } catch (ex) {
             console.log(`Failed to setup default configurations! ${ex.message}`);
@@ -166,7 +166,7 @@ export class BackendServer {
         };
 
         const now = new Date();
-        const lastFetch = this.configRepo.getConfigItem("lastFetch") as number;
+        const lastFetch = this.configRepo.get("lastFetch") as number;
         const chats: ChatResponse[] = await this.socketService.getChats({});
 
         emitData.syncProgress = 1;
@@ -201,10 +201,7 @@ export class BackendServer {
             }
 
             // Third, let's fetch the messages from the DB
-            const one = new Date();
             const messages: MessageResponse[] = await this.socketService.getChatMessages(chat.guid, payload);
-            const two = new Date();
-            console.log(`Fetch took ${two.getTime() - one.getTime()} ms`);
             emitData.loadingMessage = `Syncing ${messages.length} messages for ${count} of ${chats.length} chats`;
             console.log(emitData.loadingMessage);
 
@@ -233,16 +230,18 @@ export class BackendServer {
         this.emitToUI("setup-update", emitData);
 
         // Save the last fetch date
-        this.configRepo.setConfigItem("lastFetch", now);
+        this.configRepo.set("lastFetch", now);
     }
 
     private startIpcListeners() {
+        // eslint-disable-next-line no-return-await
+        ipcMain.handle("get-config", async (_, __) => await this.configRepo.config);
+
         ipcMain.handle("set-config", async (event, args) => {
-            for (const item of Object.keys(args)) {
-                const hasConfig = this.configRepo.hasConfigItem(item);
-                if (hasConfig && this.configRepo.getConfigItem(item) !== args[item]) {
-                    await this.configRepo.setConfigItem(item, args[item]);
-                }
+            console.log(args.constructor);
+            if (args.constructor !== Object) return this.configRepo.config;
+            for (const key of Object.keys(args)) {
+                await this.configRepo.set(key, args[key]);
             }
 
             this.emitToUI("config-update", this.configRepo.config);
@@ -264,8 +263,8 @@ export class BackendServer {
             }
 
             // Save the config items
-            await this.configRepo.setConfigItem("serverAddress", args.enteredServerAddress);
-            await this.configRepo.setConfigItem("passphrase", args.enteredPassword);
+            await this.configRepo.set("serverAddress", args.enteredServerAddress);
+            await this.configRepo.set("passphrase", args.enteredPassword);
 
             try {
                 // If we can't even connect, GTFO
@@ -290,7 +289,7 @@ export class BackendServer {
         });
 
         // eslint-disable-next-line no-return-await
-        ipcMain.handle("get-chats", async (_, args) => await this.chatRepo.getChats());
+        ipcMain.handle("get-chats", async (_, __) => await this.chatRepo.getChats());
 
         // eslint-disable-next-line no-return-await
         ipcMain.handle("get-chat-messages", async (_, args) => await this.chatRepo.getMessages(args));
