@@ -11,8 +11,9 @@ type Chat = DBChat & {
 };
 
 interface State {
-    chatPrevs: Chat[];
+    chats: Chat[];
     chatGuids: string[];
+    isLoading: boolean;
 }
 
 const setCurrentChat = (guid: Chat) => {
@@ -40,23 +41,24 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         super(props);
 
         this.state = {
-            chatPrevs: [],
-            chatGuids: []
+            chats: [],
+            chatGuids: [],
+            isLoading: false
         };
     }
 
     componentDidMount() {
         // First, let's register a handler for new chats
-        ipcRenderer.on("chat", (_, args) => this.addChatToState(args));
+        ipcRenderer.on("chat", (_, args) => this.addChatsToState([args]));
 
         // Second, let's register a handler for new messages
         ipcRenderer.on("message", (_, args) => this.updateLastMessage(args));
 
         // Third, let's fetch the current chats and add them to the state
         ipcRenderer.invoke("get-chats", null).then(async chats => {
-            for (const i of chats) {
-                await this.addChatToState(i);
-            }
+            this.setState({ isLoading: true });
+            await this.addChatsToState(chats);
+            this.setState({ isLoading: false });
         });
     }
 
@@ -72,22 +74,26 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         if (!message.chats || message.chats.length === 0) return;
 
         // Add the chat to the state, if needed
-        const chat = message.chats[0] as Chat;
-        chat.lastMessage = message;
-        const isNew = await this.addChatToState(chat);
+        const chats = message.chats as Chat[];
+        for (let i = 0; i < chats.length; i += 1) chats[i].lastMessage = message;
+        const isNew = await this.addChatsToState(chats);
 
         // If the chat didn't exist already, we don't need to update
         if (isNew) return;
 
-        const updatedChats = [...this.state.chatPrevs];
+        const chatGuids = chats.map(i => i.guid);
+        const updatedChats = [...this.state.chats];
         for (let i = 0; i < updatedChats.length; i += 1) {
-            if (updatedChats[i].guid === chat.guid && updatedChats[i].lastMessage.dateCreated < message.dateCreated) {
+            if (
+                chatGuids.includes(updatedChats[i].guid) &&
+                updatedChats[i].lastMessage.dateCreated < message.dateCreated
+            ) {
                 updatedChats[i].lastMessage = message;
                 break;
             }
         }
 
-        this.setState({ chatPrevs: updatedChats });
+        this.setState({ chats: updatedChats });
     }
 
     /**
@@ -96,64 +102,68 @@ class LeftConversationsNav extends React.Component<unknown, State> {
      * Second, if the GUID didn't exist, insert it into the state
      * based on the last message
      *
-     * @param chat The new chat
+     * @param chats The new chats
      * @returns Whether or not we added a new chat to the state
      */
-    async addChatToState(chat: Chat): Promise<boolean> {
-        const exists = this.state.chatGuids.includes(chat.guid);
+    async addChatsToState(chats: Chat[]): Promise<boolean> {
+        const updatedChats = [...this.state.chats];
+        const updatedGuids = [...this.state.chatGuids];
+        for (const chat of chats) {
+            const exists = this.state.chatGuids.includes(chat.guid);
+            if (exists) continue;
 
-        // Only return if we've already added it
-        if (exists) return false;
+            // If there is no last message attached, get the last message
+            const newChat = chat;
+            if (!chat.lastMessage) {
+                const lastMessage = await ipcRenderer.invoke("get-chat-messages", {
+                    chatGuid: chat.guid,
+                    withHandle: false,
+                    withAttachments: false,
+                    withChats: false,
+                    offset: 0,
+                    limit: 1
+                });
 
-        // If there is no last message attached, get the last message
-        const newChat = chat;
-        if (!chat.lastMessage) {
-            const lastMessage = await ipcRenderer.invoke("get-chat-messages", {
-                chatGuid: chat.guid,
-                withHandle: false,
-                withAttachments: false,
-                withChats: false,
-                offset: 0,
-                limit: 1
-            });
-
-            if (lastMessage && lastMessage.length > 0) {
-                [newChat.lastMessage] = lastMessage; // Destructure
+                if (lastMessage && lastMessage.length > 0) {
+                    [newChat.lastMessage] = lastMessage; // Destructure
+                }
             }
-        }
 
-        // Insert the new chat into the list
-        const updatedChats = [...this.state.chatPrevs];
-        let insertIdx = -1;
-        for (let i = 0; i < updatedChats.length; i += 1) {
-            if (newChat.lastMessage.dateCreated > updatedChats[i].lastMessage.dateCreated) {
-                insertIdx = i;
-                break;
+            // Find where we need to insert the chat
+            let insertIdx = -1;
+            for (let i = 0; i < updatedChats.length; i += 1) {
+                if (newChat.lastMessage.dateCreated > updatedChats[i].lastMessage.dateCreated) {
+                    insertIdx = i;
+                    break;
+                }
             }
-        }
 
-        if (insertIdx === -1) {
-            updatedChats.push(newChat);
-        } else {
-            updatedChats.splice(insertIdx, 0, newChat);
+            // Insert the updated chat at the specified index
+            if (insertIdx === -1) {
+                updatedChats.push(newChat);
+            } else {
+                updatedChats.splice(insertIdx, 0, newChat);
+            }
+
+            // Add the GUID to the updated list
+            updatedGuids.push(newChat.guid);
         }
 
         this.setState({
-            chatPrevs: updatedChats,
-            chatGuids: [...this.state.chatGuids, chat.guid]
+            chats: updatedChats,
+            chatGuids: updatedGuids
         });
 
         return true;
     }
 
     render() {
-        const { chatPrevs } = this.state;
-        // Don't need this because of the way we insert
-        // chatPrevs.sort((a, b) => (a.lastMessage.dateCreated > b.lastMessage.dateCreated ? -1 : 1));
+        const { chats, isLoading } = this.state;
 
         return (
             <div className="LeftConversationsNav">
-                {chatPrevs.map(chat => {
+                {isLoading ? <div id="loader" /> : null}
+                {chats.map(chat => {
                     // Calculate the chat name
                     let chatTitle = chat.displayName;
                     if (!chatTitle) {
