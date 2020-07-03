@@ -292,7 +292,24 @@ export class BackendServer {
         ipcMain.handle("get-chats", async (_, __) => await this.chatRepo.getChats());
 
         // eslint-disable-next-line no-return-await
-        ipcMain.handle("get-chat-messages", async (_, args) => await this.chatRepo.getMessages(args));
+        ipcMain.handle("get-chat-messages", async (_, args) => {
+            const messages = await this.chatRepo.getMessages(args);
+
+            // If there are no messages, let's check the server
+            if (messages.length === 0) {
+                const chats = await this.chatRepo.getChats(args.chatGuid);
+                const newMessages = await this.socketService.getChatMessages(args.chatGuid, args);
+
+                // Add the new messages to the list
+                for (const message of newMessages) {
+                    const msg = ChatRepository.createMessageFromResponse(message);
+                    const newMsg = await this.chatRepo.saveMessage(chats[0], msg);
+                    messages.push(newMsg);
+                }
+            }
+
+            return messages;
+        });
 
         ipcMain.handle("send-to-ui", (_, args) => this.window.webContents.send(args.event, args.contents));
 
