@@ -8,7 +8,7 @@
     border-bottom: 1px solid grey;
 }
 
-.activeChat{
+.activeChat {
     background-color: #0349cd;
 }
 
@@ -48,6 +48,7 @@
 }
 
 .message-prev {
+    font-weight: 600;
     width: 205px;
     height: 100%;
     margin-left: 7px;
@@ -71,6 +72,7 @@
 }
 
 .message-time {
+    font-weight: 600;
     margin-top: 5px;
     width: 40%;
     height: 100%;
@@ -111,9 +113,10 @@
     height: 10px;
     width: 10px;
     margin-top: 4px;
+    opacity: 0.5;
 }
 
-.hideDelMessage{
+.hideDelMessage {
     visibility: hidden;
 }
 

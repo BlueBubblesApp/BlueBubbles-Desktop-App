@@ -1,0 +1,35 @@
+.IncomingMessage {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 0 0 10px;
+}
+
+.IncomingMessage > p {
+    max-width: 60%;
+    color: white;
+    font-family: "SF UI Display Light";
+    font-size: 14px;
+    background-color: #6b6b6b;
+    padding: 6px 15px 6px 15px;
+    border-radius: 20px;
+    word-break: break-all;
+}
+
+.OutgoingMessage {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 0 10px 0 0;
+}
+
+.OutgoingMessage > p {
+    max-width: 60%;
+    color: white;
+    font-family: "SF UI Display Light";
+    font-size: 14px;
+    background-color: #006ee4;
+    padding: 6px 15px 6px 15px;
+    border-radius: 20px;
+    word-break: break-all;
+}

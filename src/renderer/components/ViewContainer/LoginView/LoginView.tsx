@@ -45,9 +45,11 @@ class LoginView extends React.Component<object, LoginViewState> {
         // invoke the "submit" method
         const config = await ipcRenderer.invoke("get-config");
         if (config.serverAddress && config.passphrase) {
+            const isConnected = await ipcRenderer.invoke("get-socket-status");
             this.setState({
                 enteredServerAddress: config.serverAddress,
-                enteredPassword: config.passphrase
+                enteredPassword: config.passphrase,
+                redirect: isConnected ? "/messaging" : null
             });
         }
     }

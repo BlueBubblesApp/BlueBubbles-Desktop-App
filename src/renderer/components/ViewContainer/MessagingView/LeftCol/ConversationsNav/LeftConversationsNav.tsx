@@ -15,6 +15,10 @@ interface State {
     chatGuids: string[];
 }
 
+const setCurrentChat = (guid: Chat) => {
+    ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: guid });
+};
+
 class LeftConversationsNav extends React.Component<unknown, State> {
     static getDateText(message: DBMessage) {
         const now = new Date();
@@ -22,12 +26,14 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         yesterday.setDate(yesterday.getDate() - 1);
         const msgDate = new Date(message.dateCreated);
 
-        console.log(now.toLocaleDateString());
-        if (now.toLocaleDateString() === msgDate.toLocaleDateString()) return msgDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-        if (yesterday.toLocaleDateString() === msgDate.toLocaleDateString()) return "Yesterday";
+        const nowLocale = now.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
+        const msgLocale = msgDate.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
+        const yLocale = yesterday.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
 
-        const yearStr = String(msgDate.getFullYear());
-        return `${msgDate.getDay()}/${msgDate.getMonth()}/${yearStr.substring(2)}`;
+        if (nowLocale === msgLocale)
+            return msgDate.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
+        if (yLocale === msgLocale) return "Yesterday";
+        return msgDate.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" }).slice(0, -2);
     }
 
     constructor(props: unknown) {
@@ -142,7 +148,8 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
     render() {
         const { chatPrevs } = this.state;
-        chatPrevs.sort((a, b) => (a.lastMessage.dateCreated > b.lastMessage.dateCreated ? -1 : 1));
+        // Don't need this because of the way we insert
+        // chatPrevs.sort((a, b) => (a.lastMessage.dateCreated > b.lastMessage.dateCreated ? -1 : 1));
 
         return (
             <div className="LeftConversationsNav">
@@ -160,6 +167,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
                     return (
                         <Conversation
+                            onClick={() => setCurrentChat(chat)}
                             key={chat.guid}
                             aGuid={chat.guid}
                             chatParticipants={chatTitle}
@@ -168,14 +176,6 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                         />
                     );
                 })}
-
-                {/* {chatPrevs.map(chatPrev => 
-                <Conversation
-                  chatParticipants={chatPrev.address}
-                  lastMessage={chatPrev.country}
-                  lastMessageTime={chatPrev.uncanonicalizedId}
-                />
-                )} */}
             </div>
         );
     }
