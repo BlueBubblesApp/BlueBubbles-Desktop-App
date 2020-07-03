@@ -10,6 +10,7 @@ type ConversationProps = {
     chatParticipants?: string;
     lastMessage?: string;
     lastMessageTime?: string;
+    onClick?: Function;
 };
 
 function setActiveChat(e) {
@@ -38,12 +39,15 @@ function hideDelMessage(e) {
     // console.log(document.querySelector(id));
 }
 
-const Conversation = ({ aGuid, chatParticipants, lastMessage, lastMessageTime }: ConversationProps) => (
+const Conversation = ({ aGuid, chatParticipants, lastMessage, lastMessageTime, onClick }: ConversationProps) => (
     // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
     <div
         className="Conversation"
         id={aGuid}
-        onClick={setActiveChat}
+        onClick={e => {
+            setActiveChat(e);
+            onClick(e);
+        }}
         onMouseOver={showDelMessage}
         onMouseOut={hideDelMessage}
     >

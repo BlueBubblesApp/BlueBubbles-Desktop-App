@@ -294,6 +294,8 @@ export class BackendServer {
         // eslint-disable-next-line no-return-await
         ipcMain.handle("get-chat-messages", async (_, args) => await this.chatRepo.getMessages(args));
 
+        ipcMain.handle("send-to-ui", (_, args) => this.window.webContents.send(args.event, args.contents));
+
         // eslint-disable-next-line no-return-await
         ipcMain.handle(
             "get-socket-status",

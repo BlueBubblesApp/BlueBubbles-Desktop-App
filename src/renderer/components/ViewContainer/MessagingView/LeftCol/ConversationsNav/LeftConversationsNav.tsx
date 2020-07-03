@@ -15,6 +15,10 @@ interface State {
     chatGuids: string[];
 }
 
+const setCurrentChat = (guid: Chat) => {
+    ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: guid });
+};
+
 class LeftConversationsNav extends React.Component<unknown, State> {
     static getDateText(message: DBMessage) {
         const now = new Date();
@@ -144,7 +148,8 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
     render() {
         const { chatPrevs } = this.state;
-        chatPrevs.sort((a, b) => (a.lastMessage.dateCreated > b.lastMessage.dateCreated ? -1 : 1));
+        // Don't need this because of the way we insert
+        // chatPrevs.sort((a, b) => (a.lastMessage.dateCreated > b.lastMessage.dateCreated ? -1 : 1));
 
         return (
             <div className="LeftConversationsNav">
@@ -162,6 +167,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
                     return (
                         <Conversation
+                            onClick={() => setCurrentChat(chat)}
                             key={chat.guid}
                             aGuid={chat.guid}
                             chatParticipants={chatTitle}
@@ -170,14 +176,6 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                         />
                     );
                 })}
-
-                {/* {chatPrevs.map(chatPrev => 
-                <Conversation
-                  chatParticipants={chatPrev.address}
-                  lastMessage={chatPrev.country}
-                  lastMessageTime={chatPrev.uncanonicalizedId}
-                />
-                )} */}
             </div>
         );
     }

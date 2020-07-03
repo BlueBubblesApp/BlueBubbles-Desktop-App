@@ -1,4 +1,4 @@
-.Timestamp {
+.ChatLabel {
     height: 40px;
     min-height: 40px;
     display: flex;
@@ -7,9 +7,9 @@
     align-items: center;
 }
 
-.Timestamp > p {
+.ChatLabel > p {
     color: #939292;
-    font-family: 'SF UI Display Bold';
+    font-family: "SF UI Display Bold";
     font-size: 12px;
     margin: 0;
 }
