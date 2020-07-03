@@ -5,17 +5,17 @@
     z-index: 1;
     width: 100%;
     justify-content: flex-end;
+    border-bottom: 1px solid grey;
 }
 
 .activeChat{
-    background-color: #007aff;
+    background-color: #0349cd;
 }
 
 .contact-card {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    pointer-events: none;
 }
 
 .convo-wrap {
@@ -24,7 +24,6 @@
     display: flex;
     flex-flow: row nowrap;
     justify-content: flex-end;
-    border-bottom: 1px solid grey;
     pointer-events: none;
 }
 
@@ -32,13 +31,20 @@
     fill: #686868;
 }
 
+.cls-1-active {
+    fill: white;
+}
+
 .cls-2 {
     fill: white;
 }
 
+.cls-2-active {
+    fill: #686868;
+}
+
 #icon {
     height: 51px;
-    pointer-events: none;
 }
 
 .message-prev {
@@ -48,14 +54,12 @@
     margin-top: 3px;
     display: flex;
     flex-direction: column;
-    pointer-events: none;
 }
 
 .prev-top {
     height: 20px;
     width: 100%;
     display: flex;
-    pointer-events: none;
 }
 
 .message-recip {
@@ -64,7 +68,6 @@
     display: flex;
     align-items: flex-end;
     overflow-x: scroll;
-    pointer-events: none;
 }
 
 .message-time {
@@ -75,20 +78,17 @@
     align-items: flex-end;
     text-align: right;
     margin-right: 5px;
-    pointer-events: none;
 }
 
 .message-time > div {
     width: 100%;
     height: 100%;
-    pointer-events: none;
 }
 
 .prev-bottom {
     height: 45px;
     width: 100%;
     display: flex;
-    pointer-events: none;
 }
 
 .message-snip {
@@ -97,7 +97,6 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    pointer-events: none;
 }
 
 .message-del {
@@ -106,7 +105,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    pointer-events: none;
 }
 
 .message-del-conversation {
@@ -128,7 +126,6 @@
     overflow: hidden;
     margin: auto;
     margin-top: 2px;
-    pointer-events: none;
 }
 
 .message-recip-example {
@@ -138,8 +135,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-    margin: auto;
-    pointer-events: none;
+    margin: 0;
 }
 
 .message-time-example {
@@ -150,5 +146,4 @@
     white-space: nowrap;
     overflow: hidden;
     margin: auto;
-    pointer-events: none;
 }

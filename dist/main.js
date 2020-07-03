@@ -1651,7 +1651,11 @@ class BackendServer {
     const lastFetch = this.configRepo.get("lastFetch");
     const chats = await this.socketService.getChats({});
     emitData.syncProgress = 1;
-    emitData.loadingMessage = `Got ${chats.length} chats from the server. Fetching messages since ${new Date(lastFetch)}`;
+    emitData.loadingMessage = `Got ${chats.length} chats from the server since last fetch at ${new Date(lastFetch).toLocaleString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    })}`;
     console.log(emitData.loadingMessage);
     this.emitToUI("setup-update", emitData); // Iterate over each chat and fetch their messages
 

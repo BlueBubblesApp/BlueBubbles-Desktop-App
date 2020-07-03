@@ -160,6 +160,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
                     return (
                         <Conversation
+                            key={chat.guid}
                             aGuid={chat.guid}
                             chatParticipants={chatTitle}
                             lastMessage={lastText}

@@ -66,9 +66,7 @@ const Conversation = ({ aGuid, chatParticipants, lastMessage, lastMessageTime }:
             <div className="message-prev">
                 <div className="prev-top">
                     <div className="message-recip">
-                        <div>
                             <p className="message-recip-example">{chatParticipants}</p>
-                        </div>
                     </div>
                     <div className="message-time">
                         <div>

@@ -170,9 +170,9 @@ export class BackendServer {
         const chats: ChatResponse[] = await this.socketService.getChats({});
 
         emitData.syncProgress = 1;
-        emitData.loadingMessage = `Got ${chats.length} chats from the server. Fetching messages since ${new Date(
+        emitData.loadingMessage = `Got ${chats.length} chats from the server since last fetch at ${new Date(
             lastFetch
-        )}`;
+        ).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}`;
         console.log(emitData.loadingMessage);
         this.emitToUI("setup-update", emitData);
 
