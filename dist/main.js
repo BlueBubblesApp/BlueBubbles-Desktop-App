@@ -188,13 +188,13 @@ electron__WEBPACK_IMPORTED_MODULE_1__["app"].on("activate", () => {
 /*!**************************************!*\
   !*** ./src/main/server/constants.ts ***!
   \**************************************/
-/*! exports provided: DEFAULT_GENERAL_ITEMS */
+/*! exports provided: DEFAULT_CONFIG_ITEMS */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_GENERAL_ITEMS", function() { return DEFAULT_GENERAL_ITEMS; });
-const DEFAULT_GENERAL_ITEMS = {
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_CONFIG_ITEMS", function() { return DEFAULT_CONFIG_ITEMS; });
+const DEFAULT_CONFIG_ITEMS = {
   serverAddress: () => "",
   passphrase: () => "",
   lastFetch: () => 0
@@ -946,6 +946,8 @@ class ChatRepository {
   }
 
   async initialize() {
+    const isDev = "development" !== "production";
+
     if (this.db) {
       if (!this.db.isConnected) await this.db.connect();
       return this.db;
@@ -953,7 +955,7 @@ class ChatRepository {
 
     let dbPath = `${electron__WEBPACK_IMPORTED_MODULE_0__["app"].getPath("userData")}/chat.db`;
 
-    if (true) {
+    if (!isDev) {
       dbPath = `${electron__WEBPACK_IMPORTED_MODULE_0__["app"].getPath("userData")}/BlueBubbles-Desktop-App/chat.db`;
     }
 
@@ -962,9 +964,11 @@ class ChatRepository {
       type: "sqlite",
       database: dbPath,
       entities: [_entity__WEBPACK_IMPORTED_MODULE_2__["Attachment"], _entity__WEBPACK_IMPORTED_MODULE_2__["Chat"], _entity__WEBPACK_IMPORTED_MODULE_2__["Handle"], _entity__WEBPACK_IMPORTED_MODULE_2__["Message"]],
-      synchronize: true,
+      synchronize: isDev,
       logging: false
-    });
+    }); // Create the tables
+
+    if (!isDev) await this.db.synchronize();
     return this.db;
   }
 
@@ -1298,6 +1302,8 @@ class ConfigRepository {
   }
 
   async initialize() {
+    const isDev = "development" !== "production";
+
     if (this.db) {
       if (!this.db.isConnected) await this.db.connect();
       return this.db;
@@ -1305,7 +1311,7 @@ class ConfigRepository {
 
     let dbPath = `${electron__WEBPACK_IMPORTED_MODULE_0__["app"].getPath("userData")}/config.db`;
 
-    if (true) {
+    if (isDev) {
       dbPath = `${electron__WEBPACK_IMPORTED_MODULE_0__["app"].getPath("userData")}/BlueBubbles-Desktop-App/config.db`;
     }
 
@@ -1314,9 +1320,11 @@ class ConfigRepository {
       type: "sqlite",
       database: dbPath,
       entities: [_entity__WEBPACK_IMPORTED_MODULE_2__["Config"]],
-      synchronize: true,
+      synchronize: isDev,
       logging: false
-    }); // Load default config items
+    }); // Create the tables
+
+    if (!isDev) await this.db.synchronize(); // Load default config items
 
     await this.loadConfig();
     return this.db;
@@ -1335,7 +1343,7 @@ class ConfigRepository {
    */
 
 
-  hasConfigItem(name) {
+  contains(name) {
     return Object.keys(this.config).includes(name);
   }
   /**
@@ -1345,7 +1353,7 @@ class ConfigRepository {
    */
 
 
-  getConfigItem(name) {
+  get(name) {
     if (!Object.keys(this.config).includes(name)) return null;
     return ConfigRepository.convertFromDbValue(this.config[name]);
   }
@@ -1357,21 +1365,23 @@ class ConfigRepository {
    */
 
 
-  async setConfigItem(name, value) {
+  async set(name, value) {
     const saniVal = ConfigRepository.convertToDbValue(value);
     const repo = this.db.getRepository(_entity__WEBPACK_IMPORTED_MODULE_2__["Config"]);
     const item = await repo.findOne({
       name
-    });
+    }); // Either change or create the new Config object
 
     if (item) {
-      item.value = saniVal;
-      await repo.save(item);
+      await repo.update(item, {
+        value: saniVal
+      });
     } else {
-      await repo.create({
+      const cfg = repo.create({
         name,
         value: saniVal
       });
+      await repo.save(cfg);
     }
 
     this.config[name] = saniVal;
@@ -1483,14 +1493,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BackendServer", function() { return BackendServer; });
 /* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! electron */ "electron");
 /* harmony import */ var electron__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(electron__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _server_databases_config_entity_Config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @server/databases/config/entity/Config */ "./src/main/server/databases/config/entity/Config.ts");
-/* harmony import */ var _server_fileSystem__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @server/fileSystem */ "./src/main/server/fileSystem/index.ts");
-/* harmony import */ var _server_constants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @server/constants */ "./src/main/server/constants.ts");
-/* harmony import */ var _server_databases_config__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @server/databases/config */ "./src/main/server/databases/config/index.ts");
-/* harmony import */ var _server_databases_chat__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @server/databases/chat */ "./src/main/server/databases/chat/index.ts");
-/* harmony import */ var _server_services__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @server/services */ "./src/main/server/services/index.ts");
-
-// Config and FileSystem Imports
+/* harmony import */ var _server_fileSystem__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @server/fileSystem */ "./src/main/server/fileSystem/index.ts");
+/* harmony import */ var _server_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @server/constants */ "./src/main/server/constants.ts");
+/* harmony import */ var _server_databases_config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @server/databases/config */ "./src/main/server/databases/config/index.ts");
+/* harmony import */ var _server_databases_chat__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @server/databases/chat */ "./src/main/server/databases/chat/index.ts");
+/* harmony import */ var _server_services__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @server/services */ "./src/main/server/services/index.ts");
 
 
  // Database Imports
@@ -1554,7 +1561,7 @@ class BackendServer {
 
     try {
       console.log("Initializing filesystem...");
-      this.fs = new _server_fileSystem__WEBPACK_IMPORTED_MODULE_2__["FileSystem"]();
+      this.fs = new _server_fileSystem__WEBPACK_IMPORTED_MODULE_1__["FileSystem"]();
       this.fs.setup();
     } catch (ex) {
       console.log(`!Failed to setup filesystem! ${ex.message}`);
@@ -1566,7 +1573,7 @@ class BackendServer {
   async initializeDatabases() {
     try {
       console.log("Connecting to messaging database...");
-      this.chatRepo = new _server_databases_chat__WEBPACK_IMPORTED_MODULE_5__["ChatRepository"]();
+      this.chatRepo = new _server_databases_chat__WEBPACK_IMPORTED_MODULE_4__["ChatRepository"]();
       await this.chatRepo.initialize();
     } catch (ex) {
       console.log(`Failed to connect to messaging database! ${ex.message}`);
@@ -1575,7 +1582,7 @@ class BackendServer {
 
     try {
       console.log("Connecting to settings database...");
-      this.configRepo = new _server_databases_config__WEBPACK_IMPORTED_MODULE_4__["ConfigRepository"]();
+      this.configRepo = new _server_databases_config__WEBPACK_IMPORTED_MODULE_3__["ConfigRepository"]();
       await this.configRepo.initialize();
     } catch (ex) {
       console.log(`Failed to connect to settings database! ${ex.message}`);
@@ -1590,13 +1597,10 @@ class BackendServer {
 
   async setupDefaults() {
     try {
-      const repo = this.configRepo.db.getRepository(_server_databases_config_entity_Config__WEBPACK_IMPORTED_MODULE_1__["Config"]);
-
-      for (const key of Object.keys(_server_constants__WEBPACK_IMPORTED_MODULE_3__["DEFAULT_GENERAL_ITEMS"])) {
-        const item = await repo.findOne({
-          name: key
-        });
-        if (!item) await this.configRepo.setConfigItem(key, _server_constants__WEBPACK_IMPORTED_MODULE_3__["DEFAULT_GENERAL_ITEMS"][key]());
+      for (const key of Object.keys(_server_constants__WEBPACK_IMPORTED_MODULE_2__["DEFAULT_CONFIG_ITEMS"])) {
+        if (!this.configRepo.contains(key)) {
+          await this.configRepo.set(key, _server_constants__WEBPACK_IMPORTED_MODULE_2__["DEFAULT_CONFIG_ITEMS"][key]());
+        }
       }
     } catch (ex) {
       console.log(`Failed to setup default configurations! ${ex.message}`);
@@ -1612,7 +1616,7 @@ class BackendServer {
 
     try {
       console.log("Initializing up socket connection...");
-      this.socketService = new _server_services__WEBPACK_IMPORTED_MODULE_6__["SocketService"](this.db, this.chatRepo, this.configRepo, this.fs); // Start the socket service
+      this.socketService = new _server_services__WEBPACK_IMPORTED_MODULE_5__["SocketService"](this.db, this.chatRepo, this.configRepo, this.fs); // Start the socket service
 
       await this.socketService.start();
     } catch (ex) {
@@ -1644,7 +1648,7 @@ class BackendServer {
       redirect: null
     };
     const now = new Date();
-    const lastFetch = this.configRepo.getConfigItem("lastFetch");
+    const lastFetch = this.configRepo.get("lastFetch");
     const chats = await this.socketService.getChats({});
     emitData.syncProgress = 1;
     emitData.loadingMessage = `Got ${chats.length} chats from the server. Fetching messages since ${new Date(lastFetch)}`;
@@ -1657,13 +1661,13 @@ class BackendServer {
       // First, emit the chat to the front-end
       this.emitToUI("chat", chat); // Second, save the chat to the database
 
-      const chatObj = _server_databases_chat__WEBPACK_IMPORTED_MODULE_5__["ChatRepository"].createChatFromResponse(chat);
+      const chatObj = _server_databases_chat__WEBPACK_IMPORTED_MODULE_4__["ChatRepository"].createChatFromResponse(chat);
       const savedChat = await this.chatRepo.saveChat(chatObj); // Third, save the participants for the chat
 
       for (const participant of (_chat$participants = chat.participants) !== null && _chat$participants !== void 0 ? _chat$participants : []) {
         var _chat$participants;
 
-        const handle = _server_databases_chat__WEBPACK_IMPORTED_MODULE_5__["ChatRepository"].createHandleFromResponse(participant);
+        const handle = _server_databases_chat__WEBPACK_IMPORTED_MODULE_4__["ChatRepository"].createHandleFromResponse(participant);
         await this.chatRepo.saveHandle(savedChat, handle);
       } // Build message request params
 
@@ -1682,15 +1686,12 @@ class BackendServer {
       } // Third, let's fetch the messages from the DB
 
 
-      const one = new Date();
       const messages = await this.socketService.getChatMessages(chat.guid, payload);
-      const two = new Date();
-      console.log(`Fetch took ${two.getTime() - one.getTime()} ms`);
       emitData.loadingMessage = `Syncing ${messages.length} messages for ${count} of ${chats.length} chats`;
       console.log(emitData.loadingMessage); // Fourth, let's save the messages to the DB
 
       for (const message of messages) {
-        const msg = _server_databases_chat__WEBPACK_IMPORTED_MODULE_5__["ChatRepository"].createMessageFromResponse(message);
+        const msg = _server_databases_chat__WEBPACK_IMPORTED_MODULE_4__["ChatRepository"].createMessageFromResponse(message);
         await this.chatRepo.saveMessage(savedChat, msg);
       } // Lastly, save the attachments (if any)
       // TODO
@@ -1710,17 +1711,18 @@ class BackendServer {
     console.log(emitData.loadingMessage);
     this.emitToUI("setup-update", emitData); // Save the last fetch date
 
-    this.configRepo.setConfigItem("lastFetch", now);
+    this.configRepo.set("lastFetch", now);
   }
 
   startIpcListeners() {
+    // eslint-disable-next-line no-return-await
+    electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("get-config", async (_, __) => await this.configRepo.config);
     electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("set-config", async (event, args) => {
-      for (const item of Object.keys(args)) {
-        const hasConfig = this.configRepo.hasConfigItem(item);
+      console.log(args.constructor);
+      if (args.constructor !== Object) return this.configRepo.config;
 
-        if (hasConfig && this.configRepo.getConfigItem(item) !== args[item]) {
-          await this.configRepo.setConfigItem(item, args[item]);
-        }
+      for (const key of Object.keys(args)) {
+        await this.configRepo.set(key, args[key]);
       }
 
       this.emitToUI("config-update", this.configRepo.config);
@@ -1740,8 +1742,8 @@ class BackendServer {
       } // Save the config items
 
 
-      await this.configRepo.setConfigItem("serverAddress", args.enteredServerAddress);
-      await this.configRepo.setConfigItem("passphrase", args.enteredPassword);
+      await this.configRepo.set("serverAddress", args.enteredServerAddress);
+      await this.configRepo.set("passphrase", args.enteredPassword);
 
       try {
         // If we can't even connect, GTFO
@@ -1764,7 +1766,7 @@ class BackendServer {
       return null; // Consistent return
     }); // eslint-disable-next-line no-return-await
 
-    electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("get-chats", async (_, args) => await this.chatRepo.getChats()); // eslint-disable-next-line no-return-await
+    electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("get-chats", async (_, __) => await this.chatRepo.getChats()); // eslint-disable-next-line no-return-await
 
     electron__WEBPACK_IMPORTED_MODULE_0__["ipcMain"].handle("get-chat-messages", async (_, args) => await this.chatRepo.getMessages(args));
   }
@@ -1837,15 +1839,15 @@ class SocketService {
 
 
   async start(firstConnect = false) {
-    if (!this.configRepo || !this.configRepo.getConfigItem("serverAddress") || !this.configRepo.getConfigItem("passphrase")) {
+    if (!this.configRepo || !this.configRepo.get("serverAddress") || !this.configRepo.get("passphrase")) {
       console.error("Setup has not been completed!");
       return false;
     }
 
     return new Promise((resolve, reject) => {
-      this.socketServer = socket_io_client__WEBPACK_IMPORTED_MODULE_0__(this.configRepo.getConfigItem("serverAddress"), {
+      this.socketServer = socket_io_client__WEBPACK_IMPORTED_MODULE_0__(this.configRepo.get("serverAddress"), {
         query: {
-          guid: this.configRepo.getConfigItem("passphrase")
+          guid: this.configRepo.get("passphrase")
         }
       });
       this.socketServer.on("connect", () => {

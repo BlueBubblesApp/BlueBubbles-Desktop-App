@@ -6,13 +6,39 @@ import ConversationCloseIcon from "../../../../../../assets/icons/conversation-c
 
 // LOAD IN FROM BACKEND
 type ConversationProps = {
+    aGuid?: string;
     chatParticipants?: string;
     lastMessage?: string;
     lastMessageTime?: string;
 };
 
-const Conversation = ({ chatParticipants, lastMessage, lastMessageTime }: ConversationProps) => (
-    <div className="Conversation">
+function setActiveChat(e){
+    try{
+        document.getElementsByClassName("activeChat")[0].classList.remove("activeChat");
+    }
+    catch {}
+    
+    document.getElementById(e.target.getAttribute('id')).classList.add("activeChat");
+}
+
+function showDelMessage(e){
+    let id = e.target.getAttribute('id');
+    id = document.getElementById(id);
+    id.getElementsByClassName("message-del-conversation")[0].classList.remove("hideDelMessage");
+    console.log()
+    // console.log(document.querySelector(id));
+}
+
+function hideDelMessage(e){
+    let id = e.target.getAttribute('id');
+    id = document.getElementById(id);
+    id.getElementsByClassName("message-del-conversation")[0].classList.add("hideDelMessage");
+    console.log()
+    // console.log(document.querySelector(id));
+}
+
+const Conversation = ({ aGuid, chatParticipants, lastMessage, lastMessageTime }: ConversationProps) => (
+    <div className="Conversation" id={aGuid} onClick={setActiveChat} onMouseOver={showDelMessage} onMouseOut={hideDelMessage}>
         <div className="convo-wrap">
             <div className="contact-card">
                 {/* <img className="contact-icon" src={ContactImage} alt="contact" /> */}
@@ -57,7 +83,7 @@ const Conversation = ({ chatParticipants, lastMessage, lastMessageTime }: Conver
                         </div>
                     </div>
                     <div className="message-del">
-                        <img className="message-del-conversation" src={ConversationCloseIcon} alt="delete" />
+                        <img className="message-del-conversation hideDelMessage" src={ConversationCloseIcon} alt="delete" />
                     </div>
                 </div>
             </div>

@@ -23,7 +23,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         const msgDate = new Date(message.dateCreated);
 
         console.log(now.toLocaleDateString());
-        if (now.toLocaleDateString() === msgDate.toLocaleDateString()) return "Today";
+        if (now.toLocaleDateString() === msgDate.toLocaleDateString()) return msgDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
         if (yesterday.toLocaleDateString() === msgDate.toLocaleDateString()) return "Yesterday";
 
         const yearStr = String(msgDate.getFullYear());
@@ -160,7 +160,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
                     return (
                         <Conversation
-                            key={chat.guid}
+                            aGuid={chat.guid}
                             chatParticipants={chatTitle}
                             lastMessage={lastText}
                             lastMessageTime={LeftConversationsNav.getDateText(chat.lastMessage)}
