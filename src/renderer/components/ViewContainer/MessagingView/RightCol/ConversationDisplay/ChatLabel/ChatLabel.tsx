@@ -10,7 +10,7 @@ function ChatLabel({ text, date }: ConversationProps) {
     return (
         <div className="ChatLabel">
             <p>{text}</p>
-            {date ? <p>{date}</p> : null}
+            {date ? <p>{date.toLocaleTimeString()}</p> : null}
         </div>
     );
 }

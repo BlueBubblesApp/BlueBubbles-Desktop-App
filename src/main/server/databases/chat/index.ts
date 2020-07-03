@@ -1,5 +1,5 @@
 import { app } from "electron";
-import { createConnection, Connection } from "typeorm";
+import { createConnection, Connection, FindManyOptions } from "typeorm";
 import { ChatResponse, HandleResponse, MessageResponse } from "@server/types";
 
 import { Attachment, Chat, Handle, Message } from "./entity";
@@ -39,9 +39,11 @@ export class ChatRepository {
         return this.db;
     }
 
-    async getChats() {
+    async getChats(guid = null) {
         const repo = this.db.getRepository(Chat);
-        return repo.find({ relations: ["participants"] });
+        const params: FindManyOptions<Chat> = { relations: ["participants"] };
+        if (guid) params.where = { guid };
+        return repo.find(params);
     }
 
     async getMessages({

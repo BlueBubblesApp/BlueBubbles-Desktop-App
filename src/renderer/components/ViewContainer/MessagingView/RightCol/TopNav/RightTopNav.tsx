@@ -21,7 +21,6 @@ class RightTopNav extends React.Component<unknown, State> {
 
     render() {
         const { chat } = this.state;
-        console.log(chat?.participants);
 
         return (
             <div className="RightTopNav">
