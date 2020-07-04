@@ -149,27 +149,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             <div className="LeftConversationsNav">
                 {isLoading ? <div id="loader" /> : null}
                 {chats.map(chat => {
-                    // Calculate the chat name
-                    let chatTitle = chat.displayName;
-                    if (!chatTitle) {
-                        chatTitle = chat.participants.map(i => i.address).join(", ");
-                    }
-
-                    let lastText = chat.lastMessage.text;
-                    if (!lastText || chat.lastMessage.hasAttachments) {
-                        lastText = "1 Attachment";
-                    }
-
-                    return (
-                        <Conversation
-                            onClick={() => setCurrentChat(chat)}
-                            key={chat.guid}
-                            aGuid={chat.guid}
-                            chatParticipants={chatTitle}
-                            lastMessage={lastText}
-                            lastMessageTime={getDateText(new Date(chat.lastMessage.dateCreated))}
-                        />
-                    );
+                    return <Conversation onClick={() => setCurrentChat(chat)} key={chat.guid} chat={chat} />;
                 })}
             </div>
         );
