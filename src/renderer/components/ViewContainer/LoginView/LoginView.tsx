@@ -1,10 +1,8 @@
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Redirect, NavLink } from "react-router-dom";
-
 import "./LoginView.css";
-import { matchPath } from "react-router";
-import MessagingView from "../MessagingView/MessagingView";
+
 
 interface LoginViewState {
     loading: boolean;
@@ -14,6 +12,7 @@ interface LoginViewState {
     syncProgress: number;
     redirect: string;
     loadingMessage: string;
+    theme: string;
 }
 
 class LoginView extends React.Component<object, LoginViewState> {
@@ -27,7 +26,8 @@ class LoginView extends React.Component<object, LoginViewState> {
             loginIsValid: false, // Used to show progress bar
             syncProgress: 0,
             redirect: null,
-            loadingMessage: "Verifying server login..."
+            loadingMessage: "Verifying server login...",
+            theme: ""
         };
     }
 
@@ -44,6 +44,12 @@ class LoginView extends React.Component<object, LoginViewState> {
         // Get the config, if we have a serverAddress and password, automatically
         // invoke the "submit" method
         const config = await ipcRenderer.invoke("get-config");
+        this.setState({theme: config.theme})
+
+        ipcRenderer.on("config-update", (_, args) => {
+            this.setState({theme: args.theme});
+        });
+
         if (config.serverAddress && config.passphrase) {
             const isConnected = await ipcRenderer.invoke("get-socket-status");
             this.setState({
@@ -87,12 +93,6 @@ class LoginView extends React.Component<object, LoginViewState> {
         });
     };
 
-    handleInputChange = event => {
-        this.setState({
-            enteredServerAddress: event.target.value
-        });
-    };
-
     render() {
         if (this.state.redirect) {
             return <Redirect to={this.state.redirect} />;
@@ -104,7 +104,7 @@ class LoginView extends React.Component<object, LoginViewState> {
         };
 
         return (
-            <div className="LoginView">
+            <div className="LoginView" data-theme={this.state.theme}>
                 {this.state.loading ? (
                     <div id="loadingContainer">
                         <h1>{this.state.loadingMessage}</h1>

@@ -4,7 +4,7 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-color: #323232;
+    background-color: var(--sidebar-color);
 }
 
 #loginContainer {
@@ -18,12 +18,12 @@
 }
 
 #loginContainer > h1 {
-    color: white;
+    color: var(--main-title-color);
     font-family: "SF UI Display Bold";
 }
 
 #loadingContainer > h1 {
-    color: white;
+    color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-size: 2vw;
 }
@@ -68,13 +68,13 @@
     align-items: center;
     height: 100%;
     width: 100%;
-    background-color: #323232;
+    background-color: var(--sidebar-color);
     animation: ease-in-out 3s;
 }
 
 #loader {
     font-size: 10px;
-    margin: 20px auto 10px auto;
+    margin: 50px auto;
     text-indent: -9999em;
     width: 4em;
     height: 4em;
@@ -103,7 +103,7 @@
     content: "";
 }
 #loader:after {
-    background: #323232;
+    background: var(--sidebar-color);
     width: 75%;
     height: 75%;
     border-radius: 50%;
@@ -162,7 +162,7 @@
 }
 
 .loginTitleBarRight {
-    background-color: #323232 !important;
+    background-color: var(--sidebar-color) !important;
 }
 
 @media (max-width: 1200px) {
@@ -201,7 +201,7 @@
 }
 
 #versionNumber {
-    color: white;
+    color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-size: 15px;
     justify-self: flex-start;

@@ -9,7 +9,7 @@
 #TitleBarLeft {
     min-width: 290px;
     height: 100%;
-    background-color: #323232;
+    background-color: var(--sidebar-color);
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -33,7 +33,7 @@
     -webkit-app-region: drag;
     flex-grow: 1;
     height: 100%;
-    background-color: #4c4c4c;
+    background-color: var(--secondary-color);
     border-radius: 0px 5px 0px 0px;
 }
 

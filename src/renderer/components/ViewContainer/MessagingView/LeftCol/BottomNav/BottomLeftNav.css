@@ -19,6 +19,7 @@
 
 #settingsIcon {
     height: 25px;
+    fill: var(--main-title-color)
 }
 
 #logoutButton{

@@ -5,8 +5,9 @@
     flex-grow: 1;
     border-top: 1px solid grey;
     overflow-y: auto;
+    background-color: var(--sidebar-color);
 }
 
 .active{
-    background-color: #007aff;
+    background-color: var(--blue-color);
 }

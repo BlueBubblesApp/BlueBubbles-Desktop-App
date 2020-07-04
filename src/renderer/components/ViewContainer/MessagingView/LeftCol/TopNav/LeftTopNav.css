@@ -1,7 +1,7 @@
 .LeftTopNav-Mes {
     height: 35px;
     min-height: 35px;
-    background-color: #323232;
+    background-color: var(--sidebar-color);
     display: flex;
     justify-content: center;
 }
@@ -27,7 +27,7 @@
 #messageSearch[type="text"] {
     height: 19px;
     margin-bottom: 8px;
-    background-color: #545454;
+    background-color: var(--search-background-color) !important;
     background-image: url("../../../../../assets/icons/search-icon.png");
     background-position: 5px 4px;
     background-position-y: center;

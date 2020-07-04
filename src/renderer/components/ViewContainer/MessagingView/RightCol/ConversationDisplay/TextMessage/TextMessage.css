@@ -7,10 +7,10 @@
 
 .IncomingMessage > p {
     max-width: 60%;
-    color: white;
+    color: var(--main-title-color);
     font-family: "SF UI Display Light";
     font-size: 14px;
-    background-color: #6b6b6b;
+    background-color: var(--incoming-message-color);
     padding: 6px 15px 6px 15px;
     border-radius: 20px;
     word-break: break-all;

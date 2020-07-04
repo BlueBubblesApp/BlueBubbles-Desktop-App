@@ -15,7 +15,8 @@
 
 #returnIcon {
     margin-bottom: 2px;
-    height: 23px;
+    height: 25px;
+    fill: var(--main-title-color);
 }
 
 @-webkit-keyframes swingX {

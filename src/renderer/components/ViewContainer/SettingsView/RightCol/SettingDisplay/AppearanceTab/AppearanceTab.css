@@ -1,0 +1,72 @@
+.AppearanceTab{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#AppearanceTitle{
+    height: 35px;
+    min-height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background-color: var(--secondary-color);
+    width: 100%;
+}
+
+#AppearanceTitle > h1 {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 24px;
+    margin: 0;
+}
+
+.testButton{
+    width: 25%;
+    margin-bottom: 20px;
+}
+
+#AppearanceContainer{
+    display: flex;
+    flex-flow: row nowrap;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+#half1{
+    margin-right: 30px;
+    margin-left: 30px;
+}
+
+#half2{
+    margin-right: 30px;
+}
+
+#darkExample{
+    max-width:100%;
+    max-height:100%;
+    border-radius: 40px;
+    pointer-events: none;
+    border: 3px solid var(--background-color);
+}
+
+#lightExample{
+    max-width:100%;
+    max-height:100%;
+    border-radius: 40px;
+    pointer-events: none;
+    border: 3px solid var(--background-color);
+}
+
+.active-theme{
+    border: 3px solid var(--blue-color) !important;
+}
+
+.themeTitle{
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 24px;
+}

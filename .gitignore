@@ -6,3 +6,4 @@ tmp/
 temp/
 .DS_Store
 dist/
+release/
