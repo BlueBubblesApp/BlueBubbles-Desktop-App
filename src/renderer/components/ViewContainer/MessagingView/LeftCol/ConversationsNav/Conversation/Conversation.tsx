@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import * as React from "react";
 import { Chat, Message } from "@server/databases/chat/entity";
-import { getDateText, getiMessageNumberFormat } from "@renderer/utils";
+import { getDateText, getiMessageNumberFormat, generateChatTitle } from "@renderer/utils";
 
 import "./Conversation.css";
 import ConversationCloseIcon from "../../../../../../assets/icons/conversation-close-icon.png";
@@ -41,22 +41,6 @@ function hideDelMessage(e) {
 }
 
 const Conversation = ({ chat, onClick }: ConversationProps) => {
-    // Calculate the chat name
-    let chatTitle = chat.displayName;
-    if (!chatTitle) {
-        chatTitle = chat.participants
-            .map(handle => {
-                const hasContact = false;
-                if (hasContact) {
-                    // TODO: get the contact
-                    return handle.address;
-                }
-
-                return getiMessageNumberFormat(handle.address);
-            })
-            .join(", ");
-    }
-
     let lastText = chat.lastMessage.text;
     if (!lastText || chat.lastMessage.hasAttachments) {
         lastText = "1 Attachment";
@@ -101,7 +85,7 @@ const Conversation = ({ chat, onClick }: ConversationProps) => {
                 <div className="message-prev">
                     <div className="prev-top">
                         <div className="message-recip">
-                            <p className="message-recip-example">{chatTitle}</p>
+                            <p className="message-recip-example">{generateChatTitle(chat)}</p>
                         </div>
                         <div className="message-time">
                             <div>

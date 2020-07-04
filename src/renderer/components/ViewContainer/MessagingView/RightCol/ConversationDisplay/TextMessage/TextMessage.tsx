@@ -12,12 +12,12 @@ type MessageProps = {
 
 function TextMessage({ message, olderMessage, newerMessage }: MessageProps) {
     const className = !message.isFromMe ? "IncomingMessage" : "OutgoingMessage";
-    let sender = message.handle.address;
+    let sender = message?.handle?.address;
     const hasContact = false;
-    if (hasContact) {
+    if (message.handle && hasContact) {
         // TODO: get the contact
         sender = message.handle.address;
-    } else {
+    } else if (message.handle) {
         sender = getiMessageNumberFormat(message.handle.address);
     }
 
