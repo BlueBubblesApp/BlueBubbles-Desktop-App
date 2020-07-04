@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Chat, Message } from "@server/databases/chat/entity";
+import { getDateText, getTimeText } from "@renderer/utils";
 
 import "./RightConversationDisplay.css";
 import ChatLabel from "./ChatLabel/ChatLabel";
@@ -111,11 +112,7 @@ class RightConversationDisplay extends React.Component<unknown, State> {
     render() {
         const { chat, messages, isLoading } = this.state;
 
-        if (!chat)
-            return (
-                <div className="RightConversationDisplay">
-                </div>
-            );
+        if (!chat) return <div className="RightConversationDisplay" />;
 
         let chatTitle = chat.displayName;
         if (!chatTitle) {
@@ -133,9 +130,26 @@ class RightConversationDisplay extends React.Component<unknown, State> {
             <div id="messageView" onScroll={e => this.detectTop(e)} className="RightConversationDisplay">
                 {isLoading ? <div id="loader" /> : null}
                 <ChatLabel text={`iMessage with ${chatTitle}`} date={date} />
-                {messages.reverse().map((message: Message) => (
-                    <TextMessage key={message.guid} message={message} />
-                ))}
+                {messages.reverse().map((message: Message, index: number) => {
+                    let newerMessage = null;
+                    let olderMessage = null;
+
+                    if (index - 1 >= 0 && index - 1 < messages.length) olderMessage = messages[index - 1];
+                    if (index + 1 < messages.length && index + 1 >= 0) newerMessage = messages[index + 1];
+
+                    return (
+                        <div key={message.guid}>
+                            {olderMessage && message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 30 ? (
+                                <ChatLabel
+                                    text={`${getDateText(new Date(message.dateCreated))}, ${getTimeText(
+                                        new Date(message.dateCreated)
+                                    )}`}
+                                />
+                            ) : null}
+                            <TextMessage message={message} olderMessage={olderMessage} newerMessage={newerMessage} />
+                        </div>
+                    );
+                })}
             </div>
         );
     }

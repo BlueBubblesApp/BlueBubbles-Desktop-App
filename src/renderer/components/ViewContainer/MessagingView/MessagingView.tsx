@@ -1,31 +1,31 @@
 import * as React from "react";
+import { ipcRenderer } from "electron";
+
 import LeftCol from "./LeftCol/LeftCol";
 import RightCol from "./RightCol/RightCol";
 import "./MessagingView.css";
-import { ipcRenderer } from "electron";
 
-interface MessagingViewProps{
+interface MessagingViewProps {
     theme: string;
 }
 
-
 class MessagingView extends React.Component<object, MessagingViewProps> {
-    constructor(props){
-        super(props)
+    constructor(props) {
+        super(props);
 
         this.state = {
             theme: ""
-        }
+        };
     }
 
     async componentDidMount() {
         document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
         // document.getElementById("TitleBarRight").classList.add("messagingTitleBarRight");\
-        const config = await ipcRenderer.invoke("get-config")
-        this.setState({theme: config.theme})
+        const config = await ipcRenderer.invoke("get-config");
+        this.setState({ theme: config.theme });
 
         ipcRenderer.on("config-update", (_, args) => {
-            this.setState({theme: args.theme});
+            this.setState({ theme: args.theme });
         });
     }
 

@@ -1,19 +1,18 @@
 @font-face {
-    font-family: 'SF UI Display Light';
-    src: url('./fonts/SF-UI-Display-Light.woff2') format('woff2'),
-        url('./fonts/SF-UI-Display-Light.woff') format('woff');
+    font-family: "SF UI Display Light";
+    src: url("./fonts/SF-UI-Display-Light.woff2") format("woff2"),
+        url("./fonts/SF-UI-Display-Light.woff") format("woff");
 }
 
 @font-face {
-    font-family: 'SF UI Display Bold';
-    src: url('./fonts/SF-UI-Display-Bold.woff2') format('woff2'),
-        url('./fonts/SF-UI-Display-Bold.woff') format('woff');
+    font-family: "SF UI Display Bold";
+    src: url("./fonts/SF-UI-Display-Bold.woff2") format("woff2"), url("./fonts/SF-UI-Display-Bold.woff") format("woff");
 }
 
 @font-face {
-    font-family: 'SF UI Display Black';
-    src: url('./fonts/SF-UI-Display-Black.woff2') format('woff2'),
-        url('./fonts/SF-UI-Display-Black.woff') format('woff');
+    font-family: "SF UI Display Black";
+    src: url("./fonts/SF-UI-Display-Black.woff2") format("woff2"),
+        url("./fonts/SF-UI-Display-Black.woff") format("woff");
 }
 
 /* *{
@@ -37,8 +36,8 @@ body {
     min-height: 100%;
     width: 100%;
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-        'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
+        "Droid Sans", "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     display: flex;
@@ -48,7 +47,7 @@ body {
 }
 
 code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 .root {
@@ -68,6 +67,7 @@ a {
     --blue-color: #0349cd;
     --main-title-color: #000;
     --sub-title-color: #454545;
+    --chat-label-color: #797878;
     --background-color: #fff;
     --secondary-color: #f8f8f8;
     --sidebar-color: #dbdbdb;
@@ -79,14 +79,15 @@ a {
 [data-theme^="dark"],
 [data-theme] [data-theme^="dark"],
 [data-theme="light-dark-sidebar"] nav {
-  --blue-color: #0349cd;
-  --main-title-color: #fff;
-  --sub-title-color: #b5b5b5;
-  --background-color: #1e1e1e;
-  --secondary-color: #4c4c4c;
-  --sidebar-color: #323232;
-  --slight-dark: #454545;
-  --return-button-color: #fff;
-  --search-background-color: #545454;
-  --incoming-message-color: #6b6b6b;
+    --blue-color: #0349cd;
+    --main-title-color: #fff;
+    --sub-title-color: #b5b5b5;
+    --chat-label-color: #797878;
+    --background-color: #1e1e1e;
+    --secondary-color: #4c4c4c;
+    --sidebar-color: #323232;
+    --slight-dark: #454545;
+    --return-button-color: #fff;
+    --search-background-color: #545454;
+    --incoming-message-color: #6b6b6b;
 }

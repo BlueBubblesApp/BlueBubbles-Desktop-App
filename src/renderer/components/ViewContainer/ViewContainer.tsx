@@ -1,33 +1,32 @@
-import * as React from 'react';
-import { BrowserRouter as Router, Route, HashRouter } from 'react-router-dom';
-import './ViewContainer.css';
-import MessagingView from './MessagingView/MessagingView';
-import SettingsView from './SettingsView/SettingsView';
-import LoginView from './LoginView/LoginView';
-import { ipcRenderer } from 'electron';
+import * as React from "react";
+import { BrowserRouter as Router, Route, HashRouter } from "react-router-dom";
+import "./ViewContainer.css";
+import { ipcRenderer } from "electron";
+import MessagingView from "./MessagingView/MessagingView";
+import SettingsView from "./SettingsView/SettingsView";
+import LoginView from "./LoginView/LoginView";
 
-const { AnimatedSwitch } = require('react-router-transition');
+const { AnimatedSwitch } = require("react-router-transition");
 
-interface ViewContainerProps{
+interface ViewContainerProps {
     theme: string;
 }
 
 class ViewContainer extends React.Component<object, ViewContainerProps> {
-    constructor(props){
-        super(props)
+    constructor(props) {
+        super(props);
 
         this.state = {
             theme: ""
-        }
+        };
     }
 
-    async componentDidMount(){
-        const config = await ipcRenderer.invoke("get-config")
-        this.setState({theme: config.theme})
+    async componentDidMount() {
+        const config = await ipcRenderer.invoke("get-config");
+        this.setState({ theme: config.theme });
 
         ipcRenderer.on("config-update", (_, args) => {
-
-            this.setState({theme: args.theme});
+            this.setState({ theme: args.theme });
         });
     }
 
