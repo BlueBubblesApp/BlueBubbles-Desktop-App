@@ -68,7 +68,18 @@ class RightConversationDisplay extends React.Component<unknown, State> {
     async detectTop(e: React.UIEvent<HTMLDivElement, UIEvent>) {
         // First check if we are at the top
         if (e.currentTarget.scrollTop === 0) {
-            this.getNextMessagePage();
+            // Save the current size
+            const currentSize = e.currentTarget.scrollHeight;
+
+            // Get the next page
+            await this.getNextMessagePage();
+
+            // Get the current view & its' size
+            const view = document.getElementById("messageView");
+            const newSize = view.scrollHeight;
+
+            // Set the scroll position
+            view.scrollTo(0, newSize - currentSize);
         }
     }
 
@@ -100,11 +111,16 @@ class RightConversationDisplay extends React.Component<unknown, State> {
             updatedGuids.push(message.guid);
         }
 
-        // Update the state
-        this.setState({
-            messages: updatedMessages,
-            messageGuids: updatedGuids
-        });
+        // Update the state (and wait for it to finish)
+        await new Promise((resolve, _) =>
+            this.setState(
+                {
+                    messages: updatedMessages,
+                    messageGuids: updatedGuids
+                },
+                resolve
+            )
+        );
 
         return true;
     }
