@@ -138,7 +138,7 @@ export class BackendServer {
             this.socketService = new SocketService(this.db, this.chatRepo, this.configRepo, this.fs);
 
             // Start the socket service
-            await this.socketService.start();
+            await this.socketService.start(true);
         } catch (ex) {
             console.log(`Failed to setup socket service! ${ex.message}`);
         }
@@ -238,7 +238,6 @@ export class BackendServer {
         ipcMain.handle("get-config", async (_, __) => await this.configRepo.config);
 
         ipcMain.handle("set-config", async (event, args) => {
-            console.log(args.constructor);
             if (args.constructor !== Object) return this.configRepo.config;
             for (const key of Object.keys(args)) {
                 await this.configRepo.set(key, args[key]);

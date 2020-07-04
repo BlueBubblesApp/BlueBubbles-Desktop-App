@@ -1,10 +1,10 @@
-import * as React from 'react';
-import './ServerInputTitle.css';
-import { ipcRenderer } from 'electron';
+import * as React from "react";
+import { ipcRenderer } from "electron";
+import "./ServerInputTitle.css";
 
 type ServerInputTitleState = {
-    title: string;
-    subTitle: string;
+    // title: string;
+    // subTitle: string;
     enteredServer: string;
 };
 
@@ -13,31 +13,30 @@ type InputTitleProps = {
     subTitle?: string;
 };
 
-
 class ServerInputTitle extends React.Component<InputTitleProps, ServerInputTitleState> {
     constructor(props) {
         super(props);
 
         this.state = {
-            title: "",
-            subTitle: "",
-            enteredServer: "",
+            // title: "",
+            // subTitle: "",
+            enteredServer: ""
         };
     }
 
-    async componentDidMount(){
+    async componentDidMount() {
         const config = await ipcRenderer.invoke("get-config");
-        this.setState({enteredServer: config.serverAddress})
+        this.setState({ enteredServer: config.serverAddress });
 
-        var input = document.getElementById("serverInput");
+        const input = document.getElementById("serverInput");
 
-        input.addEventListener("keyup", function(event) {
+        input.addEventListener("keyup", (event) => {
             // Number 13 is the "Enter" key on the keyboard
             if (event.keyCode === 13) {
-              event.preventDefault();
-              input.blur();
+                event.preventDefault();
+                input.blur();
             }
-          });
+        });
     }
 
     handleServerChange = event => {
@@ -47,22 +46,25 @@ class ServerInputTitle extends React.Component<InputTitleProps, ServerInputTitle
     };
 
     handleSubmit = () => {
-        const config = {enteredServer: this.state.enteredServer};
-        console.log("Saved server: " + this.state.enteredServer)
-        ipcRenderer.invoke("set-config", config)
+        const config = { enteredServer: this.state.enteredServer };
+        console.log(`Saved server: ${this.state.enteredServer}`);
+        ipcRenderer.invoke("set-config", config);
     };
 
-
-    render(){
-        return(
+    render() {
+        return (
             <div className="ServerInputTitle">
                 <h2>{this.props.title}</h2>
-                <input id="serverInput" value={this.state.enteredServer} onChange={this.handleServerChange} onBlur={this.handleSubmit} placeholder={this.state.enteredServer}></input>
+                <input
+                    id="serverInput"
+                    value={this.state.enteredServer}
+                    onChange={this.handleServerChange}
+                    onBlur={this.handleSubmit}
+                    placeholder={this.state.enteredServer}
+                />
             </div>
         );
     }
-    
-
 }
 
 export default ServerInputTitle;

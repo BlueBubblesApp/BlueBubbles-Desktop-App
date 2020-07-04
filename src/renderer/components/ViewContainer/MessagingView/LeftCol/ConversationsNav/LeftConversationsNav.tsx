@@ -2,6 +2,7 @@ import * as React from "react";
 import { ipcRenderer } from "electron";
 
 import { Chat as DBChat, Message as DBMessage } from "@server/databases/chat/entity";
+import { getDateText } from "@renderer/utils";
 
 import "./LeftConversationsNav.css";
 import Conversation from "./Conversation/Conversation";
@@ -21,22 +22,6 @@ const setCurrentChat = (guid: Chat) => {
 };
 
 class LeftConversationsNav extends React.Component<unknown, State> {
-    static getDateText(message: DBMessage) {
-        const now = new Date();
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const msgDate = new Date(message.dateCreated);
-
-        const nowLocale = now.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
-        const msgLocale = msgDate.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
-        const yLocale = yesterday.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
-
-        if (nowLocale === msgLocale)
-            return msgDate.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
-        if (yLocale === msgLocale) return "Yesterday";
-        return msgDate.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" }).slice(0, -2);
-    }
-
     constructor(props: unknown) {
         super(props);
 
@@ -182,7 +167,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                             aGuid={chat.guid}
                             chatParticipants={chatTitle}
                             lastMessage={lastText}
-                            lastMessageTime={LeftConversationsNav.getDateText(chat.lastMessage)}
+                            lastMessageTime={getDateText(new Date(chat.lastMessage.dateCreated))}
                         />
                     );
                 })}
