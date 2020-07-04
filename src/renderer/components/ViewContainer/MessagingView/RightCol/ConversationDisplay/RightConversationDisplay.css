@@ -1,6 +1,6 @@
 .RightConversationDisplay {
     flex-grow: 1;
-    background-color: #1e1e1e;
+    background-color: var(--background-color);
     flex-direction: column;
     overflow-y: scroll;
     padding: 0 0 15px 0;

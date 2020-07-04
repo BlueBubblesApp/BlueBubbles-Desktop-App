@@ -2,6 +2,7 @@
     height: 45px;
     min-height: 45px;
     display: flex;
+    background-color: var(--secondary-color);
 }
 
 #messageField {
@@ -14,7 +15,6 @@
 
 #messageFieldInput[type='text'] {
     height: 19px;
-    background-color: #4c4c4c;
     background-repeat: no-repeat;
     border-radius: 25px;
     border: none;
@@ -22,10 +22,11 @@
     padding: 3px 5px 3px 8px;
     font-family: 'SF UI Display Bold';
     font-size: 15px;
-    color: white;
+    color: var(--main-title-color);
     outline: none;
-    border: 3px solid #454545;
+    border: 1px solid var(--sub-title-color);
     margin: 0px 12px 0px 12px;
+    background-color: var(--secondary-color);
 }
 
 *::placeholder {

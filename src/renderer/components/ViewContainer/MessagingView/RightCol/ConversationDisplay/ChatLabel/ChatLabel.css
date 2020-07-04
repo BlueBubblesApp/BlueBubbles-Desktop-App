@@ -8,7 +8,7 @@
 }
 
 .ChatLabel > p {
-    color: #939292;
+    color: var(--sub-title-color);
     font-family: "SF UI Display Bold";
     font-size: 12px;
     margin: 0;

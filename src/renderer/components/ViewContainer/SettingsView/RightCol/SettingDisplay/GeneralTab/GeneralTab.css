@@ -1,0 +1,19 @@
+.GeneralTab{
+    height: 100%;
+}
+
+#GeneralTitle{
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    background-color: var(--secondary-color);
+}
+
+#GeneralTitle > h1 {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 24px;
+    margin: 0;
+}

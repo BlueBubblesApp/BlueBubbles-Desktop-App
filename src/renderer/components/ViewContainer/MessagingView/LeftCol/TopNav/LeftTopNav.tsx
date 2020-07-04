@@ -1,8 +1,7 @@
 import * as React from "react";
 import "./LeftTopNav.css";
-import { BrowserRouter, Route, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import ComposeIcon from "../../../../../assets/icons/compose-icon.png";
-import SettingsIcon from "../../../../../assets/icons/settings-icon.png";
 
 function LeftTopNav() {
     return (

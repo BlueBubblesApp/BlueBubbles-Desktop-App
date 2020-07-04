@@ -10,7 +10,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #323232;
+    background-color: var(--sidebar-color);
     justify-content: center;
     align-items: center;
 }
@@ -22,12 +22,12 @@
 }
 
 .messagingTitleBarRight{
-    background-color: #4c4c4c !important;
+    background-color: var(--secondary-color) !important;
 }
 
 /* Progress bar */
 #progressBar {
-    height: 8px; /* Can be anything */
+    height: 8px;
     position: relative;
     background: #555;
     -moz-border-radius: 25px;

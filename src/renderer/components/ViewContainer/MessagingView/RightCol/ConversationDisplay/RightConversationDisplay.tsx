@@ -114,7 +114,6 @@ class RightConversationDisplay extends React.Component<unknown, State> {
         if (!chat)
             return (
                 <div className="RightConversationDisplay">
-                    <h3>Please select a conversation on the left</h3>
                 </div>
             );
 

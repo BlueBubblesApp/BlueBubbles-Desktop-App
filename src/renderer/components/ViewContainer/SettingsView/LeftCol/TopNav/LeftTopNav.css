@@ -2,7 +2,7 @@
     height: 35px;
     min-height: 35px;
     width: 100%;
-    background-color: #323232;
+    background-color: var(--sidebar-color);
     display: flex;
     justify-content: center;
 }
@@ -19,7 +19,6 @@
 #messageSearch[type='text'] {
     height: 19px;
     margin-bottom: 8px;
-    background-color: #545454;
     background-image: url('../../../../../assets/icons/search-icon.png');
     background-position: 3px 4px;
     background-size: 17px;
@@ -29,10 +28,10 @@
     width: 80%;
     padding: 3px 5px 3px 25px;
     font-family: 'SF UI Display Bold';
-    color: white;
+    color: var(--sub-title-color);
     outline: none;
 }
 
 #messageSearch[type='text']:focus {
-    border: 2px solid #3c7ca8;
+    border: 1px solid #3c7ca8;
 }

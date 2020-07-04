@@ -1,6 +1,6 @@
 .SettingDisplay{
     flex-grow: 1;
-    background-color: #1e1e1e;
+    background-color: var(--background-color);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
