@@ -147,6 +147,7 @@
    "dependencies": {
       "cors": "^2.8.5",
       "express": "^4.17.1",
+      "google-libphonenumber": "^3.2.10",
       "react": "^16.13.1",
       "react-dom": "^16.13.1",
       "react-redux": "^7.2.0",

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Chat } from "@server/databases/chat/entity";
+import { getiMessageNumberFormat } from "@renderer/utils";
 
 import "./RightTopNav.css";
 
@@ -22,6 +23,16 @@ class RightTopNav extends React.Component<unknown, State> {
     render() {
         const { chat } = this.state;
 
+        const participants = (chat?.participants ?? []).map(handle => {
+            const hasContact = false;
+            if (hasContact) {
+                // TODO: get the contact
+                return handle.address;
+            }
+
+            return getiMessageNumberFormat(handle.address);
+        });
+
         return (
             <div className="RightTopNav">
                 <div id="toDiv">
@@ -29,9 +40,9 @@ class RightTopNav extends React.Component<unknown, State> {
                 </div>
                 <div id="recipDiv">
                     {chat
-                        ? chat.participants.map(handle => (
-                              <div key={handle.address}>
-                                  <p>{handle.address}</p>
+                        ? participants.map(item => (
+                              <div key={item}>
+                                  <p>{`${item},`}</p>
                               </div>
                           ))
                         : null}
