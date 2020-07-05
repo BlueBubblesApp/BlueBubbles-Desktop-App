@@ -1,5 +1,7 @@
 import * as React from "react";
-import { ipcRenderer } from "electron";
+import { ipcRenderer, IpcRendererEvent } from "electron";
+import { Chat } from "@server/databases/chat/entity";
+
 import "./RightCol.css";
 import RightTopNav from "./TopNav/RightTopNav";
 import RightConversationDisplay from "./ConversationDisplay/RightConversationDisplay";
@@ -9,7 +11,7 @@ import NewMessageConversationDisplay from "./NewMessageConversation/NewMessageCo
 import NewMessageBottomNav from "./NewMessageBottom/NewMessageBottomNav";
 
 type ServerInputTitleState = {
-    isMakingNewChat: boolean;
+    currentChat: Chat;
 };
 
 class RightCol extends React.Component<object, ServerInputTitleState> {
@@ -17,24 +19,28 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
         super(props);
 
         this.state = {
-            isMakingNewChat: false
+            currentChat: null
         };
     }
 
-    async componentDidMount() {
-        const config = await ipcRenderer.invoke("get-config");
-        this.setState({ isMakingNewChat: config.isMakingNewChat });
-
-        ipcRenderer.on("config-update", (_, args) => {
-            console.log(args.isMakingNewChat);
-            this.setState({ isMakingNewChat: args.isMakingNewChat });
-        });
+    componentDidMount() {
+        ipcRenderer.on("set-current-chat", this.onChatChange);
     }
 
+    componentWillUnmount() {
+        ipcRenderer.removeListener("set-current-chat", this.onChatChange);
+    }
+
+    onChatChange = async (_: IpcRendererEvent, chat: Chat) => {
+        this.setState({ currentChat: chat });
+    };
+
     render() {
+        const { currentChat } = this.state;
+
         return (
             <div className="RightCol-Mes">
-                {this.state.isMakingNewChat ? (
+                {!currentChat ? (
                     <>
                         <NewMessageTopNav />
                         <NewMessageConversationDisplay />
@@ -42,9 +48,9 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
                     </>
                 ) : (
                     <>
-                        <RightTopNav />
-                        <RightConversationDisplay />
-                        <RightBottomNav />
+                        <RightTopNav chat={currentChat} />
+                        <RightConversationDisplay chat={currentChat} />
+                        <RightBottomNav chat={currentChat} />
                     </>
                 )}
             </div>

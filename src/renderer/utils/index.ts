@@ -21,6 +21,8 @@ export const getDateText = (date: Date) => {
 };
 
 export const getiMessageNumberFormat = (address: string) => {
+    if (!address) return address;
+
     // If it's an email, just return the email
     if (address.includes("@")) return address;
 

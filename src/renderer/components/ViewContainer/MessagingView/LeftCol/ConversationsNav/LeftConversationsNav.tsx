@@ -22,7 +22,6 @@ const setCurrentChat = (guid: Chat) => {
     // console.log(config)
     // ipcRenderer.invoke("set-config", config);
 
-    document.getElementById("messageFieldInput").focus();
     ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: guid });
 };
 
