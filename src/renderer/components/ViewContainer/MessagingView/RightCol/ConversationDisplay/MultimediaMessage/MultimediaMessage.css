@@ -1,0 +1,115 @@
+.IncomingMessage {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 0 0 13px;
+}
+
+.IncomingMessage > p {
+    max-width: 60%;
+    color: var(--main-title-color);
+    font-family: "SF UI Display Light";
+    font-size: 14px;
+    background-color: var(--incoming-message-color);
+    padding: 8px 15px 8px 15px;
+    border-radius: 20px;
+    word-break: normal;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+.OutgoingMessage {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 0 13px 0 0;
+}
+
+.OutgoingMessage > p {
+    max-width: 60%;
+    color: white;
+    font-family: "SF UI Display Light";
+    font-size: 14px;
+    background-color: #006ee4;
+    padding: 8px 15px 8px 15px;
+    border-radius: 20px;
+    word-break: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    margin-top: 3px;
+    margin-bottom: 0;
+}
+
+.MessageSender {
+    margin: 10px 0 0 20px;
+    color: var(--sub-title-color);
+    font-size: 11px;
+}
+
+/* Outgoing message tails */
+.OutgoingMessage .message {
+    color: white;
+    margin-left: 25%;
+    background: #006ee4;
+    background-attachment: fixed;
+    position: relative;
+}
+
+.OutgoingMessage .message.tail:before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    bottom: 0;
+    right: -8px;
+    height: 20px;
+    width: 20px;
+    background: #006ee4;
+    background-attachment: fixed;
+    border-bottom-left-radius: 15px;
+}
+
+.OutgoingMessage .message.tail:after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    right: -10px;
+    width: 10px;
+    height: 20px;
+    background: var(--background-color);
+    border-bottom-left-radius: 10px;
+}
+
+/* Incoming message tails */
+.IncomingMessage .message {
+    margin-right: 25%;
+    background-color: var(--incoming-message-color);
+    position: relative;
+}
+
+.IncomingMessage .message.tail:before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    bottom: 0;
+    left: -7px;
+    height: 20px;
+    width: 20px;
+    background: var(--incoming-message-color);
+    border-bottom-right-radius: 15px;
+}
+
+.IncomingMessage .message.tail:after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    left: -10px;
+    width: 10px;
+    height: 20px;
+    background: var(--background-color);
+    border-bottom-right-radius: 10px;
+}

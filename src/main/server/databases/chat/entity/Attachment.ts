@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "typeorm";
 import { Message } from "@server/databases/chat/entity";
+import { BooleanTransformer } from "@server/databases/transformers";
 
 @Entity()
 export class Attachment {
@@ -21,17 +22,17 @@ export class Attachment {
     @Column("integer")
     isOutgoing: number;
 
-    @Column("integer")
-    transferName: number;
+    @Column("text")
+    transferName: string;
 
     @Column("integer")
     totalBytes: number;
 
-    @Column("integer")
-    isSticker: number;
+    @Column({ type: "integer", transformer: BooleanTransformer })
+    isSticker: boolean;
 
-    @Column("integer")
-    hideAttachment: number;
+    @Column({ type: "integer", transformer: BooleanTransformer })
+    hideAttachment: boolean;
 
     @Column("text")
     blurhash: string;

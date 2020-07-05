@@ -1,12 +1,13 @@
 /* eslint-disable no-underscore-dangle */
 import * as React from "react";
-import { ipcRenderer, IpcRendererEvent } from "electron";
+import { ipcRenderer } from "electron";
 import { Chat, Message } from "@server/databases/chat/entity";
 import { getDateText, getTimeText } from "@renderer/utils";
 
 import "./RightConversationDisplay.css";
-import ChatLabel from "./ChatLabel/ChatLabel";
-import TextMessage from "./TextMessage/TextMessage";
+import ChatLabel from "./ChatLabel";
+import TextMessage from "./TextMessage";
+import MultimediaMessage from "./MultimediaMessage";
 
 type Props = {
     chat: Chat;
@@ -181,7 +182,19 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                     )}`}
                                 />
                             ) : null}
-                            <TextMessage message={message} olderMessage={olderMessage} newerMessage={newerMessage} />
+                            {!message.hasAttachments ? (
+                                <MultimediaMessage
+                                    message={message}
+                                    olderMessage={olderMessage}
+                                    newerMessage={newerMessage}
+                                />
+                            ) : (
+                                <MultimediaMessage
+                                    message={message}
+                                    olderMessage={olderMessage}
+                                    newerMessage={newerMessage}
+                                />
+                            )}
                         </div>
                     );
                 })}
