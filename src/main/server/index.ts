@@ -57,6 +57,8 @@ export class BackendServer {
         console.log("Starting BlueBubbles Backend...");
         await this.setup();
 
+        this.startConfigListeners();
+
         try {
             console.log("Launching Services..");
             await this.setupServices();
@@ -65,7 +67,7 @@ export class BackendServer {
         }
 
         console.log("Starting Configuration IPC Listeners...");
-        this.startIpcListeners();
+        this.startActionListeners();
 
         // Fetch the chats upon start
         console.log("Syncing initial chats...");
@@ -233,7 +235,7 @@ export class BackendServer {
         this.configRepo.set("lastFetch", now);
     }
 
-    private startIpcListeners() {
+    private startConfigListeners() {
         // eslint-disable-next-line no-return-await
         ipcMain.handle("get-config", async (_, __) => await this.configRepo.config);
 
@@ -247,6 +249,16 @@ export class BackendServer {
             return this.configRepo.config;
         });
 
+        // eslint-disable-next-line no-return-await
+        ipcMain.handle(
+            "get-socket-status",
+            (_, args) => this.socketService.server && this.socketService.server.connected
+        );
+
+        ipcMain.handle("send-to-ui", (_, args) => this.window.webContents.send(args.event, args.contents));
+    }
+
+    private startActionListeners() {
         ipcMain.handle("start-socket-setup", async (_, args) => {
             const errData = {
                 loading: true,
@@ -309,14 +321,6 @@ export class BackendServer {
 
             return messages;
         });
-
-        ipcMain.handle("send-to-ui", (_, args) => this.window.webContents.send(args.event, args.contents));
-
-        // eslint-disable-next-line no-return-await
-        ipcMain.handle(
-            "get-socket-status",
-            (_, args) => this.socketService.server && this.socketService.server.connected
-        );
     }
 
     private emitToUI(event: string, data: any) {
