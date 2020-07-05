@@ -1,17 +1,23 @@
 /* eslint-disable max-len */
 /* eslint-disable class-methods-use-this */
 import * as React from "react";
-import "./RightBottomNav.css";
 import { ipcRenderer } from "electron";
+import { Chat } from "@server/databases/chat/entity";
+
+import "./RightBottomNav.css";
 import SendIcon from "../../../../../assets/icons/send-icon.png";
 
 const { dialog } = require("electron").remote;
 
-interface RightBottomNavState {
-    enteredMessage: string;
-}
+type Props = {
+    chat: Chat;
+};
 
-class RightBottomNav extends React.Component<object, RightBottomNavState> {
+type State = {
+    enteredMessage: string;
+};
+
+class RightBottomNav extends React.Component<Props, State> {
     constructor(props) {
         super(props);
 

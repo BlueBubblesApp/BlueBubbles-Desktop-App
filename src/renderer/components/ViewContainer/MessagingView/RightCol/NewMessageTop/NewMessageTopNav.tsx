@@ -5,32 +5,17 @@ import { getiMessageNumberFormat } from "@renderer/utils";
 
 import "./NewMessageTopNav.css";
 
-type NewMessageTopNavState = {
+type State = {
     chat: Chat;
 };
 
-class NewMessageTopNav extends React.Component<unknown, NewMessageTopNavState> {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            chat: null
-        };
-    }
+class NewMessageTopNav extends React.Component<unknown, State> {
+    state = {
+        chat: null
+    };
 
     componentDidMount() {
-        ipcRenderer.on("set-current-chat", async (_, args) => {
-            this.setState({ chat: args });
-        });
-
         document.getElementById("newMessageRecipInput").focus();
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    handleNewMessageClose() {
-        const config = { isMakingNewChat: false };
-        console.log(config);
-        ipcRenderer.invoke("set-config", config);
     }
 
     render() {
@@ -54,9 +39,9 @@ class NewMessageTopNav extends React.Component<unknown, NewMessageTopNavState> {
                 <div id="recipDiv-NewMessage">
                     <input placeholder="No recipients" id="newMessageRecipInput" />
                 </div>
-                <div id="closeNewChatDiv">
+                {/* <div id="closeNewChatDiv">
                     <p onClick={this.handleNewMessageClose}>Close</p>
-                </div>
+                </div> */}
             </div>
         );
     }

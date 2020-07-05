@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import * as React from "react";
-import { ipcRenderer } from "electron";
+import { ipcRenderer, IpcRendererEvent } from "electron";
 import { Chat, Message } from "@server/databases/chat/entity";
 import { getDateText, getTimeText } from "@renderer/utils";
 
@@ -8,21 +8,21 @@ import "./RightConversationDisplay.css";
 import ChatLabel from "./ChatLabel/ChatLabel";
 import TextMessage from "./TextMessage/TextMessage";
 
-type State = {
+type Props = {
     chat: Chat;
+};
+
+type State = {
     isLoading: boolean;
     messages: Message[];
     messageGuids: string[];
 };
 
-class RightConversationDisplay extends React.Component<unknown, State> {
-    _isMounted = false;
-
+class RightConversationDisplay extends React.Component<Props, State> {
     constructor(props) {
         super(props);
 
         this.state = {
-            chat: null,
             isLoading: false,
             messages: [],
             messageGuids: []
@@ -30,21 +30,13 @@ class RightConversationDisplay extends React.Component<unknown, State> {
     }
 
     componentDidMount() {
-        this._isMounted = true;
-        // First, let's register a handler for new chats
-        ipcRenderer.on("set-current-chat", async (_, args) => {
-            // Set the loading state
-            if (this._isMounted) {
-                this.setState({ chat: args, messages: [], messageGuids: [] }, () => {
-                    // Fetch the chat messages once the state has been set
-                    this.getNextMessagePage();
-                });
-            }
-        });
+        this.chatChange();
     }
 
-    componentWillUnmount() {
-        this._isMounted = false;
+    componentDidUpdate(prevProps) {
+        if (this.props.chat?.guid !== prevProps.chat?.guid) {
+            this.chatChange();
+        }
     }
 
     async getNextMessagePage() {
@@ -54,13 +46,11 @@ class RightConversationDisplay extends React.Component<unknown, State> {
         }
 
         // Set the loading state
-        if (this._isMounted) {
-            this.setState({ isLoading: true });
-        }
+        this.setState({ isLoading: true });
 
         // Get the next page of messages
         const messages = await ipcRenderer.invoke("get-chat-messages", {
-            chatGuid: this.state.chat.guid,
+            chatGuid: this.props.chat.guid,
             withHandle: true,
             withAttachments: false,
             withChat: false,
@@ -72,15 +62,25 @@ class RightConversationDisplay extends React.Component<unknown, State> {
         await this.addMessagesToState(messages);
 
         // Tell the state we are done loading
-        if (this._isMounted) {
-            this.setState({ isLoading: false }, () => {
-                // If this is a fresh chat, scroll to the bottom
-                if (!messageTimestamp) {
-                    const view = document.getElementById("messageView");
-                    view.scrollTop = view.scrollHeight;
-                }
-            });
-        }
+        this.setState({ isLoading: false }, () => {
+            // If this is a fresh chat, scroll to the bottom
+            if (!messageTimestamp) {
+                const view = document.getElementById("messageView");
+                view.scrollTop = view.scrollHeight;
+            }
+        });
+    }
+
+    chatChange() {
+        // Reset the messages
+        this.setState({ messages: [], messageGuids: [] }, () => {
+            // Set the text field to active
+            const msgField = document.getElementById("messageFieldInput");
+            if (msgField) msgField.focus();
+
+            // Get new messages
+            this.getNextMessagePage();
+        });
     }
 
     async detectTop(e: React.UIEvent<HTMLDivElement, UIEvent>) {
@@ -144,7 +144,8 @@ class RightConversationDisplay extends React.Component<unknown, State> {
     }
 
     render() {
-        const { chat, messages, isLoading } = this.state;
+        const { messages, isLoading } = this.state;
+        const { chat } = this.props;
 
         if (!chat) return <div className="RightConversationDisplay" />;
 
