@@ -18,6 +18,11 @@ interface State {
 }
 
 const setCurrentChat = (guid: Chat) => {
+    // const config = { isMakingNewChat: false };
+    // console.log(config)
+    // ipcRenderer.invoke("set-config", config);
+
+    document.getElementById("messageFieldInput").focus();
     ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: guid });
 };
 

@@ -5,3 +5,15 @@
     overflow-y: scroll;
     padding: 0 0 15px 0;
 }
+
+.RightConversationDisplay::-webkit-scrollbar {
+    display: initial;
+    width: 7px;
+    background-color: var(--background-color) !important;
+    margin-right: 2px;
+}
+
+.RightConversationDisplay::-webkit-scrollbar-thumb {
+    background-color: var(--sub-title-color) !important;
+    border-radius: 5px;
+}

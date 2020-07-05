@@ -40,10 +40,11 @@
     font-family: "SF UI Display Bold";
     color: white;
     outline: none;
+    border: 2px solid var(--sidebar-color) !important;
 }
 
 #messageSearch[type="text"]:focus {
-    border: 2px solid #3c7ca8;
+    border: 2px solid #3c7ca8 !important;
 }
 
 #newMessage {

@@ -1,0 +1,127 @@
+#leftAttachmentButton-NewMessage {
+    width: 20px;
+    height: 20px;
+    background-color: grey;
+    margin-left: 10px;
+    padding: 3px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#leftAttachmentButton-NewMessage:hover {
+    -webkit-animation: swingY 1s ease;
+    animation: swingY 1s ease;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    cursor: pointer;
+}
+
+#attachIcon-NewMessage {
+    fill: white;
+    height: 17px;
+}
+
+#messageField-NewMessage {
+    flex-grow: 1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#messageFieldInput-NewMessage[type="text"] {
+    height: 19px;
+    background-repeat: no-repeat;
+    border-radius: 25px;
+    border: none;
+    width: 97%;
+    padding: 3px 5px 3px 8px;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    color: var(--main-title-color);
+    outline: none;
+    border: 1px solid var(--sub-title-color);
+    margin: 0px 12px 0px 12px;
+    background-color: var(--secondary-color);
+}
+
+*::placeholder {
+    color: #939292;
+}
+
+#rightBottomButton-NewMessage {
+    margin-right: 10px;
+    width: 45px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#sendIcon-NewMessage {
+    margin-bottom: 2px;
+    height: 28px;
+    transition: all 0.3s ease;
+}
+
+@-webkit-keyframes swingY {
+    15% {
+        -webkit-transform: translateY(3px);
+        transform: translateY(3px);
+    }
+    30% {
+        -webkit-transform: translateY(-3px);
+        transform: translateY(-3px);
+    }
+    50% {
+        -webkit-transform: translateY(2px);
+        transform: translateY(2px);
+    }
+    65% {
+        -webkit-transform: translateY(-2px);
+        transform: translateY(-1px);
+    }
+    80% {
+        -webkit-transform: translateY(1px);
+        transform: translateY(1px);
+    }
+    100% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+@keyframes swingY {
+    15% {
+        -webkit-transform: translateY(3px);
+        transform: translateY(3px);
+    }
+    30% {
+        -webkit-transform: translateY(-px);
+        transform: translateY(-3px);
+    }
+    50% {
+        -webkit-transform: translateY(2px);
+        transform: translateY(2px);
+    }
+    65% {
+        -webkit-transform: translateY(-1px);
+        transform: translateY(1px);
+    }
+    80% {
+        -webkit-transform: translateY(1px);
+        transform: translateY(1px);
+    }
+    100% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+#sendIcon-NewMessage:hover {
+    -webkit-animation: swingY 1s ease;
+    animation: swingY 1s ease;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    cursor: pointer;
+}

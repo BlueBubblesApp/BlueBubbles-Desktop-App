@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Chat } from "@server/databases/chat/entity";
@@ -10,14 +11,24 @@ type State = {
 };
 
 class RightTopNav extends React.Component<unknown, State> {
+    _isMounted = false;
+
     state = {
         chat: null
     };
 
     componentDidMount() {
+        this._isMounted = true;
+
         ipcRenderer.on("set-current-chat", async (_, args) => {
-            this.setState({ chat: args });
+            if (this._isMounted) {
+                this.setState({ chat: args });
+            }
         });
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     render() {

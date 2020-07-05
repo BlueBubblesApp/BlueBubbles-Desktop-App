@@ -8,7 +8,7 @@ function AboutTab() {
             <div id="AboutTitle">
                 <h1>About</h1>
             </div>
-            <SettingTitle title="Version" subTitle="alpha" />
+            <SettingTitle title="Version" subTitle={window.require("electron").remote.app.getVersion()} />
         </div>
     );
 }

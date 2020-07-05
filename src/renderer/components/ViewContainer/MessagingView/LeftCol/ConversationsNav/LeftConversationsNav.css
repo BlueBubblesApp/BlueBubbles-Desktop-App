@@ -7,3 +7,15 @@
     justify-content: flex-start;
     align-items: center;
 }
+
+.LeftConversationsNav::-webkit-scrollbar {
+    display: initial;
+    width: 7px;
+    background-color: var(--sidebar-color) !important;
+    margin-right: 2px;
+}
+
+.LeftConversationsNav::-webkit-scrollbar-thumb {
+    background-color: var(--sub-title-color) !important;
+    border-radius: 5px;
+}

@@ -15,6 +15,8 @@ const render = () => {
         <React.StrictMode>
             <TitleBar />
             <ViewContainer />
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.css" />
+            <script src="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.min.js" />
         </React.StrictMode>,
         mainElement
     );

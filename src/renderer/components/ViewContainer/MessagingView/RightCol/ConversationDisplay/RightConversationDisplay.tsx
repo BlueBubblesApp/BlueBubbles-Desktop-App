@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Chat, Message } from "@server/databases/chat/entity";
@@ -15,22 +16,35 @@ type State = {
 };
 
 class RightConversationDisplay extends React.Component<unknown, State> {
-    state = {
-        chat: null,
-        isLoading: false,
-        messages: [],
-        messageGuids: []
-    };
+    _isMounted = false;
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            chat: null,
+            isLoading: false,
+            messages: [],
+            messageGuids: []
+        };
+    }
 
     componentDidMount() {
+        this._isMounted = true;
         // First, let's register a handler for new chats
         ipcRenderer.on("set-current-chat", async (_, args) => {
             // Set the loading state
-            this.setState({ chat: args, messages: [], messageGuids: [] }, () => {
-                // Fetch the chat messages once the state has been set
-                this.getNextMessagePage();
-            });
+            if (this._isMounted) {
+                this.setState({ chat: args, messages: [], messageGuids: [] }, () => {
+                    // Fetch the chat messages once the state has been set
+                    this.getNextMessagePage();
+                });
+            }
         });
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     async getNextMessagePage() {
@@ -40,7 +54,9 @@ class RightConversationDisplay extends React.Component<unknown, State> {
         }
 
         // Set the loading state
-        this.setState({ isLoading: true });
+        if (this._isMounted) {
+            this.setState({ isLoading: true });
+        }
 
         // Get the next page of messages
         const messages = await ipcRenderer.invoke("get-chat-messages", {
@@ -56,13 +72,15 @@ class RightConversationDisplay extends React.Component<unknown, State> {
         await this.addMessagesToState(messages);
 
         // Tell the state we are done loading
-        this.setState({ isLoading: false }, () => {
-            // If this is a fresh chat, scroll to the bottom
-            if (!messageTimestamp) {
-                const view = document.getElementById("messageView");
-                view.scrollTop = view.scrollHeight;
-            }
-        });
+        if (this._isMounted) {
+            this.setState({ isLoading: false }, () => {
+                // If this is a fresh chat, scroll to the bottom
+                if (!messageTimestamp) {
+                    const view = document.getElementById("messageView");
+                    view.scrollTop = view.scrollHeight;
+                }
+            });
+        }
     }
 
     async detectTop(e: React.UIEvent<HTMLDivElement, UIEvent>) {

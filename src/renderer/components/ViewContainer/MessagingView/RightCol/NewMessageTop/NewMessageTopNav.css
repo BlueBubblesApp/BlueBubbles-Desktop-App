@@ -1,13 +1,4 @@
-.RightTopNav {
-    height: 35px;
-    min-height: 35px;
-    display: flex;
-    /* align-items: center; */
-    width: 100%;
-    background-color: var(--secondary-color);
-}
-
-#toDiv {
+#toDiv-NewMessage {
     width: 30px;
     display: flex;
     flex-direction: column;
@@ -17,14 +8,14 @@
     font-size: 12px;
 }
 
-#toDiv > p {
+#toDiv-NewMessage > p {
     color: var(--sub-title-color);
     font-family: "SF UI Display Bold";
     font-size: 14px;
     margin-bottom: 14px;
 }
 
-#recipDiv {
+#recipDiv-NewMessage {
     flex-grow: 1;
     display: flex;
     flex-direction: row;
@@ -35,7 +26,7 @@
     margin-right: 1em;
 }
 
-#recipDiv > div {
+#recipDiv-NewMessage > div {
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -44,11 +35,11 @@
     text-overflow: ellipsis;
 }
 
-#recipDiv > div:hover {
+#recipDiv-NewMessage > div:hover {
     background-color: rgba(0, 122, 255, 0.8);
 }
 
-#recipDiv > div > p {
+#recipDiv-NewMessage > div > p {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-size: 12px;
@@ -56,11 +47,11 @@
     white-space: nowrap;
 }
 
-#recipDiv > div > p:hover {
+#recipDiv-NewMessage > div > p:hover {
     background: rgba(0, 122, 255, 0.8);
 }
 
-#convoDetailsDiv {
+#convoDetailsDiv-NewMessage {
     width: 60px;
     display: flex;
     flex-direction: column;
@@ -70,28 +61,59 @@
     margin-left: 0.5em;
 }
 
-#convoDetailsDiv > p {
+#convoDetailsDiv-NewMessage > p {
     color: #007aff;
     font-family: "SF UI Display Light";
     font-size: 15px;
     margin-bottom: 13px;
 }
 
-#convoDetailsDiv > p:hover {
+#convoDetailsDiv-NewMessage > p:hover {
     color: #1a55c2;
     cursor: pointer;
 }
 
-#contactModalOpen {
-    position: relative;
-    height: 10px;
-    width: 10px;
-    margin: 0px 4px 0px 2px;
+#recipDiv-NewMessage {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    overflow-x: scroll;
+    margin-bottom: 9px;
 }
 
-#contactModalOpen {
-    position: relative;
-    height: 10px;
-    width: 10px;
-    margin: 0px 4px 0px 2px;
+#newMessageRecipInput {
+    outline: none;
+    border: none;
+    flex-grow: 1;
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    color: var(--main-title-color);
+    background-color: var(--secondary-color);
+}
+
+#newMessageRecipInput:focus {
+}
+
+#closeNewChatDiv {
+    width: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    margin-right: 1em;
+    margin-left: 0.5em;
+}
+
+#closeNewChatDiv > p {
+    color: #007aff;
+    font-family: "SF UI Display Light";
+    font-size: 15px;
+    margin-bottom: 13px;
+}
+
+#closeNewChatDiv > p:hover {
+    color: #1a55c2;
+    cursor: pointer;
 }

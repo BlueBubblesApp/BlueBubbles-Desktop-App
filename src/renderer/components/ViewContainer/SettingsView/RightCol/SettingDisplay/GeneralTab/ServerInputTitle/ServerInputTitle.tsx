@@ -3,8 +3,6 @@ import { ipcRenderer } from "electron";
 import "./ServerInputTitle.css";
 
 type ServerInputTitleState = {
-    // title: string;
-    // subTitle: string;
     enteredServer: string;
 };
 
@@ -18,8 +16,6 @@ class ServerInputTitle extends React.Component<InputTitleProps, ServerInputTitle
         super(props);
 
         this.state = {
-            // title: "",
-            // subTitle: "",
             enteredServer: ""
         };
     }
@@ -30,7 +26,7 @@ class ServerInputTitle extends React.Component<InputTitleProps, ServerInputTitle
 
         const input = document.getElementById("serverInput");
 
-        input.addEventListener("keyup", (event) => {
+        input.addEventListener("keyup", event => {
             // Number 13 is the "Enter" key on the keyboard
             if (event.keyCode === 13) {
                 event.preventDefault();

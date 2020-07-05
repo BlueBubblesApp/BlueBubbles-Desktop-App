@@ -1,8 +1,8 @@
+/* eslint-disable no-underscore-dangle */
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Redirect, NavLink } from "react-router-dom";
 import "./LoginView.css";
-
 
 interface LoginViewState {
     loading: boolean;
@@ -16,6 +16,8 @@ interface LoginViewState {
 }
 
 class LoginView extends React.Component<object, LoginViewState> {
+    _isMounted = false;
+
     constructor(props) {
         super(props);
 
@@ -32,65 +34,88 @@ class LoginView extends React.Component<object, LoginViewState> {
     }
 
     async componentDidMount() {
+        this._isMounted = true;
         document.getElementById("TitleBarRight").classList.add("loginTitleBarRight");
 
         // Add listener for updating the state
         ipcRenderer.on("setup-update", (_, args) => {
             if (args?.redirect) document.getElementById("TitleBarRight").classList.remove("messagingTitleBarRight");
 
-            this.setState(args);
+            if (this._isMounted) {
+                this.setState(args);
+            }
         });
 
         // Get the config, if we have a serverAddress and password, automatically
         // invoke the "submit" method
         const config = await ipcRenderer.invoke("get-config");
-        this.setState({theme: config.theme})
+        if (this._isMounted) {
+            this.setState({ theme: config.theme });
+        }
 
         ipcRenderer.on("config-update", (_, args) => {
-            this.setState({theme: args.theme});
+            if (this._isMounted) {
+                this.setState({ theme: args.theme });
+            }
         });
 
         if (config.serverAddress && config.passphrase) {
             const isConnected = await ipcRenderer.invoke("get-socket-status");
-            this.setState({
-                enteredServerAddress: config.serverAddress,
-                enteredPassword: config.passphrase,
-                redirect: isConnected ? "/messaging" : null
-            });
+            if (this._isMounted) {
+                this.setState({
+                    enteredServerAddress: config.serverAddress,
+                    enteredPassword: config.passphrase,
+                    redirect: isConnected ? "/messaging" : null
+                });
+            }
         }
     }
 
+    componentWillUnmount() {
+        this._isMounted = false;
+    }
+
     handleServerChange = event => {
-        this.setState({
-            enteredServerAddress: event.target.value
-        });
+        if (this._isMounted) {
+            this.setState({
+                enteredServerAddress: event.target.value
+            });
+        }
     };
 
     handlePasswordChange = event => {
-        this.setState({
-            enteredPassword: event.target.value
-        });
+        if (this._isMounted) {
+            this.setState({
+                enteredPassword: event.target.value
+            });
+        }
     };
 
     handleSubmit = () => {
         try {
-            this.setState({ loading: true });
+            if (this._isMounted) {
+                this.setState({ loading: true });
+            }
 
             // The server will handle setting the redirect and updating
             ipcRenderer.invoke("start-socket-setup", this.state);
         } catch (err) {
-            this.setState({ loading: false });
+            if (this._isMounted) {
+                this.setState({ loading: false });
+            }
         }
     };
 
     reset = () => {
-        this.setState({
-            loading: false,
-            loginIsValid: false,
-            syncProgress: 0,
-            redirect: null,
-            loadingMessage: "Verifying server login..."
-        });
+        if (this._isMounted) {
+            this.setState({
+                loading: false,
+                loginIsValid: false,
+                syncProgress: 0,
+                redirect: null,
+                loadingMessage: "Verifying server login..."
+            });
+        }
     };
 
     render() {
@@ -140,7 +165,7 @@ class LoginView extends React.Component<object, LoginViewState> {
                             />
                             <button>Connect</button>
                         </form>
-                        <p id="versionNumber">v0.0.1</p>
+                        <p id="versionNumber">{window.require("electron").remote.app.getVersion()}</p>
                     </div>
                 )}
             </div>
