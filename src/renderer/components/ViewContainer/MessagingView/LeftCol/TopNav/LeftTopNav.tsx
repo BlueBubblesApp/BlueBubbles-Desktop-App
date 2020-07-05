@@ -20,8 +20,7 @@ class LeftTopNav extends React.Component<object, LeftTopNavState> {
 
     // eslint-disable-next-line class-methods-use-this
     handleNewMessage() {
-        const config = { isMakingNewChat: true };
-        ipcRenderer.invoke("set-config", config);
+        ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: null });
     }
 
     render() {
