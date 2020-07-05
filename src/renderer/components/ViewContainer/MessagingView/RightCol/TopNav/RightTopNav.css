@@ -30,11 +30,22 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    margin-top: 5px;
-    overflow-x: scroll;
+    margin: 5px 0 0 0 !important;
+    overflow-x: auto;
     margin-right: 1em;
 }
 
+#convoDetailsDiv:after {
+    display: flex;
+    position: absolute;
+    height: 23px;
+    width: 6%;
+    right: 65px;
+    top: 1px;
+    content: "";
+    background: linear-gradient(to left, var(--secondary-color) 30%, rgba(255, 255, 255, 0) 80%);
+    pointer-events: none; /* so the text is still selectable */
+}
 #recipDiv > div {
     display: flex;
     align-items: center;
