@@ -3,6 +3,32 @@
     min-height: 45px;
     display: flex;
     background-color: var(--secondary-color);
+    align-items: center;
+}
+
+#leftAttachmentButton {
+    width: 20px;
+    height: 20px;
+    background-color: grey;
+    margin-left: 10px;
+    padding: 3px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#leftAttachmentButton:hover {
+    -webkit-animation: swingY 1s ease;
+    animation: swingY 1s ease;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    cursor: pointer;
+}
+
+#attachIcon {
+    fill: white;
+    height: 17px;
 }
 
 #messageField {
@@ -13,14 +39,14 @@
     align-items: center;
 }
 
-#messageFieldInput[type='text'] {
+#messageFieldInput[type="text"] {
     height: 19px;
     background-repeat: no-repeat;
     border-radius: 25px;
     border: none;
     width: 97%;
     padding: 3px 5px 3px 8px;
-    font-family: 'SF UI Display Bold';
+    font-family: "SF UI Display Bold";
     font-size: 15px;
     color: var(--main-title-color);
     outline: none;
