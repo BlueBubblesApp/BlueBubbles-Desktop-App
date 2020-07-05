@@ -20,7 +20,7 @@ export class ChatRepository {
         }
 
         let dbPath = `${app.getPath("userData")}/chat.db`;
-        if (!isDev) {
+        if (isDev) {
             dbPath = `${app.getPath("userData")}/BlueBubbles-Desktop-App/chat.db`;
         }
 
@@ -179,7 +179,9 @@ export class ChatRepository {
 
     async saveChat(chat: Chat): Promise<Chat> {
         const repo = this.db.getRepository(Chat);
-        const existing = chat.ROWID ? chat : await repo.findOne({ guid: chat.guid });
+        const existing = chat.ROWID
+            ? chat
+            : await repo.findOne({ relations: ["participants"], where: { guid: chat.guid } });
         if (existing) {
             if (existing.displayName !== chat.displayName) {
                 // Right now, I don't think anything but the displayName will change
@@ -201,7 +203,7 @@ export class ChatRepository {
 
         // If the handle doesn't have a ROWID, try to find it
         if (!handle.ROWID) {
-            theHandle = await repo.findOne({ address: handle.address }, { relations: ["chats"] });
+            theHandle = await repo.findOne({ relations: ["chats"], where: { address: handle.address } });
         }
 
         // If the handle wasn't found, set it to the input handle
@@ -229,7 +231,7 @@ export class ChatRepository {
 
         // If the message doesn't have a ROWID, try to find it
         if (!message.ROWID) {
-            theMessage = await repo.findOne({ guid: message.guid });
+            theMessage = await repo.findOne({ relations: ["handle"], where: { guid: message.guid } });
         }
 
         // If it exists, check if anything has really changed before updating
@@ -283,7 +285,7 @@ export class ChatRepository {
 
         // If the attachment doesn't have a ROWID, try to find it
         if (!attachment.ROWID) {
-            theAttachment = await repo.findOne({ guid: attachment.guid }, { relations: ["messages"] });
+            theAttachment = await repo.findOne({ relations: ["messages"], where: { guid: attachment.guid } });
         }
 
         // If the message wasn't found, set it to the input message
