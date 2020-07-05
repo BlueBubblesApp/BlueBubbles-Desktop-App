@@ -21,7 +21,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    margin-top: 5px;
+    margin-top: 0px;
     overflow-x: scroll;
     margin-right: 1em;
 }

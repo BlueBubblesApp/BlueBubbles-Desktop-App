@@ -29,7 +29,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     margin-top: 5px;
     overflow-x: scroll;
     margin-right: 1em;
@@ -58,6 +58,10 @@
 
 #recipDiv > div > p:hover {
     background: rgba(0, 122, 255, 0.8);
+}
+
+#recipDiv > div:last-child > p {
+    /* Maybe get rid of comma on last child here? */
 }
 
 #convoDetailsDiv {
