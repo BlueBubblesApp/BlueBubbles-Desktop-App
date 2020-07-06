@@ -314,13 +314,15 @@ export class BackendServer {
             // If there are no messages, let's check the server
             if (messages.length === 0) {
                 const chats = await this.chatRepo.getChats(args.chatGuid);
-                const newMessages = await this.socketService.getChatMessages(args.chatGuid, args);
+                if (chats.length > 0) {
+                    const newMessages = await this.socketService.getChatMessages(args.chatGuid, args);
 
-                // Add the new messages to the list
-                for (const message of newMessages) {
-                    const msg = ChatRepository.createMessageFromResponse(message);
-                    const newMsg = await this.chatRepo.saveMessage(chats[0], msg);
-                    messages.push(newMsg);
+                    // Add the new messages to the list
+                    for (const message of newMessages) {
+                        const msg = ChatRepository.createMessageFromResponse(message);
+                        const newMsg = await this.chatRepo.saveMessage(chats[0], msg);
+                        messages.push(newMsg);
+                    }
                 }
             }
 

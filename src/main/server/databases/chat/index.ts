@@ -214,10 +214,10 @@ export class ChatRepository {
         // Always save the chat first
         const savedChat = await this.saveChat(chat);
         const repo = this.db.getRepository(Handle);
-        let theHandle: Handle = null;
+        let theHandle: Handle = handle.ROWID ? handle : null;
 
         // If the handle doesn't have a ROWID, try to find it
-        if (!handle.ROWID) {
+        if (!theHandle?.ROWID) {
             theHandle = await repo.findOne({ relations: ["chats"], where: { address: handle.address } });
         }
 
@@ -227,7 +227,7 @@ export class ChatRepository {
         }
 
         // Add the handle to the chat if it doesn't already exist
-        if (!theHandle.chats.find(i => i.ROWID === savedChat.ROWID)) {
+        if (!(theHandle.chats ?? []).find(i => i.ROWID === savedChat.ROWID)) {
             await repo
                 .createQueryBuilder()
                 .relation(Handle, "chats")
@@ -280,7 +280,7 @@ export class ChatRepository {
         theMessage = await repo.save(message);
 
         // Add the message to the chat if it doesn't already exist
-        if (!theMessage.chats.find(i => i.ROWID === savedChat.ROWID)) {
+        if (!(theMessage.chats ?? []).find(i => i.ROWID === savedChat.ROWID)) {
             await repo
                 .createQueryBuilder()
                 .relation(Message, "chats")
