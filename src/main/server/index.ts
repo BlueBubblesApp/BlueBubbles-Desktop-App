@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow } from "electron";
+import { ipcMain, BrowserWindow, shell } from "electron";
 import { Connection } from "typeorm";
 import * as base64 from "byte-base64";
 
@@ -380,6 +380,11 @@ export class BackendServer {
             // Finally, tell the UI we are done
             emitData.progress = 100;
             this.emitToUI(event, emitData);
+        });
+
+        // Handle Opening Attachment
+        ipcMain.handle("open-attachment", async (e, attachmentPath) => {
+            shell.openPath(attachmentPath);
         });
     }
 
