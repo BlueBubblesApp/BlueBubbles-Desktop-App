@@ -121,7 +121,11 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             // Find where we need to insert the chat
             let insertIdx = -1;
             for (let i = 0; i < updatedChats.length; i += 1) {
-                if (newChat.lastMessage.dateCreated > updatedChats[i].lastMessage.dateCreated) {
+                if (
+                    newChat.lastMessage &&
+                    updatedChats[i].lastMessage &&
+                    newChat.lastMessage.dateCreated > updatedChats[i].lastMessage.dateCreated
+                ) {
                     insertIdx = i;
                     break;
                 }

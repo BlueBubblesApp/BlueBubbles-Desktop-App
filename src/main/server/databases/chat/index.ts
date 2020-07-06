@@ -1,6 +1,6 @@
 import { app } from "electron";
 import { createConnection, Connection, FindManyOptions } from "typeorm";
-import { ChatResponse, HandleResponse, MessageResponse } from "@server/types";
+import { ChatResponse, HandleResponse, MessageResponse, AttachmentResponse } from "@server/types";
 
 import { Attachment, Chat, Handle, Message } from "./entity";
 import { GetMessagesParams } from "./types";
@@ -141,6 +141,21 @@ export class ChatRepository {
         return handle;
     }
 
+    static createAttachmentFromResponse(res: AttachmentResponse): Attachment {
+        const attachment = new Attachment();
+        attachment.guid = res.guid;
+        attachment.blurhash = res.blurhash;
+        attachment.hideAttachment = res.hideAttachment;
+        attachment.isOutgoing = res.isOutgoing;
+        attachment.isSticker = res.isSticker;
+        attachment.mimeType = res.mimeType;
+        attachment.totalBytes = res.totalBytes;
+        attachment.transferName = res.transferName;
+        attachment.transferState = res.transferState;
+        attachment.uti = res.uti;
+        return attachment;
+    }
+
     static createMessageFromResponse(res: MessageResponse): Message {
         const message = new Message();
         message.handleId = res.handleId || res.handleId === 0 ? null : res.handleId;
@@ -199,10 +214,10 @@ export class ChatRepository {
         // Always save the chat first
         const savedChat = await this.saveChat(chat);
         const repo = this.db.getRepository(Handle);
-        let theHandle: Handle = null;
+        let theHandle: Handle = handle.ROWID ? handle : null;
 
         // If the handle doesn't have a ROWID, try to find it
-        if (!handle.ROWID) {
+        if (!theHandle?.ROWID) {
             theHandle = await repo.findOne({ relations: ["chats"], where: { address: handle.address } });
         }
 
@@ -212,7 +227,7 @@ export class ChatRepository {
         }
 
         // Add the handle to the chat if it doesn't already exist
-        if (!theHandle.chats.find(i => i.ROWID === savedChat.ROWID)) {
+        if (!(theHandle.chats ?? []).find(i => i.ROWID === savedChat.ROWID)) {
             await repo
                 .createQueryBuilder()
                 .relation(Handle, "chats")
@@ -265,7 +280,7 @@ export class ChatRepository {
         theMessage = await repo.save(message);
 
         // Add the message to the chat if it doesn't already exist
-        if (!theMessage.chats.find(i => i.ROWID === savedChat.ROWID)) {
+        if (!(theMessage.chats ?? []).find(i => i.ROWID === savedChat.ROWID)) {
             await repo
                 .createQueryBuilder()
                 .relation(Message, "chats")
@@ -292,7 +307,7 @@ export class ChatRepository {
         if (!theAttachment) theAttachment = await repo.save(attachment);
 
         // Add the message to the chat if it doesn't already exist
-        if (!theAttachment.messages.find(i => i.ROWID === savedMessage.ROWID)) {
+        if (!(theAttachment.messages ?? []).find(i => i.ROWID === savedMessage.ROWID)) {
             await repo
                 .createQueryBuilder()
                 .relation(Attachment, "messages")

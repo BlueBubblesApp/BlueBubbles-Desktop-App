@@ -3,5 +3,7 @@ export const DEFAULT_CONFIG_ITEMS: { [key: string]: Function } = {
     passphrase: () => "",
     lastFetch: () => 0,
     theme: () => "dark",
+    isMakingNewChat: () => false,
+    chunkSize: () => 1024,
     isDetailsOpen: () => false
 };

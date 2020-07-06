@@ -1,9 +1,12 @@
 import "reflect-metadata";
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, session } from "electron";
 import * as path from "path";
 import * as url from "url";
 
 import { BackendServer } from "@server/index";
+
+// To allow CORS
+app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors");
 
 let win: BrowserWindow | null;
 const BlueBubbles = new BackendServer(win);
@@ -17,7 +20,7 @@ const createWindow = async () => {
         minHeight: 350,
         transparent: true,
         frame: false,
-        webPreferences: { nodeIntegration: true }
+        webPreferences: { nodeIntegration: true, webSecurity: false }
     });
 
     if (process.env.NODE_ENV !== "production") {

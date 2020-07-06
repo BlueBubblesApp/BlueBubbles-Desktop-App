@@ -1,0 +1,9 @@
+.UnsupportedMedia {
+    border: 2px solid white;
+    border-radius: 20px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
