@@ -1,6 +1,5 @@
 import { PhoneNumberUtil } from "google-libphonenumber";
 import { Chat } from "@server/databases/chat/entity";
-import SettingTitles from "@renderer/components/ViewContainer/SettingsView/LeftCol/SettingTitles/SettingTitles";
 
 export const getTimeText = (date: Date) => {
     return date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
@@ -66,4 +65,17 @@ export const generateChatTitle = (chat: Chat) => {
 
     const title = members.slice(0, 3).join(", ");
     return `${title} & ${members.length - 3} others`;
+};
+
+export const sanitizeStr = (val: string) => {
+    if (!val) return val;
+    const objChar = String.fromCharCode(65532);
+
+    // Recursively replace all "obj" hidden characters
+    let output = val;
+    while (output.includes(objChar)) {
+        output = output.replace(String.fromCharCode(65532), "");
+    }
+
+    return output.trim();
 };

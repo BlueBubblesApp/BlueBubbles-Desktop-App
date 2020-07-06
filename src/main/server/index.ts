@@ -329,8 +329,7 @@ export class BackendServer {
 
         // eslint-disable-next-line no-return-await
         ipcMain.handle("fetch-attachment", async (_, attachment: Attachment) => {
-            console.log("GETTING ATTACHMENT");
-            const chunkSize = this.configRepo.get("chunkSize") as number;
+            const chunkSize = (this.configRepo.get("chunkSize") as number) * 1000;
             let start = 0;
 
             let output = new Uint8Array();
@@ -343,6 +342,7 @@ export class BackendServer {
             // Show a tiny bit of progress
             this.emitToUI(event, emitData);
 
+            let currentChunk = new Uint8Array();
             do {
                 // Get the attachment chunk
                 const response = await this.socketService.getAttachmentChunk(attachment.guid, {
@@ -351,15 +351,15 @@ export class BackendServer {
                 });
 
                 // Convert the data to a typed array, then merge
-                const data = base64.base64ToBytes(response);
-                output = mergeUint8Arrays(output, data);
+                currentChunk = base64.base64ToBytes(response);
+                output = mergeUint8Arrays(output, currentChunk);
 
                 // Show the UI how far we've come
                 emitData.progress = Math.ceil((((start - 1) * chunkSize) / attachment.totalBytes) * 100);
                 if (emitData.progress > 100) emitData.progress = 100;
                 this.emitToUI(event, emitData);
                 start += 1;
-            } while ((start - 1) * chunkSize + chunkSize <= attachment.totalBytes);
+            } while (currentChunk.byteLength === chunkSize);
 
             this.fs.saveAttachment(attachment, output);
             emitData.progress = 100;

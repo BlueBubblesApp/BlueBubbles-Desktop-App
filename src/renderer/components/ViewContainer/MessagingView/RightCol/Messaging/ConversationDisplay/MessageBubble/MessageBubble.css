@@ -5,7 +5,7 @@
     margin: 0 0 0 13px;
 }
 
-.IncomingMessage > p {
+.IncomingMessage > div {
     max-width: 60%;
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
@@ -16,7 +16,12 @@
     word-break: normal;
     overflow-wrap: break-word;
     word-wrap: break-word;
-    margin-top: 4px;
+    margin-top: 3px;
+    margin-bottom: 0;
+}
+
+.IncomingMessage > div > p {
+    margin-top: 0;
     margin-bottom: 0;
 }
 
@@ -27,7 +32,7 @@
     margin: 0 13px 0 0;
 }
 
-.OutgoingMessage > p {
+.OutgoingMessage > div {
     max-width: 60%;
     color: white;
     font-family: "SF UI Display Light";
@@ -40,6 +45,11 @@
     overflow-wrap: break-word;
     word-wrap: break-word;
     margin-top: 3px;
+    margin-bottom: 0;
+}
+
+.OutgoingMessage > div > p {
+    margin-top: 0;
     margin-bottom: 0;
 }
 

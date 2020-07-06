@@ -6,8 +6,7 @@ import { getDateText, getTimeText } from "@renderer/utils";
 
 import "./RightConversationDisplay.css";
 import ChatLabel from "./ChatLabel";
-import TextMessage from "./TextMessage";
-import MultimediaMessage from "./MultimediaMessage";
+import MessageBubble from "./MessageBubble";
 
 type Props = {
     chat: Chat;
@@ -182,19 +181,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                     )}`}
                                 />
                             ) : null}
-                            {!message.hasAttachments ? (
-                                <MultimediaMessage
-                                    message={message}
-                                    olderMessage={olderMessage}
-                                    newerMessage={newerMessage}
-                                />
-                            ) : (
-                                <MultimediaMessage
-                                    message={message}
-                                    olderMessage={olderMessage}
-                                    newerMessage={newerMessage}
-                                />
-                            )}
+                            <MessageBubble message={message} olderMessage={olderMessage} newerMessage={newerMessage} />
                         </div>
                     );
                 })}
