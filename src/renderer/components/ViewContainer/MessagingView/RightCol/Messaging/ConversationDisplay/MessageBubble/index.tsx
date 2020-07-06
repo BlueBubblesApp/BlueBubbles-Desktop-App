@@ -1,7 +1,6 @@
 import * as React from "react";
 import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
-import { Player } from "video-react";
 
 import { Message } from "@server/databases/chat/entity";
 import { getiMessageNumberFormat, sanitizeStr } from "@renderer/utils";
