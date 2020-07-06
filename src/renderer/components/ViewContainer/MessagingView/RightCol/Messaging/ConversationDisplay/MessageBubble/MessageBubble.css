@@ -1,3 +1,14 @@
+.bigEmojis {
+    font-size: 48px;
+    padding-left: 0;
+    background: none;
+}
+
+.bigEmojis > p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
 .IncomingMessage {
     display: flex;
     justify-content: flex-start;
@@ -5,7 +16,7 @@
     margin: 0 0 0 13px;
 }
 
-.IncomingMessage > div {
+.IncomingMessage > .message {
     max-width: 60%;
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
@@ -20,7 +31,7 @@
     margin-bottom: 0;
 }
 
-.IncomingMessage > div > p {
+.IncomingMessage > .message > p {
     margin-top: 0;
     margin-bottom: 0;
 }
@@ -32,7 +43,7 @@
     margin: 0 13px 0 0;
 }
 
-.OutgoingMessage > div {
+.OutgoingMessage > .message {
     max-width: 60%;
     color: white;
     font-family: "SF UI Display Light";
@@ -48,7 +59,7 @@
     margin-bottom: 0;
 }
 
-.OutgoingMessage > div > p {
+.OutgoingMessage > .message > p {
     margin-top: 0;
     margin-bottom: 0;
 }
