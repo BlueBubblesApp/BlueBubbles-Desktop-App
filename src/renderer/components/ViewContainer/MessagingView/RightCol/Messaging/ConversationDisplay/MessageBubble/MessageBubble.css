@@ -13,11 +13,11 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    margin: 0 0 0 13px;
+    margin: 0 30% 0 13px;
 }
 
 .IncomingMessage > .message {
-    max-width: 60%;
+    max-width: 100%;
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
     font-size: 14px;
@@ -40,16 +40,16 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    margin: 0 13px 0 0;
+    margin: 0 13px 0 30%;
 }
 
 .OutgoingMessage > .message {
-    max-width: 60%;
+    max-width: 100%;
     color: white;
     font-family: "SF UI Display Light";
     font-size: 14px;
-    background-color: #006ee4;
     padding: 8px 15px 8px 15px;
+    background-color: var(--outgoing-message-color);
     border-radius: 20px;
     word-break: normal;
     word-break: normal;
@@ -73,8 +73,6 @@
 /* Outgoing message tails */
 .OutgoingMessage .message {
     color: white;
-    margin-left: 25%;
-    background: #006ee4;
     background-attachment: fixed;
     position: relative;
 }
@@ -87,7 +85,6 @@
     right: -8px;
     height: 20px;
     width: 20px;
-    background: #006ee4;
     background-attachment: fixed;
     border-bottom-left-radius: 15px;
 }
@@ -106,8 +103,6 @@
 
 /* Incoming message tails */
 .IncomingMessage .message {
-    margin-right: 25%;
-    background-color: var(--incoming-message-color);
     position: relative;
 }
 
@@ -136,7 +131,23 @@
 }
 
 .imageAttachment {
-    max-height: 100%;
-    max-width: 100%;
+    max-height: 20%;
+    max-width: 30%;
     border-radius: 20px;
+}
+
+.OutgoingAttachment {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    flex-direction: column;
+    margin: 0 13px 0 0;
+}
+
+.IncomingAttachment {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    margin: 0 0 0 13px;
 }
