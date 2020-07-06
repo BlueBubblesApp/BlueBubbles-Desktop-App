@@ -1,6 +1,7 @@
 import * as React from "react";
 import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
+import EmojiRegex from "emoji-regex";
 
 import { Message } from "@server/databases/chat/entity";
 import { getiMessageNumberFormat, sanitizeStr } from "@renderer/utils";
@@ -28,6 +29,15 @@ const isSameSender = (message1: Message, message2: Message) => {
     if (message1.isFromMe === message2.isFromMe) return true;
     if (message1.handleId === message2.handleId) return true;
     return false;
+};
+
+const allEmojis = (text: string) => {
+    if (!text) return false;
+
+    const parser = EmojiRegex();
+    const matches = text.match(parser);
+    console.log(matches && matches.length * 2 === text.length);
+    return matches && matches.length * 2 === text.length;
 };
 
 const renderAttachment = (attachment: AttachmentDownload) => {
@@ -166,8 +176,13 @@ class MessageBubble extends React.Component<Props, State> {
 
         const sender = contact ?? getiMessageNumberFormat(message.handle?.address ?? "");
         const className = !message.isFromMe ? "IncomingMessage" : "OutgoingMessage";
-        const messageClass = this.shouldHaveTail() ? "message tail" : "message"; // Fix this to reflect having a tail
+        let messageClass = this.shouldHaveTail() ? "message tail" : "message"; // Fix this to reflect having a tail
         const text = sanitizeStr(message.text);
+        console.log(text);
+        console.log(text.length);
+        if (text.length <= 6 && allEmojis(text)) {
+            messageClass = "bigEmojis";
+        }
 
         return (
             <div>
