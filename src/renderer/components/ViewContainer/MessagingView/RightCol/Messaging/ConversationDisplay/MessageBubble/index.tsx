@@ -1,6 +1,8 @@
 import * as React from "react";
 import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
+import { Player } from "video-react";
+
 import { Message } from "@server/databases/chat/entity";
 import { getiMessageNumberFormat, sanitizeStr } from "@renderer/utils";
 import { AttachmentDownload } from "./@types";
@@ -19,6 +21,8 @@ type State = {
     contact: any;
     attachments: AttachmentDownload[];
 };
+
+const supportedVideoTypes = ["video/mp4", "video/m4v", "video/ogg", "video/webm", "video/x-m4v"];
 
 const isSameSender = (message1: Message, message2: Message) => {
     if (!message1 || !message2) return false;
@@ -47,8 +51,26 @@ const renderAttachment = (attachment: AttachmentDownload) => {
                 />
             );
         }
-        // if (attachment.mimeType.startsWith("video")) return "VIDEO";
-        // if (attachment.mimeType.startsWith("v-location")) return "LOC";
+
+        if (attachment.mimeType.startsWith("video") && supportedVideoTypes.includes(attachment.mimeType)) {
+            const b64File = fs.readFileSync(attachmentPath).toString("base64");
+            return (
+                // eslint-disable-next-line jsx-a11y/media-has-caption
+                <video key={attachment.guid} className="imageAttachment" controls>
+                    <source src={`data:${attachment.mimeType};base64,${b64File}`} type={attachment.mimeType} />
+                </video>
+            );
+        }
+
+        if (attachment.mimeType.startsWith("audio")) {
+            const b64File = fs.readFileSync(attachmentPath).toString("base64");
+            return (
+                // eslint-disable-next-line jsx-a11y/media-has-caption
+                <audio key={attachment.guid} className="imageAttachment" controls>
+                    <source src={`data:${attachment.mimeType};base64,${b64File}`} type={attachment.mimeType} />
+                </audio>
+            );
+        }
 
         return <UnsupportedMedia key={attachment.guid} attachment={attachment} />;
     }
