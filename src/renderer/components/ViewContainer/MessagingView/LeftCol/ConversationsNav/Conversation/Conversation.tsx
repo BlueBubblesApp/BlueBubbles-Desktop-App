@@ -2,6 +2,7 @@
 import * as React from "react";
 import { Chat, Message } from "@server/databases/chat/entity";
 import { getDateText, getiMessageNumberFormat, generateChatTitle } from "@renderer/utils";
+import { ipcRenderer } from "electron";
 
 import "./Conversation.css";
 import ConversationCloseIcon from "../../../../../../assets/icons/conversation-close-icon.png";
@@ -20,6 +21,8 @@ function setActiveChat(e) {
     } catch {
         /* Do nothing */
     }
+    const config = { isDetailsOpen: false };
+    ipcRenderer.invoke("set-config", config);
 
     document.getElementById(e.target.getAttribute("id")).classList.add("activeChat");
 }

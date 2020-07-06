@@ -3,7 +3,7 @@
 import * as React from "react";
 import "./NewMessageBottomNav.css";
 import { ipcRenderer } from "electron";
-import SendIcon from "../../../../../assets/icons/send-icon.png";
+import SendIcon from "../../../../../../assets/icons/send-icon.png";
 
 const { dialog } = require("electron").remote;
 

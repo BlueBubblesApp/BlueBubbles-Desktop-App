@@ -1,17 +1,22 @@
 import * as React from "react";
 import { ipcRenderer, IpcRendererEvent } from "electron";
 import { Chat } from "@server/databases/chat/entity";
-
 import "./RightCol.css";
-import RightTopNav from "./TopNav/RightTopNav";
-import RightConversationDisplay from "./ConversationDisplay/RightConversationDisplay";
-import RightBottomNav from "./BottomNav/RightBottomNav";
-import NewMessageTopNav from "./NewMessageTop/NewMessageTopNav";
-import NewMessageConversationDisplay from "./NewMessageConversation/NewMessageConversationDisplay";
-import NewMessageBottomNav from "./NewMessageBottom/NewMessageBottomNav";
+
+import RightTopNav from "./Messaging/TopNav/RightTopNav";
+import RightConversationDisplay from "./Messaging/ConversationDisplay/RightConversationDisplay";
+import RightBottomNav from "./Messaging/BottomNav/RightBottomNav";
+
+import NewMessageTopNav from "./NewMessage/NewMessageTop/NewMessageTopNav";
+import NewMessageConversationDisplay from "./NewMessage/NewMessageConversation/NewMessageConversationDisplay";
+import NewMessageBottomNav from "./NewMessage/NewMessageBottom/NewMessageBottomNav";
+
+import DetailsTopNav from "./Details/DetailsTop/DetailsTopNav";
+import DetailsDisplay from "./Details/DetailsDisplay/DetailsDisplay";
 
 type ServerInputTitleState = {
     currentChat: Chat;
+    isDetailsOpen: boolean;
 };
 
 class RightCol extends React.Component<object, ServerInputTitleState> {
@@ -19,7 +24,9 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
         super(props);
 
         this.state = {
-            currentChat: null
+            currentChat: null,
+            isDetailsOpen: false
+            // Set this true to see detail view
         };
     }
 
@@ -48,9 +55,18 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
                     </>
                 ) : (
                     <>
-                        <RightTopNav chat={currentChat} />
-                        <RightConversationDisplay chat={currentChat} />
-                        <RightBottomNav chat={currentChat} />
+                        {this.state.isDetailsOpen ? (
+                            <>
+                                <DetailsTopNav />
+                                <DetailsDisplay />
+                            </>
+                        ) : (
+                            <>
+                                <RightTopNav chat={currentChat} />
+                                <RightConversationDisplay chat={currentChat} />
+                                <RightBottomNav chat={currentChat} />
+                            </>
+                        )}
                     </>
                 )}
             </div>

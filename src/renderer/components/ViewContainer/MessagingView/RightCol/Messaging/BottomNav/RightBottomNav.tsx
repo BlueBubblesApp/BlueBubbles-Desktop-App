@@ -5,7 +5,7 @@ import { ipcRenderer } from "electron";
 import { Chat } from "@server/databases/chat/entity";
 
 import "./RightBottomNav.css";
-import SendIcon from "../../../../../assets/icons/send-icon.png";
+import SendIcon from "../../../../../../assets/icons/send-icon.png";
 
 const { dialog } = require("electron").remote;
 
