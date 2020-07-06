@@ -65,6 +65,7 @@ a {
 [data-theme^="light"],
 [data-theme] [data-theme^="light"] {
     --blue-color: #0349cd;
+    --blue-title-color: #007aff;
     --main-title-color: #000;
     --sub-title-color: #454545;
     --chat-label-color: #797878;
@@ -80,6 +81,7 @@ a {
 [data-theme] [data-theme^="dark"],
 [data-theme="light-dark-sidebar"] nav {
     --blue-color: #0349cd;
+    --blue-title-color: #007aff;
     --main-title-color: #fff;
     --sub-title-color: #b5b5b5;
     --chat-label-color: #797878;

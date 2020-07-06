@@ -1,0 +1,123 @@
+#nameDiv-Details {
+    width: 42px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: 1.5em;
+    font-size: 12px;
+}
+
+#nameDiv-Details > p {
+    color: var(--sub-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+
+#recipDiv-Details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0px;
+    overflow-x: scroll;
+    margin-right: 1em;
+}
+
+#recipDiv-Details > div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* background-color: rgba(0,122,255,0.8); */
+    margin: 0 10px 15px 3px;
+    text-overflow: ellipsis;
+}
+
+#recipDiv-Details > div:hover {
+    background-color: rgba(0, 122, 255, 0.8);
+}
+
+#recipDiv-Details > div > p {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 12px;
+    margin: 0px 0px 0px 0px;
+    white-space: nowrap;
+}
+
+#recipDiv-Details > div > p:hover {
+    background: rgba(0, 122, 255, 0.8);
+}
+
+#convoDetailsDiv-Details {
+    width: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    margin-right: 1em;
+    margin-left: 0.5em;
+}
+
+#convoDetailsDiv-Details > p {
+    color: #007aff;
+    font-family: "SF UI Display Light";
+    font-size: 15px;
+    margin-bottom: 13px;
+}
+
+#convoDetailsDiv-Details > p:hover {
+    color: #1a55c2;
+    cursor: pointer;
+}
+
+#recipDiv-Details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    overflow-x: scroll;
+    margin-bottom: 9px;
+}
+
+#newChatNameInput {
+    outline: none;
+    border: none;
+    flex-grow: 1;
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    color: var(--main-title-color);
+    background-color: var(--secondary-color);
+}
+
+#newChatNameInput::placeholder {
+    color: var(--main-title-color);
+}
+
+#newChatNameInput:focus {
+}
+
+#closeDetailsDiv {
+    width: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    margin-right: 1em;
+    margin-left: 0.5em;
+}
+
+#closeDetailsDiv > p {
+    color: #007aff;
+    font-family: "SF UI Display Light";
+    font-size: 15px;
+    margin-bottom: 13px;
+}
+
+#closeDetailsDiv > p:hover {
+    color: #1a55c2;
+    cursor: pointer;
+}

@@ -4,5 +4,6 @@ export const DEFAULT_CONFIG_ITEMS: { [key: string]: Function } = {
     lastFetch: () => 0,
     theme: () => "dark",
     isMakingNewChat: () => false,
-    chunkSize: () => 1024
+    chunkSize: () => 1024,
+    isDetailsOpen: () => false
 };

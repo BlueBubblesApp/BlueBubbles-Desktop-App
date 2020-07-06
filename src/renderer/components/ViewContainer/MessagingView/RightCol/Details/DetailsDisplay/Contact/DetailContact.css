@@ -1,0 +1,50 @@
+.DetailContact {
+    height: 42px;
+    max-height: 42px;
+    min-height: 42px;
+    background-color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid grey;
+}
+
+.ContactWrap {
+    height: 100%;
+    width: 93%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ContactLeft {
+    display: flex;
+    align-items: center;
+}
+
+.ContactRight {
+    display: flex;
+    align-items: center;
+}
+
+.ContactIcon {
+    height: 30px;
+}
+
+.ContactName {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    margin: 0 0 0 10px;
+}
+
+#JumpToContact {
+    fill: var(--blue-title-color);
+    justify-self: flex-end;
+    height: 23px;
+    width: 23px;
+}
+
+#JumpToContact:hover {
+    opacity: 0.75;
+}
