@@ -14,9 +14,9 @@ import { ChatRepository } from "@server/databases/chat";
 // Service Imports
 import { SocketService } from "@server/services";
 
-import { ChatResponse, MessageResponse } from "./types";
+import { ChatResponse, MessageResponse, ResponseFormat } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
-import { Attachment } from "./databases/chat/entity";
+import { Attachment, Message } from "./databases/chat/entity";
 
 export class BackendServer {
     window: BrowserWindow;
@@ -143,6 +143,11 @@ export class BackendServer {
 
             // Start the socket service
             await this.socketService.start(true);
+
+            // Wait 1 second, then start the handlers if we are connected
+            setTimeout(() => {
+                if (this.socketService.server.connected) this.startSocketHandlers();
+            }, 1000);
         } catch (ex) {
             console.log(`Failed to setup socket service! ${ex.message}`);
         }
@@ -300,6 +305,7 @@ export class BackendServer {
             }
 
             // Start fetching the data
+            this.startSocketHandlers();
             this.fetchChats();
             return null; // Consistent return
         });
@@ -374,6 +380,16 @@ export class BackendServer {
             // Finally, tell the UI we are done
             emitData.progress = 100;
             this.emitToUI(event, emitData);
+        });
+    }
+
+    private startSocketHandlers() {
+        if (!this.socketService.server || !this.socketService.server.connected) return;
+
+        this.socketService.server.on("new-message", async (message: MessageResponse) => {
+            const msg = ChatRepository.createMessageFromResponse(message);
+            const newMsg = await this.chatRepo.saveMessage(msg.chats[0], msg);
+            this.emitToUI("message", newMsg);
         });
     }
 

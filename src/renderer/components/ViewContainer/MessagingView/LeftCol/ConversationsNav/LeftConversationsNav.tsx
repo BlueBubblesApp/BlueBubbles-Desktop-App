@@ -2,34 +2,28 @@ import * as React from "react";
 import { ipcRenderer } from "electron";
 
 import { Chat as DBChat, Message as DBMessage } from "@server/databases/chat/entity";
-import { getDateText } from "@renderer/utils";
 
 import "./LeftConversationsNav.css";
 import Conversation from "./Conversation/Conversation";
 
 type Chat = DBChat & {
     lastMessage: DBMessage | null;
+    hasNotification: boolean;
 };
 
 interface State {
+    activeChat: Chat;
     chats: Chat[];
     chatGuids: string[];
     isLoading: boolean;
 }
-
-const setCurrentChat = (guid: Chat) => {
-    // const config = { isMakingNewChat: false };
-    // console.log(config)
-    // ipcRenderer.invoke("set-config", config);
-
-    ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: guid });
-};
 
 class LeftConversationsNav extends React.Component<unknown, State> {
     constructor(props: unknown) {
         super(props);
 
         this.state = {
+            activeChat: null,
             chats: [],
             chatGuids: [],
             isLoading: false
@@ -51,6 +45,23 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         });
     }
 
+    setCurrentChat(chat: Chat) {
+        ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
+        this.setState({ activeChat: chat });
+        this.removeNotification(chat.guid);
+    }
+
+    removeNotification(guid: string) {
+        const updatedChats = [...this.state.chats];
+        for (let i = 0; i < updatedChats.length; i += 1) {
+            if (updatedChats[i].guid === guid) {
+                updatedChats[i].hasNotification = false;
+            }
+        }
+
+        this.setState({ chats: updatedChats });
+    }
+
     /**
      * When a new message comes in, we want to update the lastMessage key for a chat.
      * First, check if the chat exists, and if it doesn't, add it to the state.
@@ -65,10 +76,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         // Add the chat to the state, if needed
         const chats = message.chats as Chat[];
         for (let i = 0; i < chats.length; i += 1) chats[i].lastMessage = message;
-        const isNew = await this.addChatsToState(chats);
-
-        // If the chat didn't exist already, we don't need to update
-        if (isNew) return;
+        await this.addChatsToState(chats);
 
         const chatGuids = chats.map(i => i.guid);
         const updatedChats = [...this.state.chats];
@@ -78,6 +86,9 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                 updatedChats[i].lastMessage.dateCreated < message.dateCreated
             ) {
                 updatedChats[i].lastMessage = message;
+                if (!this.state.activeChat || updatedChats[i].guid !== this.state.activeChat?.guid) {
+                    updatedChats[i].hasNotification = true;
+                }
                 break;
             }
         }
@@ -94,7 +105,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
      * @param chats The new chats
      * @returns Whether or not we added a new chat to the state
      */
-    async addChatsToState(chats: Chat[]): Promise<boolean> {
+    async addChatsToState(chats: Chat[]) {
         const updatedChats = [...this.state.chats];
         const updatedGuids = [...this.state.chatGuids];
         for (const chat of chats) {
@@ -146,8 +157,6 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             chats: updatedChats,
             chatGuids: updatedGuids
         });
-
-        return true;
     }
 
     render() {
@@ -157,7 +166,12 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             <div className="LeftConversationsNav">
                 {isLoading ? <div id="loader" /> : null}
                 {chats.map(chat => {
-                    return <Conversation onClick={() => setCurrentChat(chat)} key={chat.guid} chat={chat} />;
+                    return (
+                        <>
+                            {chat.hasNotification ? <div className="notification" /> : null}
+                            <Conversation onClick={() => this.setCurrentChat(chat)} key={chat.guid} chat={chat} />
+                        </>
+                    );
                 })}
             </div>
         );

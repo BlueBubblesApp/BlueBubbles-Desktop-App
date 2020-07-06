@@ -30,6 +30,18 @@ class RightConversationDisplay extends React.Component<Props, State> {
     }
 
     componentDidMount() {
+        ipcRenderer.on("message", async (_, message: Message) => {
+            // If the message isn't for this chat, ignore it
+            if (!message.chats || message.chats[0].guid !== this.props.chat.guid) return;
+
+            // Otherwise, add the message to the state
+            await this.addMessagesToState([message]);
+
+            // Scroll to new message
+            const view = document.getElementById("messageView");
+            view.scrollTop = view.scrollHeight;
+        });
+
         this.chatChange();
     }
 

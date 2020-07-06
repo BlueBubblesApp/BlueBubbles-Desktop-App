@@ -36,7 +36,6 @@ const allEmojis = (text: string) => {
 
     const parser = EmojiRegex();
     const matches = text.match(parser);
-    console.log(matches && matches.length * 2 === text.length);
     return matches && matches.length * 2 === text.length;
 };
 
@@ -176,10 +175,9 @@ class MessageBubble extends React.Component<Props, State> {
 
         const sender = contact ?? getiMessageNumberFormat(message.handle?.address ?? "");
         const className = !message.isFromMe ? "IncomingMessage" : "OutgoingMessage";
-        let messageClass = this.shouldHaveTail() ? "message tail" : "message"; // Fix this to reflect having a tail
+        const useTail = this.shouldHaveTail();
+        let messageClass = useTail ? "message tail" : "message"; // Fix this to reflect having a tail
         const text = sanitizeStr(message.text);
-        console.log(text);
-        console.log(text.length);
         if (text.length <= 6 && allEmojis(text)) {
             messageClass = "bigEmojis";
         }
@@ -190,7 +188,7 @@ class MessageBubble extends React.Component<Props, State> {
                     <p className="MessageSender">{sender}</p>
                 ) : null}
                 <div className={className}>
-                    <div className={messageClass}>
+                    <div className={messageClass} style={{ marginBottom: useTail ? "8px" : "0" }}>
                         {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
                         {text ? <p>{text}</p> : null}
                     </div>
