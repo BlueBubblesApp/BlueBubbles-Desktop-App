@@ -356,14 +356,22 @@ export class BackendServer {
                 currentChunk = base64.base64ToBytes(response);
                 output = mergeUint8Arrays(output, currentChunk);
 
-                // Show the UI how far we've come
+                // Calculate percentage complete
                 emitData.progress = Math.ceil((((start - 1) * chunkSize) / attachment.totalBytes) * 100);
-                if (emitData.progress > 100) emitData.progress = 100;
+
+                // If the attachment progress is 100, set it to 99
+                // We only want to set it to 99 once it's been saved
+                if (emitData.progress >= 100) emitData.progress = 99;
                 this.emitToUI(event, emitData);
+
+                // Increment starting chunk index
                 start += 1;
             } while (currentChunk.byteLength === chunkSize);
 
+            // Save the attachment to disk
             this.fs.saveAttachment(attachment, output);
+
+            // Finally, tell the UI we are done
             emitData.progress = 100;
             this.emitToUI(event, emitData);
         });
