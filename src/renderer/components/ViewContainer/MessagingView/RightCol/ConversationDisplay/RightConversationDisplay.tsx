@@ -53,7 +53,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
         const messages = await ipcRenderer.invoke("get-chat-messages", {
             chatGuid: this.props.chat.guid,
             withHandle: true,
-            withAttachments: false,
+            withAttachments: true,
             withChat: false,
             limit: 25,
             before: messageTimestamp ?? new Date().getTime()
@@ -61,9 +61,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
         // Add each message to the state
         await this.addMessagesToState(messages);
-        for (const i of messages) {
-            console.log(i.handle);
-        }
 
         // Tell the state we are done loading
         this.setState({ isLoading: false }, () => {

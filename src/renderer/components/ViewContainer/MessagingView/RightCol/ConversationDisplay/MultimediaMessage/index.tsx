@@ -1,5 +1,5 @@
 import * as React from "react";
-import { app, ipcRenderer, IpcRendererEvent } from "electron";
+import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
 import { Message } from "@server/databases/chat/entity";
 import { getiMessageNumberFormat } from "@renderer/utils";
@@ -36,16 +36,13 @@ class MultimediaMessage extends React.Component<Props, State> {
     componentDidMount() {
         const { message } = this.props;
 
-        // Register listener to check for image download progress
-        ipcRenderer.on("attachment-progress-update", this.onAttachmentUpdate);
-
         // TODO: Get the contact
         // this.setState({ contact: "John Doe" });
 
         // Get the attachments
         const attachments: AttachmentDownload[] = [];
         for (const attachment of message.attachments ?? []) {
-            const attachmentPath = `${app.getPath("userData")}/Attachments/${attachment.guid}/${
+            const attachmentPath = `${remote.app.getPath("userData")}/Attachments/${attachment.guid}/${
                 attachment.transferName
             }`;
 
@@ -55,22 +52,22 @@ class MultimediaMessage extends React.Component<Props, State> {
             // If the file exists in the FS already,
             if (fs.existsSync(attachmentPath)) {
                 item.progress = 100;
-
-                // Convert to attachmentProgress
                 attachments.push(item as AttachmentDownload);
             } else {
-                // TODO: Get from socket
+                attachments.push(item as AttachmentDownload);
+
+                // Register listener for each attachment that we need to download
+                ipcRenderer.on(`attachment-${attachment.guid}-progress`, (event, args) =>
+                    this.onAttachmentUpdate(event, args)
+                );
+                ipcRenderer.invoke("fetch-attachment", attachment);
             }
         }
 
         this.setState({ attachments });
     }
 
-    componentWillUnmount() {
-        ipcRenderer.removeListener("attachment-progress-update", this.onAttachmentUpdate);
-    }
-
-    onAttachmentUpdate(_: IpcRendererEvent, args: any) {
+    onAttachmentUpdate(event: IpcRendererEvent, args: any) {
         const { attachment, progress } = args;
 
         // Search for the attachment and update the process
@@ -110,15 +107,23 @@ class MultimediaMessage extends React.Component<Props, State> {
                     <p className={messageClass}>
                         {attachments.map((attachment: AttachmentDownload) => {
                             if (attachment.progress === 100) {
-                                if (attachment.mimeType.startsWith("image"))
+                                const attachmentPath = `${remote.app.getPath("userData")}/Attachments/${
+                                    attachment.guid
+                                }/${attachment.transferName}`;
+
+                                // Render based on mime type
+                                if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
+                                    const mime = attachment.mimeType ?? "";
+                                    const b64File = fs.readFileSync(attachmentPath).toString("base64");
                                     return (
                                         <img
-                                            src={`${app.getPath("userData")}/Attachments/${attachment.guid}/${
-                                                attachment.transferName
-                                            }`}
+                                            key={attachment.guid}
+                                            className="imageAttachment"
+                                            src={`data:${mime};base64,${b64File}`}
                                             alt={attachment.transferName}
                                         />
                                     );
+                                }
                                 if (attachment.mimeType.startsWith("video")) return "VIDEO";
                                 if (attachment.mimeType.startsWith("v-location")) return "LOC";
 

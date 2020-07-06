@@ -1,10 +1,11 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { Connection } from "typeorm";
+import * as base64 from "byte-base64";
 
 // Config and FileSystem Imports
-import { Config } from "@server/databases/config/entity/Config";
 import { FileSystem } from "@server/fileSystem";
 import { DEFAULT_CONFIG_ITEMS } from "@server/constants";
+import { mergeUint8Arrays } from "@server/helpers/utils";
 
 // Database Imports
 import { ConfigRepository } from "@server/databases/config";
@@ -13,8 +14,9 @@ import { ChatRepository } from "@server/databases/chat";
 // Service Imports
 import { SocketService } from "@server/services";
 
-import { ResponseFormat, ChatResponse, MessageResponse } from "./types";
+import { ChatResponse, MessageResponse } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
+import { Attachment } from "./databases/chat/entity";
 
 export class BackendServer {
     window: BrowserWindow;
@@ -211,10 +213,13 @@ export class BackendServer {
             for (const message of messages) {
                 const msg = ChatRepository.createMessageFromResponse(message);
                 await this.chatRepo.saveMessage(savedChat, msg);
-            }
 
-            // Lastly, save the attachments (if any)
-            // TODO
+                // Save the attachments
+                for (const attachment of message.attachments ?? []) {
+                    const item = ChatRepository.createAttachmentFromResponse(attachment);
+                    await this.chatRepo.saveAttachment(savedChat, msg, item);
+                }
+            }
 
             emitData.syncProgress = Math.ceil((count / chats.length) * 100);
             if (emitData.syncProgress > 100) emitData.syncProgress = 100;
@@ -320,6 +325,45 @@ export class BackendServer {
             }
 
             return messages;
+        });
+
+        // eslint-disable-next-line no-return-await
+        ipcMain.handle("fetch-attachment", async (_, attachment: Attachment) => {
+            console.log("GETTING ATTACHMENT");
+            const chunkSize = this.configRepo.get("chunkSize") as number;
+            let start = 0;
+
+            let output = new Uint8Array();
+            const event = `attachment-${attachment.guid}-progress`;
+            const emitData = {
+                attachment,
+                progress: 1
+            };
+
+            // Show a tiny bit of progress
+            this.emitToUI(event, emitData);
+
+            do {
+                // Get the attachment chunk
+                const response = await this.socketService.getAttachmentChunk(attachment.guid, {
+                    start: start * chunkSize,
+                    chunkSize
+                });
+
+                // Convert the data to a typed array, then merge
+                const data = base64.base64ToBytes(response);
+                output = mergeUint8Arrays(output, data);
+
+                // Show the UI how far we've come
+                emitData.progress = Math.ceil((((start - 1) * chunkSize) / attachment.totalBytes) * 100);
+                if (emitData.progress > 100) emitData.progress = 100;
+                this.emitToUI(event, emitData);
+                start += 1;
+            } while ((start - 1) * chunkSize + chunkSize <= attachment.totalBytes);
+
+            this.fs.saveAttachment(attachment, output);
+            emitData.progress = 100;
+            this.emitToUI(event, emitData);
         });
     }
 

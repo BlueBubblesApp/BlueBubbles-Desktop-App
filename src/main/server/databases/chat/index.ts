@@ -1,6 +1,6 @@
 import { app } from "electron";
 import { createConnection, Connection, FindManyOptions } from "typeorm";
-import { ChatResponse, HandleResponse, MessageResponse } from "@server/types";
+import { ChatResponse, HandleResponse, MessageResponse, AttachmentResponse } from "@server/types";
 
 import { Attachment, Chat, Handle, Message } from "./entity";
 import { GetMessagesParams } from "./types";
@@ -139,6 +139,21 @@ export class ChatRepository {
         handle.chats = (res.chats ?? []).map(chat => ChatRepository.createChatFromResponse(chat));
         handle.messages = (res.messages ?? []).map(msg => ChatRepository.createMessageFromResponse(msg));
         return handle;
+    }
+
+    static createAttachmentFromResponse(res: AttachmentResponse): Attachment {
+        const attachment = new Attachment();
+        attachment.guid = res.guid;
+        attachment.blurhash = res.blurhash;
+        attachment.hideAttachment = res.hideAttachment;
+        attachment.isOutgoing = res.isOutgoing;
+        attachment.isSticker = res.isSticker;
+        attachment.mimeType = res.mimeType;
+        attachment.totalBytes = res.totalBytes;
+        attachment.transferName = res.transferName;
+        attachment.transferState = res.transferState;
+        attachment.uti = res.uti;
+        return attachment;
     }
 
     static createMessageFromResponse(res: MessageResponse): Message {
@@ -292,7 +307,7 @@ export class ChatRepository {
         if (!theAttachment) theAttachment = await repo.save(attachment);
 
         // Add the message to the chat if it doesn't already exist
-        if (!theAttachment.messages.find(i => i.ROWID === savedMessage.ROWID)) {
+        if (!(theAttachment.messages ?? []).find(i => i.ROWID === savedMessage.ROWID)) {
             await repo
                 .createQueryBuilder()
                 .relation(Attachment, "messages")

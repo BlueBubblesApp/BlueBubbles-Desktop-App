@@ -17,7 +17,7 @@ const createWindow = async () => {
         minHeight: 350,
         transparent: true,
         frame: false,
-        webPreferences: { nodeIntegration: true }
+        webPreferences: { nodeIntegration: true, webSecurity: false }
     });
 
     if (process.env.NODE_ENV !== "production") {

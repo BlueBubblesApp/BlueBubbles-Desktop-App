@@ -145,6 +145,7 @@
       "webpack-node-externals": "^1.7.2"
    },
    "dependencies": {
+      "byte-base64": "^1.0.2",
       "cors": "^2.8.5",
       "express": "^4.17.1",
       "google-libphonenumber": "^3.2.10",

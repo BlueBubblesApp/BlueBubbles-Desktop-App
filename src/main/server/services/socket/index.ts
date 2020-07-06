@@ -2,14 +2,14 @@ import * as io from "socket.io-client";
 
 // Internal Libraries
 import { FileSystem } from "@server/fileSystem";
-import { ResponseFormat, ChatResponse, MessageResponse } from "@server/types";
+import { ResponseFormat, ChatResponse, MessageResponse, AttachmentResponse } from "@server/types";
 
 // Database Dependency Imports
 import { ConfigRepository } from "@server/databases/config";
 import { ChatRepository } from "@server/databases/chat";
 import { Connection } from "typeorm";
 
-import { GetChatsParams, GetChatMessagesParams } from "./types";
+import { GetChatsParams, GetChatMessagesParams, GetAttachmentChunkParams } from "./types";
 
 export class SocketService {
     db: Connection;
@@ -110,6 +110,30 @@ export class SocketService {
                 res => {
                     if ([200, 201].includes(res.status)) {
                         resolve(res.data as MessageResponse[]);
+                    } else {
+                        reject(res.message);
+                    }
+                }
+            );
+        });
+    }
+
+    async getAttachmentChunk(
+        attachmentGuid,
+        { start = 0, chunkSize = 1024, compress = false }: GetAttachmentChunkParams
+    ): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this.server.emit(
+                "get-attachment-chunk",
+                {
+                    identifier: attachmentGuid,
+                    start,
+                    chunkSize,
+                    compress
+                },
+                res => {
+                    if ([200, 201].includes(res.status)) {
+                        resolve(res.data as string);
                     } else {
                         reject(res.message);
                     }

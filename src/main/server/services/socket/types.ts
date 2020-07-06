@@ -11,3 +11,9 @@ export type GetChatMessagesParams = {
     withBlurhash?: boolean;
     sort?: "DESC" | "ASC";
 };
+
+export type GetAttachmentChunkParams = {
+    start?: number;
+    chunkSize?: number;
+    compress?: boolean;
+};

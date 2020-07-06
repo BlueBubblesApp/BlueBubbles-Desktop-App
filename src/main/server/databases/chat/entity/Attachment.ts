@@ -13,14 +13,14 @@ export class Attachment {
     @Column("text")
     uti: string;
 
-    @Column("text")
+    @Column({ type: "text", nullable: true })
     mimeType: string;
 
     @Column("integer")
     transferState: number;
 
     @Column("integer")
-    isOutgoing: number;
+    isOutgoing: boolean;
 
     @Column("text")
     transferName: string;
@@ -34,13 +34,13 @@ export class Attachment {
     @Column({ type: "integer", transformer: BooleanTransformer })
     hideAttachment: boolean;
 
-    @Column("text")
+    @Column({ type: "text", nullable: true })
     blurhash: string;
 
-    @Column("integer")
+    @Column({ type: "integer", nullable: true })
     height: number;
 
-    @Column("integer")
+    @Column({ type: "integer", nullable: true })
     width: number;
 
     @ManyToMany(type => Message, { onDelete: "CASCADE" })

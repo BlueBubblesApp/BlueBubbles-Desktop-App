@@ -113,3 +113,8 @@
     background: var(--background-color);
     border-bottom-right-radius: 10px;
 }
+
+.imageAttachment {
+    max-height: 100%;
+    max-width: 100%;
+}
