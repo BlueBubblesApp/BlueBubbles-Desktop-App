@@ -1,3 +1,5 @@
+import { Handle, Chat } from "./entity";
+
 export type GetMessagesParams = {
     chatGuid?: string;
     offset?: number;
@@ -14,4 +16,14 @@ export type GetMessagesParams = {
 export type DBWhereItem = {
     statement: string;
     args: { [key: string]: string | number };
+};
+
+export type CreateMessageParams = {
+    chat: Chat;
+    guid: string;
+    text: string;
+    handle: Handle;
+    dateCreated: Date;
+    error: number;
+    hasAttachments: boolean;
 };

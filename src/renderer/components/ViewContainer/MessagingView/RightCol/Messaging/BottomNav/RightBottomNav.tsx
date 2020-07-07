@@ -2,7 +2,8 @@
 /* eslint-disable class-methods-use-this */
 import * as React from "react";
 import { ipcRenderer } from "electron";
-import { Chat } from "@server/databases/chat/entity";
+import { Chat, Message } from "@server/databases/chat/entity";
+import { generateUuid } from "@renderer/utils";
 
 import "./RightBottomNav.css";
 import SendIcon from "../../../../../../assets/icons/send-icon.png";
@@ -43,16 +44,22 @@ class RightBottomNav extends React.Component<Props, State> {
         });
     };
 
-    sendMessage() {
-        const input: HTMLInputElement = document.getElementById("messageFieldInput") as HTMLInputElement;
-        // Ping server to send message here
-        console.log("Sent Message: ", input.value);
-        ipcRenderer.invoke("set-config", input.value);
-        input.value = "";
+    async sendMessage() {
+        const message: Message = await ipcRenderer.invoke("create-message", {
+            chat: this.props.chat,
+            guid: `temp-${generateUuid()}`,
+            text: this.state.enteredMessage,
+            dateCreated: new Date()
+        });
+
+        ipcRenderer.invoke("send-to-ui", { event: "add-message", contents: message });
+        ipcRenderer.invoke("save-message", { chat: this.props.chat, message });
+        ipcRenderer.invoke("send-message", { chat: this.props.chat, message });
+
+        this.setState({ enteredMessage: "" });
     }
 
     handleAddAttachment() {
-        console.log(dialog);
         dialog.showOpenDialog({
             properties: ["openFile"],
             filters: [{ name: "Images", extensions: ["jpg", "jpeg", "png"] }]

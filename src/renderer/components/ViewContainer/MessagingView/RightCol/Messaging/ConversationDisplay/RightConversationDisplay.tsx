@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import * as React from "react";
 import { ipcRenderer } from "electron";
-import { Chat, Message } from "@server/databases/chat/entity";
+import { Chat, Message as DBMessage } from "@server/databases/chat/entity";
 import { getDateText, getTimeText } from "@renderer/utils";
 
 import "./RightConversationDisplay.css";
@@ -18,6 +18,10 @@ type State = {
     messageGuids: string[];
 };
 
+type Message = DBMessage & {
+    tempGuid: string;
+};
+
 class RightConversationDisplay extends React.Component<Props, State> {
     constructor(props) {
         super(props);
@@ -30,10 +34,25 @@ class RightConversationDisplay extends React.Component<Props, State> {
     }
 
     componentDidMount() {
-        ipcRenderer.on("message", async (_, message: Message) => {
+        ipcRenderer.on("message", async (_, payload: { message: Message; tempGuid?: string }) => {
+            const { message } = payload;
+
             // If the message isn't for this chat, ignore it
             if (!message.chats || message.chats[0].guid !== this.props.chat.guid) return;
 
+            // Convert the message to a message with a tempGuid
+            const msg = message as Message;
+            msg.tempGuid = payload.tempGuid ?? null;
+
+            // Otherwise, add the message to the state
+            await this.addMessagesToState([msg]);
+
+            // Scroll to new message
+            const view = document.getElementById("messageView");
+            view.scrollTop = view.scrollHeight;
+        });
+
+        ipcRenderer.on("add-message", async (_, message) => {
             // Otherwise, add the message to the state
             await this.addMessagesToState([message]);
 
@@ -61,7 +80,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
         this.setState({ isLoading: true });
 
         // Get the next page of messages
-        const messages = await ipcRenderer.invoke("get-chat-messages", {
+        const messages: DBMessage[] = await ipcRenderer.invoke("get-chat-messages", {
             chatGuid: this.props.chat.guid,
             withHandle: true,
             withAttachments: true,
@@ -71,7 +90,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
         });
 
         // Add each message to the state
-        await this.addMessagesToState(messages);
+        await this.addMessagesToState(messages as Message[]); // These won't have a tempGuid
 
         // Tell the state we are done loading
         this.setState({ isLoading: false }, () => {
@@ -114,26 +133,37 @@ class RightConversationDisplay extends React.Component<Props, State> {
     }
 
     async addMessagesToState(messages: Message[]) {
-        // Insert the new message into the list
+        // Make copies of state
         const updatedMessages = [...this.state.messages];
         const updatedGuids = [...this.state.messageGuids];
+
+        // // Insert/update the message into the state
         for (const message of messages) {
-            // Check if the message already exists
-            const exists = updatedGuids.includes(message.guid);
-            if (exists) continue;
+            // Check if the message already exists (via real GUID or temp GUID)
+            let exists = updatedGuids.includes(message.guid);
+            if (message.tempGuid) exists = updatedGuids.includes(message.tempGuid);
 
             let insertIdx = -1;
             for (let i = 0; i < updatedMessages.length; i += 1) {
-                if (message.dateCreated > updatedMessages[i].dateCreated) {
+                // If the GUID doesn't exist, just insert normally (by date)
+                if (!exists && message.dateCreated > updatedMessages[i].dateCreated) {
                     insertIdx = i;
                     break;
+
+                    // If the GUID exists, we want to replace the original message with the new message
+                    // We have to try to match on both the tempGuid and real GUID
+                } else if (
+                    (exists && message.guid === updatedMessages[i].guid) ||
+                    (message.tempGuid && message.tempGuid === updatedMessages[i].guid)
+                ) {
+                    updatedMessages[i] = message;
                 }
             }
 
-            // Insert the message at the correct index
-            if (insertIdx === -1) {
+            // Insert the message at the correct index (if it didn't exist already)
+            if (!exists && insertIdx === -1) {
                 updatedMessages.push(message);
-            } else {
+            } else if (!exists) {
                 updatedMessages.splice(insertIdx, 0, message);
             }
 

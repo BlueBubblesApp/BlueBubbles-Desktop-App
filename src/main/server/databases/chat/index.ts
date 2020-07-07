@@ -3,7 +3,7 @@ import { createConnection, Connection, FindManyOptions } from "typeorm";
 import { ChatResponse, HandleResponse, MessageResponse, AttachmentResponse } from "@server/types";
 
 import { Attachment, Chat, Handle, Message } from "./entity";
-import { GetMessagesParams } from "./types";
+import { GetMessagesParams, CreateMessageParams } from "./types";
 
 export class ChatRepository {
     db: Connection = null;
@@ -37,6 +37,47 @@ export class ChatRepository {
         if (!isDev) await this.db.synchronize();
 
         return this.db;
+    }
+
+    static createMessage({
+        chat,
+        guid,
+        text,
+        handle = null,
+        dateCreated = null,
+        error = 0,
+        hasAttachments = false
+    }: CreateMessageParams) {
+        const message = new Message();
+        message.guid = guid;
+        message.text = text;
+        message.dateCreated = dateCreated ? dateCreated.getTime() : new Date().getTime();
+        message.error = error;
+        message.isDelayed = false;
+        message.isAutoReply = false;
+        message.isSystemMessage = false;
+        message.isArchived = false;
+        message.isServiceMessage = false;
+        message.isForward = false;
+        message.isExpired = false;
+        message.cacheRoomnames = chat.guid.includes("iMessage;+;chat") ? chat.chatIdentifier : null;
+        message.isAudioMessage = false;
+        message.datePlayed = 0;
+        message.itemType = 0;
+        message.groupTitle = null;
+        message.groupActionType = 0;
+        message.attachments = [];
+        message.chats = [chat];
+        message.hasAttachments = hasAttachments;
+
+        if (handle) {
+            message.handle = handle;
+        } else {
+            message.handleId = null;
+            message.isFromMe = true;
+        }
+
+        return message;
     }
 
     async getChats(guid = null) {
@@ -202,7 +243,7 @@ export class ChatRepository {
         if (existing) {
             if (existing.displayName !== chat.displayName) {
                 // Right now, I don't think anything but the displayName will change
-                await repo.update(existing, { displayName: chat.displayName });
+                await repo.update({ guid: existing.guid }, { displayName: chat.displayName });
             }
 
             return existing;
@@ -240,33 +281,39 @@ export class ChatRepository {
         return theHandle;
     }
 
-    async saveMessage(chat: Chat, message: Message): Promise<Message> {
+    async saveMessage(chat: Chat, message: Message, tempGuid = null): Promise<Message> {
         // Always save the chat first
         const savedChat = await this.saveChat(chat);
         const repo = this.db.getRepository(Message);
+        const guid = tempGuid ?? message.guid;
         let theMessage = null;
 
         // If the message doesn't have a ROWID, try to find it
         if (!message.ROWID) {
-            theMessage = await repo.findOne({ relations: ["handle"], where: { guid: message.guid } });
+            theMessage = await repo.findOne({ relations: ["handle"], where: { guid } });
         }
 
         // If it exists, check if anything has really changed before updating
         if (theMessage) {
             if (
+                theMessage.guid !== message.guid ||
                 theMessage.dateDelivered !== message.dateDelivered ||
                 theMessage.dateRead !== message.dateRead ||
                 theMessage.error !== message.error ||
                 theMessage.isArchived !== message.isArchived ||
                 theMessage.datePlayed !== message.datePlayed
             ) {
-                await repo.update(theMessage, {
-                    dateDelivered: message.datePlayed,
-                    dateRead: message.dateRead,
-                    error: message.error,
-                    isArchived: message.isArchived,
-                    datePlayed: message.datePlayed
-                });
+                await repo.update(
+                    { guid: theMessage.guid },
+                    {
+                        guid: message.guid,
+                        dateDelivered: message.datePlayed,
+                        dateRead: message.dateRead,
+                        error: message.error,
+                        isArchived: message.isArchived,
+                        datePlayed: message.datePlayed
+                    }
+                );
             }
 
             return theMessage;

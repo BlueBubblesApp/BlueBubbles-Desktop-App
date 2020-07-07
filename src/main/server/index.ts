@@ -227,13 +227,17 @@ export class BackendServer {
 
             // Fourth, let's save the messages to the DB
             for (const message of messages) {
-                const msg = ChatRepository.createMessageFromResponse(message);
-                await this.chatRepo.saveMessage(savedChat, msg);
+                try {
+                    const msg = ChatRepository.createMessageFromResponse(message);
+                    await this.chatRepo.saveMessage(savedChat, msg);
 
-                // Save the attachments
-                for (const attachment of message.attachments ?? []) {
-                    const item = ChatRepository.createAttachmentFromResponse(attachment);
-                    await this.chatRepo.saveAttachment(savedChat, msg, item);
+                    // Save the attachments
+                    for (const attachment of message.attachments ?? []) {
+                        const item = ChatRepository.createAttachmentFromResponse(attachment);
+                        await this.chatRepo.saveAttachment(savedChat, msg, item);
+                    }
+                } catch (ex) {
+                    console.error(`Failed to save message, [${message.guid}]`);
                 }
             }
 
@@ -393,8 +397,19 @@ export class BackendServer {
             this.emitToUI(event, emitData);
         });
 
+        ipcMain.handle("create-message", async (_, payload) => ChatRepository.createMessage(payload));
+        ipcMain.handle("save-message", async (_, payload) => this.chatRepo.saveMessage(payload.chat, payload.message));
+        ipcMain.handle("send-message", async (_, payload) => {
+            const { chat, message } = payload;
+            this.socketService.server.emit("send-message", {
+                tempGuid: message.guid,
+                guid: chat.guid,
+                message: message.text
+            });
+        });
+
         // Handle Opening Attachment
-        ipcMain.handle("open-attachment", async (e, attachmentPath) => {
+        ipcMain.handle("open-attachment", async (_, attachmentPath) => {
             shell.openPath(attachmentPath);
         });
     }
@@ -404,8 +419,8 @@ export class BackendServer {
 
         this.socketService.server.on("new-message", async (message: MessageResponse) => {
             const msg = ChatRepository.createMessageFromResponse(message);
-            const newMsg = await this.chatRepo.saveMessage(msg.chats[0], msg);
-            this.emitToUI("message", newMsg);
+            const newMsg = await this.chatRepo.saveMessage(msg.chats[0], msg, message.tempGuid ?? null);
+            this.emitToUI("message", { message: newMsg, tempGuid: message.tempGuid });
         });
     }
 

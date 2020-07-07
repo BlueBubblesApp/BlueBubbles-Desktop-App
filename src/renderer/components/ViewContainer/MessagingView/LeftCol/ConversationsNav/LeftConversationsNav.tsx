@@ -35,7 +35,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         ipcRenderer.on("chat", (_, args) => this.addChatsToState([args]));
 
         // Second, let's register a handler for new messages
-        ipcRenderer.on("message", (_, args) => this.updateLastMessage(args));
+        ipcRenderer.on("message", (_, payload) => this.updateLastMessage(payload.message));
 
         // Third, let's fetch the current chats and add them to the state
         ipcRenderer.invoke("get-chats", null).then(async chats => {

@@ -206,7 +206,7 @@ class MessageBubble extends React.Component<Props, State> {
 
         return (
             <div>
-                {message.attachments.length > 0 ? (
+                {message.attachments?.length > 0 ? (
                     <>
                         <div className={imageClassName}>
                             {message.handle && (!olderMessage || olderMessage.handleId !== message.handleId) ? (

@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 import { PhoneNumberUtil } from "google-libphonenumber";
 import { Chat } from "@server/databases/chat/entity";
 
@@ -85,4 +86,12 @@ export const parseUrls = (text: string) => {
     const parser = new RegExp(expr);
     const matches = text.match(parser);
     return matches ?? [];
+};
+
+export const generateUuid = () => {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+    });
 };
