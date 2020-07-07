@@ -11,7 +11,7 @@ function ChatLabel({ text, date }: ConversationProps) {
     return (
         <div className="ChatLabel">
             <p>{text}</p>
-            {date ? <p>{`${getDateText(new Date(date))}, ${getTimeText(new Date(date))}`}</p> : null}
+            {date ? <p>{`${getDateText(date)}, ${getTimeText(date)}`}</p> : null}
         </div>
     );
 }
