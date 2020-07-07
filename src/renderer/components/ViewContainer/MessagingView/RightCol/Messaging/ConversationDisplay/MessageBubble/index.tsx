@@ -180,6 +180,7 @@ class MessageBubble extends React.Component<Props, State> {
     render() {
         const { message, olderMessage } = this.props;
         const { contact, attachments } = this.state;
+        let links = [];
 
         // Pull out the sender name or number
         const sender = contact ?? getiMessageNumberFormat(message.handle?.address ?? "");
@@ -198,9 +199,7 @@ class MessageBubble extends React.Component<Props, State> {
             messageClass = "bigEmojis";
         }
 
-        // Parse out any links
-        let links = [];
-        // We can minimize parsing if we do a simple "contains" first
+        // Parse out any links. We can minimize parsing if we do a simple "contains" first
         if (text.includes("http")) {
             links = parseUrls(text);
         }
