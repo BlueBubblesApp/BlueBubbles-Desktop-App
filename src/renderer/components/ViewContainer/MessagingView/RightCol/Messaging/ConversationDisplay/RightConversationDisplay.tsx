@@ -168,7 +168,13 @@ class RightConversationDisplay extends React.Component<Props, State> {
             }
 
             // Add the message GUID to the master list
-            updatedGuids.push(message.guid);
+            // Or update the temp GUID to real GUID
+            if (!updatedGuids.includes(message.guid)) {
+                updatedGuids.push(message.guid);
+            } else if (message.tempGuid && updatedGuids.includes(message.tempGuid)) {
+                const idx = updatedGuids.indexOf(message.tempGuid);
+                updatedGuids[idx] = message.guid;
+            }
         }
 
         // Update the state (and wait for it to finish)

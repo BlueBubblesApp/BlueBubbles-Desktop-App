@@ -286,7 +286,7 @@ export class ChatRepository {
         const savedChat = await this.saveChat(chat);
         const repo = this.db.getRepository(Message);
         const guid = tempGuid ?? message.guid;
-        let theMessage = null;
+        let theMessage: Message = null;
 
         // If the message doesn't have a ROWID, try to find it
         if (!message.ROWID) {
@@ -316,6 +316,8 @@ export class ChatRepository {
                 );
             }
 
+            // Add the chat into the updated resultset
+            theMessage.chats = [savedChat];
             return theMessage;
         }
 
