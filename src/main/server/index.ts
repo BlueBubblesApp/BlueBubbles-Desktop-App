@@ -352,6 +352,7 @@ export class BackendServer {
 
         // eslint-disable-next-line no-return-await
         ipcMain.handle("fetch-attachment", async (_, attachment: Attachment) => {
+            console.log(`Getting attachment: ${attachment.transferName}`);
             const chunkSize = (this.configRepo.get("chunkSize") as number) * 1000;
             let start = 0;
 
@@ -417,11 +418,19 @@ export class BackendServer {
     private startSocketHandlers() {
         if (!this.socketService.server || !this.socketService.server.connected) return;
 
-        this.socketService.server.on("new-message", async (message: MessageResponse) => {
+        const saveIncomingMessage = async (message: MessageResponse) => {
             const msg = ChatRepository.createMessageFromResponse(message);
             const newMsg = await this.chatRepo.saveMessage(msg.chats[0], msg, message.tempGuid ?? null);
             this.emitToUI("message", { message: newMsg, tempGuid: message.tempGuid });
-        });
+        };
+
+        this.socketService.server.on("new-message", (message: MessageResponse) => saveIncomingMessage(message));
+        this.socketService.server.on("updated-message", (message: MessageResponse) => saveIncomingMessage(message));
+        this.socketService.server.on("group-name-change", (message: MessageResponse) => saveIncomingMessage(message));
+        this.socketService.server.on("updated-message", (message: MessageResponse) => saveIncomingMessage(message));
+        this.socketService.server.on("participant-removed", (message: MessageResponse) => saveIncomingMessage(message));
+        this.socketService.server.on("participant-added", (message: MessageResponse) => saveIncomingMessage(message));
+        this.socketService.server.on("participant-left", (message: MessageResponse) => saveIncomingMessage(message));
     }
 
     private emitToUI(event: string, data: any) {

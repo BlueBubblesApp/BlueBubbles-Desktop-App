@@ -22,6 +22,20 @@ type Message = DBMessage & {
     tempGuid: string;
 };
 
+const getChatEvent = (message: Message) => {
+    console.log(message.handleId);
+    const sender = message.isFromMe || !message.handle ? "You" : message.handle.address ?? "";
+    if (message.itemType === 2)
+        return (
+            <ChatLabel
+                text={`${sender} named the conversation "${message.groupTitle}"`}
+                date={new Date(message.dateCreated)}
+            />
+        );
+
+    return null;
+};
+
 class RightConversationDisplay extends React.Component<Props, State> {
     constructor(props) {
         super(props);
@@ -86,7 +100,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
             withAttachments: true,
             withChat: false,
             limit: 25,
-            before: messageTimestamp ?? new Date().getTime()
+            before: messageTimestamp ?? new Date().getTime(),
+            where: []
         });
 
         // Add each message to the state
@@ -226,7 +241,9 @@ class RightConversationDisplay extends React.Component<Props, State> {
                     return (
                         <div key={message.guid}>
                             {/* If the last previous message is older than 30 minutes, display the time */}
-                            {olderMessage && message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 30 ? (
+                            {message.text &&
+                            olderMessage &&
+                            message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 30 ? (
                                 <ChatLabel
                                     text={`${getDateText(new Date(message.dateCreated))}, ${getTimeText(
                                         new Date(message.dateCreated)
@@ -242,7 +259,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                     newerMessage={newerMessage}
                                 />
                             ) : (
-                                <ChatLabel text="TODO: Some Event" />
+                                getChatEvent(message)
                             )}
                         </div>
                     );

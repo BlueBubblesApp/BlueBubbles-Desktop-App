@@ -1,4 +1,5 @@
 import * as React from "react";
+import { getDateText, getTimeText } from "@renderer/utils";
 import "./ChatLabel.css";
 
 type ConversationProps = {
@@ -10,7 +11,7 @@ function ChatLabel({ text, date }: ConversationProps) {
     return (
         <div className="ChatLabel">
             <p>{text}</p>
-            {date ? <p>{date.toLocaleTimeString()}</p> : null}
+            {date ? <p>{`${getDateText(date)}, ${getTimeText(date)}`}</p> : null}
         </div>
     );
 }
