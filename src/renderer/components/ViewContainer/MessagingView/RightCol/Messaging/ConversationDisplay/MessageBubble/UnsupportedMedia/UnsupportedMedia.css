@@ -1,9 +1,22 @@
 .UnsupportedMedia {
-    border: 2px solid white;
+    background-color: var(--incoming-message-color);
     border-radius: 20px;
-    padding: 5px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin-top: 3px;
+}
+
+.UnsupportedMedia > p:first-child {
+    margin-top: 10px;
+}
+
+.UnsupportedMedia > p {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Light";
+    font-size: 16px;
+    margin: 0;
+    margin-bottom: 10px;
 }
