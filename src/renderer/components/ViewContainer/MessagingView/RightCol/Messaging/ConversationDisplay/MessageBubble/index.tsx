@@ -41,7 +41,7 @@ const allEmojis = (text: string) => {
     return matches && matches.length * 2 === text.length;
 };
 
-function openImage(e) {
+function openAttachment(e) {
     ipcRenderer.invoke("open-attachment", e.target.getAttribute("data-path"));
 }
 
@@ -63,7 +63,7 @@ const renderAttachment = (attachment: AttachmentDownload) => {
                     alt={attachment.transferName}
                     loading="lazy"
                     data-path={attachmentPath}
-                    onClick={attachment.mimeType ? openImage : null}
+                    onClick={attachment.mimeType ? openAttachment : null}
                 />
             );
         }
@@ -88,7 +88,7 @@ const renderAttachment = (attachment: AttachmentDownload) => {
             );
         }
 
-        return <UnsupportedMedia key={attachment.guid} attachment={attachment} />;
+        return <UnsupportedMedia key={attachment.guid} attachment={attachment} data-path={attachmentPath} />;
     }
 
     return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
@@ -187,7 +187,8 @@ class MessageBubble extends React.Component<Props, State> {
 
         // Figure out which side of the chat it should be on
         const className = !message.isFromMe ? "IncomingMessage" : "OutgoingMessage";
-        const imageClassName = !message.isFromMe ? "IncomingAttachment" : "OutgoingAttachment";
+        const attachmentClassName = !message.isFromMe ? "IncomingAttachment" : "OutgoingAttachment";
+        const linkClassName = !message.isFromMe ? "IncomingLink" : "OutgoingLink";
 
         // Figure out if we should have a tail for the message
         const useTail = this.shouldHaveTail();
@@ -200,27 +201,44 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         // Parse out any links. We can minimize parsing if we do a simple "contains" first
+        let hasLink = false;
         if (text.includes("http")) {
+            hasLink = true;
             links = parseUrls(text);
         }
 
         return (
-            <div>
-                {message.attachments?.length > 0 ? (
+            <>
+                {/* If the message has an attachment */}
+                {message.attachments.length > 0 ? (
                     <>
-                        <div className={imageClassName}>
-                            {message.handle && (!olderMessage || olderMessage.handleId !== message.handleId) ? (
-                                <p className="MessageSender">{sender}</p>
-                            ) : null}
-                            {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
-                        </div>
-                        {text ? (
-                            <div className={className}>
-                                <div className={messageClass} style={{ marginBottom: useTail ? "8px" : "0" }}>
-                                    <p>{text}</p>
+                        {/* If the attachment is a link */}
+                        {hasLink ? (
+                            <div className={linkClassName}>
+                                {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
+                                <div className="linkBottomDiv">
+                                    {/* Change first one Zach */}
+                                    <p>{new URL(links[0]).hostname}</p>
+                                    <p>{new URL(links[0]).hostname}</p>
                                 </div>
                             </div>
-                        ) : null}
+                        ) : (
+                            <>
+                                <div className={attachmentClassName}>
+                                    {message.handle && (!olderMessage || olderMessage.handleId !== message.handleId) ? (
+                                        <p className="MessageSender">{sender}</p>
+                                    ) : null}
+                                    {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
+                                </div>
+                                {text ? (
+                                    <div className={className}>
+                                        <div className={messageClass} style={{ marginBottom: useTail ? "8px" : "0" }}>
+                                            <p>{text}</p>
+                                        </div>
+                                    </div>
+                                ) : null}
+                            </>
+                        )}
                     </>
                 ) : (
                     <div className={className}>
@@ -232,7 +250,7 @@ class MessageBubble extends React.Component<Props, State> {
                         </div>
                     </div>
                 )}
-            </div>
+            </>
         );
     }
 }

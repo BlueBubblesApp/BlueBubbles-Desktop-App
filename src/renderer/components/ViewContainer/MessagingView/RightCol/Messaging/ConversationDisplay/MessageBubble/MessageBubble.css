@@ -133,9 +133,10 @@
 }
 
 .imageAttachment {
-    max-height: 20%;
-    max-width: 30%;
+    max-height: 35%;
+    max-width: 35%;
     border-radius: 20px;
+    margin-top: 3px;
 }
 
 .OutgoingAttachment {
@@ -152,4 +153,65 @@
     align-items: flex-start;
     flex-direction: column;
     margin: 0 0 0 13px;
+}
+
+.IncomingLink {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    margin: 0 0 0 13px;
+}
+
+.IncomingLink > .imageAttachment {
+    border-radius: 15px 15px 0 0;
+}
+
+.OutgoingLink {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    flex-direction: column;
+    margin: 0 13px 0 0;
+}
+.OutgoingLink > .imageAttachment {
+    border-radius: 15px 15px 0 0;
+}
+
+/* .LinkMedia{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 35%;
+} */
+
+.linkBottomDiv {
+    display: block;
+    height: 45px;
+    max-height: 55px;
+    background-color: var(--incoming-message-color);
+    border-radius: 0 0 15px 15px;
+    width: 35%;
+}
+
+.linkBottomDiv > p:first-child {
+    margin: 0;
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    margin: 5px 7px 0 7px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.linkBottomDiv > p {
+    margin: 0;
+    color: var(--main-title-color);
+    font-family: "SF UI Display Light";
+    font-size: 13px;
+    margin: 0 7px 5px 7px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
