@@ -1,5 +1,5 @@
 .LeftConversationsNav {
-    display: flex;
+    /* display: flex; */
     flex-direction: column;
     flex-grow: 1;
     border-top: 1px solid grey;
@@ -18,6 +18,10 @@
 .LeftConversationsNav::-webkit-scrollbar-thumb {
     background-color: var(--sub-title-color) !important;
     border-radius: 5px;
+}
+
+.activeChat {
+    background-color: var(--blue-color);
 }
 
 .notification {

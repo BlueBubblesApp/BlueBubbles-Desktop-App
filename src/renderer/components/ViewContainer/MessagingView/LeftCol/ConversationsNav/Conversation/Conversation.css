@@ -1,15 +1,11 @@
 .Conversation {
+    margin-left: 20px;
     height: 65px;
     min-height: 65px;
     display: flex;
     z-index: 1;
-    width: 100%;
     justify-content: flex-end;
     border-bottom: 1px solid grey;
-}
-
-.activeChat {
-    background-color: var(--blue-color);
 }
 
 .contact-card {

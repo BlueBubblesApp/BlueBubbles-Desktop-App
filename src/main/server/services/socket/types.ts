@@ -2,6 +2,11 @@ export type GetChatsParams = {
     withParticipants?: boolean;
 };
 
+export type DBWhereItem = {
+    statement: string;
+    args: { [key: string]: string | number };
+};
+
 export type GetChatMessagesParams = {
     offset?: number;
     limit?: number;
@@ -9,6 +14,9 @@ export type GetChatMessagesParams = {
     before?: Date | number;
     withChats?: boolean;
     withBlurhash?: boolean;
+    withHandle?: boolean;
+    withAttachments?: boolean;
+    where?: DBWhereItem[];
     sort?: "DESC" | "ASC";
 };
 

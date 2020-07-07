@@ -46,9 +46,12 @@ class LeftConversationsNav extends React.Component<unknown, State> {
     }
 
     setCurrentChat(chat: Chat) {
-        ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
         this.setState({ activeChat: chat });
+        ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
         this.removeNotification(chat.guid);
+
+        const config = { isDetailsOpen: false };
+        ipcRenderer.invoke("set-config", config);
     }
 
     removeNotification(guid: string) {
@@ -160,17 +163,21 @@ class LeftConversationsNav extends React.Component<unknown, State> {
     }
 
     render() {
-        const { chats, isLoading } = this.state;
+        const { chats, isLoading, activeChat } = this.state;
 
         return (
             <div className="LeftConversationsNav">
                 {isLoading ? <div id="loader" /> : null}
                 {chats.map(chat => {
                     return (
-                        <>
+                        <div
+                            key={chat.guid}
+                            onClick={() => this.setCurrentChat(chat)}
+                            className={activeChat?.guid === chat.guid ? "activeChat" : ""}
+                        >
                             {chat.hasNotification ? <div className="notification" /> : null}
-                            <Conversation onClick={() => this.setCurrentChat(chat)} key={chat.guid} chat={chat} />
-                        </>
+                            <Conversation chat={chat} />
+                        </div>
                     );
                 })}
             </div>
