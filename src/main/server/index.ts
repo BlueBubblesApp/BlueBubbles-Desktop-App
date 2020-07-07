@@ -413,6 +413,11 @@ export class BackendServer {
         ipcMain.handle("open-attachment", async (_, attachmentPath) => {
             shell.openPath(attachmentPath);
         });
+
+        // Handle Opening Link
+        ipcMain.handle("open-link", async (_, link) => {
+            require("electron").shell.openExternal(link);
+        });
     }
 
     private startSocketHandlers() {

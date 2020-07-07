@@ -3,6 +3,10 @@
    "version": "0.0.1",
    "description": "iMessage for PC and Android",
    "main": "./dist/main.js",
+   "author": {
+      "name": "Maxwell Fortney",
+      "email": "maxwellfortney@gmail.com"
+   },
    "scripts": {
       "build-main": "cross-env NODE_ENV=production webpack --config webpack.main.prod.config.js",
       "build-renderer": "cross-env NODE_ENV=production webpack --config webpack.renderer.prod.config.js",
