@@ -78,25 +78,14 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
         // Add the chat to the state, if needed
         const chats = message.chats as Chat[];
-        for (let i = 0; i < chats.length; i += 1) chats[i].lastMessage = message;
-        await this.addChatsToState(chats);
-
-        const chatGuids = chats.map(i => i.guid);
-        const updatedChats = [...this.state.chats];
-        for (let i = 0; i < updatedChats.length; i += 1) {
-            if (
-                chatGuids.includes(updatedChats[i].guid) &&
-                updatedChats[i].lastMessage.dateCreated < message.dateCreated
-            ) {
-                updatedChats[i].lastMessage = message;
-                if (!this.state.activeChat || updatedChats[i].guid !== this.state.activeChat?.guid) {
-                    updatedChats[i].hasNotification = true;
-                }
-                break;
+        for (let i = 0; i < chats.length; i += 1) {
+            chats[i].lastMessage = message;
+            if (chats[i].guid !== this.state.activeChat?.guid) {
+                chats[i].hasNotification = true;
             }
         }
 
-        this.setState({ chats: updatedChats });
+        await this.addChatsToState(chats);
     }
 
     /**
@@ -113,7 +102,6 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         const updatedGuids = [...this.state.chatGuids];
         for (const chat of chats) {
             const exists = this.state.chatGuids.includes(chat.guid);
-            if (exists) continue;
 
             // If there is no last message attached, get the last message
             const newChat = chat;
@@ -124,10 +112,16 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                     withAttachments: false,
                     withChats: false,
                     offset: 0,
-                    limit: 1
+                    limit: 1,
+                    where: [
+                        {
+                            statement: "message.text IS NOT NULL",
+                            args: null
+                        }
+                    ]
                 });
 
-                if (lastMessage && lastMessage.length > 0) {
+                if (!exists && lastMessage && lastMessage.length > 0) {
                     [newChat.lastMessage] = lastMessage; // Destructure
                 }
             }
@@ -136,24 +130,29 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             let insertIdx = -1;
             for (let i = 0; i < updatedChats.length; i += 1) {
                 if (
+                    !exists &&
                     newChat.lastMessage &&
                     updatedChats[i].lastMessage &&
                     newChat.lastMessage.dateCreated > updatedChats[i].lastMessage.dateCreated
                 ) {
                     insertIdx = i;
                     break;
+                } else if (exists && updatedChats[i].guid === newChat.guid) {
+                    updatedChats[i] = newChat;
                 }
             }
 
             // Insert the updated chat at the specified index
-            if (insertIdx === -1) {
+            if (!exists && insertIdx === -1) {
                 updatedChats.push(newChat);
-            } else {
+            } else if (!exists) {
                 updatedChats.splice(insertIdx, 0, newChat);
             }
 
-            // Add the GUID to the updated list
-            updatedGuids.push(newChat.guid);
+            // Add the chat GUID to the master list
+            if (!exists) {
+                updatedGuids.push(newChat.guid);
+            }
         }
 
         this.setState({
@@ -164,6 +163,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
     render() {
         const { chats, isLoading, activeChat } = this.state;
+        chats.sort((a, b) => (a.lastMessage?.dateCreated > b.lastMessage?.dateCreated ? -1 : 1));
 
         return (
             <div className="LeftConversationsNav">

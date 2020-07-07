@@ -331,12 +331,16 @@ export class ChatRepository {
         theMessage = await repo.save(message);
 
         // Add the message to the chat if it doesn't already exist
-        if (!(theMessage.chats ?? []).find(i => i.ROWID === savedChat.ROWID)) {
+        const chatIdx = (theMessage.chats ?? []).findIndex(i => i.ROWID === savedChat.ROWID);
+        if (chatIdx === -1) {
+            theMessage.chats.push(savedChat);
             await repo
                 .createQueryBuilder()
                 .relation(Message, "chats")
                 .of(theMessage)
                 .add(savedChat);
+        } else {
+            theMessage.chats[chatIdx] = savedChat;
         }
 
         return theMessage;
