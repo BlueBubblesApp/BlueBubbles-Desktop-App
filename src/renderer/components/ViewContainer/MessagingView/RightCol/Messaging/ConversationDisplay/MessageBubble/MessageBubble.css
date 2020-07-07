@@ -11,8 +11,9 @@
 
 .IncomingMessage {
     display: flex;
-    justify-content: flex-start;
-    align-items: center;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
     margin: 0 30% 0 13px;
 }
 
@@ -38,8 +39,9 @@
 
 .OutgoingMessage {
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
+    justify-content: center;
+    align-items: flex-end;
+    flex-direction: column;
     margin: 0 13px 0 30%;
 }
 
@@ -65,7 +67,7 @@
 }
 
 .MessageSender {
-    margin: 10px 0 0 20px;
+    margin: 10px 0 0 5px;
     color: var(--sub-title-color);
     font-size: 11px;
 }
