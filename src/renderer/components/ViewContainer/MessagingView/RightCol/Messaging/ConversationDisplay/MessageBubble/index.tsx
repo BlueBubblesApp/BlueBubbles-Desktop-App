@@ -175,6 +175,7 @@ class MessageBubble extends React.Component<Props, State> {
 
         const sender = contact ?? getiMessageNumberFormat(message.handle?.address ?? "");
         const className = !message.isFromMe ? "IncomingMessage" : "OutgoingMessage";
+        const imageClassName = !message.isFromMe ? "IncomingAttachment" : "OutgoingAttachment";
         const useTail = this.shouldHaveTail();
         let messageClass = useTail ? "message tail" : "message"; // Fix this to reflect having a tail
         const text = sanitizeStr(message.text);
@@ -184,15 +185,32 @@ class MessageBubble extends React.Component<Props, State> {
 
         return (
             <div>
-                {message.handle && (!olderMessage || olderMessage.handleId !== message.handleId) ? (
-                    <p className="MessageSender">{sender}</p>
-                ) : null}
-                <div className={className}>
-                    <div className={messageClass} style={{ marginBottom: useTail ? "8px" : "0" }}>
-                        {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
-                        {text ? <p>{text}</p> : null}
+                {message.attachments ? (
+                    <>
+                        <div className={imageClassName}>
+                            {message.handle && (!olderMessage || olderMessage.handleId !== message.handleId) ? (
+                                <p className="MessageSender">{sender}</p>
+                            ) : null}
+                            {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
+                        </div>
+                        {text ? (
+                            <div className={className}>
+                                <div className={messageClass} style={{ marginBottom: useTail ? "8px" : "0" }}>
+                                    <p>{text}</p>
+                                </div>
+                            </div>
+                        ) : null}
+                    </>
+                ) : (
+                    <div className={className}>
+                        {message.handle && (!olderMessage || olderMessage.handleId !== message.handleId) ? (
+                            <p className="MessageSender">{sender}</p>
+                        ) : null}
+                        <div className={messageClass} style={{ marginBottom: useTail ? "8px" : "0" }}>
+                            {text ? <p>{text}</p> : null}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         );
     }

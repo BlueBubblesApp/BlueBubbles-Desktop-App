@@ -75,6 +75,7 @@ a {
     --return-button-color: #000;
     --search-background-color: #bebebe;
     --incoming-message-color: #bcbcbc;
+    --outgoing-message-color: #006ee4;
 }
 
 [data-theme^="dark"],
@@ -92,4 +93,5 @@ a {
     --return-button-color: #fff;
     --search-background-color: #545454;
     --incoming-message-color: #6b6b6b;
+    --outgoing-message-color: #006ee4;
 }
