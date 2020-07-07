@@ -8,8 +8,10 @@ import { getiMessageNumberFormat, sanitizeStr } from "@renderer/utils";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
-
 import "./MessageBubble.css";
+
+const { shell } = require("electron");
+const path = require("path");
 
 type Props = {
     olderMessage: Message;
@@ -39,6 +41,10 @@ const allEmojis = (text: string) => {
     return matches && matches.length * 2 === text.length;
 };
 
+function openImage(e) {
+    ipcRenderer.invoke("open-attachment", e.target.getAttribute("data-path"));
+}
+
 const renderAttachment = (attachment: AttachmentDownload) => {
     if (attachment.progress === 100) {
         const attachmentPath = `${remote.app.getPath("userData")}/Attachments/${attachment.guid}/${
@@ -56,6 +62,8 @@ const renderAttachment = (attachment: AttachmentDownload) => {
                     src={`data:${mime};base64,${b64File}`}
                     alt={attachment.transferName}
                     loading="lazy"
+                    data-path={attachmentPath}
+                    onClick={openImage}
                 />
             );
         }
