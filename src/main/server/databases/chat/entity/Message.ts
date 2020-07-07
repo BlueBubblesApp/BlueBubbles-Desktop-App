@@ -13,7 +13,7 @@ export class Message {
     @Column("text")
     guid: string;
 
-    @Column("text")
+    @Column({ type: "text", nullable: true })
     text: string;
 
     @Column({ type: "text", nullable: true })

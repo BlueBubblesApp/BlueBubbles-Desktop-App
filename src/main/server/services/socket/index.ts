@@ -93,7 +93,18 @@ export class SocketService {
 
     async getChatMessages(
         identifier: string,
-        { offset = 0, limit = 25, after = null, before = null, withChats = false, sort = "DESC" }: GetChatMessagesParams
+        {
+            offset = 0,
+            limit = 25,
+            after = null,
+            before = null,
+            withChats = false,
+            withHandle = true,
+            withAttachments = true,
+            withBlurhash = true,
+            sort = "DESC",
+            where = []
+        }: GetChatMessagesParams
     ): Promise<MessageResponse[]> {
         return new Promise<MessageResponse[]>((resolve, reject) => {
             this.server.emit(
@@ -105,6 +116,10 @@ export class SocketService {
                     after,
                     before,
                     withChats,
+                    withHandle,
+                    withAttachments,
+                    withBlurhash,
+                    where,
                     sort
                 },
                 res => {

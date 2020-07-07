@@ -152,6 +152,8 @@ export class ChatRepository {
         attachment.totalBytes = res.totalBytes;
         attachment.transferName = res.transferName;
         attachment.transferState = res.transferState;
+        attachment.height = res.height;
+        attachment.width = res.width;
         attachment.uti = res.uti;
         return attachment;
     }
@@ -182,7 +184,7 @@ export class ChatRepository {
         message.groupTitle = res.groupTitle;
         message.groupActionType = res.groupActionType;
         message.isExpired = res.isExpired;
-        message.associatedMessageGuid = res.associatedMessageGuid;
+        message.associatedMessageGuid = res.associatedMessageGuid ? res.associatedMessageGuid.split("/")[1] : null;
         message.associatedMessageType = res.associatedMessageType ?? 0;
         message.expressiveSendStyleId = res.expressiveSendStyleId;
         message.timeExpressiveSendStyleId = res.timeExpressiveSendStyleId ?? 0;

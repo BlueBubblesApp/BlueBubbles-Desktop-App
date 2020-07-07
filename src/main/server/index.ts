@@ -146,7 +146,7 @@ export class BackendServer {
 
             // Wait 1 second, then start the handlers if we are connected
             setTimeout(() => {
-                if (this.socketService.server.connected) this.startSocketHandlers();
+                if (this.socketService.server && this.socketService.server.connected) this.startSocketHandlers();
             }, 1000);
         } catch (ex) {
             console.log(`Failed to setup socket service! ${ex.message}`);
@@ -202,7 +202,18 @@ export class BackendServer {
             }
 
             // Build message request params
-            const payload: GetChatMessagesParams = { withChats: false, limit: 25, offset: 0, withBlurhash: true };
+            const payload: GetChatMessagesParams = {
+                withChats: false,
+                limit: 25,
+                offset: 0,
+                withBlurhash: true,
+                where: [
+                    {
+                        statement: "message.service = 'iMessage'",
+                        args: null
+                    }
+                ]
+            };
             if (lastFetch) {
                 payload.after = lastFetch;
                 // Since we are fetching after a date, we want to get as much as we can

@@ -15,18 +15,6 @@ type ConversationProps = {
     onClick?: Function;
 };
 
-function setActiveChat(e) {
-    try {
-        document.getElementsByClassName("activeChat")[0].classList.remove("activeChat");
-    } catch {
-        /* Do nothing */
-    }
-    const config = { isDetailsOpen: false };
-    ipcRenderer.invoke("set-config", config);
-
-    document.getElementById(e.target.getAttribute("id")).classList.add("activeChat");
-}
-
 function showDelMessage(e) {
     let id = e.target.getAttribute("id");
     id = document.getElementById(id);
@@ -51,16 +39,7 @@ const Conversation = ({ chat, onClick }: ConversationProps) => {
 
     return (
         // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
-        <div
-            className="Conversation"
-            id={chat.guid}
-            onClick={e => {
-                setActiveChat(e);
-                onClick(e);
-            }}
-            onMouseOver={showDelMessage}
-            onMouseOut={hideDelMessage}
-        >
+        <div className="Conversation" id={chat.guid} onMouseOver={showDelMessage} onMouseOut={hideDelMessage}>
             <div className="convo-wrap">
                 <div className="contact-card">
                     {/* <img className="contact-icon" src={ContactImage} alt="contact" /> */}
