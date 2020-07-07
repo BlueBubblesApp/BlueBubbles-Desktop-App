@@ -12,7 +12,6 @@ type ConversationProps = {
     chat: Chat & {
         lastMessage: Message;
     };
-    onClick?: Function;
 };
 
 function showDelMessage(e) {
@@ -31,11 +30,10 @@ function hideDelMessage(e) {
     // console.log(document.querySelector(id));
 }
 
-const Conversation = ({ chat, onClick }: ConversationProps) => {
-    let lastText = chat.lastMessage.text;
-    if (!lastText || chat.lastMessage.hasAttachments) {
-        lastText = "1 Attachment";
-    }
+const Conversation = ({ chat }: ConversationProps) => {
+    const chatDate = chat.lastMessage?.dateCreated ? getDateText(new Date(chat.lastMessage.dateCreated)) : "";
+    let lastText = chat.lastMessage?.text ?? "";
+    if (chat.lastMessage?.hasAttachments) lastText = "1 Attachment";
 
     return (
         // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
@@ -71,9 +69,7 @@ const Conversation = ({ chat, onClick }: ConversationProps) => {
                         </div>
                         <div className="message-time">
                             <div>
-                                <p className="message-time-example">
-                                    {getDateText(new Date(chat.lastMessage.dateCreated))}
-                                </p>
+                                <p className="message-time-example">{chatDate}</p>
                             </div>
                         </div>
                     </div>

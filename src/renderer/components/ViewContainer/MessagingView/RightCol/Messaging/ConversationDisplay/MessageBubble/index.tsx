@@ -4,7 +4,7 @@ import * as fs from "fs";
 import EmojiRegex from "emoji-regex";
 
 import { Message } from "@server/databases/chat/entity";
-import { getiMessageNumberFormat, sanitizeStr } from "@renderer/utils";
+import { getiMessageNumberFormat, sanitizeStr, parseUrls } from "@renderer/utils";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
@@ -63,7 +63,7 @@ const renderAttachment = (attachment: AttachmentDownload) => {
                     alt={attachment.transferName}
                     loading="lazy"
                     data-path={attachmentPath}
-                    onClick={openImage}
+                    onClick={attachment.mimeType ? openImage : null}
                 />
             );
         }
@@ -180,20 +180,33 @@ class MessageBubble extends React.Component<Props, State> {
     render() {
         const { message, olderMessage } = this.props;
         const { contact, attachments } = this.state;
+        let links = [];
 
+        // Pull out the sender name or number
         const sender = contact ?? getiMessageNumberFormat(message.handle?.address ?? "");
+
+        // Figure out which side of the chat it should be on
         const className = !message.isFromMe ? "IncomingMessage" : "OutgoingMessage";
         const imageClassName = !message.isFromMe ? "IncomingAttachment" : "OutgoingAttachment";
+
+        // Figure out if we should have a tail for the message
         const useTail = this.shouldHaveTail();
         let messageClass = useTail ? "message tail" : "message"; // Fix this to reflect having a tail
+
+        // Figure out the "real string" and then figure out if we need to make it big emojis
         const text = sanitizeStr(message.text);
         if (text.length <= 6 && allEmojis(text)) {
             messageClass = "bigEmojis";
         }
 
+        // Parse out any links. We can minimize parsing if we do a simple "contains" first
+        if (text.includes("http")) {
+            links = parseUrls(text);
+        }
+
         return (
             <div>
-                {message.attachments ? (
+                {message.attachments.length > 0 ? (
                     <>
                         <div className={imageClassName}>
                             {message.handle && (!olderMessage || olderMessage.handleId !== message.handleId) ? (

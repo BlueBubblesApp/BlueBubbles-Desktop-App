@@ -177,15 +177,19 @@ class RightConversationDisplay extends React.Component<Props, State> {
             <div id="messageView" onScroll={e => this.detectTop(e)} className="RightConversationDisplay">
                 {isLoading ? <div id="loader" /> : null}
                 <ChatLabel text={`iMessage with ${chatTitle}`} date={date} />
+
+                {/* Reverse the list because we want to display it bottom to top */}
                 {messages.reverse().map((message: Message, index: number) => {
                     let newerMessage = null;
                     let olderMessage = null;
 
+                    // Get the surrounding messages (if available)
                     if (index - 1 >= 0 && index - 1 < messages.length) olderMessage = messages[index - 1];
                     if (index + 1 < messages.length && index + 1 >= 0) newerMessage = messages[index + 1];
 
                     return (
                         <div key={message.guid}>
+                            {/* If the last previous message is older than 30 minutes, display the time */}
                             {olderMessage && message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 30 ? (
                                 <ChatLabel
                                     text={`${getDateText(new Date(message.dateCreated))}, ${getTimeText(
@@ -193,7 +197,17 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                     )}`}
                                 />
                             ) : null}
-                            <MessageBubble message={message} olderMessage={olderMessage} newerMessage={newerMessage} />
+
+                            {/* If the message text is null, it's a group event */}
+                            {message.text ? (
+                                <MessageBubble
+                                    message={message}
+                                    olderMessage={olderMessage}
+                                    newerMessage={newerMessage}
+                                />
+                            ) : (
+                                <ChatLabel text="TODO: Some Event" />
+                            )}
                         </div>
                     );
                 })}
