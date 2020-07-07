@@ -14,8 +14,10 @@ export const getDateText = (date: Date) => {
     const nowLocale = now.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
     const msgLocale = date.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
     const yLocale = yesterday.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
+    // console.log(nowLocale, "now");
+    // console.log(msgLocale, "msg");
 
-    if (nowLocale === msgLocale) return getTimeText(date);
+    if (nowLocale === msgLocale) return "Today";
     if (yLocale === msgLocale) return "Yesterday";
     return date.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" }).slice(0, -2);
 };
