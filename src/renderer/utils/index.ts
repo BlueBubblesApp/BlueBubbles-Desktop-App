@@ -79,3 +79,10 @@ export const sanitizeStr = (val: string) => {
 
     return output.trim();
 };
+
+export const parseUrls = (text: string) => {
+    const expr = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
+    const parser = new RegExp(expr);
+    const matches = text.match(parser);
+    return matches ?? [];
+};
