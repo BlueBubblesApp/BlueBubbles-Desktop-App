@@ -6,20 +6,12 @@ import "./UnsupportedMedia.css";
 
 type Props = {
     attachment: AttachmentDownload;
+    onClick?: Function;
 };
 
-function openAttachment(e) {
-    ipcRenderer.invoke("open-attachment", e.target.getAttribute("data-path"));
-    console.log("open");
-}
-
-export default function UnsupportedMedia({ attachment }: Props) {
-    const attachmentPath = `${remote.app.getPath("userData")}/Attachments/${attachment.guid}/${
-        attachment.transferName
-    }`;
-
+export default function UnsupportedMedia({ attachment, onClick }: Props) {
     return (
-        <div className="UnsupportedMedia" onClick={openAttachment} data-path={attachmentPath}>
+        <div className="UnsupportedMedia" onClick={() => onClick()}>
             {/* <p>Unsupported Media</p> */}
             <p>{attachment.transferName}</p>
             {/* <p>{attachment.mimeType}</p> */}

@@ -1,3 +1,11 @@
+.MessageStatus {
+    color: grey;
+    font-size: 11px;
+    font-family: unset;
+    font-weight: bolder;
+    margin-top: 1px;
+}
+
 .bigEmojis {
     font-size: 48px;
     padding-left: 0;
@@ -87,6 +95,7 @@
     right: -8px;
     height: 20px;
     width: 20px;
+    background-color: var(--outgoing-message-color);
     background-attachment: fixed;
     border-bottom-left-radius: 15px;
 }

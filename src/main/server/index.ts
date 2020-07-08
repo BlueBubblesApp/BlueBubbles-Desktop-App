@@ -12,11 +12,11 @@ import { ConfigRepository } from "@server/databases/config";
 import { ChatRepository } from "@server/databases/chat";
 
 // Service Imports
-import { SocketService } from "@server/services";
+import { SocketService, QueueService } from "@server/services";
 
 import { ChatResponse, MessageResponse, ResponseFormat } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
-import { Attachment, Message } from "./databases/chat/entity";
+import { Attachment } from "./databases/chat/entity";
 
 export class BackendServer {
     window: BrowserWindow;
@@ -28,6 +28,8 @@ export class BackendServer {
     configRepo: ConfigRepository;
 
     socketService: SocketService;
+
+    queueService: QueueService;
 
     fs: FileSystem;
 
@@ -47,6 +49,7 @@ export class BackendServer {
 
         // Services
         this.socketService = null;
+        this.queueService = null;
 
         this.setupComplete = false;
         this.servicesStarted = false;
@@ -138,7 +141,17 @@ export class BackendServer {
         if (this.servicesStarted && !override) return;
 
         try {
-            console.log("Initializing up socket connection...");
+            console.log("Initializing queue service...");
+            this.queueService = new QueueService(this.chatRepo, (event: string, data: any) =>
+                this.emitToUI(event, data)
+            );
+            this.queueService.start();
+        } catch (ex) {
+            console.log(`Failed to setup queue service! ${ex.message}`);
+        }
+
+        try {
+            console.log("Initializing socket connection...");
             this.socketService = new SocketService(this.db, this.chatRepo, this.configRepo, this.fs);
 
             // Start the socket service
@@ -230,12 +243,6 @@ export class BackendServer {
                 try {
                     const msg = ChatRepository.createMessageFromResponse(message);
                     await this.chatRepo.saveMessage(savedChat, msg);
-
-                    // Save the attachments
-                    for (const attachment of message.attachments ?? []) {
-                        const item = ChatRepository.createAttachmentFromResponse(attachment);
-                        await this.chatRepo.saveAttachment(savedChat, msg, item);
-                    }
                 } catch (ex) {
                     console.error(`Failed to save message, [${message.guid}]`);
                 }
@@ -352,7 +359,6 @@ export class BackendServer {
 
         // eslint-disable-next-line no-return-await
         ipcMain.handle("fetch-attachment", async (_, attachment: Attachment) => {
-            console.log(`Getting attachment: ${attachment.transferName}`);
             const chunkSize = (this.configRepo.get("chunkSize") as number) * 1000;
             let start = 0;
 
@@ -418,19 +424,24 @@ export class BackendServer {
     private startSocketHandlers() {
         if (!this.socketService.server || !this.socketService.server.connected) return;
 
-        const saveIncomingMessage = async (message: MessageResponse) => {
-            const msg = ChatRepository.createMessageFromResponse(message);
-            const newMsg = await this.chatRepo.saveMessage(msg.chats[0], msg, message.tempGuid ?? null);
-            this.emitToUI("message", { message: newMsg, tempGuid: message.tempGuid });
-        };
-
-        this.socketService.server.on("new-message", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("updated-message", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("group-name-change", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("updated-message", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("participant-removed", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("participant-added", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("participant-left", (message: MessageResponse) => saveIncomingMessage(message));
+        this.socketService.server.on("new-message", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
+        this.socketService.server.on("updated-message", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
+        this.socketService.server.on("group-name-change", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
+        this.socketService.server.on("participant-removed", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
+        this.socketService.server.on("participant-added", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
+        this.socketService.server.on("participant-left", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
     }
 
     private emitToUI(event: string, data: any) {
