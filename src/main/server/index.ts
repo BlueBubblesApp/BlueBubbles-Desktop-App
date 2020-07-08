@@ -14,7 +14,7 @@ import { ChatRepository } from "@server/databases/chat";
 // Service Imports
 import { SocketService, QueueService } from "@server/services";
 
-import { ChatResponse, MessageResponse, ResponseFormat } from "./types";
+import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
 import { Attachment } from "./databases/chat/entity";
 
@@ -168,6 +168,34 @@ export class BackendServer {
         this.servicesStarted = true;
     }
 
+    async fetchContactsFromServer(): Promise<void> {
+        // First, let's get all the handle addresses
+        const handles = await this.chatRepo.getHandles();
+
+        // Second, fetch the corresponding contacts from the server
+        const results: ResponseFormat = await new Promise((resolve, _) =>
+            this.socketService.server.emit("get-contacts", handles, resolve)
+        );
+
+        if (results.status !== 200) return;
+
+        // Find the corresponding results, and update accordingly
+        const data = results.data as (HandleResponse & { firstName: string; lastName: string })[];
+        for (const result of data) {
+            for (let i = 0; i < handles.length; i += 1) {
+                if (result.address === handles[i].address) {
+                    await this.chatRepo.updateHandle(handles[i], {
+                        firstName: result.firstName,
+                        lastName: result.lastName
+                    });
+                    break;
+                }
+            }
+        }
+
+        this.window.reload();
+    }
+
     /**
      * Fetches chats from the server based on the last time we fetched data.
      * This is what the server itself calls when it is refreshed or reloaded.
@@ -265,6 +293,9 @@ export class BackendServer {
 
         // Save the last fetch date
         this.configRepo.set("lastFetch", now);
+
+        // Fetch contacts
+        this.fetchContactsFromServer();
     }
 
     private startConfigListeners() {

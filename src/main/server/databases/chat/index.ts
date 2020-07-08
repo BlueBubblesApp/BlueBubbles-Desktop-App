@@ -1,5 +1,5 @@
 import { app } from "electron";
-import { createConnection, Connection, FindManyOptions } from "typeorm";
+import { createConnection, Connection, FindManyOptions, DeepPartial } from "typeorm";
 import { ChatResponse, HandleResponse, MessageResponse, AttachmentResponse } from "@server/types";
 
 import { Attachment, Chat, Handle, Message } from "./entity";
@@ -82,6 +82,24 @@ export class ChatRepository {
         }
 
         return message;
+    }
+
+    async getHandles(address = null) {
+        const repo = this.db.getRepository(Handle);
+        const params: FindManyOptions<Handle> = {};
+        if (address) params.where = { address };
+        return repo.find(params);
+    }
+
+    async updateHandle(handle: Handle, updateData: DeepPartial<Handle>): Promise<void> {
+        const repo = this.db.getRepository(Handle);
+
+        // If the handle doesn't have a ROWID, try and find it
+        let theHandle = handle;
+        if (!theHandle.ROWID) theHandle = await repo.findOne({ where: { address: theHandle.address } });
+
+        // Update the handle
+        if (theHandle) await repo.update({ ROWID: theHandle.ROWID }, updateData);
     }
 
     async getChats(guid = null) {

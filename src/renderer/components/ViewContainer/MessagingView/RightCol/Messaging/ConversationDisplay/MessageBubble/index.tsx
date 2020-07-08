@@ -4,7 +4,7 @@ import * as fs from "fs";
 import EmojiRegex from "emoji-regex";
 
 import { Message, Chat } from "@server/databases/chat/entity";
-import { getiMessageNumberFormat, sanitizeStr, parseUrls, getDateText } from "@renderer/utils";
+import { getiMessageNumberFormat, sanitizeStr, parseUrls, getDateText, getSender } from "@renderer/utils";
 import UnknownImage from "@renderer/assets/img/unknown_img.png";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
@@ -20,7 +20,6 @@ type Props = {
 };
 
 type State = {
-    contact: any;
     attachments: AttachmentDownload[];
 };
 
@@ -134,15 +133,11 @@ const renderAttachment = (attachment: AttachmentDownload) => {
 
 class MessageBubble extends React.Component<Props, State> {
     state: State = {
-        contact: null,
         attachments: []
     };
 
     async componentDidMount() {
         const { message } = this.props;
-
-        // TODO: Get the contact
-        // this.setState({ contact: "John Doe" });
 
         // Get the attachments
         const attachments: AttachmentDownload[] = [];
@@ -230,11 +225,11 @@ class MessageBubble extends React.Component<Props, State> {
 
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
-        const { contact, attachments } = this.state;
+        const { attachments } = this.state;
         let links = [];
 
         // Pull out the sender name or number
-        const sender = contact ?? getiMessageNumberFormat(message.handle?.address ?? "");
+        const sender = getSender(message.handle);
 
         // Figure out which side of the chat it should be on
         const className = !message.isFromMe ? "IncomingMessage" : "OutgoingMessage";

@@ -16,6 +16,12 @@ export class Handle {
     @Column({ type: "text", nullable: true })
     uncanonicalizedId: string;
 
+    @Column({ type: "text", nullable: true })
+    firstName: string;
+
+    @Column({ type: "text", nullable: true })
+    lastName: string;
+
     @OneToMany(
         type => Message,
         message => message.handle
