@@ -72,6 +72,11 @@ const getStatusText = (message: Message) => {
     return null;
 };
 
+function openLink(link) {
+    console.log(link);
+    ipcRenderer.invoke("open-link", link);
+}
+
 const renderAttachment = (attachment: AttachmentDownload) => {
     if (attachment.progress === 100) {
         const attachmentPath = `${remote.app.getPath("userData")}/Attachments/${attachment.guid}/${
@@ -255,7 +260,7 @@ class MessageBubble extends React.Component<Props, State> {
                     <>
                         {/* If the attachment is a link */}
                         {links.length > 0 ? (
-                            <div className={linkClassName}>
+                            <div className={linkClassName} onClick={() => openLink(links[0])}>
                                 {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
                                 <div className="linkBottomDiv">
                                     {/* Change first one Zach */}
