@@ -8,7 +8,6 @@ import Conversation from "./Conversation/Conversation";
 
 type Chat = DBChat & {
     lastMessage: DBMessage | null;
-    hasNotification: boolean;
 };
 
 interface State {
@@ -46,19 +45,22 @@ class LeftConversationsNav extends React.Component<unknown, State> {
     }
 
     setCurrentChat(chat: Chat) {
+        const now = new Date();
+
         this.setState({ activeChat: chat });
         ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
-        this.removeNotification(chat.guid);
+        ipcRenderer.invoke("set-chat-last-viewed", { chat, lastViewed: now });
+        this.removeNotification(chat.guid, now);
 
         const config = { isDetailsOpen: false };
         ipcRenderer.invoke("set-config", config);
     }
 
-    removeNotification(guid: string) {
+    removeNotification(guid: string, lastViewed: Date) {
         const updatedChats = [...this.state.chats];
         for (let i = 0; i < updatedChats.length; i += 1) {
             if (updatedChats[i].guid === guid) {
-                updatedChats[i].hasNotification = false;
+                updatedChats[i].lastViewed = lastViewed.getTime();
             }
         }
 
@@ -80,9 +82,10 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         const chats = message.chats as Chat[];
         for (let i = 0; i < chats.length; i += 1) {
             chats[i].lastMessage = message;
-            if (chats[i].guid !== this.state.activeChat?.guid) {
-                chats[i].hasNotification = true;
-            }
+
+            // If the chat has never been viewed, let's make it seem
+            // like it has been viewed so we can show the notification
+            if (!chats[i].lastViewed) chats[i].lastViewed = 1;
         }
 
         await this.addChatsToState(chats);
@@ -169,13 +172,16 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             <div className="LeftConversationsNav">
                 {isLoading ? <div id="loader" /> : null}
                 {chats.map(chat => {
+                    let hasNotification = chat.lastMessage && chat.lastViewed < chat.lastMessage.dateCreated;
+                    if (!chat.lastViewed || (hasNotification && activeChat && activeChat.guid === chat.guid))
+                        hasNotification = false;
                     return (
                         <div
                             key={chat.guid}
                             onClick={() => this.setCurrentChat(chat)}
                             className={activeChat?.guid === chat.guid ? "activeChat" : ""}
                         >
-                            {chat.hasNotification ? <div className="notification" /> : null}
+                            {hasNotification ? <div className="notification" /> : null}
                             <Conversation chat={chat} />
                         </div>
                     );

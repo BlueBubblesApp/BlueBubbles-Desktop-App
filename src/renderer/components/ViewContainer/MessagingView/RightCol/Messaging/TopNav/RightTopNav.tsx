@@ -1,8 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import * as React from "react";
-import { ipcRenderer } from "electron";
 import { Chat } from "@server/databases/chat/entity";
-import { getiMessageNumberFormat } from "@renderer/utils";
+import { getSender } from "@renderer/utils";
 
 import "./RightTopNav.css";
 
@@ -11,15 +10,9 @@ type Props = {
 };
 
 export default function RightTopNav({ chat }: Props) {
-    const participants = (chat?.participants ?? []).map(handle => {
-        const hasContact = false;
-        if (hasContact) {
-            // TODO: get the contact
-            return handle.address;
-        }
-
-        return getiMessageNumberFormat(handle.address);
-    });
+    const participants = (chat?.participants ?? []).map(handle =>
+        getSender(handle, (chat?.participants ?? []).length === 1)
+    );
 
     return (
         <div className="RightTopNav">

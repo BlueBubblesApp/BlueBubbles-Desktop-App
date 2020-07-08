@@ -1,3 +1,11 @@
+.MessageStatus {
+    color: grey;
+    font-size: 11px;
+    font-family: unset;
+    font-weight: bolder;
+    margin-top: 1px;
+}
+
 .bigEmojis {
     font-size: 48px;
     padding-left: 0;
@@ -87,6 +95,7 @@
     right: -8px;
     height: 20px;
     width: 20px;
+    background-color: var(--outgoing-message-color);
     background-attachment: fixed;
     border-bottom-left-radius: 15px;
 }
@@ -132,11 +141,12 @@
     border-bottom-right-radius: 10px;
 }
 
-.imageAttachment {
-    max-height: 35%;
-    max-width: 35%;
+.Attachment {
+    max-height: 50%;
+    max-width: 50%;
     border-radius: 20px;
     margin-top: 3px;
+    cursor: pointer;
 }
 
 .OutgoingAttachment {
@@ -163,7 +173,7 @@
     margin: 0 0 0 13px;
 }
 
-.IncomingLink > .imageAttachment {
+.IncomingLink > .Attachment {
     border-radius: 15px 15px 0 0;
 }
 
@@ -174,7 +184,7 @@
     flex-direction: column;
     margin: 0 13px 0 0;
 }
-.OutgoingLink > .imageAttachment {
+.OutgoingLink > .Attachment {
     border-radius: 15px 15px 0 0;
 }
 
@@ -191,7 +201,7 @@
     max-height: 55px;
     background-color: var(--incoming-message-color);
     border-radius: 0 0 15px 15px;
-    width: 35%;
+    width: 50%;
 }
 
 .linkBottomDiv > p:first-child {

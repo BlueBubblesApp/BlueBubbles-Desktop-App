@@ -3,34 +3,60 @@ import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
 import EmojiRegex from "emoji-regex";
 
-import { Message } from "@server/databases/chat/entity";
-import { getiMessageNumberFormat, sanitizeStr, parseUrls } from "@renderer/utils";
+import { Message, Chat } from "@server/databases/chat/entity";
+import { sanitizeStr, parseUrls, getDateText, getSender, parseAppleLocation } from "@renderer/utils";
+import UnknownImage from "@renderer/assets/img/unknown_img.png";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
 import "./MessageBubble.css";
 
-const { shell } = require("electron");
-const path = require("path");
-
 type Props = {
+    chat: Chat;
     olderMessage: Message;
     message: Message;
     newerMessage: Message;
+    showStatus: boolean;
 };
 
 type State = {
-    contact: any;
     attachments: AttachmentDownload[];
 };
 
 const supportedVideoTypes = ["video/mp4", "video/m4v", "video/ogg", "video/webm", "video/x-m4v"];
+const supportedAudioTypes = [
+    "audio/wav",
+    "audio/mpeg",
+    "audio/mp4",
+    "audio/aac",
+    "audio/aacp",
+    "audio/ogg",
+    "audio/webm",
+    "audio/flac"
+];
 
 const isSameSender = (message1: Message, message2: Message) => {
     if (!message1 || !message2) return false;
     if (message1.isFromMe === message2.isFromMe) return true;
     if (message1.handleId === message2.handleId) return true;
     return false;
+};
+
+const isSupportedMime = (mimeType: string) => {
+    if (!mimeType || mimeType.startsWith("image")) return true;
+    return [...supportedAudioTypes, ...supportedVideoTypes, "text/x-vlocation"].includes(mimeType);
+};
+
+const loadAttachmentData = (attachment: AttachmentDownload) => {
+    if (!isSupportedMime(attachment.mimeType)) return null;
+    if (attachment.data) return attachment.data;
+    const path = `${remote.app.getPath("userData")}/Attachments/${attachment.guid}/${attachment.transferName}`;
+    let encoding = "base64";
+
+    // If it's a location card, read as utf-8
+    if (attachment.mimeType === "text/x-vlocation") encoding = "utf-8";
+
+    return fs.readFileSync(path).toString(encoding);
 };
 
 const allEmojis = (text: string) => {
@@ -41,14 +67,23 @@ const allEmojis = (text: string) => {
     return matches && matches.length * 2 === text.length;
 };
 
-function openAttachment(e) {
-    ipcRenderer.invoke("open-attachment", e.target.getAttribute("data-path"));
-}
+const openAttachment = path => {
+    ipcRenderer.invoke("open-attachment", path);
+};
 
-function openLink(link) {
-    console.log(link);
+const getStatusText = (message: Message) => {
+    if (message.dateRead) return <p className="MessageStatus">{`Read ${getDateText(new Date(message.dateRead))}`}</p>;
+    if (message.dateDelivered) return <p className="MessageStatus">Delivered</p>;
+    return null;
+};
+
+const openLink = link => {
     ipcRenderer.invoke("open-link", link);
-}
+};
+
+const setFallbackImage = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = UnknownImage;
+};
 
 const renderAttachment = (attachment: AttachmentDownload) => {
     if (attachment.progress === 100) {
@@ -59,41 +94,48 @@ const renderAttachment = (attachment: AttachmentDownload) => {
         // Render based on mime type
         if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
             const mime = attachment.mimeType ?? "image/pluginPayloadAttachment";
-            const b64File = fs.readFileSync(attachmentPath).toString("base64");
             return (
                 <img
                     key={attachment.guid}
-                    className="imageAttachment"
-                    src={`data:${mime};base64,${b64File}`}
+                    className="Attachment"
+                    src={`data:${mime};base64,${attachment.data}`}
                     alt={attachment.transferName}
-                    loading="lazy"
-                    data-path={attachmentPath}
-                    onClick={attachment.mimeType ? openAttachment : null}
+                    onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                    onError={setFallbackImage}
                 />
             );
         }
 
-        if (attachment.mimeType.startsWith("video") && supportedVideoTypes.includes(attachment.mimeType)) {
-            const b64File = fs.readFileSync(attachmentPath).toString("base64");
+        if (supportedVideoTypes.includes(attachment.mimeType)) {
             return (
                 // eslint-disable-next-line jsx-a11y/media-has-caption
-                <video key={attachment.guid} className="imageAttachment" controls>
-                    <source src={`data:${attachment.mimeType};base64,${b64File}`} type={attachment.mimeType} />
+                <video key={attachment.guid} className="Attachment" controls>
+                    <source src={`data:${attachment.mimeType};base64,${attachment.data}`} type={attachment.mimeType} />
                 </video>
             );
         }
 
-        if (attachment.mimeType.startsWith("audio")) {
-            const b64File = fs.readFileSync(attachmentPath).toString("base64");
+        if (supportedAudioTypes.includes(attachment.mimeType)) {
             return (
                 // eslint-disable-next-line jsx-a11y/media-has-caption
-                <audio key={attachment.guid} className="imageAttachment" controls>
-                    <source src={`data:${attachment.mimeType};base64,${b64File}`} type={attachment.mimeType} />
+                <audio key={attachment.guid} className="Attachment" controls>
+                    <source src={`data:${attachment.mimeType};base64,${attachment.data}`} type={attachment.mimeType} />
                 </audio>
             );
         }
 
-        return <UnsupportedMedia key={attachment.guid} attachment={attachment} data-path={attachmentPath} />;
+        // if (attachment.mimeType === "text/x-vlocation") {
+        //     const longLat = parseAppleLocation(attachment.data);
+        //     return null
+        // }
+
+        return (
+            <UnsupportedMedia
+                key={attachment.guid}
+                attachment={attachment}
+                onClick={() => openAttachment(attachmentPath)}
+            />
+        );
     }
 
     return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
@@ -101,15 +143,11 @@ const renderAttachment = (attachment: AttachmentDownload) => {
 
 class MessageBubble extends React.Component<Props, State> {
     state: State = {
-        contact: null,
         attachments: []
     };
 
     async componentDidMount() {
         const { message } = this.props;
-
-        // TODO: Get the contact
-        // this.setState({ contact: "John Doe" });
 
         // Get the attachments
         const attachments: AttachmentDownload[] = [];
@@ -139,6 +177,11 @@ class MessageBubble extends React.Component<Props, State> {
 
             // Add the attachment to the list
             item.progress = attachmentExists ? 100 : 0;
+
+            // If the progress is 100%, load the data
+            if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
+
+            // Add the attachment to the UI
             attachments.push(item as AttachmentDownload);
             idx += 1;
         }
@@ -148,15 +191,18 @@ class MessageBubble extends React.Component<Props, State> {
 
         // Second, determine if we need to fetch the attachments based on it's progress
         // We do this later because we want to make sure all the attachments are in the state first
-        for (const attachment of this.state.attachments) {
-            if (attachment.progress === 0) {
+        const attachmentsCopy = [...this.state.attachments];
+        for (let i = 0; i < attachmentsCopy.length; i += 1) {
+            if (attachmentsCopy[i].progress === 0) {
                 // Register listener for each attachment that we need to download
-                ipcRenderer.on(`attachment-${attachment.guid}-progress`, (event, args) =>
+                ipcRenderer.on(`attachment-${attachmentsCopy[i].guid}-progress`, (event, args) =>
                     this.onAttachmentUpdate(event, args)
                 );
-                ipcRenderer.invoke("fetch-attachment", attachment);
+                ipcRenderer.invoke("fetch-attachment", attachmentsCopy[i]);
             }
         }
+
+        this.setState({ attachments: attachmentsCopy });
     }
 
     onAttachmentUpdate(_: IpcRendererEvent, args: any) {
@@ -167,6 +213,11 @@ class MessageBubble extends React.Component<Props, State> {
         for (let i = 0; i < updatedAttachments.length; i += 1) {
             if (updatedAttachments[i].guid === attachment.guid) {
                 updatedAttachments[i].progress = progress;
+
+                // If the progress is finished, load the attachment
+                if (updatedAttachments[i].progress === 100) {
+                    updatedAttachments[i].data = loadAttachmentData(updatedAttachments[i]);
+                }
                 break;
             }
         }
@@ -183,12 +234,12 @@ class MessageBubble extends React.Component<Props, State> {
     }
 
     render() {
-        const { message, olderMessage } = this.props;
-        const { contact, attachments } = this.state;
+        const { message, olderMessage, showStatus, chat } = this.props;
+        const { attachments } = this.state;
         let links = [];
 
         // Pull out the sender name or number
-        const sender = contact ?? getiMessageNumberFormat(message.handle?.address ?? "");
+        const sender = getSender(message.handle);
 
         // Figure out which side of the chat it should be on
         const className = !message.isFromMe ? "IncomingMessage" : "OutgoingMessage";
@@ -206,9 +257,7 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         // Parse out any links. We can minimize parsing if we do a simple "contains" first
-        let hasLink = false;
         if (text.includes("http")) {
-            hasLink = true;
             links = parseUrls(text);
         }
 
@@ -218,7 +267,7 @@ class MessageBubble extends React.Component<Props, State> {
                 {message.attachments?.length > 0 ? (
                     <>
                         {/* If the attachment is a link */}
-                        {hasLink ? (
+                        {links.length > 0 ? (
                             <div className={linkClassName} onClick={() => openLink(links[0])}>
                                 {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
                                 <div className="linkBottomDiv">
@@ -230,16 +279,19 @@ class MessageBubble extends React.Component<Props, State> {
                         ) : (
                             <>
                                 <div className={attachmentClassName}>
-                                    {message.handle && (!olderMessage || olderMessage.handleId !== message.handleId) ? (
+                                    {chat.participants.length > 1 &&
+                                    message.handle &&
+                                    (!olderMessage || olderMessage.handleId !== message.handleId) ? (
                                         <p className="MessageSender">{sender}</p>
                                     ) : null}
                                     {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
                                 </div>
                                 {text ? (
                                     <div className={className}>
-                                        <div className={messageClass} style={{ marginBottom: useTail ? "8px" : "0" }}>
+                                        <div className={messageClass} style={{ marginBottom: useTail ? "3px" : "0" }}>
                                             <p>{text}</p>
                                         </div>
+                                        {showStatus ? getStatusText(message) : null}
                                     </div>
                                 ) : null}
                             </>
@@ -247,12 +299,15 @@ class MessageBubble extends React.Component<Props, State> {
                     </>
                 ) : (
                     <div className={className}>
-                        {message.handle && (!olderMessage || olderMessage.handleId !== message.handleId) ? (
+                        {chat.participants.length > 1 &&
+                        message.handle &&
+                        (!olderMessage || olderMessage.handleId !== message.handleId) ? (
                             <p className="MessageSender">{sender}</p>
                         ) : null}
-                        <div className={messageClass} style={{ marginBottom: useTail ? "8px" : "0" }}>
+                        <div className={messageClass} style={{ marginBottom: useTail ? "3px" : "0" }}>
                             {text ? <p>{text}</p> : null}
                         </div>
+                        {showStatus ? getStatusText(message) : null}
                     </div>
                 )}
             </>

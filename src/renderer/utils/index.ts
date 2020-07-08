@@ -1,6 +1,6 @@
 /* eslint-disable no-bitwise */
 import { PhoneNumberUtil } from "google-libphonenumber";
-import { Chat } from "@server/databases/chat/entity";
+import { Chat, Handle } from "@server/databases/chat/entity";
 
 export const getTimeText = (date: Date) => {
     return date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
@@ -32,12 +32,28 @@ export const getiMessageNumberFormat = (address: string) => {
     return `+${formatted}`;
 };
 
-export const getContact = (address: string) => {
-    return null;
+export const getFullName = (participant: Handle) => {
+    if (!participant.firstName && !participant.lastName) return null;
+    if (participant.firstName && !participant.lastName) return participant.firstName;
+    if (!participant.firstName && participant.lastName) return participant.lastName;
+    return `${participant.firstName} ${participant.lastName}`;
 };
 
-export const getFullName = (contact: any) => {
-    return contact;
+export const getFirstName = (participant: Handle) => {
+    if (!participant.firstName && !participant.lastName) return null;
+    if (participant.firstName && !participant.lastName) return participant.firstName;
+    if (!participant.firstName && participant.lastName) return participant.lastName;
+    return participant.firstName;
+};
+
+export const getSender = (participant: Handle, fullName = true) => {
+    if (!participant) return "";
+    if (!participant.firstName && !participant.lastName) {
+        return getiMessageNumberFormat(participant.address);
+    }
+
+    if (fullName) return getFullName(participant);
+    return getFirstName(participant);
 };
 
 export const generateChatTitle = (chat: Chat) => {
@@ -46,13 +62,12 @@ export const generateChatTitle = (chat: Chat) => {
 
     const members = [];
     for (const i of chat.participants) {
-        const contact = getContact(i.address);
-        if (!contact) {
+        if (!i.firstName && !i.lastName) {
             members.push(getiMessageNumberFormat(i.address));
         } else if (chat.participants.length === 1) {
-            members.push(getFullName(contact));
+            members.push(getFullName(i));
         } else {
-            members.push(contact); // TODO: Only get first name
+            members.push(getFirstName(i)); // TODO: Only get first name
         }
     }
 
@@ -94,4 +109,23 @@ export const generateUuid = () => {
         const v = c === "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
+};
+
+type LongLat = { longitude: number; latitude: number };
+export const parseAppleLocation = (appleLocation: string): LongLat => {
+    const lines = appleLocation.split("\n");
+    const url = lines[5];
+    const query = url.split("&q=")[1];
+
+    if (query.includes("\\")) {
+        return {
+            longitude: Number.parseFloat(query.split("\\,")[0]),
+            latitude: Number.parseFloat(query.split("\\,")[1])
+        };
+    }
+
+    return {
+        longitude: Number.parseFloat(query.split(",")[0]),
+        latitude: Number.parseFloat(query.split(",")[1])
+    };
 };

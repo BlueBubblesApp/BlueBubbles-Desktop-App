@@ -15,7 +15,6 @@ type Props = {
 type State = {
     isLoading: boolean;
     messages: Message[];
-    messageGuids: string[];
 };
 
 type Message = DBMessage & {
@@ -23,7 +22,6 @@ type Message = DBMessage & {
 };
 
 const getChatEvent = (message: Message) => {
-    console.log(message.handleId);
     const sender = message.isFromMe || !message.handle ? "You" : message.handle.address ?? "";
     if (message.itemType === 2)
         return (
@@ -42,8 +40,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
         this.state = {
             isLoading: false,
-            messages: [],
-            messageGuids: []
+            messages: []
         };
     }
 
@@ -87,7 +84,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
     async getNextMessagePage() {
         let messageTimestamp = null;
         if (this.state.messages.length > 0) {
-            messageTimestamp = this.state.messages[this.state.messages.length - 1].dateCreated;
+            messageTimestamp = this.state.messages[0].dateCreated;
         }
 
         // Set the loading state
@@ -119,7 +116,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
     chatChange() {
         // Reset the messages
-        this.setState({ messages: [], messageGuids: [] }, () => {
+        this.setState({ messages: [] }, () => {
             // Set the text field to active
             const msgField = document.getElementById("messageFieldInput");
             if (msgField) msgField.focus();
@@ -150,59 +147,35 @@ class RightConversationDisplay extends React.Component<Props, State> {
     async addMessagesToState(messages: Message[]) {
         // Make copies of state
         const updatedMessages = [...this.state.messages];
-        const updatedGuids = [...this.state.messageGuids];
 
-        // // Insert/update the message into the state
+        // Add to the state if
         for (const message of messages) {
             // Check if the message already exists (via real GUID or temp GUID)
-            let exists = updatedGuids.includes(message.guid);
-            if (message.tempGuid) exists = updatedGuids.includes(message.tempGuid);
-
-            let insertIdx = -1;
-            for (let i = 0; i < updatedMessages.length; i += 1) {
-                // If the GUID doesn't exist, just insert normally (by date)
-                if (!exists && message.dateCreated > updatedMessages[i].dateCreated) {
-                    insertIdx = i;
-                    break;
-
-                    // If the GUID exists, we want to replace the original message with the new message
-                    // We have to try to match on both the tempGuid and real GUID
-                } else if (
-                    (exists && message.guid === updatedMessages[i].guid) ||
-                    (message.tempGuid && message.tempGuid === updatedMessages[i].guid)
-                ) {
-                    updatedMessages[i] = message;
-                }
-            }
-
-            // Insert the message at the correct index (if it didn't exist already)
-            if (!exists && insertIdx === -1) {
+            const opts = message.tempGuid ? [message.guid, message.tempGuid] : [message.guid];
+            const exists = updatedMessages.findIndex(i => opts.includes(i.guid));
+            if (exists === -1) {
                 updatedMessages.push(message);
-            } else if (!exists) {
-                updatedMessages.splice(insertIdx, 0, message);
-            }
-
-            // Add the message GUID to the master list
-            // Or update the temp GUID to real GUID
-            if (!updatedGuids.includes(message.guid)) {
-                updatedGuids.push(message.guid);
-            } else if (message.tempGuid && updatedGuids.includes(message.tempGuid)) {
-                const idx = updatedGuids.indexOf(message.tempGuid);
-                updatedGuids[idx] = message.guid;
+            } else {
+                updatedMessages[exists] = message;
             }
         }
 
-        // Update the state (and wait for it to finish)
-        await new Promise((resolve, _) =>
-            this.setState(
-                {
-                    messages: updatedMessages,
-                    messageGuids: updatedGuids
-                },
-                resolve
-            )
-        );
+        // De-duplicate the messages (as a fail-safe)
+        const outputMessages = [];
+        for (const i of updatedMessages) {
+            let exists = false;
+            for (const k of outputMessages) {
+                if (i.guid === k.guid) {
+                    exists = true;
+                    break;
+                }
+            }
 
+            if (!exists) outputMessages.push(i);
+        }
+
+        // Update the state (and wait for it to finish)
+        await new Promise((resolve, _) => this.setState({ messages: outputMessages }, resolve));
         return true;
     }
 
@@ -223,14 +196,15 @@ class RightConversationDisplay extends React.Component<Props, State> {
         }
 
         const date = messages.length > 0 ? new Date(messages[0].dateCreated) : null;
+        messages.sort((a, b) => (a.dateCreated > b.dateCreated ? 1 : -1));
 
         return (
             <div id="messageView" onScroll={e => this.detectTop(e)} className="RightConversationDisplay">
                 {isLoading ? <div id="loader" /> : null}
-                <ChatLabel text={`iMessage with ${chatTitle}`} date={date} />
+                <ChatLabel text={`BlueBubbles Messaging with ${chatTitle}`} date={date} />
 
                 {/* Reverse the list because we want to display it bottom to top */}
-                {messages.reverse().map((message: Message, index: number) => {
+                {messages.map((message: Message, index: number) => {
                     let newerMessage = null;
                     let olderMessage = null;
 
@@ -238,12 +212,17 @@ class RightConversationDisplay extends React.Component<Props, State> {
                     if (index - 1 >= 0 && index - 1 < messages.length) olderMessage = messages[index - 1];
                     if (index + 1 < messages.length && index + 1 >= 0) newerMessage = messages[index + 1];
 
+                    let myNewMessages = [];
+                    if (chat.participants.length <= 1 && index + 1 < messages.length) {
+                        myNewMessages = messages.slice(index + 1, messages.length).filter(i => i.isFromMe);
+                    }
+
                     return (
                         <div key={message.guid}>
                             {/* If the last previous message is older than 30 minutes, display the time */}
                             {message.text &&
                             olderMessage &&
-                            message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 30 ? (
+                            message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 5 ? (
                                 <ChatLabel
                                     text={`${getDateText(new Date(message.dateCreated))}, ${getTimeText(
                                         new Date(message.dateCreated)
@@ -254,9 +233,11 @@ class RightConversationDisplay extends React.Component<Props, State> {
                             {/* If the message text is null, it's a group event */}
                             {message.text ? (
                                 <MessageBubble
+                                    chat={chat}
                                     message={message}
                                     olderMessage={olderMessage}
                                     newerMessage={newerMessage}
+                                    showStatus={message.isFromMe && myNewMessages.length === 0}
                                 />
                             ) : (
                                 getChatEvent(message)

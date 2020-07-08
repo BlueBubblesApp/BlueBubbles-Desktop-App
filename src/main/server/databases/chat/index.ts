@@ -1,5 +1,5 @@
 import { app } from "electron";
-import { createConnection, Connection, FindManyOptions } from "typeorm";
+import { createConnection, Connection, FindManyOptions, DeepPartial } from "typeorm";
 import { ChatResponse, HandleResponse, MessageResponse, AttachmentResponse } from "@server/types";
 
 import { Attachment, Chat, Handle, Message } from "./entity";
@@ -70,14 +70,47 @@ export class ChatRepository {
         message.chats = [chat];
         message.hasAttachments = hasAttachments;
 
+        // Handle ID is null for anything that is from ourselves
+        message.handleId = null;
+
+        // If there is a handle provided, set fields accordingly
         if (handle) {
             message.handle = handle;
+            message.handleId = handle.ROWID;
         } else {
-            message.handleId = null;
             message.isFromMe = true;
         }
 
         return message;
+    }
+
+    async getHandles(address = null) {
+        const repo = this.db.getRepository(Handle);
+        const params: FindManyOptions<Handle> = {};
+        if (address) params.where = { address };
+        return repo.find(params);
+    }
+
+    async updateHandle(handle: Handle, updateData: DeepPartial<Handle>): Promise<void> {
+        const repo = this.db.getRepository(Handle);
+
+        // If the handle doesn't have a ROWID, try and find it
+        let theHandle = handle;
+        if (!theHandle.ROWID) theHandle = await repo.findOne({ where: { address: theHandle.address } });
+
+        // Update the handle
+        if (theHandle) await repo.update({ ROWID: theHandle.ROWID }, updateData);
+    }
+
+    async updateChat(chat: Chat, updateData: DeepPartial<Chat>): Promise<void> {
+        const repo = this.db.getRepository(Chat);
+
+        // If the handle doesn't have a ROWID, try and find it
+        let theChat = chat;
+        if (!theChat.ROWID) theChat = await repo.findOne({ where: { guid: theChat.guid } });
+
+        // Update the chat
+        if (theChat) await repo.update({ ROWID: theChat.ROWID }, updateData);
     }
 
     async getChats(guid = null) {
@@ -232,6 +265,9 @@ export class ChatRepository {
         message.hasAttachments = Object.keys(res).includes("attachments") && res.attachments.length > 0;
         message.chats = (res.chats ?? []).map(chat => ChatRepository.createChatFromResponse(chat));
         message.handle = res.handle ? ChatRepository.createHandleFromResponse(res.handle) : null;
+        message.attachments = (res.attachments ?? []).map(attachment =>
+            ChatRepository.createAttachmentFromResponse(attachment)
+        );
         return message;
     }
 
@@ -285,41 +321,52 @@ export class ChatRepository {
         // Always save the chat first
         const savedChat = await this.saveChat(chat);
         const repo = this.db.getRepository(Message);
-        const guid = tempGuid ?? message.guid;
         let theMessage: Message = null;
 
         // If the message doesn't have a ROWID, try to find it
         if (!message.ROWID) {
-            theMessage = await repo.findOne({ relations: ["handle"], where: { guid } });
+            theMessage = await repo.findOne({ relations: ["handle", "attachments"], where: { guid: message.guid } });
+        }
+
+        // If a tempGuid is present, find the associated record
+        if (tempGuid) {
+            const tempMessage = await repo.findOne({ relations: ["handle", "attachments"], where: { guid: tempGuid } });
+
+            // If the real message exists already, delete the temp record
+            if (theMessage) {
+                await repo.delete(tempMessage.ROWID);
+            } else {
+                theMessage = tempMessage;
+            }
         }
 
         // If it exists, check if anything has really changed before updating
         if (theMessage) {
-            if (
-                theMessage.guid !== message.guid ||
-                theMessage.dateDelivered !== message.dateDelivered ||
-                theMessage.dateRead !== message.dateRead ||
-                theMessage.error !== message.error ||
-                theMessage.isArchived !== message.isArchived ||
-                theMessage.datePlayed !== message.datePlayed
-            ) {
-                await repo.update(
-                    { guid: theMessage.guid },
-                    {
-                        guid: message.guid,
-                        dateDelivered: message.datePlayed,
-                        dateRead: message.dateRead,
-                        error: message.error,
-                        isArchived: message.isArchived,
-                        datePlayed: message.datePlayed
-                    }
-                );
-            }
+            const updateData: Partial<Message> = {};
+            if (theMessage.guid !== message.guid) updateData.guid = message.guid;
+            if (message.dateDelivered && theMessage.dateDelivered !== message.dateDelivered)
+                updateData.dateDelivered = message.dateDelivered;
+            if (message.dateRead && theMessage.dateRead !== message.dateRead) updateData.dateRead = message.dateRead;
+            if (message.error && theMessage.error !== message.error) updateData.error = message.error;
+            if (theMessage.isArchived !== message.isArchived) updateData.isArchived = message.isArchived;
+            if (message.datePlayed && theMessage.datePlayed !== message.datePlayed)
+                updateData.datePlayed = message.datePlayed;
+            if (message.handleId !== null && message.handleId !== 0 && message.handleId !== theMessage.handleId)
+                updateData.handleId = message.handleId;
 
-            // Add the chat into the updated resultset
+            // Only send the update request if we have update info
+            if (Object.keys(updateData).length > 0) await repo.update({ guid: theMessage.guid }, updateData);
+
+            // Merge the update data with the current object
+            for (const updateKey of Object.keys(updateData)) theMessage[updateKey] = updateData[updateKey];
+
+            // Add in the chat for consistency
             theMessage.chats = [savedChat];
             return theMessage;
         }
+
+        // If we've already saved it, don't save it again
+        if (message.ROWID) return message;
 
         // Add handle to the message
         if (message.handle) {
@@ -341,6 +388,11 @@ export class ChatRepository {
                 .add(savedChat);
         } else {
             theMessage.chats[chatIdx] = savedChat;
+        }
+
+        // Save the attachments
+        for (let i = 0; i < (theMessage.attachments ?? []).length; i += 1) {
+            theMessage.attachments[i] = await this.saveAttachment(savedChat, theMessage, theMessage.attachments[i]);
         }
 
         return theMessage;

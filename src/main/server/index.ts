@@ -12,11 +12,11 @@ import { ConfigRepository } from "@server/databases/config";
 import { ChatRepository } from "@server/databases/chat";
 
 // Service Imports
-import { SocketService } from "@server/services";
+import { SocketService, QueueService } from "@server/services";
 
-import { ChatResponse, MessageResponse, ResponseFormat } from "./types";
+import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
-import { Attachment, Message } from "./databases/chat/entity";
+import { Attachment } from "./databases/chat/entity";
 
 export class BackendServer {
     window: BrowserWindow;
@@ -28,6 +28,8 @@ export class BackendServer {
     configRepo: ConfigRepository;
 
     socketService: SocketService;
+
+    queueService: QueueService;
 
     fs: FileSystem;
 
@@ -47,6 +49,7 @@ export class BackendServer {
 
         // Services
         this.socketService = null;
+        this.queueService = null;
 
         this.setupComplete = false;
         this.servicesStarted = false;
@@ -138,7 +141,17 @@ export class BackendServer {
         if (this.servicesStarted && !override) return;
 
         try {
-            console.log("Initializing up socket connection...");
+            console.log("Initializing queue service...");
+            this.queueService = new QueueService(this.chatRepo, (event: string, data: any) =>
+                this.emitToUI(event, data)
+            );
+            this.queueService.start();
+        } catch (ex) {
+            console.log(`Failed to setup queue service! ${ex.message}`);
+        }
+
+        try {
+            console.log("Initializing socket connection...");
             this.socketService = new SocketService(this.db, this.chatRepo, this.configRepo, this.fs);
 
             // Start the socket service
@@ -153,6 +166,34 @@ export class BackendServer {
         }
 
         this.servicesStarted = true;
+    }
+
+    async fetchContactsFromServer(): Promise<void> {
+        // First, let's get all the handle addresses
+        const handles = await this.chatRepo.getHandles();
+
+        // Second, fetch the corresponding contacts from the server
+        const results: ResponseFormat = await new Promise((resolve, _) =>
+            this.socketService.server.emit("get-contacts", handles, resolve)
+        );
+
+        if (results.status !== 200) return;
+
+        // Find the corresponding results, and update accordingly
+        const data = results.data as (HandleResponse & { firstName: string; lastName: string })[];
+        for (const result of data) {
+            for (let i = 0; i < handles.length; i += 1) {
+                if (result.address === handles[i].address) {
+                    await this.chatRepo.updateHandle(handles[i], {
+                        firstName: result.firstName,
+                        lastName: result.lastName
+                    });
+                    break;
+                }
+            }
+        }
+
+        this.window.reload();
     }
 
     /**
@@ -230,12 +271,6 @@ export class BackendServer {
                 try {
                     const msg = ChatRepository.createMessageFromResponse(message);
                     await this.chatRepo.saveMessage(savedChat, msg);
-
-                    // Save the attachments
-                    for (const attachment of message.attachments ?? []) {
-                        const item = ChatRepository.createAttachmentFromResponse(attachment);
-                        await this.chatRepo.saveAttachment(savedChat, msg, item);
-                    }
                 } catch (ex) {
                     console.error(`Failed to save message, [${message.guid}]`);
                 }
@@ -258,6 +293,9 @@ export class BackendServer {
 
         // Save the last fetch date
         this.configRepo.set("lastFetch", now);
+
+        // Fetch contacts
+        this.fetchContactsFromServer();
     }
 
     private startConfigListeners() {
@@ -352,7 +390,6 @@ export class BackendServer {
 
         // eslint-disable-next-line no-return-await
         ipcMain.handle("fetch-attachment", async (_, attachment: Attachment) => {
-            console.log(`Getting attachment: ${attachment.transferName}`);
             const chunkSize = (this.configRepo.get("chunkSize") as number) * 1000;
             let start = 0;
 
@@ -418,24 +455,35 @@ export class BackendServer {
         ipcMain.handle("open-link", async (_, link) => {
             require("electron").shell.openExternal(link);
         });
+
+        // Handle setting last viewed date for a chat
+        ipcMain.handle("set-chat-last-viewed", async (_, payload) => {
+            const updateData = { lastViewed: payload.lastViewed.getTime() };
+            await this.chatRepo.updateChat(payload.chat, updateData);
+        });
     }
 
     private startSocketHandlers() {
         if (!this.socketService.server || !this.socketService.server.connected) return;
 
-        const saveIncomingMessage = async (message: MessageResponse) => {
-            const msg = ChatRepository.createMessageFromResponse(message);
-            const newMsg = await this.chatRepo.saveMessage(msg.chats[0], msg, message.tempGuid ?? null);
-            this.emitToUI("message", { message: newMsg, tempGuid: message.tempGuid });
-        };
-
-        this.socketService.server.on("new-message", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("updated-message", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("group-name-change", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("updated-message", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("participant-removed", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("participant-added", (message: MessageResponse) => saveIncomingMessage(message));
-        this.socketService.server.on("participant-left", (message: MessageResponse) => saveIncomingMessage(message));
+        this.socketService.server.on("new-message", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
+        this.socketService.server.on("updated-message", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
+        this.socketService.server.on("group-name-change", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
+        this.socketService.server.on("participant-removed", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
+        this.socketService.server.on("participant-added", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
+        this.socketService.server.on("participant-left", (message: MessageResponse) =>
+            this.queueService.add("save-message", message)
+        );
     }
 
     private emitToUI(event: string, data: any) {
