@@ -201,7 +201,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
         return (
             <div id="messageView" onScroll={e => this.detectTop(e)} className="RightConversationDisplay">
                 {isLoading ? <div id="loader" /> : null}
-                <ChatLabel text={`iMessage with ${chatTitle}`} date={date} />
+                <ChatLabel text={`BlueBubbles Messaging with ${chatTitle}`} date={date} />
 
                 {/* Reverse the list because we want to display it bottom to top */}
                 {messages.map((message: Message, index: number) => {

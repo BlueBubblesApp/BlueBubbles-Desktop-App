@@ -66,7 +66,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                     <input
                         id="messageFieldInput-NewMessage"
                         type="text"
-                        placeholder="iMessage"
+                        placeholder="BlueBubbles"
                         value={this.state.enteredMessage}
                         onChange={this.handleMessageChange}
                     />

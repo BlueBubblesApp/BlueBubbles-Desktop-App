@@ -147,7 +147,7 @@ class LoginView extends React.Component<object, LoginViewState> {
                     </div>
                 ) : (
                     <div id="loginContainer">
-                        <h1>Connect to iMessage server</h1>
+                        <h1>Connect to MacOS server</h1>
                         <form id="loginForm" onSubmit={this.handleSubmit}>
                             <input
                                 type="url"

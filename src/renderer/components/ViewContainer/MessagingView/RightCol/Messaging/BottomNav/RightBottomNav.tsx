@@ -81,7 +81,7 @@ class RightBottomNav extends React.Component<Props, State> {
                     <input
                         id="messageFieldInput"
                         type="text"
-                        placeholder="iMessage"
+                        placeholder="BlueBubbles"
                         value={this.state.enteredMessage}
                         onChange={this.handleMessageChange}
                     />
