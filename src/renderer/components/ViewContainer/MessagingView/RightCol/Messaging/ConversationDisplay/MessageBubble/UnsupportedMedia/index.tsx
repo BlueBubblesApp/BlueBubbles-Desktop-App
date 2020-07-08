@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ipcRenderer, remote } from "electron";
+import ComputerCheckImage from "@renderer/assets/img/computer_check.png";
 import { AttachmentDownload } from "../@types";
 
 import "./UnsupportedMedia.css";
@@ -13,9 +13,10 @@ export default function UnsupportedMedia({ attachment, onClick }: Props) {
     return (
         <div className="UnsupportedMedia" onClick={() => onClick()}>
             {/* <p>Unsupported Media</p> */}
-            <p>{attachment.transferName}</p>
-            {/* <p>{attachment.mimeType}</p> */}
-            <p>Click to open externally</p>
+            <p>Unsupported Media</p>
+            <img key={attachment.guid} src={ComputerCheckImage} alt="open-externally" color="white" />
+            <p>Open File</p>
+            <p>{attachment.mimeType}</p>
         </div>
     );
 }

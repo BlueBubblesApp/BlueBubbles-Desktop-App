@@ -141,11 +141,12 @@
     border-bottom-right-radius: 10px;
 }
 
-.imageAttachment {
+.Attachment {
     max-height: 50%;
     max-width: 50%;
     border-radius: 20px;
     margin-top: 3px;
+    cursor: pointer;
 }
 
 .OutgoingAttachment {
@@ -172,7 +173,7 @@
     margin: 0 0 0 13px;
 }
 
-.IncomingLink > .imageAttachment {
+.IncomingLink > .Attachment {
     border-radius: 15px 15px 0 0;
 }
 
@@ -183,7 +184,7 @@
     flex-direction: column;
     margin: 0 13px 0 0;
 }
-.OutgoingLink > .imageAttachment {
+.OutgoingLink > .Attachment {
     border-radius: 15px 15px 0 0;
 }
 

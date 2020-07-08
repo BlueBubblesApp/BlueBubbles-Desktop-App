@@ -4,7 +4,7 @@ import * as fs from "fs";
 import EmojiRegex from "emoji-regex";
 
 import { Message, Chat } from "@server/databases/chat/entity";
-import { getiMessageNumberFormat, sanitizeStr, parseUrls, getDateText, getSender } from "@renderer/utils";
+import { sanitizeStr, parseUrls, getDateText, getSender, parseAppleLocation } from "@renderer/utils";
 import UnknownImage from "@renderer/assets/img/unknown_img.png";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
@@ -44,14 +44,19 @@ const isSameSender = (message1: Message, message2: Message) => {
 
 const isSupportedMime = (mimeType: string) => {
     if (!mimeType || mimeType.startsWith("image")) return true;
-    return [...supportedAudioTypes, ...supportedVideoTypes].includes(mimeType);
+    return [...supportedAudioTypes, ...supportedVideoTypes, "text/x-vlocation"].includes(mimeType);
 };
 
 const loadAttachmentData = (attachment: AttachmentDownload) => {
     if (!isSupportedMime(attachment.mimeType)) return null;
     if (attachment.data) return attachment.data;
     const path = `${remote.app.getPath("userData")}/Attachments/${attachment.guid}/${attachment.transferName}`;
-    return fs.readFileSync(path).toString("base64");
+    let encoding = "base64";
+
+    // If it's a location card, read as utf-8
+    if (attachment.mimeType === "text/x-vlocation") encoding = "utf-8";
+
+    return fs.readFileSync(path).toString(encoding);
 };
 
 const allEmojis = (text: string) => {
@@ -92,7 +97,7 @@ const renderAttachment = (attachment: AttachmentDownload) => {
             return (
                 <img
                     key={attachment.guid}
-                    className="imageAttachment"
+                    className="Attachment"
                     src={`data:${mime};base64,${attachment.data}`}
                     alt={attachment.transferName}
                     onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
@@ -104,7 +109,7 @@ const renderAttachment = (attachment: AttachmentDownload) => {
         if (supportedVideoTypes.includes(attachment.mimeType)) {
             return (
                 // eslint-disable-next-line jsx-a11y/media-has-caption
-                <video key={attachment.guid} className="imageAttachment" controls>
+                <video key={attachment.guid} className="Attachment" controls>
                     <source src={`data:${attachment.mimeType};base64,${attachment.data}`} type={attachment.mimeType} />
                 </video>
             );
@@ -113,11 +118,16 @@ const renderAttachment = (attachment: AttachmentDownload) => {
         if (supportedAudioTypes.includes(attachment.mimeType)) {
             return (
                 // eslint-disable-next-line jsx-a11y/media-has-caption
-                <audio key={attachment.guid} className="imageAttachment" controls>
+                <audio key={attachment.guid} className="Attachment" controls>
                     <source src={`data:${attachment.mimeType};base64,${attachment.data}`} type={attachment.mimeType} />
                 </audio>
             );
         }
+
+        // if (attachment.mimeType === "text/x-vlocation") {
+        //     const longLat = parseAppleLocation(attachment.data);
+        //     return null
+        // }
 
         return (
             <UnsupportedMedia

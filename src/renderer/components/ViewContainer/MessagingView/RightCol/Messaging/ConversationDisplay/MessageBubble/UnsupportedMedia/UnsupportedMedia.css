@@ -1,12 +1,13 @@
 .UnsupportedMedia {
     background-color: var(--incoming-message-color);
     border-radius: 20px;
-    padding: 10px;
+    padding: 10px 30px 10px 30px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     margin-top: 3px;
+    cursor: pointer;
 }
 
 .UnsupportedMedia > p:first-child {
@@ -16,7 +17,7 @@
 .UnsupportedMedia > p {
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
-    font-size: 16px;
+    font-size: 14px;
     margin: 0;
     margin-bottom: 10px;
 }

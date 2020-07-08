@@ -110,3 +110,22 @@ export const generateUuid = () => {
         return v.toString(16);
     });
 };
+
+type LongLat = { longitude: number; latitude: number };
+export const parseAppleLocation = (appleLocation: string): LongLat => {
+    const lines = appleLocation.split("\n");
+    const url = lines[5];
+    const query = url.split("&q=")[1];
+
+    if (query.includes("\\")) {
+        return {
+            longitude: Number.parseFloat(query.split("\\,")[0]),
+            latitude: Number.parseFloat(query.split("\\,")[1])
+        };
+    }
+
+    return {
+        longitude: Number.parseFloat(query.split(",")[0]),
+        latitude: Number.parseFloat(query.split(",")[1])
+    };
+};
