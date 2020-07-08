@@ -5,6 +5,7 @@ import EmojiRegex from "emoji-regex";
 
 import { Message, Chat } from "@server/databases/chat/entity";
 import { getiMessageNumberFormat, sanitizeStr, parseUrls, getDateText } from "@renderer/utils";
+import UnknownImage from "@renderer/assets/img/unknown_img.png";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
@@ -72,10 +73,13 @@ const getStatusText = (message: Message) => {
     return null;
 };
 
-function openLink(link) {
-    console.log(link);
+const openLink = link => {
     ipcRenderer.invoke("open-link", link);
-}
+};
+
+const setFallbackImage = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = UnknownImage;
+};
 
 const renderAttachment = (attachment: AttachmentDownload) => {
     if (attachment.progress === 100) {
@@ -92,9 +96,8 @@ const renderAttachment = (attachment: AttachmentDownload) => {
                     className="imageAttachment"
                     src={`data:${mime};base64,${attachment.data}`}
                     alt={attachment.transferName}
-                    loading="lazy"
-                    data-path={attachmentPath}
                     onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                    onError={setFallbackImage}
                 />
             );
         }
