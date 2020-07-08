@@ -22,6 +22,9 @@ export class Chat {
     @Column({ type: "text", nullable: true })
     displayName: string;
 
+    @Column({ type: "integer", default: 0 })
+    lastViewed: number;
+
     @ManyToMany(type => Handle, { onDelete: "CASCADE" })
     @JoinTable({
         name: "chat_handle_join",

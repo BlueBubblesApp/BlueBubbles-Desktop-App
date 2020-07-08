@@ -46,13 +46,14 @@ export const getFirstName = (participant: Handle) => {
     return participant.firstName;
 };
 
-export const getSender = (participant: Handle) => {
+export const getSender = (participant: Handle, fullName = true) => {
     if (!participant) return "";
     if (!participant.firstName && !participant.lastName) {
         return getiMessageNumberFormat(participant.address);
     }
 
-    return getFullName(participant);
+    if (fullName) return getFullName(participant);
+    return getFirstName(participant);
 };
 
 export const generateChatTitle = (chat: Chat) => {

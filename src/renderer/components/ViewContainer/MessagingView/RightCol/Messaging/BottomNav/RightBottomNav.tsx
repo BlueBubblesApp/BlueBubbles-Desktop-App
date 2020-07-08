@@ -45,6 +45,8 @@ class RightBottomNav extends React.Component<Props, State> {
     };
 
     async sendMessage() {
+        if (this.state.enteredMessage.length === 0) return;
+
         const message: Message = await ipcRenderer.invoke("create-message", {
             chat: this.props.chat,
             guid: `temp-${generateUuid()}`,
@@ -85,7 +87,7 @@ class RightBottomNav extends React.Component<Props, State> {
                     />
                 </div>
                 <div id="rightBottomButton">
-                    <img id="sendIcon" onClick={this.sendMessage} src={SendIcon} alt="send" />
+                    <img id="sendIcon" onClick={() => this.sendMessage()} src={SendIcon} alt="send" />
                 </div>
             </div>
         );

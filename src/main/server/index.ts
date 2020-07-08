@@ -455,6 +455,12 @@ export class BackendServer {
         ipcMain.handle("open-link", async (_, link) => {
             require("electron").shell.openExternal(link);
         });
+
+        // Handle setting last viewed date for a chat
+        ipcMain.handle("set-chat-last-viewed", async (_, payload) => {
+            const updateData = { lastViewed: payload.lastViewed.getTime() };
+            await this.chatRepo.updateChat(payload.chat, updateData);
+        });
     }
 
     private startSocketHandlers() {

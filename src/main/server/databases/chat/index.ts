@@ -102,6 +102,17 @@ export class ChatRepository {
         if (theHandle) await repo.update({ ROWID: theHandle.ROWID }, updateData);
     }
 
+    async updateChat(chat: Chat, updateData: DeepPartial<Chat>): Promise<void> {
+        const repo = this.db.getRepository(Chat);
+
+        // If the handle doesn't have a ROWID, try and find it
+        let theChat = chat;
+        if (!theChat.ROWID) theChat = await repo.findOne({ where: { guid: theChat.guid } });
+
+        // Update the chat
+        if (theChat) await repo.update({ ROWID: theChat.ROWID }, updateData);
+    }
+
     async getChats(guid = null) {
         const repo = this.db.getRepository(Chat);
         const params: FindManyOptions<Chat> = { relations: ["participants"] };
