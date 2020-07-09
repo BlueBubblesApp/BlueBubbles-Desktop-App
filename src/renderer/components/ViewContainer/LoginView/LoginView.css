@@ -195,11 +195,6 @@
     }
 }
 
-#skipToMessaging {
-    margin-top: 20px;
-    color: aqua;
-}
-
 #versionNumber {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";

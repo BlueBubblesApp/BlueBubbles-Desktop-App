@@ -141,9 +141,6 @@ class LoginView extends React.Component<object, LoginViewState> {
                         ) : (
                             <></>
                         )}
-                        <NavLink id="skipToMessaging" to="/messaging">
-                            Skip to Downloading
-                        </NavLink>
                     </div>
                 ) : (
                     <div id="loginContainer">
