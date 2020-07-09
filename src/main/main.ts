@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { app, BrowserWindow, ipcMain, session } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import * as url from "url";
 

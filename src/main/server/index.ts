@@ -1,11 +1,14 @@
 import { ipcMain, BrowserWindow, shell } from "electron";
-import { Connection } from "typeorm";
+import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
+import * as path from "path";
+import * as os from "os";
+import { NotificationCenter, WindowsToaster, NotifySend } from "node-notifier";
 
 // Config and FileSystem Imports
 import { FileSystem } from "@server/fileSystem";
 import { DEFAULT_CONFIG_ITEMS } from "@server/constants";
-import { mergeUint8Arrays } from "@server/helpers/utils";
+import { mergeUint8Arrays, parseVCards, sanitizeAddress } from "@server/helpers/utils";
 
 // Database Imports
 import { ConfigRepository } from "@server/databases/config";
@@ -14,9 +17,13 @@ import { ChatRepository } from "@server/databases/chat";
 // Service Imports
 import { SocketService, QueueService } from "@server/services";
 
+// Renderer imports
+import { generateChatTitle, generateUuid } from "@renderer/utils";
+import AppIcon from "@renderer/assets/logo64.png";
+
 import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
-import { Attachment } from "./databases/chat/entity";
+import { Attachment, Handle } from "./databases/chat/entity";
 
 export class BackendServer {
     window: BrowserWindow;
@@ -168,15 +175,17 @@ export class BackendServer {
         this.servicesStarted = true;
     }
 
-    async fetchContactsFromServer(): Promise<void> {
+    async fetchContactsFromServerDb(): Promise<void> {
         // First, let's get all the handle addresses
         const handles = await this.chatRepo.getHandles();
 
         // Second, fetch the corresponding contacts from the server
+        console.log("Fetching contacts from server's database");
         const results: ResponseFormat = await new Promise((resolve, _) =>
-            this.socketService.server.emit("get-contacts", handles, resolve)
+            this.socketService.server.emit("get-contacts-from-db", handles, resolve)
         );
 
+        console.log(`Received response with status code, ${results.status}`);
         if (results.status !== 200) return;
 
         // Find the corresponding results, and update accordingly
@@ -184,11 +193,48 @@ export class BackendServer {
         for (const result of data) {
             for (let i = 0; i < handles.length; i += 1) {
                 if (result.address === handles[i].address) {
-                    await this.chatRepo.updateHandle(handles[i], {
-                        firstName: result.firstName,
-                        lastName: result.lastName
-                    });
+                    const updateData: DeepPartial<Handle> = {};
+                    if (result.firstName) updateData.firstName = result.firstName;
+                    if (result.lastName) updateData.lastName = result.lastName;
+
+                    // Update the user only if there a non-null name
+                    if (Object.keys(updateData).length > 0) {
+                        console.log(`Updating handle ${handles[i].address}`);
+                        await this.chatRepo.updateHandle(handles[i], updateData);
+                    }
                     break;
+                }
+            }
+        }
+
+        console.log(`Finished download`);
+        this.window.reload();
+    }
+
+    async fetchContactsFromServerVcf(): Promise<void> {
+        // First, fetch the corresponding contacts from the server
+        const results: ResponseFormat = await new Promise((resolve, _) =>
+            this.socketService.server.emit("get-contacts-from-vcf", null, resolve)
+        );
+
+        if (results.status !== 200) throw new Error(results.error.message);
+
+        // Parse the contacts
+        const contacts = parseVCards(results.data as string);
+
+        // Get handles and compare
+        const handles = await this.chatRepo.getHandles();
+
+        // Check if there is a contact for each handle's address
+        for (const handle of handles) {
+            for (const contact of contacts) {
+                if (sanitizeAddress(handle.address) === sanitizeAddress(contact.address)) {
+                    const updateData: DeepPartial<Handle> = {};
+                    if (contact.firstName) updateData.firstName = contact.firstName;
+                    if (contact.lastName) updateData.lastName = contact.lastName;
+
+                    // Update the user only if there a non-null name
+                    if (Object.keys(updateData).length > 0) await this.chatRepo.updateHandle(handle, updateData);
                 }
             }
         }
@@ -295,7 +341,8 @@ export class BackendServer {
         this.configRepo.set("lastFetch", now);
 
         // Fetch contacts
-        this.fetchContactsFromServer();
+        // this.fetchContactsFromServerVcf();
+        this.fetchContactsFromServerDb();
     }
 
     private startConfigListeners() {
@@ -461,13 +508,92 @@ export class BackendServer {
             const updateData = { lastViewed: payload.lastViewed.getTime() };
             await this.chatRepo.updateChat(payload.chat, updateData);
         });
+
+        // Get VCF from server
+        // ipcMain.handle("fetch-contacts", async (_, __) => {
+
+        // })
     }
 
     private startSocketHandlers() {
         if (!this.socketService.server || !this.socketService.server.connected) return;
 
+        const handleNewMessage = async (event: string, message: MessageResponse) => {
+            // First, add the message to the queue
+            this.queueService.add(event, message);
+
+            // Next, we want to create a notification for the new message
+            // If the window is focused, don't show a notification
+            if (this.window && this.window.isFocused()) return;
+
+            // Save the associated chat so we can get the participants to build the title
+            const chatData = message.chats[0];
+            const chat = ChatRepository.createChatFromResponse(chatData);
+            const savedChat = await this.chatRepo.saveChat(chat);
+            const chatTitle = generateChatTitle(savedChat);
+            const text = message.attachments.length === 0 ? message.text : "1 Attachment";
+            const platform = os.platform();
+
+            // Construct which notification platform we should use
+            let notification = null;
+            if (platform === "darwin") notification = new NotificationCenter({ withFallback: true });
+            else if (platform === "win32") notification = new WindowsToaster({ withFallback: true });
+            else if (platform === "linux") notification = new NotifySend({ withFallback: true });
+            else return;
+
+            // Build the base notification parameters
+            const notificationData: any = {
+                title: chatTitle,
+                icon: path.join(__dirname, AppIcon)
+            };
+
+            if (platform === "win32") {
+                notificationData.appId = "com.BlueBubbles.BlueBubbles-Desktop";
+                notificationData.id = message.guid;
+            }
+
+            // Build the notification parameters
+            if (message.error) {
+                if (platform === "darwin") notificationData.subtitle = "Error";
+                notificationData.message = "Message failed to send";
+            } else {
+                if (platform === "darwin") {
+                    notificationData.subtitle = "New Message";
+                    notificationData.reply = true;
+                    notificationData.timeout = 30000;
+                }
+                notificationData.message = text;
+            }
+
+            // Don't show a notification if there is no error or it's from me
+            if (!message.error && message.isFromMe) return;
+
+            notification.notify(notificationData, async (error, response, metadata) => {
+                if (error || response !== "replied") return;
+                const reply = metadata.activationValue;
+
+                // Create the message
+                const newMessage = ChatRepository.createMessage({
+                    chat,
+                    guid: `temp-${generateUuid()}`,
+                    text: reply,
+                    dateCreated: new Date()
+                });
+
+                // Save the message
+                await this.chatRepo.saveMessage(chat, newMessage);
+
+                // Send the message
+                this.socketService.server.emit("send-message", {
+                    tempGuid: newMessage.guid,
+                    guid: chat.guid,
+                    message: newMessage.text
+                });
+            });
+        };
+
         this.socketService.server.on("new-message", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
+            handleNewMessage("save-message", message)
         );
         this.socketService.server.on("updated-message", (message: MessageResponse) =>
             this.queueService.add("save-message", message)
