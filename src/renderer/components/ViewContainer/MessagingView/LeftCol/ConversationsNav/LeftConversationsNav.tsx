@@ -172,7 +172,10 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             <div className="LeftConversationsNav">
                 {isLoading ? <div id="loader" /> : null}
                 {chats.map(chat => {
-                    let hasNotification = chat.lastMessage && chat.lastViewed < chat.lastMessage.dateCreated;
+                    let hasNotification =
+                        chat.lastMessage &&
+                        !chat.lastMessage.isFromMe &&
+                        chat.lastViewed < chat.lastMessage.dateCreated;
                     if (!chat.lastViewed || (hasNotification && activeChat && activeChat.guid === chat.guid))
                         hasNotification = false;
                     return (

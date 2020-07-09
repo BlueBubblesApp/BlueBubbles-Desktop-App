@@ -22,8 +22,8 @@ export type CreateMessageParams = {
     chat: Chat;
     guid: string;
     text: string;
-    handle: Handle;
-    dateCreated: Date;
-    error: number;
-    hasAttachments: boolean;
+    handle?: Handle;
+    dateCreated?: Date;
+    error?: number;
+    hasAttachments?: boolean;
 };

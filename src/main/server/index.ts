@@ -1,7 +1,9 @@
 import { ipcMain, BrowserWindow, shell } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
-import * as vCard from "vcf";
+import * as path from "path";
+import * as os from "os";
+import { NotificationCenter, WindowsToaster, NotifySend } from "node-notifier";
 
 // Config and FileSystem Imports
 import { FileSystem } from "@server/fileSystem";
@@ -14,6 +16,10 @@ import { ChatRepository } from "@server/databases/chat";
 
 // Service Imports
 import { SocketService, QueueService } from "@server/services";
+
+// Renderer imports
+import { generateChatTitle, generateUuid } from "@renderer/utils";
+import AppIcon from "@renderer/assets/logo64.png";
 
 import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
@@ -512,8 +518,82 @@ export class BackendServer {
     private startSocketHandlers() {
         if (!this.socketService.server || !this.socketService.server.connected) return;
 
+        const handleNewMessage = async (event: string, message: MessageResponse) => {
+            // First, add the message to the queue
+            this.queueService.add(event, message);
+
+            // Next, we want to create a notification for the new message
+            // If the window is focused, don't show a notification
+            if (this.window && this.window.isFocused()) return;
+
+            // Save the associated chat so we can get the participants to build the title
+            const chatData = message.chats[0];
+            const chat = ChatRepository.createChatFromResponse(chatData);
+            const savedChat = await this.chatRepo.saveChat(chat);
+            const chatTitle = generateChatTitle(savedChat);
+            const text = message.attachments.length === 0 ? message.text : "1 Attachment";
+            const platform = os.platform();
+
+            // Construct which notification platform we should use
+            let notification = null;
+            if (platform === "darwin") notification = new NotificationCenter({ withFallback: true });
+            else if (platform === "win32") notification = new WindowsToaster({ withFallback: true });
+            else if (platform === "linux") notification = new NotifySend({ withFallback: true });
+            else return;
+
+            // Build the base notification parameters
+            const notificationData: any = {
+                title: chatTitle,
+                icon: path.join(__dirname, AppIcon)
+            };
+
+            if (platform === "win32") {
+                notificationData.appId = "com.BlueBubbles.BlueBubbles-Desktop";
+                notificationData.id = message.guid;
+            }
+
+            // Build the notification parameters
+            if (message.error) {
+                if (platform === "darwin") notificationData.subtitle = "Error";
+                notificationData.message = "Message failed to send";
+            } else {
+                if (platform === "darwin") {
+                    notificationData.subtitle = "New Message";
+                    notificationData.reply = true;
+                    notificationData.timeout = 30000;
+                }
+                notificationData.message = text;
+            }
+
+            // Don't show a notification if there is no error or it's from me
+            if (!message.error && message.isFromMe) return;
+
+            notification.notify(notificationData, async (error, response, metadata) => {
+                if (error || response !== "replied") return;
+                const reply = metadata.activationValue;
+
+                // Create the message
+                const newMessage = ChatRepository.createMessage({
+                    chat,
+                    guid: `temp-${generateUuid()}`,
+                    text: reply,
+                    dateCreated: new Date()
+                });
+
+                // Save the message
+                await this.chatRepo.saveMessage(chat, newMessage);
+
+                // Send the message
+                this.socketService.server.emit("send-message", {
+                    tempGuid: newMessage.guid,
+                    guid: chat.guid,
+                    message: newMessage.text
+                });
+            });
+        };
+
         this.socketService.server.on("new-message", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
+            handleNewMessage("save-message", message)
         );
         this.socketService.server.on("updated-message", (message: MessageResponse) =>
             this.queueService.add("save-message", message)
