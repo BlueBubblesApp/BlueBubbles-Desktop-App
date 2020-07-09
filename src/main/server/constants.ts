@@ -5,5 +5,6 @@ export const DEFAULT_CONFIG_ITEMS: { [key: string]: Function } = {
     theme: () => "dark",
     isMakingNewChat: () => false,
     chunkSize: () => 1024,
-    isDetailsOpen: () => false
+    isDetailsOpen: () => false,
+    isReactionsOpen: () => false
 };

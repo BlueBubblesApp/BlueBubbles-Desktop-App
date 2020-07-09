@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import * as React from "react";
 import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
@@ -288,7 +289,11 @@ class MessageBubble extends React.Component<Props, State> {
                                 </div>
                                 {text ? (
                                     <div className={className}>
-                                        <div className={messageClass} style={{ marginBottom: useTail ? "3px" : "0" }}>
+                                        <div
+                                            className={messageClass}
+                                            id=""
+                                            style={{ marginBottom: useTail ? "3px" : "0" }}
+                                        >
                                             <p>{text}</p>
                                         </div>
                                         {showStatus ? getStatusText(message) : null}
@@ -304,7 +309,7 @@ class MessageBubble extends React.Component<Props, State> {
                         (!olderMessage || olderMessage.handleId !== message.handleId) ? (
                             <p className="MessageSender">{sender}</p>
                         ) : null}
-                        <div className={messageClass} style={{ marginBottom: useTail ? "3px" : "0" }}>
+                        <div className={messageClass} id={message.guid} style={{ marginBottom: useTail ? "3px" : "0" }}>
                             {text ? <p>{text}</p> : null}
                         </div>
                         {showStatus ? getStatusText(message) : null}

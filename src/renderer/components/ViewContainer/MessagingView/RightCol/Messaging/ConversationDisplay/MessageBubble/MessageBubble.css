@@ -80,11 +80,33 @@
     font-size: 11px;
 }
 
+@keyframes openReactions {
+    0% {
+        transform: scale(1, 1);
+    }
+    65% {
+        transform: scale(0.9, 0.9);
+    }
+    85% {
+        transform: scale(1.05, 1.05);
+    }
+    100% {
+        transform: scale(1, 1);
+    }
+}
+
 /* Outgoing message tails */
 .OutgoingMessage .message {
     color: white;
     background-attachment: fixed;
     position: relative;
+}
+
+.OutgoingMessage .message:active {
+    animation-name: openReactions;
+    animation-delay: 0.4s;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
 }
 
 .OutgoingMessage .message.tail:before {
@@ -186,14 +208,12 @@
 }
 .OutgoingLink > .Attachment {
     border-radius: 15px 15px 0 0;
+    z-index: 2;
 }
 
-/* .LinkMedia{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-width: 35%;
-} */
+.OutgoingLink > .linkBottomDiv {
+    z-index: 2;
+}
 
 .linkBottomDiv {
     display: block;

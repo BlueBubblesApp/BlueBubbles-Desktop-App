@@ -4,6 +4,7 @@
     display: flex;
     background-color: var(--secondary-color);
     align-items: center;
+    z-index: 2;
 }
 
 #leftAttachmentButton {
