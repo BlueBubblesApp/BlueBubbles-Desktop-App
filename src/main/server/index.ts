@@ -1,11 +1,12 @@
 import { ipcMain, BrowserWindow, shell } from "electron";
-import { Connection } from "typeorm";
+import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
+import * as vCard from "vcf";
 
 // Config and FileSystem Imports
 import { FileSystem } from "@server/fileSystem";
 import { DEFAULT_CONFIG_ITEMS } from "@server/constants";
-import { mergeUint8Arrays } from "@server/helpers/utils";
+import { mergeUint8Arrays, parseVCards, sanitizeAddress } from "@server/helpers/utils";
 
 // Database Imports
 import { ConfigRepository } from "@server/databases/config";
@@ -16,7 +17,7 @@ import { SocketService, QueueService } from "@server/services";
 
 import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
-import { Attachment } from "./databases/chat/entity";
+import { Attachment, Handle } from "./databases/chat/entity";
 
 export class BackendServer {
     window: BrowserWindow;
@@ -168,15 +169,17 @@ export class BackendServer {
         this.servicesStarted = true;
     }
 
-    async fetchContactsFromServer(): Promise<void> {
+    async fetchContactsFromServerDb(): Promise<void> {
         // First, let's get all the handle addresses
         const handles = await this.chatRepo.getHandles();
 
         // Second, fetch the corresponding contacts from the server
+        console.log("Fetching contacts from server's database");
         const results: ResponseFormat = await new Promise((resolve, _) =>
-            this.socketService.server.emit("get-contacts", handles, resolve)
+            this.socketService.server.emit("get-contacts-from-db", handles, resolve)
         );
 
+        console.log(`Received response with status code, ${results.status}`);
         if (results.status !== 200) return;
 
         // Find the corresponding results, and update accordingly
@@ -184,11 +187,48 @@ export class BackendServer {
         for (const result of data) {
             for (let i = 0; i < handles.length; i += 1) {
                 if (result.address === handles[i].address) {
-                    await this.chatRepo.updateHandle(handles[i], {
-                        firstName: result.firstName,
-                        lastName: result.lastName
-                    });
+                    const updateData: DeepPartial<Handle> = {};
+                    if (result.firstName) updateData.firstName = result.firstName;
+                    if (result.lastName) updateData.lastName = result.lastName;
+
+                    // Update the user only if there a non-null name
+                    if (Object.keys(updateData).length > 0) {
+                        console.log(`Updating handle ${handles[i].address}`);
+                        await this.chatRepo.updateHandle(handles[i], updateData);
+                    }
                     break;
+                }
+            }
+        }
+
+        console.log(`Finished download`);
+        this.window.reload();
+    }
+
+    async fetchContactsFromServerVcf(): Promise<void> {
+        // First, fetch the corresponding contacts from the server
+        const results: ResponseFormat = await new Promise((resolve, _) =>
+            this.socketService.server.emit("get-contacts-from-vcf", null, resolve)
+        );
+
+        if (results.status !== 200) throw new Error(results.error.message);
+
+        // Parse the contacts
+        const contacts = parseVCards(results.data as string);
+
+        // Get handles and compare
+        const handles = await this.chatRepo.getHandles();
+
+        // Check if there is a contact for each handle's address
+        for (const handle of handles) {
+            for (const contact of contacts) {
+                if (sanitizeAddress(handle.address) === sanitizeAddress(contact.address)) {
+                    const updateData: DeepPartial<Handle> = {};
+                    if (contact.firstName) updateData.firstName = contact.firstName;
+                    if (contact.lastName) updateData.lastName = contact.lastName;
+
+                    // Update the user only if there a non-null name
+                    if (Object.keys(updateData).length > 0) await this.chatRepo.updateHandle(handle, updateData);
                 }
             }
         }
@@ -295,7 +335,8 @@ export class BackendServer {
         this.configRepo.set("lastFetch", now);
 
         // Fetch contacts
-        this.fetchContactsFromServer();
+        // this.fetchContactsFromServerVcf();
+        this.fetchContactsFromServerDb();
     }
 
     private startConfigListeners() {
@@ -461,6 +502,11 @@ export class BackendServer {
             const updateData = { lastViewed: payload.lastViewed.getTime() };
             await this.chatRepo.updateChat(payload.chat, updateData);
         });
+
+        // Get VCF from server
+        // ipcMain.handle("fetch-contacts", async (_, __) => {
+
+        // })
     }
 
     private startSocketHandlers() {

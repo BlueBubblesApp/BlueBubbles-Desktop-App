@@ -5160,6 +5160,11 @@ flush-write-stream@^1.0.0:
     inherits "^2.0.3"
     readable-stream "^2.3.6"
 
+foldline@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/foldline/-/foldline-1.1.0.tgz#95017b3fc2cff156c167373897e76ceb32ae0964"
+  integrity sha512-9SheyADS50hjvFYjFJ3OB/GlDz2mD1T2CHd7auIk4Uto5YYWPBcw8iYo3F+gENJ+/SOeH9tT0loHZSqlUlumTA==
+
 follow-redirects@^1.0.0:
   version "1.12.1"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.12.1.tgz#de54a6205311b93d60398ebc01cf7015682312b6"
@@ -11700,6 +11705,14 @@ vary@^1, vary@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
+
+vcf@^2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/vcf/-/vcf-2.0.6.tgz#7cb64c4b66eca1adbe572a09cf31c35f1df6845b"
+  integrity sha512-w3A9sfhRre+KZNtLVzJ/Y3xEmTQwG3VgO1lbbgwb5N+egE2OvgdPWGGWFlzz5owYdhIEu7HhzwETuJ1gpsbomw==
+  dependencies:
+    camelcase "^5.0.0"
+    foldline "^1.1.0"
 
 verror@1.10.0:
   version "1.10.0"

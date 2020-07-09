@@ -164,6 +164,7 @@
       "reflect-metadata": "^0.1.10",
       "socket.io-client": "^2.3.0",
       "sqlite3": "^4.2.0",
-      "typeorm": "^0.2.25"
+      "typeorm": "^0.2.25",
+      "vcf": "^2.0.6"
    }
 }
