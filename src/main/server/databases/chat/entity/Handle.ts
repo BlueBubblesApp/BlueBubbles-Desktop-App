@@ -22,6 +22,9 @@ export class Handle {
     @Column({ type: "text", nullable: true })
     lastName: string;
 
+    @Column({ type: "text", nullable: true })
+    avatar: string;
+
     @OneToMany(
         type => Message,
         message => message.handle

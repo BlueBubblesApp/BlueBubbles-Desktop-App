@@ -4,13 +4,19 @@ import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
 import EmojiRegex from "emoji-regex";
 
-import { Message, Chat } from "@server/databases/chat/entity";
-import { sanitizeStr, parseUrls, getDateText, getSender, parseAppleLocation } from "@renderer/utils";
+import { Message as DBMessage, Chat } from "@server/databases/chat/entity";
+import { sanitizeStr, parseUrls, getDateText, getSender } from "@renderer/utils";
 import UnknownImage from "@renderer/assets/img/unknown_img.png";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
 import "./MessageBubble.css";
+
+type Message = DBMessage & {
+    tempGuid: string;
+    reactions: DBMessage[];
+    reactionsChecked: boolean;
+};
 
 type Props = {
     chat: Chat;

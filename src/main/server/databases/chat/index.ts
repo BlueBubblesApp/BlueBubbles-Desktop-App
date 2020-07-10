@@ -69,6 +69,7 @@ export class ChatRepository {
         message.attachments = [];
         message.chats = [chat];
         message.hasAttachments = hasAttachments;
+        message.hasReactions = false;
 
         // Handle ID is null for anything that is from ourselves
         message.handleId = null;
@@ -118,6 +119,11 @@ export class ChatRepository {
         const params: FindManyOptions<Chat> = { relations: ["participants"] };
         if (guid) params.where = { guid };
         return repo.find(params);
+    }
+
+    async getMessageReactions(message: Message): Promise<Message[]> {
+        const repo = this.db.getRepository(Message);
+        return repo.find({ relations: ["handle"], where: { associatedMessageGuid: message.guid } });
     }
 
     async getMessages({
@@ -259,10 +265,11 @@ export class ChatRepository {
         message.groupActionType = res.groupActionType;
         message.isExpired = res.isExpired;
         message.associatedMessageGuid = res.associatedMessageGuid ? res.associatedMessageGuid.split("/")[1] : null;
-        message.associatedMessageType = res.associatedMessageType ?? 0;
+        message.associatedMessageType = res.associatedMessageType;
         message.expressiveSendStyleId = res.expressiveSendStyleId;
         message.timeExpressiveSendStyleId = res.timeExpressiveSendStyleId ?? 0;
         message.hasAttachments = Object.keys(res).includes("attachments") && res.attachments.length > 0;
+        message.hasReactions = false;
         message.chats = (res.chats ?? []).map(chat => ChatRepository.createChatFromResponse(chat));
         message.handle = res.handle ? ChatRepository.createHandleFromResponse(res.handle) : null;
         message.attachments = (res.attachments ?? []).map(attachment =>
@@ -393,6 +400,26 @@ export class ChatRepository {
         // Save the attachments
         for (let i = 0; i < (theMessage.attachments ?? []).length; i += 1) {
             theMessage.attachments[i] = await this.saveAttachment(savedChat, theMessage, theMessage.attachments[i]);
+        }
+
+        // If this is a reaction, we want to update the associated message
+        if (theMessage.associatedMessageGuid)
+            await repo.update({ guid: theMessage.associatedMessageGuid }, { hasReactions: true });
+
+        // If this isn't a regular message, and not already marked as as having reactions,
+        // see if we can find any to be 100% sure hasReactions is correct.
+        // This is a bit extra processing up front. But it helps when displaying via the UI
+        if (
+            theMessage.text &&
+            !theMessage.associatedMessageGuid &&
+            !theMessage.hasReactions &&
+            !theMessage.associatedMessageType
+        ) {
+            const reactionMessage = await repo.findOne({ where: { associatedMessageGuid: theMessage.guid } });
+            if (reactionMessage) {
+                theMessage.hasReactions = true;
+                await repo.update({ guid: theMessage.guid }, { hasReactions: true });
+            }
         }
 
         return theMessage;

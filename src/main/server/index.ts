@@ -176,20 +176,21 @@ export class BackendServer {
     }
 
     async fetchContactsFromServerDb(): Promise<void> {
+        console.log("Fetching contacts from server's Contacts Database...");
+
         // First, let's get all the handle addresses
         const handles = await this.chatRepo.getHandles();
 
         // Second, fetch the corresponding contacts from the server
-        console.log("Fetching contacts from server's database");
         const results: ResponseFormat = await new Promise((resolve, _) =>
             this.socketService.server.emit("get-contacts-from-db", handles, resolve)
         );
 
-        console.log(`Received response with status code, ${results.status}`);
-        if (results.status !== 200) return;
+        if (results.status !== 200) throw new Error(results.error.message);
 
-        // Find the corresponding results, and update accordingly
         const data = results.data as (HandleResponse & { firstName: string; lastName: string })[];
+        console.log(`Found ${data.length} contacts from server's Contacts Database. Saving.`);
+
         for (const result of data) {
             for (let i = 0; i < handles.length; i += 1) {
                 if (result.address === handles[i].address) {
@@ -207,20 +208,24 @@ export class BackendServer {
             }
         }
 
-        console.log(`Finished download`);
+        console.log("Finished importing contacts from server. Reloading window.");
         this.window.reload();
     }
 
     async fetchContactsFromServerVcf(): Promise<void> {
+        console.log("Fetching contacts from server's Contacts App...");
+
         // First, fetch the corresponding contacts from the server
         const results: ResponseFormat = await new Promise((resolve, _) =>
             this.socketService.server.emit("get-contacts-from-vcf", null, resolve)
         );
 
         if (results.status !== 200) throw new Error(results.error.message);
+        console.log("Parsing VCF file from server");
 
         // Parse the contacts
         const contacts = parseVCards(results.data as string);
+        console.log(`Found ${contacts.length} contacts in VCF file. Saving.`);
 
         // Get handles and compare
         const handles = await this.chatRepo.getHandles();
@@ -232,6 +237,7 @@ export class BackendServer {
                     const updateData: DeepPartial<Handle> = {};
                     if (contact.firstName) updateData.firstName = contact.firstName;
                     if (contact.lastName) updateData.lastName = contact.lastName;
+                    if (contact.avatar) updateData.avatar = contact.avatar;
 
                     // Update the user only if there a non-null name
                     if (Object.keys(updateData).length > 0) await this.chatRepo.updateHandle(handle, updateData);
@@ -239,6 +245,7 @@ export class BackendServer {
             }
         }
 
+        console.log("Finished importing contacts from server. Reloading window.");
         this.window.reload();
     }
 
@@ -319,6 +326,7 @@ export class BackendServer {
                     await this.chatRepo.saveMessage(savedChat, msg);
                 } catch (ex) {
                     console.error(`Failed to save message, [${message.guid}]`);
+                    console.log(ex);
                 }
             }
 
@@ -341,8 +349,8 @@ export class BackendServer {
         this.configRepo.set("lastFetch", now);
 
         // Fetch contacts
-        // this.fetchContactsFromServerVcf();
-        this.fetchContactsFromServerDb();
+        this.fetchContactsFromServerVcf();
+        // this.fetchContactsFromServerDb();
     }
 
     private startConfigListeners() {
@@ -482,6 +490,7 @@ export class BackendServer {
             this.emitToUI(event, emitData);
         });
 
+        ipcMain.handle("get-reactions", async (_, message) => this.chatRepo.getMessageReactions(message));
         ipcMain.handle("create-message", async (_, payload) => ChatRepository.createMessage(payload));
         ipcMain.handle("save-message", async (_, payload) => this.chatRepo.saveMessage(payload.chat, payload.message));
         ipcMain.handle("send-message", async (_, payload) => {

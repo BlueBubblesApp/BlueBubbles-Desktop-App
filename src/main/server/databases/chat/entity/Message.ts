@@ -79,8 +79,8 @@ export class Message {
     @Column({ type: "text", nullable: true })
     associatedMessageGuid: string;
 
-    @Column({ type: "text", nullable: false, default: 0 })
-    associatedMessageType: number;
+    @Column({ type: "text", nullable: true })
+    associatedMessageType: string;
 
     @Column({ type: "text", nullable: true })
     expressiveSendStyleId: string;
@@ -90,6 +90,9 @@ export class Message {
 
     @Column({ type: "integer", transformer: BooleanTransformer, default: false })
     hasAttachments: boolean;
+
+    @Column({ type: "integer", transformer: BooleanTransformer, default: false })
+    hasReactions: boolean;
 
     @ManyToOne(type => Handle)
     @JoinColumn({ name: "handleId", referencedColumnName: "ROWID" })

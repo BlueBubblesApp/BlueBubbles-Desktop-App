@@ -7,7 +7,7 @@ export const mergeUint8Arrays = (first: Uint8Array, second: Uint8Array) => {
     return temp;
 };
 
-type Contact = { firstName: string; lastName: string; address: string };
+type Contact = { firstName: string; lastName: string; address: string; avatar: string };
 export const parseVCards = (vcf: string): Contact[] => {
     const parsed: any[] = vCard.parse(vcf);
 
@@ -16,6 +16,7 @@ export const parseVCards = (vcf: string): Contact[] => {
         const nameData = contact.get("n").toJSON();
         const lastName = nameData[3][0].replace(/\?\?/, "");
         const firstName = nameData[3][1].replace(/\?\?/, "");
+        const photo = contact.get("photo");
         let numbers = contact.get("tel") ?? [];
         let emails = contact.get("email") ?? [];
 
@@ -23,13 +24,23 @@ export const parseVCards = (vcf: string): Contact[] => {
         if (!Array.isArray(numbers)) numbers = [numbers];
         if (!Array.isArray(emails)) emails = [emails];
 
+        // Parse out photo
+        let avatar = null;
+        if (photo) {
+            const photoData = photo.toJSON();
+            if (photoData[2] === "text" && photoData[1].encoding.toLowerCase() === "base64") {
+                avatar = `data:image/${photoData[1].type};base64,${photoData[3]}`;
+            }
+        }
+
         // Create entries for phone numbers
         for (const addressData of numbers) {
             const addressList = addressData.toJSON();
             contacts.push({
                 firstName,
                 lastName,
-                address: addressList[3]
+                address: addressList[3],
+                avatar
             });
         }
 
@@ -39,7 +50,8 @@ export const parseVCards = (vcf: string): Contact[] => {
             contacts.push({
                 firstName,
                 lastName,
-                address: emailList[3]
+                address: emailList[3],
+                avatar
             });
         }
     }
