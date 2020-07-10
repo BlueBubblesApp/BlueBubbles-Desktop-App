@@ -66,6 +66,6 @@ export const sanitizeAddress = (text: string) => {
     output = output.replace(/-/g, ""); // Replace dashes
     output = output.replace(/\(/g, ""); // Replace open parenthesis
     output = output.replace(/(\()|(\))/g, ""); // Replace open/close parenthesis
-    output = output.replace("/ /g", ""); // Replace spaces
+    output = output.replace(/ /g, ""); // Replace spaces
     return output.trim();
 };
