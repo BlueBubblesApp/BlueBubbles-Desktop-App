@@ -77,6 +77,8 @@ class LeftConversationsNav extends React.Component<unknown, State> {
      */
     async updateLastMessage(message: DBMessage) {
         if (!message.chats || message.chats.length === 0) return;
+        // Skip adding any reactions
+        if (message.associatedMessageGuid) return;
 
         // Add the chat to the state, if needed
         const chats = message.chats as Chat[];
@@ -119,6 +121,10 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                     where: [
                         {
                             statement: "message.text IS NOT NULL",
+                            args: null
+                        },
+                        {
+                            statement: "message.associatedMessageType IS NULL",
                             args: null
                         }
                     ]

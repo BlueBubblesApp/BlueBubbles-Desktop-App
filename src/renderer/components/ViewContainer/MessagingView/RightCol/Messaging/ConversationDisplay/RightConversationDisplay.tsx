@@ -24,6 +24,8 @@ type State = {
 
 type Message = DBMessage & {
     tempGuid: string;
+    reactions: DBMessage[];
+    reactionsChecked: boolean;
 };
 
 const getChatEvent = (message: Message) => {
@@ -39,6 +41,26 @@ const getChatEvent = (message: Message) => {
     return null;
 };
 
+const deduplicateReactions = (reactions: DBMessage[]) => {
+    const uniqueReactions: { [key: string]: DBMessage } = {};
+    for (const reaction of reactions) {
+        // Let's build a unique string representing the person who made the reaction
+        // We can't only use handleId because it's inconsistant for groups vs. single conversations
+        // We are going to use a combination of handleId and isFromMe
+        const key = `${reaction.handleId ?? "none"}:${reaction.isFromMe}`;
+
+        // Next, let's check if the key exists in the tracker object (uniqueReactions)
+        // If it doesn't exist, just add it. Otherwise, compare the date before adding/replacing
+        if (!Object.keys(uniqueReactions).includes(key)) {
+            uniqueReactions[key] = reaction;
+        } else if (reaction.dateCreated > uniqueReactions[key].dateCreated) {
+            uniqueReactions[key] = reaction;
+        }
+    }
+
+    return Object.values(uniqueReactions);
+};
+
 class RightConversationDisplay extends React.Component<Props, State> {
     constructor(props) {
         super(props);
@@ -48,9 +70,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
             messages: [],
             isReactionsOpen: false
         };
-
-        this.clickNHold = this.clickNHold.bind(this);
-        this.closeReactionView = this.closeReactionView.bind(this);
     }
 
     componentDidMount() {
@@ -123,6 +142,32 @@ class RightConversationDisplay extends React.Component<Props, State> {
         });
     }
 
+    async fetchReactions(messages: Message[]) {
+        const updatedMessages = [...messages];
+        const stateMessages = [...this.state.messages];
+        let hasUpdates = false;
+        for (let i = 0; i < updatedMessages.length; i += 1) {
+            // Fetch the message reactions
+            updatedMessages[i].reactions = await ipcRenderer.invoke("get-reactions", updatedMessages[i]);
+            if (updatedMessages[i].reactions.length > 0) hasUpdates = true;
+
+            // Since a person can change their reaction, it creates 1 "message" per change
+            // This will cause multiple reactions per-person if not de-duplicated. Let's do that.
+            updatedMessages[i].reactions = deduplicateReactions(updatedMessages[i].reactions);
+
+            // Find the corresponding state message and update it
+            for (let x = 0; x < stateMessages.length; x += 1) {
+                if (stateMessages[x].guid === updatedMessages[i].guid) {
+                    stateMessages[x].reactions = updatedMessages[i].reactions;
+                    break;
+                }
+            }
+        }
+
+        // Update the state with the new message reactions
+        if (hasUpdates) this.setState({ messages: stateMessages });
+    }
+
     chatChange() {
         // Reset the messages
         this.setState({ messages: [] }, () => {
@@ -170,7 +215,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
         }
 
         // De-duplicate the messages (as a fail-safe)
-        const outputMessages = [];
+        const outputMessages: Message[] = [];
         for (const i of updatedMessages) {
             let exists = false;
             for (const k of outputMessages) {
@@ -183,8 +228,46 @@ class RightConversationDisplay extends React.Component<Props, State> {
             if (!exists) outputMessages.push(i);
         }
 
+        // For each message, check if there are any reactions for it
+        const messageList: Message[] = [];
+        const reactionList: Message[] = [];
+        for (let i = 0; i < outputMessages.length; i += 1) {
+            console.log(outputMessages[i].text);
+            console.log(outputMessages[i].hasReactions);
+            if (
+                outputMessages[i].hasReactions &&
+                !outputMessages[i].reactionsChecked &&
+                !outputMessages[i].associatedMessageGuid
+            ) {
+                // Set flags telling the FE to not fetch reactions for them again
+                outputMessages[i].reactionsChecked = true;
+                outputMessages[i].reactions = [];
+
+                // Add to list
+                messageList.push(outputMessages[i]);
+            } else if (outputMessages[i].associatedMessageGuid) {
+                reactionList.push(outputMessages[i]);
+            }
+        }
+
+        // For each reaction, find the corresponding message, and merge the reactions
+        for (const reaction of reactionList) {
+            for (let i = 0; i < outputMessages.length; i += 1) {
+                if (reaction.associatedMessageGuid === outputMessages[i].guid) {
+                    outputMessages[i].reactions = deduplicateReactions([...outputMessages[i].reactions, reaction]);
+                    break;
+                }
+            }
+        }
+
         // Update the state (and wait for it to finish)
-        await new Promise((resolve, _) => this.setState({ messages: outputMessages }, resolve));
+        await new Promise((resolve, _) =>
+            this.setState({ messages: outputMessages.filter(i => !i.associatedMessageGuid) }, resolve)
+        );
+
+        // Asynchronously fetch the reactions
+        this.fetchReactions(messageList);
+
         return true;
     }
 
@@ -198,11 +281,9 @@ class RightConversationDisplay extends React.Component<Props, State> {
     }
 
     clickNHold(message) {
-        console.log("Open Reaction View Now");
-        console.log(message.guid);
-
         const parent = document.getElementById(message.guid);
         parent.classList.toggle("activeReactionMessage");
+
         this.setState({ isReactionsOpen: true });
     }
 
@@ -253,7 +334,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                 {isLoading ? <div id="loader" /> : null}
 
                 {this.state.isReactionsOpen ? (
-                    <div id="reactionOverlay" onClick={this.closeReactionView}>
+                    <div id="reactionOverlay" onClick={() => this.closeReactionView}>
                         <div id="reactionParticipantsDiv">
                             <ReactionParticipant reactionSender="Maxwell" reactionType="Like" />
                         </div>
@@ -382,7 +463,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                 <ClickNHold
                                     time={0.8}
                                     onStart={this.start}
-                                    onClickNHold={this.clickNHold.bind(this, message)}
+                                    onClickNHold={() => this.clickNHold(message)}
                                     onEnd={this.end}
                                 >
                                     <MessageBubble
