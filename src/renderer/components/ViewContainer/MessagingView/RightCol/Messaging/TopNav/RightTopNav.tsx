@@ -20,21 +20,12 @@ export default function RightTopNav({ chat }: Props) {
             </div>
             <div id="recipDiv">
                 {chat
-                    ? participants.map((item, i) => {
-                          if (participants.length === i + 1) {
-                              return (
-                                  <div key={item}>
-                                      <p>{`${item}`}</p>{" "}
-                                  </div>
-                              );
-                          }
-                          return (
-                              <div key={item}>
-                                  <p>{`${item},`}</p>{" "}
-                              </div>
-                          );
-                      })
-                    : null}
+                    ? participants.map((item, i) => (
+                          <div key={`${item}-${i + 1}`}>
+                              <p>{`${item}${participants.length === i + 1 ? "" : ","}`}</p>{" "}
+                          </div>
+                     ) : null
+                 }
             </div>
             <div id="convoDetailsDiv">
                 <p>Details</p>
