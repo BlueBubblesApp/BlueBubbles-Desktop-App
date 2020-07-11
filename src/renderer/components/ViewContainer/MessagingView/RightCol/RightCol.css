@@ -1,7 +1,6 @@
 .RightCol-Mes {
     height: 100%;
     width: 100%;
-    background-color: #4c4c4c;
     display: flex;
     flex-direction: column;
     justify-content: space-between;

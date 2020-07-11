@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, ipcRenderer } from "electron";
 import * as path from "path";
 import * as url from "url";
 
@@ -53,6 +53,14 @@ const createWindow = async () => {
 
     win.on("unmaximize", () => {
         if (win && win.webContents) win.webContents.send("unmaximized");
+    });
+
+    win.on("blur", () => {
+        win.webContents.send("blurred");
+    });
+
+    win.on("focus", () => {
+        win.webContents.send("focused");
     });
 
     BlueBubbles.window = win;

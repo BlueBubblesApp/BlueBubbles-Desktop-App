@@ -56,6 +56,30 @@ class TitleBar extends React.Component<object, TitleBarProps> {
         ipcRenderer.on("config-update", (_, args) => {
             this.setState({ theme: args.theme });
         });
+
+        ipcRenderer.on("focused", (_, args) => {
+            document.getElementById("TitleBarLeft").classList.remove("TitleBarLeftBlurred");
+            document.getElementById("TitleBarRight").classList.remove("TitleBarRightBlurred");
+            document.getElementById("close-button").style.backgroundColor = "#fc4e50";
+            document.getElementById("minimize-button").style.backgroundColor = "#febe30";
+            try {
+                document.getElementById("maximize-button").style.backgroundColor = "#38d744";
+            } catch {
+                document.getElementById("unmaximize-button").style.backgroundColor = "#38d744";
+            }
+        });
+
+        ipcRenderer.on("blurred", (_, args) => {
+            document.getElementById("TitleBarLeft").classList.add("TitleBarLeftBlurred");
+            document.getElementById("TitleBarRight").classList.add("TitleBarRightBlurred");
+            document.getElementById("close-button").style.backgroundColor = "grey";
+            document.getElementById("minimize-button").style.backgroundColor = "grey";
+            try {
+                document.getElementById("maximize-button").style.backgroundColor = "grey";
+            } catch {
+                document.getElementById("unmaximize-button").style.backgroundColor = "grey";
+            }
+        });
     }
 
     render() {

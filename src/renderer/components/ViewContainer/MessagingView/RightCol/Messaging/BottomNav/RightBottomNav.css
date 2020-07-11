@@ -5,6 +5,11 @@
     background-color: var(--secondary-color);
     align-items: center;
     z-index: 2;
+    transition: ease-in-out 0.1s;
+}
+
+.RightBottomNavBlurred {
+    background-color: var(--secondary-blurred-color) !important;
 }
 
 #leftAttachmentButton {
@@ -57,7 +62,7 @@
 }
 
 *::placeholder {
-    color: #939292;
+    color: var(--placeholder-color);
 }
 
 #rightBottomButton {

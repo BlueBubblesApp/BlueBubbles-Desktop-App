@@ -13,7 +13,6 @@ export default function RightTopNav({ chat }: Props) {
     const participants = (chat?.participants ?? []).map(handle =>
         getSender(handle, (chat?.participants ?? []).length === 1)
     );
-
     return (
         <div className="RightTopNav">
             <div id="toDiv">

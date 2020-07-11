@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import * as React from "react";
 import "./LeftCol.css";
 import { ipcRenderer } from "electron";
@@ -24,6 +25,32 @@ class LeftCol extends React.Component<object, LeftColProps> {
 
         ipcRenderer.on("config-update", (_, args) => {
             this.setState({ theme: args.theme });
+        });
+
+        ipcRenderer.on("focused", (_, args) => {
+            document.getElementsByClassName("LeftCol-Mes")[0].classList.remove("LeftCol-Mes-Blurred");
+            document.getElementsByClassName("RightTopNav")[0].classList.remove("RightTopNavBlurred");
+            try {
+                document.getElementById("newMessageRecipInput").classList.remove("newMessageRecipInputBlurred");
+                document
+                    .getElementById("convoDetailsDiv")
+                    .style.setProperty("--faded-div-color", "var(--secondary-color)");
+            } catch {
+                // Do nothing
+            }
+        });
+
+        ipcRenderer.on("blurred", (_, args) => {
+            document.getElementsByClassName("LeftCol-Mes")[0].classList.add("LeftCol-Mes-Blurred");
+            document.getElementsByClassName("RightTopNav")[0].classList.add("RightTopNavBlurred");
+            try {
+                document.getElementById("newMessageRecipInput").classList.add("newMessageRecipInputBlurred");
+                document
+                    .getElementById("convoDetailsDiv")
+                    .style.setProperty("--faded-div-color", "var(--secondary-blurred-color)");
+            } catch {
+                // Do nothing
+            }
         });
     }
 

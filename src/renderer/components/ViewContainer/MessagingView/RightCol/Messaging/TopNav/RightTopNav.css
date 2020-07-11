@@ -2,9 +2,13 @@
     height: 35px;
     min-height: 35px;
     display: flex;
-    /* align-items: center; */
     width: 100%;
     background-color: var(--secondary-color);
+    transition: ease-in-out 0.1s;
+}
+
+.RightTopNavBlurred {
+    background-color: var(--secondary-blurred-color) !important;
 }
 
 #toDiv {
@@ -43,9 +47,11 @@
     right: 65px;
     top: 1px;
     content: "";
-    background: linear-gradient(to left, var(--secondary-color) 30%, rgba(255, 255, 255, 0) 80%);
-    pointer-events: none; /* so the text is still selectable */
+    background: linear-gradient(to left, var(--faded-div-color) 30%, rgba(255, 255, 255, 0) 80%);
+    pointer-events: none;
+    transition: ease-in-out 0.1s;
 }
+
 #recipDiv > div {
     display: flex;
     align-items: center;
@@ -71,10 +77,6 @@
     background: rgba(0, 122, 255, 0.8);
 }
 
-#recipDiv > div:last-child > p {
-    /* Maybe get rid of comma on last child here? */
-}
-
 #convoDetailsDiv {
     width: 60px;
     display: flex;
@@ -83,6 +85,8 @@
     justify-content: flex-end;
     margin-right: 1em;
     margin-left: 0.5em;
+    --faded-div-color: var(--secondary-color);
+    transition: ease-in-out 0.1s;
 }
 
 #convoDetailsDiv > p {

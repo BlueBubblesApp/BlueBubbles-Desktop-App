@@ -18,6 +18,16 @@ class LeftTopNav extends React.Component<object, LeftTopNavState> {
         };
     }
 
+    componentDidMount() {
+        ipcRenderer.on("focused", (_, args) => {
+            document.getElementsByClassName("LeftTopNav-Mes")[0].classList.remove("LeftTopNav-Mes-Blurred");
+        });
+
+        ipcRenderer.on("blurred", (_, args) => {
+            document.getElementsByClassName("LeftTopNav-Mes")[0].classList.add("LeftTopNav-Mes-Blurred");
+        });
+    }
+
     // eslint-disable-next-line class-methods-use-this
     handleNewMessage() {
         ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: null });

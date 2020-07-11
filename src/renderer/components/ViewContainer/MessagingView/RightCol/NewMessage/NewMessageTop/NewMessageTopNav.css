@@ -91,9 +91,11 @@
     font-size: 14px;
     color: var(--main-title-color);
     background-color: var(--secondary-color);
+    transition: ease-in-out 0.1s;
 }
 
-#newMessageRecipInput:focus {
+.newMessageRecipInputBlurred {
+    background-color: var(--secondary-blurred-color) !important;
 }
 
 #closeNewChatDiv {
