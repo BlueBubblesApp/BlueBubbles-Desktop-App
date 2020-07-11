@@ -335,7 +335,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                 {isLoading ? <div id="loader" /> : null}
 
                 {this.state.isReactionsOpen ? (
-                    <div id="reactionOverlay" onClick={() => this.closeReactionView}>
+                    <div id="reactionOverlay" onClick={() => this.closeReactionView()}>
                         <div id="reactionParticipantsDiv">
                             <ReactionParticipant reactionSender="Maxwell" reactionType="Like" />
                         </div>
