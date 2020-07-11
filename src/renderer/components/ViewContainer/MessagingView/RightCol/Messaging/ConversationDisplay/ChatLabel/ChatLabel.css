@@ -5,6 +5,7 @@
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
+    animation: fade 0.25s ease-in-out;
 }
 
 .ChatLabel > p {

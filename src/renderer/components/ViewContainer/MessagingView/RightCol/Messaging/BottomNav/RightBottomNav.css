@@ -46,13 +46,13 @@
     border-radius: 25px;
     border: none;
     width: 97%;
-    padding: 3px 5px 3px 8px;
+    padding: 3px 35px 3px 8px;
     font-family: "SF UI Display Bold";
     font-size: 15px;
     color: var(--main-title-color);
     outline: none;
     border: 1px solid var(--sub-title-color);
-    margin: 0px 12px 0px 12px;
+    margin: 0px 2px 0px 12px;
     background-color: var(--secondary-color);
 }
 
@@ -61,7 +61,7 @@
 }
 
 #rightBottomButton {
-    margin-right: 10px;
+    margin-right: 2px;
     width: 45px;
     height: 100%;
     display: flex;
@@ -73,6 +73,18 @@
     margin-bottom: 2px;
     height: 28px;
     transition: all 0.3s ease;
+}
+
+#emojiPickerButton {
+    position: absolute;
+    right: 54px;
+    fill: var(--sub-title-color);
+    transition: ease-in-out 0.1s;
+}
+
+#emojiPickerButton:hover {
+    cursor: pointer;
+    opacity: 0.65;
 }
 
 @-webkit-keyframes swingY {
@@ -133,4 +145,126 @@
     -webkit-animation-iteration-count: infinite;
     animation-iteration-count: infinite;
     cursor: pointer;
+}
+
+#recordVoiceMessage {
+    fill: var(--sub-title-color);
+}
+
+#recordVoiceMessage:hover {
+    cursor: pointer;
+}
+
+.bar1Hover {
+    animation: bar1;
+    animation-duration: 0.5s;
+    animation-iteration-count: infinite;
+    transform-origin: center;
+}
+
+.bar2Hover {
+    animation: bar2;
+    animation-duration: 0.5s;
+    animation-iteration-count: infinite;
+    transform-origin: center;
+}
+
+.bar3Hover {
+    animation: bar3;
+    animation-duration: 0.5s;
+    animation-iteration-count: infinite;
+    transform-origin: center;
+}
+
+.bar4Hover {
+    animation: bar4;
+    animation-duration: 0.5s;
+    animation-iteration-count: infinite;
+    transform-origin: center;
+}
+
+.bar5Hover {
+    animation: bar5;
+    animation-duration: 0.5s;
+    animation-iteration-count: infinite;
+    transform-origin: center;
+}
+
+.bar6Hover {
+    animation: bar6;
+    animation-duration: 0.5s;
+    animation-iteration-count: infinite;
+    transform-origin: center;
+}
+
+@keyframes bar1 {
+    0% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(3.2);
+    }
+    100% {
+        transform: scaleY(1);
+    }
+}
+
+@keyframes bar2 {
+    0% {
+        transform: scaleY(0.8);
+    }
+    50% {
+        transform: scaleY(1.2);
+    }
+    100% {
+        transform: scaleY(0.8);
+    }
+}
+
+@keyframes bar3 {
+    0% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(0.4);
+    }
+    100% {
+        transform: scaleY(1);
+    }
+}
+
+@keyframes bar4 {
+    0% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(2.5);
+    }
+    100% {
+        transform: scaleY(1);
+    }
+}
+
+@keyframes bar5 {
+    0% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(0.6);
+    }
+    100% {
+        transform: scaleY(1);
+    }
+}
+
+@keyframes bar6 {
+    0% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(3.2);
+    }
+    100% {
+        transform: scaleY(1);
+    }
 }

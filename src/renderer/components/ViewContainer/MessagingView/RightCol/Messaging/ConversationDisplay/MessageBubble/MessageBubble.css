@@ -23,6 +23,8 @@
     align-items: flex-start;
     flex-direction: column;
     margin: 0 30% 0 13px;
+    animation: fade 0.25s ease-in-out;
+    transition: ease-in-out 0.25s;
 }
 
 .IncomingMessage > .message {
@@ -51,6 +53,8 @@
     align-items: flex-end;
     flex-direction: column;
     margin: 0 13px 0 30%;
+    animation: fade 0.25s ease-in-out;
+    transition: ease-in-out 0.25s;
 }
 
 .OutgoingMessage > .message {
@@ -100,6 +104,7 @@
     color: white;
     background-attachment: fixed;
     position: relative;
+    --hide-pseudo: "1";
 }
 
 .OutgoingMessage .message:active {
@@ -110,6 +115,7 @@
 }
 
 .OutgoingMessage .message.tail:before {
+    opacity: var(--hide-pseudo);
     content: "";
     position: absolute;
     z-index: 0;
@@ -120,9 +126,11 @@
     background-color: var(--outgoing-message-color);
     background-attachment: fixed;
     border-bottom-left-radius: 15px;
+    transition: ease-in-out 0.45s;
 }
 
 .OutgoingMessage .message.tail:after {
+    opacity: var(--hide-pseudo);
     content: "";
     position: absolute;
     z-index: 1;
@@ -132,6 +140,7 @@
     height: 20px;
     background: var(--background-color);
     border-bottom-left-radius: 10px;
+    transition: ease-in-out 0.45s;
 }
 
 /* Incoming message tails */
@@ -140,6 +149,7 @@
 }
 
 .IncomingMessage .message.tail:before {
+    opacity: var(--hide-pseudo);
     content: "";
     position: absolute;
     z-index: 0;
@@ -149,9 +159,11 @@
     width: 20px;
     background: var(--incoming-message-color);
     border-bottom-right-radius: 15px;
+    transition: ease-in-out 0.25s;
 }
 
 .IncomingMessage .message.tail:after {
+    opacity: var(--hide-pseudo);
     content: "";
     position: absolute;
     z-index: 1;
@@ -161,6 +173,7 @@
     height: 20px;
     background: var(--background-color);
     border-bottom-right-radius: 10px;
+    transition: ease-in-out 0.25s;
 }
 
 .Attachment {
@@ -177,6 +190,7 @@
     align-items: flex-end;
     flex-direction: column;
     margin: 0 13px 0 0;
+    animation: fade 0.25s ease-in-out;
 }
 
 .IncomingAttachment {
@@ -185,6 +199,7 @@
     align-items: flex-start;
     flex-direction: column;
     margin: 0 0 0 13px;
+    animation: fade 0.25s ease-in-out;
 }
 
 .IncomingLink {
@@ -244,4 +259,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+@keyframes fade {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }

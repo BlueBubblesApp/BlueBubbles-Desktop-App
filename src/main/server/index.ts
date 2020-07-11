@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow, shell } from "electron";
+import { ipcMain, BrowserWindow, shell, app } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as path from "path";
@@ -510,6 +510,15 @@ export class BackendServer {
         // Handle Opening Link
         ipcMain.handle("open-link", async (_, link) => {
             require("electron").shell.openExternal(link);
+        });
+
+        // Handle Emoji Picker
+        ipcMain.handle("open-emoji-picker", async _ => {
+            if (app.isEmojiPanelSupported) {
+                app.showEmojiPanel();
+            } else {
+                console.log("Doesnt support emojis");
+            }
         });
 
         // Handle setting last viewed date for a chat
