@@ -68,4 +68,26 @@
     z-index: -1;
     margin-top: 2px;
     margin-left: 1px;
+    transform-origin: center;
+}
+
+#composeIcon:hover {
+    cursor: pointer;
+    animation: shake;
+    animation-duration: 0.7s;
+}
+
+@keyframes shake {
+    0% {
+        transform: rotate(0deg);
+    }
+    33% {
+        transform: rotate(-20deg);
+    }
+    67% {
+        transform: rotate(20deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
 }
