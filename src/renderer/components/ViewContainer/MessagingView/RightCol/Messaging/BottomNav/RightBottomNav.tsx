@@ -39,8 +39,9 @@ class RightBottomNav extends React.Component<Props, State> {
     }
 
     handleMessageChange = event => {
+        // Capitalize the first letter of input
         this.setState({
-            enteredMessage: event.target.value
+            enteredMessage: event.target.value.charAt(0).toUpperCase() + event.target.value.slice(1)
         });
     };
 
@@ -100,7 +101,8 @@ class RightBottomNav extends React.Component<Props, State> {
         bar6.classList.remove("bar6Hover");
     }
 
-    openEmojiPicker() {
+    async openEmojiPicker() {
+        await document.getElementById("messageFieldInput").focus();
         ipcRenderer.invoke("open-emoji-picker");
     }
 

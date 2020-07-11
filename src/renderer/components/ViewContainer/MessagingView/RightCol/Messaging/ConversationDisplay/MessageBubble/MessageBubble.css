@@ -4,6 +4,8 @@
     font-family: unset;
     font-weight: bolder;
     margin-top: 1px;
+    animation: fade 0.25s ease-in-out;
+    transition: ease-in-out 0.25s;
 }
 
 .bigEmojis {
