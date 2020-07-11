@@ -146,3 +146,13 @@
     overflow: hidden;
     margin: auto;
 }
+
+.dynamicIcon {
+    background-color: linear-gradient(to top, #686868, #707070, #777777, #7f7f7f, #878787) !important;
+}
+
+text {
+    font-family: "SF UI Display Bold" !important;
+    font-size: 28px;
+    fill: white;
+}

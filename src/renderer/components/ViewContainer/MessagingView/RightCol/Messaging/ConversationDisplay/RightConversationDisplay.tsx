@@ -232,8 +232,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
         const messageList: Message[] = [];
         const reactionList: Message[] = [];
         for (let i = 0; i < outputMessages.length; i += 1) {
-            console.log(outputMessages[i].text);
-            console.log(outputMessages[i].hasReactions);
+            // console.log(outputMessages[i].text);
+            // console.log(outputMessages[i].hasReactions);
             if (
                 outputMessages[i].hasReactions &&
                 !outputMessages[i].reactionsChecked &&

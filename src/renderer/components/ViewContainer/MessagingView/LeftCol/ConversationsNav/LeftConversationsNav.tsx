@@ -53,6 +53,28 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         this.removeNotification(chat.guid, now);
 
         const config = { isDetailsOpen: false };
+
+        const chatParent = document.getElementById(chat.guid);
+
+        try {
+            document.getElementsByClassName("activeContact")[0].classList.remove("activeContact");
+            document.getElementsByClassName("activeStroke")[0].classList.remove("activeStroke");
+            document.getElementsByClassName("activeColor")[0].classList.remove("activeColor");
+            document.getElementsByClassName("activeColor2")[0].classList.remove("activeColor2");
+            document.getElementsByClassName("activeColor3")[0].classList.remove("activeColor3");
+        } catch {
+            // Do Nothing
+        }
+
+        chatParent.querySelector("#contactBackground").classList.add("activeContact");
+        chatParent.querySelector("#contactInitials").classList.add("activeStroke");
+        if (document.getElementsByClassName("TitleBar")[0].getAttribute("data-theme") === "light") {
+            console.log("we in");
+            chatParent.querySelector(".message-recip-example").classList.add("activeColor");
+            chatParent.querySelector(".message-snip-example").classList.add("activeColor2");
+            chatParent.querySelector(".message-time-example").classList.add("activeColor3");
+        }
+
         ipcRenderer.invoke("set-config", config);
     }
 

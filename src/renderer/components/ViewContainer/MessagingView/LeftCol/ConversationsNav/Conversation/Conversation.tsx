@@ -41,7 +41,7 @@ const Conversation = ({ chat }: ConversationProps) => {
             <div className="convo-wrap">
                 <div className="contact-card">
                     {/* <img className="contact-icon" src={ContactImage} alt="contact" /> */}
-                    <svg id="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1016 1017">
+                    {/* <svg id="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1016 1017">
                         <title>contact-icon-new</title>
                         <g id="background">
                             <path
@@ -60,6 +60,18 @@ const Conversation = ({ chat }: ConversationProps) => {
                         <g id="head">
                             <ellipse className="cls-2" cx="508" cy="325.71" rx="205.71" ry="214.16" />
                         </g>
+                    </svg> */}
+                    <svg id="testContact" className="dynamicIcon" height="50px" width="50px">
+                        <defs>
+                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                <stop className="stop1" offset="0%" stopColor="#686868" />
+                                <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                            </linearGradient>
+                        </defs>
+                        <circle id="contactBackground" fill="url(#Gradient1)" cx="50%" cy="50%" r="25px" />
+                        <text id="contactInitials" x="50%" y="33px" textAnchor="middle" stroke="white">
+                            {generateChatTitle(chat).substr(0, 1)}
+                        </text>
                     </svg>
                 </div>
                 <div className="message-prev">

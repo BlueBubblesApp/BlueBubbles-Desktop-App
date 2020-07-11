@@ -36,3 +36,24 @@
     border-radius: 5px;
     background-color: var(--outgoing-message-color);
 }
+
+.activeContact {
+    fill: white;
+}
+
+.activeStroke {
+    fill: #686868;
+    stroke: #686868;
+}
+
+.activeColor {
+    color: white !important;
+}
+
+.activeColor2 {
+    color: #d8d8d8 !important;
+}
+
+.activeColor3 {
+    color: #d8d8d8 !important;
+}
