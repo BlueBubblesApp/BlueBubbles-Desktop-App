@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 import * as React from "react";
 import { ipcRenderer } from "electron";
 
@@ -56,20 +57,69 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
         const chatParent = document.getElementById(chat.guid);
 
+        // Remove old attibutes
         try {
             document.getElementsByClassName("activeContact")[0].classList.remove("activeContact");
+        } catch {}
+
+        try {
+            document.getElementsByClassName("activeContact2")[0].classList.remove("activeContact2");
+        } catch {}
+
+        try {
             document.getElementsByClassName("activeStroke")[0].classList.remove("activeStroke");
+        } catch {}
+
+        try {
+            document.getElementsByClassName("activeStroke2")[0].classList.remove("activeStroke2");
+        } catch {}
+
+        try {
+            document.getElementsByClassName("cls-1-active")[0].classList.remove("cls-1-active");
+        } catch {}
+
+        try {
+            const p = document.querySelectorAll(".cls-2-active");
+            p.forEach(function(x) {
+                x.classList.remove("cls-2-active");
+            });
+        } catch {}
+
+        try {
             document.getElementsByClassName("activeColor")[0].classList.remove("activeColor");
             document.getElementsByClassName("activeColor2")[0].classList.remove("activeColor2");
             document.getElementsByClassName("activeColor3")[0].classList.remove("activeColor3");
-        } catch {
-            // Do Nothing
-        }
+        } catch {}
 
-        chatParent.querySelector("#contactBackground").classList.add("activeContact");
-        chatParent.querySelector("#contactInitials").classList.add("activeStroke");
+        // Add new attributes
+        try {
+            chatParent.querySelector("#aContactInitials").classList.add("activeStroke");
+        } catch {}
+
+        try {
+            chatParent.querySelector("#groupContactInitials-1").classList.add("activeStroke");
+            chatParent.querySelector("#groupContactInitials-2").classList.add("activeStroke2");
+        } catch {}
+
+        try {
+            chatParent.querySelector("#contactBackground0").classList.add("activeContact");
+        } catch {}
+
+        try {
+            chatParent.querySelector("#contactBackground1").classList.add("activeContact");
+            chatParent.querySelector("#contactBackground2").classList.add("activeContact2");
+        } catch {}
+
+        try {
+            chatParent.querySelector(".cls-1").classList.add("cls-1-active");
+            chatParent.querySelector(".cls-2").classList.add("cls-2-active");
+            chatParent
+                .querySelector("#head")
+                .querySelector(".cls-2")
+                .classList.add("cls-2-active");
+        } catch {}
+
         if (document.getElementsByClassName("TitleBar")[0].getAttribute("data-theme") === "light") {
-            console.log("we in");
             chatParent.querySelector(".message-recip-example").classList.add("activeColor");
             chatParent.querySelector(".message-snip-example").classList.add("activeColor2");
             chatParent.querySelector(".message-time-example").classList.add("activeColor3");

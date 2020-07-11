@@ -83,6 +83,66 @@ export const generateChatTitle = (chat: Chat) => {
     return `${title} & ${members.length - 3} others`;
 };
 
+export const generateChatIconText = (chat: Chat) => {
+    if (!chat) return "?";
+
+    // If its a group chat
+    if (chat.participants.length > 1) {
+        const groupChatInitials = ["?", "?"];
+        // First member
+        if (chat.participants[0].firstName && chat.participants[0].lastName) {
+            // eslint-disable-next-line max-len
+            groupChatInitials[0] =
+                chat.participants[0].firstName.substr(0, 1) + chat.participants[0].lastName.substr(0, 1);
+        }
+        if (!chat.participants[0].firstName && !chat.participants[0].lastName) {
+            groupChatInitials[0] = "?";
+        }
+        if (chat.participants[0].firstName && !chat.participants[0].lastName) {
+            groupChatInitials[0] = chat.participants[0].firstName.substr(0, 1);
+        }
+        if (!chat.participants[0].firstName && chat.participants[0].lastName) {
+            groupChatInitials[0] = chat.participants[0].lastName.substr(0, 1);
+        }
+
+        // Second Member
+        if (chat.participants[1].firstName && chat.participants[1].lastName) {
+            // eslint-disable-next-line max-len
+            groupChatInitials[1] =
+                chat.participants[1].firstName.substr(0, 1) + chat.participants[1].lastName.substr(0, 1);
+        }
+        if (!chat.participants[1].firstName && !chat.participants[1].lastName) {
+            groupChatInitials[1] = "?";
+        }
+        if (chat.participants[1].firstName && !chat.participants[1].lastName) {
+            groupChatInitials[1] = chat.participants[1].firstName.substr(0, 1);
+        }
+        if (!chat.participants[1].firstName && chat.participants[1].lastName) {
+            groupChatInitials[1] = chat.participants[1].lastName.substr(0, 1);
+        }
+
+        return groupChatInitials;
+    }
+
+    if (chat.participants.length === 1) {
+        if (chat.participants[0].firstName && chat.participants[0].lastName) {
+            // eslint-disable-next-line max-len
+            return chat.participants[0].firstName.substr(0, 1) + chat.participants[0].lastName.substr(0, 1);
+        }
+        if (!chat.participants[0].firstName && !chat.participants[0].lastName) {
+            return "?";
+        }
+        if (chat.participants[0].firstName && !chat.participants[0].lastName) {
+            return chat.participants[0].firstName.substr(0, 1);
+        }
+        if (!chat.participants[0].firstName && chat.participants[0].lastName) {
+            return chat.participants[0].lastName.substr(0, 1);
+        }
+    }
+
+    return "X";
+};
+
 export const sanitizeStr = (val: string) => {
     if (!val) return val;
     const objChar = String.fromCharCode(65532);

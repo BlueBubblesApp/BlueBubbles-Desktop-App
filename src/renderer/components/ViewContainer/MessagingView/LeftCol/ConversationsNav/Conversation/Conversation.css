@@ -23,22 +23,6 @@
     pointer-events: none;
 }
 
-.cls-1 {
-    fill: #686868;
-}
-
-.cls-1-active {
-    fill: white;
-}
-
-.cls-2 {
-    fill: white;
-}
-
-.cls-2-active {
-    fill: #686868;
-}
-
 #icon {
     height: 51px;
 }
@@ -151,9 +135,30 @@
     background-color: linear-gradient(to top, #686868, #707070, #777777, #7f7f7f, #878787) !important;
 }
 
-text {
+#aContactInitials {
     font-family: "M PLUS Rounded 1c" !important;
     font-weight: 500 !important;
     font-size: 23px;
+    fill: white;
+}
+
+#contactInitials {
+    font-family: "M PLUS Rounded 1c" !important;
+    font-weight: 500 !important;
+    font-size: 23px;
+    fill: red !important;
+}
+
+#groupContactInitials-1 {
+    font-family: "M PLUS Rounded 1c" !important;
+    font-weight: 500 !important;
+    font-size: 14px;
+    fill: white;
+}
+
+#groupContactInitials-2 {
+    font-family: "M PLUS Rounded 1c" !important;
+    font-weight: 500 !important;
+    font-size: 14px;
     fill: white;
 }

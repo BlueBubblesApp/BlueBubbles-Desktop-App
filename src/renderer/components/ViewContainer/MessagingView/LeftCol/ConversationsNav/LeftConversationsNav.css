@@ -41,9 +41,19 @@
     fill: white;
 }
 
+.activeContact2 {
+    fill: white;
+}
+
 .activeStroke {
-    fill: #686868;
-    stroke: #686868;
+    fill: #686868 !important;
+    stroke: #666666 !important;
+}
+
+.activeStroke2 {
+    fill: #686868 !important;
+    stroke: #666666 !important;
+    background-color: #686868 !important;
 }
 
 .activeColor {
@@ -56,4 +66,20 @@
 
 .activeColor3 {
     color: #d8d8d8 !important;
+}
+
+.cls-1 {
+    fill: #686868;
+}
+
+.cls-1-active {
+    fill: white;
+}
+
+.cls-2 {
+    fill: white;
+}
+
+.cls-2-active {
+    fill: #686868;
 }
