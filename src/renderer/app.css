@@ -15,6 +15,9 @@
         url("./fonts/SF-UI-Display-Black.woff") format("woff");
 }
 
+/* Rounded Font */
+@import url("https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500&display=swap");
+
 /* *{
   outline: 1px solid red;
 } */

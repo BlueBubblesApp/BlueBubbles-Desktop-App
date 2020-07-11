@@ -152,7 +152,8 @@
 }
 
 text {
-    font-family: "SF UI Display Bold" !important;
-    font-size: 28px;
+    font-family: "M PLUS Rounded 1c" !important;
+    font-weight: 500 !important;
+    font-size: 23px;
     fill: white;
 }
