@@ -6,7 +6,7 @@ export const getTimeText = (date: Date) => {
     return date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
 };
 
-export const getDateText = (date: Date) => {
+export const getDateText = (date: Date, useToday = false) => {
     const now = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -15,7 +15,7 @@ export const getDateText = (date: Date) => {
     const msgLocale = date.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
     const yLocale = yesterday.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
 
-    if (nowLocale === msgLocale) return getTimeText(date);
+    if (nowLocale === msgLocale) return useToday ? "Today" : getTimeText(date);
     if (yLocale === msgLocale) return "Yesterday";
     return date.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" }).slice(0, -2);
 };

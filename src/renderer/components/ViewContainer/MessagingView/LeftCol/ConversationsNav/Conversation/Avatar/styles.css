@@ -1,0 +1,9 @@
+.dynamicIcon {
+    background-color: linear-gradient(to top, #686868, #707070, #777777, #7f7f7f, #878787) !important;
+}
+
+.avatar {
+    height: 50px;
+    width: 50px;
+    border-radius: 100px;
+}

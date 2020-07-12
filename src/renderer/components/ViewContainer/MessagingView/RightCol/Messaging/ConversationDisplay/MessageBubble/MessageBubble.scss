@@ -186,6 +186,27 @@
     cursor: pointer;
 }
 
+.MapLeaflet {
+    height: 300px;
+    width: 300px;
+    animation: fadeInLeaflet 1.5s ease forwards 2s;
+}
+
+@keyframes fadeInLeaflet {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInShadow {
+    0% {
+        box-shadow: none;
+    }
+    100% {
+        box-shadow: 0 0 25px 20px rgba(0, 0, 0, 0.7);
+    }
+}
+
 .OutgoingAttachment {
     display: flex;
     justify-content: center;
