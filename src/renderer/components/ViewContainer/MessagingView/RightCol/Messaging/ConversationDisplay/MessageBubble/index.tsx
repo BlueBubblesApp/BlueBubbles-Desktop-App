@@ -2,15 +2,28 @@
 import * as React from "react";
 import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
+import { Map, Marker, Popup, TileLayer } from "react-leaflet";
+import L from "leaflet";
 import EmojiRegex from "emoji-regex";
 
 import { Message as DBMessage, Chat } from "@server/databases/chat/entity";
-import { sanitizeStr, parseUrls, getDateText, getSender } from "@renderer/utils";
+import { sanitizeStr, parseUrls, getDateText, getSender, parseAppleLocation } from "@renderer/utils";
 import UnknownImage from "@renderer/assets/img/unknown_img.png";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
-import "./MessageBubble.css";
+
+import "./MessageBubble.scss";
+import "leaflet/dist/leaflet.css";
+
+// If we don't do this, the marker won't show
+// eslint-disable-next-line no-underscore-dangle
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+    iconUrl: require("leaflet/dist/images/marker-icon.png"),
+    shadowUrl: require("leaflet/dist/images/marker-shadow.png")
+});
 
 type Message = DBMessage & {
     tempGuid: string;
@@ -131,10 +144,16 @@ const renderAttachment = (attachment: AttachmentDownload) => {
             );
         }
 
-        // if (attachment.mimeType === "text/x-vlocation") {
-        //     const longLat = parseAppleLocation(attachment.data);
-        //     return null
-        // }
+        if (attachment.mimeType === "text/x-vlocation") {
+            const longLat = parseAppleLocation(attachment.data);
+            const position = [longLat.longitude, longLat.latitude];
+            return (
+                <Map center={position} zoom={13} className="Attachment MapLeaflet" key={attachment.guid}>
+                    <TileLayer url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}" />
+                    <Marker position={position} />
+                </Map>
+            );
+        }
 
         return (
             <UnsupportedMedia
