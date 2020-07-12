@@ -131,10 +131,6 @@
     margin: auto;
 }
 
-.dynamicIcon {
-    background-color: linear-gradient(to top, #686868, #707070, #777777, #7f7f7f, #878787) !important;
-}
-
 #aContactInitials {
     font-family: "M PLUS Rounded 1c" !important;
     font-weight: 500 !important;

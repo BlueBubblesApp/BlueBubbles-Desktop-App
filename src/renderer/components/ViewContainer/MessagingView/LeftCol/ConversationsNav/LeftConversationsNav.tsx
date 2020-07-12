@@ -80,9 +80,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
         try {
             const p = document.querySelectorAll(".cls-2-active");
-            p.forEach(function(x) {
-                x.classList.remove("cls-2-active");
-            });
+            p.forEach(x => x.classList.remove("cls-2-active"));
         } catch {}
 
         try {
