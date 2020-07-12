@@ -24,7 +24,7 @@ export const GroupAvatar = ({ chat }: Props) => {
             </defs>
             <circle id="contactBackground1" fill="url(#Gradient1)" cx="32%" cy="40%" r="16px" />
             {firstParticipant.avatar ? (
-                <image height="26px" width="26px" y="6px" x="4px" href={firstParticipant.avatar} />
+                <image height="26px" width="26px" y="6px" x="4px" href={firstParticipant.avatar} radius="52px" />
             ) : (
                 <text id="groupContactInitials-1" x="32%" y="25px" textAnchor="middle" stroke="white">
                     {chatIconText[0]}
@@ -33,7 +33,7 @@ export const GroupAvatar = ({ chat }: Props) => {
 
             <circle id="contactBackground2" fill="url(#Gradient1)" cx="68%" cy="60%" r="16px" />
             {secondParticipant.avatar ? (
-                <image height="26px" width="26px" y="15px" x="20px" href={secondParticipant.avatar} />
+                <image height="26px" width="26px" y="15px" x="20px" href={secondParticipant.avatar} radius="52px" />
             ) : (
                 <text id="groupContactInitials-2" x="68%" y="36px" textAnchor="middle" stroke="white">
                     {chatIconText[1]}

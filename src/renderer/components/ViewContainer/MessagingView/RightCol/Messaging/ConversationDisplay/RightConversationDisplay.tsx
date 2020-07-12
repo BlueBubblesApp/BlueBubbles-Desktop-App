@@ -456,7 +456,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                             olderMessage &&
                             message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 5 ? (
                                 <ChatLabel
-                                    text={`${getDateText(new Date(message.dateCreated))}, ${getTimeText(
+                                    text={`${getDateText(new Date(message.dateCreated), true)}, ${getTimeText(
                                         new Date(message.dateCreated)
                                     )}`}
                                 />
