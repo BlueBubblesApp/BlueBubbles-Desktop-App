@@ -5,6 +5,11 @@
     align-items: center;
     height: 100%;
     background-color: var(--sidebar-color);
+    transition: ease-in-out 0.1s;
+}
+
+.LoginViewBlurred {
+    background-color: var(--sidebar-blurred-color) !important;
 }
 
 #loginContainer {
@@ -69,7 +74,11 @@
     height: 100%;
     width: 100%;
     background-color: var(--sidebar-color);
-    animation: ease-in-out 3s;
+    animation: ease-in-out 0.1s;
+}
+
+.loadingContainerBlurred {
+    background-color: var(--sidebar-blurred-color) !important;
 }
 
 #loader {

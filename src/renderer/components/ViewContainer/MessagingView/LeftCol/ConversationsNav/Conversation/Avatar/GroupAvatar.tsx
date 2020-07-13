@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Chat, Handle } from "@server/databases/chat/entity";
 import { generateChatIconText } from "@renderer/utils";
+import { IndividualAvatar } from "./IndividualAvatar";
 
 import "./styles.css";
 
@@ -22,22 +23,96 @@ export const GroupAvatar = ({ chat }: Props) => {
                     <stop className="stop2" offset="100%" stopColor="#928E8E" />
                 </linearGradient>
             </defs>
-            <circle id="contactBackground1" fill="url(#Gradient1)" cx="32%" cy="40%" r="16px" />
+            <mask id="rmvCir">
+                <circle cx="32%" cy="40%" r="16px" fill="white" />
+                <circle cx="68%" cy="60%" r="18px" fill="black" />
+            </mask>
+            <circle className="cls-1" mask="url(#rmvCir)" fill="url(#Gradient1)" cx="32%" cy="40%" r="16px" />
             {firstParticipant.avatar ? (
-                <image height="26px" width="26px" y="6px" x="4px" href={firstParticipant.avatar} radius="52px" />
+                <image
+                    mask="url(#rmvCir)"
+                    height="26px"
+                    width="26px"
+                    y="6px"
+                    x="4px"
+                    href={firstParticipant.avatar}
+                    radius="52px"
+                />
             ) : (
-                <text id="groupContactInitials-1" x="32%" y="25px" textAnchor="middle" stroke="white">
-                    {chatIconText[0]}
-                </text>
+                <>
+                    {chatIconText[0] === "?" ? (
+                        <>
+                            <mask id="rmv1stProfile">
+                                <circle cx="32%" cy="40%" r="14px" fill="white" />
+                                <circle cx="68%" cy="60%" r="18px" fill="black" />
+                            </mask>
+                            <ellipse
+                                className="cls-2"
+                                mask="url(#rmvCir)"
+                                fill="white"
+                                cx="32%"
+                                cy="28%"
+                                rx="6px"
+                                ry="7px"
+                            />
+                            <circle
+                                className="cls-2"
+                                mask="url(#rmv1stProfile)"
+                                fill="white"
+                                cx="32%"
+                                cy="80%"
+                                r="15px"
+                            />
+                        </>
+                    ) : (
+                        <text
+                            id="groupContactInitials-1"
+                            className="cls-2"
+                            mask="url(#rmvCir)"
+                            x="32%"
+                            y="25px"
+                            textAnchor="middle"
+                            stroke="white"
+                        >
+                            {chatIconText[0]}
+                        </text>
+                    )}
+                </>
             )}
 
-            <circle id="contactBackground2" fill="url(#Gradient1)" cx="68%" cy="60%" r="16px" />
+            <circle className="cls-1" fill="url(#Gradient1)" cx="68%" cy="60%" r="16px" />
             {secondParticipant.avatar ? (
                 <image height="26px" width="26px" y="15px" x="20px" href={secondParticipant.avatar} radius="52px" />
             ) : (
-                <text id="groupContactInitials-2" x="68%" y="36px" textAnchor="middle" stroke="white">
-                    {chatIconText[1]}
-                </text>
+                <>
+                    {chatIconText[1] === "?" ? (
+                        <>
+                            <mask id="rmv2ndProfile">
+                                <circle cx="68%" cy="60%" r="14px" fill="white" />
+                            </mask>
+                            <ellipse className="cls-2" fill="white" cx="68%" cy="49%" rx="6px" ry="7px" />
+                            <circle
+                                className="cls-2"
+                                mask="url(#rmv2ndProfile)"
+                                fill="white"
+                                cx="68%"
+                                cy="100%"
+                                r="15px"
+                            />
+                        </>
+                    ) : (
+                        <text
+                            id="groupContactInitials-2"
+                            className="cls-2"
+                            x="68%"
+                            y="36px"
+                            textAnchor="middle"
+                            stroke="white"
+                        >
+                            {chatIconText[1]}
+                        </text>
+                    )}
+                </>
             )}
         </svg>
     );

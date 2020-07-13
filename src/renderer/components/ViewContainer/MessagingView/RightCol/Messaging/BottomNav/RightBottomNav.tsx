@@ -6,6 +6,7 @@ import { Chat, Message } from "@server/databases/chat/entity";
 import { generateUuid } from "@renderer/utils";
 
 import "./RightBottomNav.css";
+import { send } from "process";
 import SendIcon from "../../../../../../assets/icons/send-icon.png";
 
 const { dialog } = require("electron").remote;
@@ -54,6 +55,8 @@ class RightBottomNav extends React.Component<Props, State> {
     };
 
     async sendMessage() {
+        const sendAudio = new Audio("./resources/audio/send.mp3");
+        sendAudio.play();
         if (this.state.enteredMessage.length === 0) return;
 
         const message: Message = await ipcRenderer.invoke("create-message", {

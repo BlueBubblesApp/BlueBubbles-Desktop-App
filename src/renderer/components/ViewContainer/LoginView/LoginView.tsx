@@ -39,7 +39,7 @@ class LoginView extends React.Component<object, LoginViewState> {
 
         // Add listener for updating the state
         ipcRenderer.on("setup-update", (_, args) => {
-            if (args?.redirect) document.getElementById("TitleBarRight").classList.remove("messagingTitleBarRight");
+            if (args?.redirect) document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
 
             if (this._isMounted) {
                 this.setState(args);
@@ -69,6 +69,28 @@ class LoginView extends React.Component<object, LoginViewState> {
                 });
             }
         }
+
+        ipcRenderer.on("focused", (_, args) => {
+            document.getElementById("TitleBarRight").classList.add("loginTitleBarRight");
+            document.getElementsByClassName("LoginView")[0].classList.remove("LoginViewBlurred");
+            document.getElementById("TitleBarRight").classList.remove("LoginViewBlurred");
+            try {
+                document.getElementById("loadingContainer").classList.remove("loadingContainerBlurred");
+            } catch {
+                /* Nothing */
+            }
+        });
+
+        ipcRenderer.on("blurred", (_, args) => {
+            document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
+            document.getElementsByClassName("LoginView")[0].classList.add("LoginViewBlurred");
+            document.getElementById("TitleBarRight").classList.add("LoginViewBlurred");
+            try {
+                document.getElementById("loadingContainer").classList.add("loadingContainerBlurred");
+            } catch {
+                /* Nothing */
+            }
+        });
     }
 
     componentWillUnmount() {

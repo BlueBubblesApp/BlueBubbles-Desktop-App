@@ -1,11 +1,11 @@
-.MessagingView{
+.MessagingView {
     height: 100%;
     width: 100%;
     display: flex;
     border-radius: 25px;
 }
 
-.progressView{
+.progressView {
     height: 100%;
     width: 100%;
     display: flex;
@@ -21,7 +21,7 @@
     font-size: 2vw;
 }
 
-.messagingTitleBarRight{
+.messagingTitleBarRight {
     background-color: var(--secondary-color) !important;
 }
 
@@ -77,4 +77,8 @@
     .progressView > h1 {
         margin-top: 0;
     }
+}
+
+.TitleBarRightBlurred {
+    background-color: var(--secondary-blurred-color) !important;
 }

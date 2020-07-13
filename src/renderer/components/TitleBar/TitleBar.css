@@ -44,7 +44,7 @@
 }
 
 .TitleBarRightBlurred {
-    background-color: var(--secondary-blurred-color) !important;
+    background-color: var(--secondary-blurred-color);
 }
 
 .title-button {
