@@ -84,9 +84,11 @@ class LoginView extends React.Component<object, LoginViewState> {
         });
 
         ipcRenderer.on("blurred", (_, args) => {
-            document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
-            document.getElementsByClassName("LoginView")[0].classList.add("LoginViewBlurred");
-            document.getElementById("TitleBarRight").classList.add("LoginViewBlurred");
+            try{
+                document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
+                document.getElementsByClassName("LoginView")[0].classList.add("LoginViewBlurred");
+                document.getElementById("TitleBarRight").classList.add("LoginViewBlurred");
+            } catch{/*Nothing*/}
             try {
                 document.getElementById("loadingContainer").classList.add("loadingContainerBlurred");
             } catch {

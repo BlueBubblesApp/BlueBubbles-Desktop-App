@@ -179,11 +179,12 @@
 }
 
 .Attachment {
-    max-height: 50%;
-    max-width: 50%;
+    max-height: 40%;
+    max-width: 40%;
     border-radius: 20px;
     margin-top: 3px;
     cursor: pointer;
+    transition: ease-in .1s;
 }
 
 .MapLeaflet {
@@ -291,5 +292,27 @@
 
     100% {
         opacity: 1;
+    }
+}
+
+
+@media (min-width:1000px){
+    .Attachment{
+        max-height: 36%;
+        max-width: 36%;
+    }
+}
+
+@media (min-width:1200px){
+    .Attachment{
+        max-height: 33%;
+        max-width: 33%;
+    }
+}
+
+@media (min-width:1600px){
+    .Attachment{
+        max-height: 30%;
+        max-width: 30%;
     }
 }
