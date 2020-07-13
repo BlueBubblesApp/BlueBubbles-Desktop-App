@@ -2,7 +2,7 @@ import * as React from "react";
 import "./StorageInfo.css";
 
 type StorageInfoProps = {
-    totalAppSize: string;
+    totalAppSize: number;
     totalBaseApp: string;
     totalTexts: string;
     totalAttachments: string;

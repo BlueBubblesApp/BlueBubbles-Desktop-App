@@ -31,11 +31,11 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
         });
 
         ipcRenderer.on("focused", (_, args) => {
-            document.getElementsByClassName("RightBottomNav")[0].classList.remove("RightBottomNavBlurred");
+            try{document.getElementsByClassName("RightBottomNav")[0].classList.remove("RightBottomNavBlurred");} catch{/*Nothing*/}
         });
 
         ipcRenderer.on("blurred", (_, args) => {
-            document.getElementsByClassName("RightBottomNav")[0].classList.add("RightBottomNavBlurred");
+            try{document.getElementsByClassName("RightBottomNav")[0].classList.add("RightBottomNavBlurred");} catch{/*Nothing*/}
         });
     }
 

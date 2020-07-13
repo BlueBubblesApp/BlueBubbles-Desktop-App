@@ -1,27 +1,90 @@
-export const getStorageInformation = () => {
-    const totalAppSize = 245; // Get from fs base folder of bluebubbles app (TODO)
-    const attachmentFolderSize = 114; // Get using fs
-    const baseAppSize = 68; // Get from fs
-    const textDataSize = totalAppSize - (attachmentFolderSize + baseAppSize);
+import { type } from "os";
+import * as fs from "fs";
+import * as path from "path";
 
-    const storageInfo = [
-        {
-            totalAppSizeMB: totalAppSize
-        },
-        {
-            baseAppSizeMB: baseAppSize,
-            baseAppSizePercent: Math.round((baseAppSize / totalAppSize + Number.EPSILON) * 100) / 100
-        },
-        {
-            textDataSizeMB: textDataSize,
-            textDataSizePercent: Math.round((textDataSize / totalAppSize + Number.EPSILON) * 100) / 100
-        },
-        {
-            attachmentFolderSizeMB: attachmentFolderSize,
-            // Divide total app size by attachment size to get % attachments and round to 2 decimals
-            attachmentFolderSizePercent: Math.round((attachmentFolderSize / totalAppSize + Number.EPSILON) * 100) / 100
+export const getStorageInformation = async () => {
+    let storageInfo : StorageData = {
+        totalAppSizeMB: 0,
+        baseAppSizeMB: 0,
+        baseAppSizePercent: "",
+        textDataSizeMB: 0,
+        textDataSizePercent: "",
+        attachmentFolderSizeMB: 0,
+        attachmentFolderSizePercent: ""
+    };
+
+    const getAllFiles = function(dirPath, arrayOfFiles) {
+        let files = fs.readdirSync(dirPath)
+      
+        arrayOfFiles = arrayOfFiles || []
+      
+        files.forEach(function(file) {
+          if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+            arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles)
+          } else {
+            arrayOfFiles.push(path.join(__dirname, dirPath, file))
+          }
+        })
+      
+        return arrayOfFiles
+      }
+      
+      const convertBytes = (bytes) => {
+        const sizes = ["Bytes", "KB", "MB", "GB", "TB"]
+      
+        if (bytes === 0) {
+          return "n/a"
         }
-    ];
+      
+        const i = Math.floor(Math.log(bytes) / Math.log(1024))
+      
+        if (i === 0) {
+          return bytes + " " + sizes[i]
+        }
+      
+        return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i]
+      }
+      
+      const getTotalSize = (directoryPath) => {
+        const arrayOfFiles = getAllFiles(directoryPath,[])
+      
+        let totalSize = 0
+      
+        arrayOfFiles.forEach(function(filePath) {
+            // console.log(filePath);
+            try{totalSize += fs.statSync(filePath).size} catch(err){console.log(err)}
+          
+        })
+      
+        return convertBytes(totalSize)
+      }
+
+      let userHome = process.env.HOME;
+      const attachmentsPath = userHome + '\\Appdata\\Roaming\\Electron\\Attachments'
+      console.log(attachmentsPath)      
+      
+      const result = getTotalSize(attachmentsPath)
+      console.log(result);
+
+
+    console.log(storageInfo);
+
+    storageInfo.totalAppSizeMB = storageInfo.attachmentFolderSizeMB + storageInfo.textDataSizeMB + storageInfo.baseAppSizeMB;
+
+    storageInfo.baseAppSizePercent = (storageInfo.baseAppSizeMB / storageInfo.totalAppSizeMB).toString();
+    console.log((storageInfo.baseAppSizeMB / storageInfo.totalAppSizeMB))
+    storageInfo.textDataSizePercent = (storageInfo.textDataSizeMB / storageInfo.totalAppSizeMB).toString();
+    storageInfo.attachmentFolderSizePercent = (storageInfo.attachmentFolderSizeMB / storageInfo.totalAppSizeMB).toString();
 
     return storageInfo;
 };
+
+export type StorageData = {
+    totalAppSizeMB: number;
+    baseAppSizeMB: number;
+    baseAppSizePercent: string;
+    textDataSizeMB:number;
+    textDataSizePercent: string;
+    attachmentFolderSizeMB: number;
+    attachmentFolderSizePercent: string;
+}

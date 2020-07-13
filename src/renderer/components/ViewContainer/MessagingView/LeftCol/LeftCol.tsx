@@ -28,8 +28,8 @@ class LeftCol extends React.Component<object, LeftColProps> {
         });
 
         ipcRenderer.on("focused", (_, args) => {
-            document.getElementsByClassName("LeftCol-Mes")[0].classList.remove("LeftCol-Mes-Blurred");
-            document.getElementsByClassName("RightTopNav")[0].classList.remove("RightTopNavBlurred");
+            try{document.getElementsByClassName("LeftCol-Mes")[0].classList.remove("LeftCol-Mes-Blurred");} catch{/*Nothing*/}
+            try{document.getElementsByClassName("RightTopNav")[0].classList.remove("RightTopNavBlurred");} catch{/*Nothing*/}
             try {
                 document.getElementById("newMessageRecipInput").classList.remove("newMessageRecipInputBlurred");
                 document
@@ -41,8 +41,8 @@ class LeftCol extends React.Component<object, LeftColProps> {
         });
 
         ipcRenderer.on("blurred", (_, args) => {
-            document.getElementsByClassName("LeftCol-Mes")[0].classList.add("LeftCol-Mes-Blurred");
-            document.getElementsByClassName("RightTopNav")[0].classList.add("RightTopNavBlurred");
+            try{document.getElementsByClassName("LeftCol-Mes")[0].classList.add("LeftCol-Mes-Blurred");} catch{/*Nothing*/}
+            try{document.getElementsByClassName("RightTopNav")[0].classList.add("RightTopNavBlurred");} catch{/*Nothing*/}
             try {
                 document.getElementById("newMessageRecipInput").classList.add("newMessageRecipInputBlurred");
                 document

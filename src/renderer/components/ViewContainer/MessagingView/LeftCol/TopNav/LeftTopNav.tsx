@@ -20,11 +20,11 @@ class LeftTopNav extends React.Component<object, LeftTopNavState> {
 
     componentDidMount() {
         ipcRenderer.on("focused", (_, args) => {
-            document.getElementsByClassName("LeftTopNav-Mes")[0].classList.remove("LeftTopNav-Mes-Blurred");
+            try{document.getElementsByClassName("LeftTopNav-Mes")[0].classList.remove("LeftTopNav-Mes-Blurred");} catch{/*Nothing*/}
         });
 
         ipcRenderer.on("blurred", (_, args) => {
-            document.getElementsByClassName("LeftTopNav-Mes")[0].classList.add("LeftTopNav-Mes-Blurred");
+            try{document.getElementsByClassName("LeftTopNav-Mes")[0].classList.add("LeftTopNav-Mes-Blurred");} catch{/*Nothing*/}
         });
     }
 

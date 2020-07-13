@@ -3,21 +3,58 @@ import "./StorageTab.css";
 import SettingTitle from "./SettingTitle/SettingTitle";
 import StorageInfo from "./StorageInfo/StorageInfo";
 
-function StorageTab() {
-    function QueryAppSize() {
-        // Loop through all files, get each file size
-        // and according to file type and location add the total size counts up
-        // for the BaseApp, all Texts, and all Attachments and pass to <StorageInfo>
-    }
 
-    return (
-        <div id="StorageTab">
-            <div id="StorageTitle">
-                <h1>Storage</h1>
-            </div>
-            <StorageInfo totalAppSize="243.6" totalBaseApp="35.6" totalTexts="42.6" totalAttachments="28.2" />
-        </div>
-    );
+
+import {getStorageInformation, StorageData} from "@server/helpers/storageHandler";
+
+interface State {
+    storageInfo: StorageData;
+    isLoading: boolean;
 }
 
+class StorageTab extends React.Component<object,State> {
+    constructor(props){
+        super(props)
+
+        this.state = {
+            storageInfo: null,
+            isLoading: true
+            }
+        }
+
+    async componentDidMount(){
+        await getStorageInformation()
+            .then(res => this.setState({storageInfo : res}))
+            .then(res => this.setState({isLoading : false}))
+            .then(res => console.log("just set state"))
+
+        
+    }
+    
+
+    render(){
+        const { storageInfo } = this.state;
+        return (
+            <div id="StorageTab">
+                <div id="StorageTitle">
+                    <h1>Storage</h1>
+                </div>
+                {this.state.isLoading ? (
+                    <div className="a">Loader</div>
+                ) : (
+                <StorageInfo
+                    totalAppSize={storageInfo.totalAppSizeMB}
+                    totalBaseApp={storageInfo.baseAppSizePercent}
+                    totalTexts={storageInfo.textDataSizePercent}
+                    totalAttachments={storageInfo.attachmentFolderSizePercent}
+                />
+                )}
+            </div>
+        );
+    }
+}
+
+
+
 export default StorageTab;
+
