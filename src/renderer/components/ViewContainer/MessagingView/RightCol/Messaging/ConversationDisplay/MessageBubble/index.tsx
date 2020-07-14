@@ -3,14 +3,21 @@
 import * as React from "react";
 import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
-import { Map, Marker, Popup, TileLayer } from "react-leaflet";
+import * as path from "path";
+import { Map, Marker, TileLayer } from "react-leaflet";
 import L from "leaflet";
 import EmojiRegex from "emoji-regex";
 import ClickNHold from "react-click-n-hold";
 
+// Server imports
 import { Message as DBMessage, Chat } from "@server/databases/chat/entity";
-import { sanitizeStr, parseUrls, getDateText, getSender, parseAppleLocation } from "@renderer/utils";
+
+// Renderer imports
+import { sanitizeStr, parseUrls, getDateText, getSender, parseAppleLocation } from "@renderer/helpers/utils";
+import { supportedVideoTypes, supportedAudioTypes } from "@renderer/helpers/constants";
 import UnknownImage from "@renderer/assets/img/unknown_img.png";
+
+// Relative imports
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
@@ -48,17 +55,11 @@ type State = {
     isReactionsOpen: boolean;
 };
 
-const supportedVideoTypes = ["video/mp4", "video/m4v", "video/ogg", "video/webm", "video/x-m4v"];
-const supportedAudioTypes = [
-    "audio/wav",
-    "audio/mpeg",
-    "audio/mp4",
-    "audio/aac",
-    "audio/aacp",
-    "audio/ogg",
-    "audio/webm",
-    "audio/flac"
-];
+let subdir = "";
+if (process.env.NODE_ENV !== "production") subdir = "BlueBubbles-Desktop-App";
+
+const baseDir = path.join(remote.app.getPath("userData"), subdir);
+const attachmentsDir = path.join(baseDir, "Attachments");
 
 const isSameSender = (message1: Message, message2: Message) => {
     if (!message1 || !message2) return false;
@@ -69,19 +70,41 @@ const isSameSender = (message1: Message, message2: Message) => {
 
 const isSupportedMime = (mimeType: string) => {
     if (!mimeType || mimeType.startsWith("image")) return true;
-    return [...supportedAudioTypes, ...supportedVideoTypes, "text/x-vlocation"].includes(mimeType);
+    return mimeType.startsWith("audio") || mimeType.startsWith("video") || ["text/x-vlocation"].includes(mimeType);
 };
 
 const loadAttachmentData = (attachment: AttachmentDownload) => {
     if (!isSupportedMime(attachment.mimeType)) return null;
     if (attachment.data) return attachment.data;
-    const path = `${remote.app.getPath("userData")}/Attachments/${attachment.guid}/${attachment.transferName}`;
+    const fPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
     let encoding = "base64";
 
     // If it's a location card, read as utf-8
     if (attachment.mimeType === "text/x-vlocation") encoding = "utf-8";
 
-    return fs.readFileSync(path).toString(encoding);
+    // If it's an unsupported type, check for the converted video
+    let output = null;
+    if (
+        attachment.mimeType &&
+        (attachment.mimeType.startsWith("audio") || attachment.mimeType.startsWith("video")) &&
+        !supportedAudioTypes.includes(attachment.mimeType) &&
+        !supportedVideoTypes.includes(attachment.mimeType)
+    ) {
+        try {
+            const ext = attachment.mimeType.startsWith("video") ? "mp4" : "mp3";
+            const newPath = `${attachmentsDir}/Attachments/${attachment.guid}/${attachment.transferName.replace(
+                path.extname(attachment.transferName),
+                `.${ext}`
+            )}`;
+            output = fs.readFileSync(newPath).toString(encoding);
+        } catch (ex) {
+            /* Do nothing */
+        }
+    } else {
+        output = fs.readFileSync(fPath).toString(encoding);
+    }
+
+    return output;
 };
 
 const allEmojis = (text: string) => {
@@ -89,11 +112,11 @@ const allEmojis = (text: string) => {
 
     const parser = EmojiRegex();
     const matches = text.match(parser);
-    return matches && matches.length * 2 === text.length;
+    return matches && matches.length <= 3;
 };
 
-const openAttachment = path => {
-    ipcRenderer.invoke("open-attachment", path);
+const openAttachment = attachmentPath => {
+    ipcRenderer.invoke("open-attachment", attachmentPath);
 };
 
 const getStatusText = (message: Message) => {
@@ -112,9 +135,7 @@ const setFallbackImage = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
 
 const renderAttachment = (attachment: AttachmentDownload) => {
     if (attachment.progress === 100) {
-        const attachmentPath = `${remote.app.getPath("userData")}/Attachments/${attachment.guid}/${
-            attachment.transferName
-        }`;
+        const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
 
         // Render based on mime type
         if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
@@ -131,20 +152,24 @@ const renderAttachment = (attachment: AttachmentDownload) => {
             );
         }
 
-        if (supportedVideoTypes.includes(attachment.mimeType)) {
+        if (attachment.mimeType.startsWith("video") && attachment.data) {
+            let mime = attachment.mimeType;
+            if (!supportedVideoTypes.includes(mime)) mime = "video/mp4";
             return (
                 // eslint-disable-next-line jsx-a11y/media-has-caption
                 <video key={attachment.guid} className="Attachment" controls>
-                    <source src={`data:${attachment.mimeType};base64,${attachment.data}`} type={attachment.mimeType} />
+                    <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
                 </video>
             );
         }
 
-        if (supportedAudioTypes.includes(attachment.mimeType)) {
+        if (attachment.mimeType.startsWith("audio") && attachment.data) {
+            let mime = attachment.mimeType;
+            if (!supportedAudioTypes.includes(mime)) mime = "audio/mp3";
             return (
                 // eslint-disable-next-line jsx-a11y/media-has-caption
                 <audio key={attachment.guid} className="Attachment" controls>
-                    <source src={`data:${attachment.mimeType};base64,${attachment.data}`} type={attachment.mimeType} />
+                    <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
                 </audio>
             );
         }
@@ -197,9 +222,7 @@ class MessageBubble extends React.Component<Props, State> {
             }
 
             // Get the attachment path
-            const attachmentPath = `${remote.app.getPath("userData")}/Attachments/${attachment.guid}/${
-                attachment.transferName
-            }`;
+            const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
 
             // Check if the item exists
             const attachmentExists = fs.existsSync(attachmentPath);
@@ -265,15 +288,6 @@ class MessageBubble extends React.Component<Props, State> {
         return false;
     }
 
-    end(_e, enough) {
-        console.log("END");
-        console.log(enough ? "Click released after enough time" : "Click released too soon");
-    }
-
-    start(_e) {
-        console.log("START");
-    }
-
     clickNHold(message) {
         const parent = document.getElementById(message.guid);
         if (!parent) return;
@@ -287,10 +301,6 @@ class MessageBubble extends React.Component<Props, State> {
     closeReactionView() {
         document.getElementsByClassName("activeReactionMessage")[0].classList.toggle("activeReactionMessage");
         this.setState({ isReactionsOpen: false });
-    }
-
-    newReaction() {
-        console.log("New Reaction");
     }
 
     render() {
@@ -312,7 +322,7 @@ class MessageBubble extends React.Component<Props, State> {
 
         // Figure out the "real string" and then figure out if we need to make it big emojis
         const text = sanitizeStr(message.text);
-        if (text.length <= 6 && allEmojis(text)) {
+        if (text.length <= 4 * 3 && allEmojis(text)) {
             messageClass = "bigEmojis";
         }
 
@@ -357,12 +367,7 @@ class MessageBubble extends React.Component<Props, State> {
                                     <>
                                         <div className="emptyDiv" />
                                         <div className={className}>
-                                            <ClickNHold
-                                                time={0.8}
-                                                onStart={this.start}
-                                                onClickNHold={() => this.clickNHold(message)}
-                                                onEnd={this.end}
-                                            >
+                                            <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                                 <div
                                                     className={messageClass}
                                                     id={message.guid}
@@ -381,18 +386,21 @@ class MessageBubble extends React.Component<Props, State> {
                 ) : (
                     <>
                         <div className={className}>
-                            {this.state.isReactionsOpen ? <NewReaction /> : <div className="emptyDiv" />}
+                            {this.state.isReactionsOpen ? (
+                                <NewReaction
+                                    message={message}
+                                    chat={chat}
+                                    onClose={() => this.setState({ isReactionsOpen: false })}
+                                />
+                            ) : (
+                                <div className="emptyDiv" />
+                            )}
                             {chat.participants.length > 1 &&
                             message.handle &&
                             (!olderMessage || olderMessage.handleId !== message.handleId) ? (
                                 <p className="MessageSender">{sender}</p>
                             ) : null}
-                            <ClickNHold
-                                time={0.8}
-                                onStart={this.start}
-                                onClickNHold={() => this.clickNHold(message)}
-                                onEnd={this.end}
-                            >
+                            <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                 <div
                                     className={messageClass}
                                     id={message.guid}

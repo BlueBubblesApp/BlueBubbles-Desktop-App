@@ -46,7 +46,9 @@ export class ChatRepository {
         handle = null,
         dateCreated = null,
         error = 0,
-        hasAttachments = false
+        hasAttachments = false,
+        associatedMessageGuid = null,
+        associatedMessageType = null
     }: CreateMessageParams) {
         const message = new Message();
         message.guid = guid;
@@ -70,6 +72,8 @@ export class ChatRepository {
         message.chats = [chat];
         message.hasAttachments = hasAttachments;
         message.hasReactions = false;
+        message.associatedMessageGuid = associatedMessageGuid;
+        message.associatedMessageType = associatedMessageType;
 
         // Handle ID is null for anything that is from ourselves
         message.handleId = null;

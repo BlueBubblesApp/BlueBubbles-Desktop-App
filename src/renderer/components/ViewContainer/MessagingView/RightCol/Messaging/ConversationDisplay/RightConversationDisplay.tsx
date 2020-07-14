@@ -1,10 +1,9 @@
 /* eslint-disable class-methods-use-this */
-/* eslint-disable max-len */
-/* eslint-disable no-underscore-dangle */
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Chat, Message as DBMessage } from "@server/databases/chat/entity";
-import { getDateText, getTimeText } from "@renderer/utils";
+import { getDateText, getTimeText } from "@renderer/helpers/utils";
+import { ValidTapback } from "@server/types";
 
 import "./RightConversationDisplay.css";
 import ChatLabel from "./ChatLabel";
@@ -120,7 +119,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
             withHandle: true,
             withAttachments: true,
             withChat: false,
-            limit: 25,
+            limit: 50,
             before: messageTimestamp ?? new Date().getTime(),
             where: []
         });

@@ -1,9 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable react/self-closing-comp */
 import * as React from "react";
-import { ipcRenderer } from "electron";
-import { Chat, Message } from "@server/databases/chat/entity";
-import { getDateText, getTimeText } from "@renderer/utils";
 import DetailContact from "./Contact/DetailContact";
 import "./DetailsDisplay.css";
 

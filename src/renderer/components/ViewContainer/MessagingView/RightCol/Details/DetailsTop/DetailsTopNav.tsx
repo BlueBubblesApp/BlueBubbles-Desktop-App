@@ -2,7 +2,6 @@
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Chat } from "@server/databases/chat/entity";
-import { getiMessageNumberFormat } from "@renderer/utils";
 
 import "./DetailsTopNav.css";
 

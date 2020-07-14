@@ -1,3 +1,4 @@
+import { ValidTapback } from "@server/types";
 import { Handle, Chat } from "./entity";
 
 export type GetMessagesParams = {
@@ -26,4 +27,6 @@ export type CreateMessageParams = {
     dateCreated?: Date;
     error?: number;
     hasAttachments?: boolean;
+    associatedMessageGuid?: string;
+    associatedMessageType?: ValidTapback;
 };

@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Chat, Handle } from "@server/databases/chat/entity";
-import { generateChatIconText } from "@renderer/utils";
-import { IndividualAvatar } from "./IndividualAvatar";
+import { generateChatIconText } from "@renderer/helpers/utils";
 
 import "./styles.css";
 

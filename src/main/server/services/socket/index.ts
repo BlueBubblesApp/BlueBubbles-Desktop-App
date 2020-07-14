@@ -20,8 +20,6 @@ export class SocketService {
 
     configRepo: ConfigRepository;
 
-    fs: FileSystem;
-
     serverAddress: string;
 
     passphrase: string;
@@ -34,13 +32,12 @@ export class SocketService {
      * @param configRepo The app's settings repository
      * @param fs The filesystem class handler
      */
-    constructor(db: Connection, chatRepo: ChatRepository, configRepo: ConfigRepository, fs: FileSystem) {
+    constructor(db: Connection, chatRepo: ChatRepository, configRepo: ConfigRepository) {
         this.db = db;
 
         this.server = null;
         this.chatRepo = chatRepo;
         this.configRepo = configRepo;
-        this.fs = fs;
     }
 
     /**

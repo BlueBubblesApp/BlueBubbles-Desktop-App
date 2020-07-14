@@ -8,7 +8,7 @@ import { NotificationCenter, WindowsToaster, NotifySend } from "node-notifier";
 // Config and FileSystem Imports
 import { FileSystem } from "@server/fileSystem";
 import { DEFAULT_CONFIG_ITEMS } from "@server/constants";
-import { mergeUint8Arrays, parseVCards, sanitizeAddress } from "@server/helpers/utils";
+import { mergeUint8Arrays, parseVCards, sanitizeAddress, convertToSupportedType } from "@server/helpers/utils";
 
 // Database Imports
 import { ConfigRepository } from "@server/databases/config";
@@ -18,7 +18,8 @@ import { ChatRepository } from "@server/databases/chat";
 import { SocketService, QueueService } from "@server/services";
 
 // Renderer imports
-import { generateChatTitle, generateUuid } from "@renderer/utils";
+import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
+import { supportedVideoTypes } from "@renderer/helpers/constants";
 import AppIcon from "@renderer/assets/logo64.png";
 
 import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse } from "./types";
@@ -38,8 +39,6 @@ export class BackendServer {
 
     queueService: QueueService;
 
-    fs: FileSystem;
-
     setupComplete: boolean;
 
     servicesStarted: boolean;
@@ -50,9 +49,6 @@ export class BackendServer {
         // Databases
         this.chatRepo = null;
         this.configRepo = null;
-
-        // Other helpers
-        this.fs = null;
 
         // Services
         this.socketService = null;
@@ -96,8 +92,7 @@ export class BackendServer {
 
         try {
             console.log("Initializing filesystem...");
-            this.fs = new FileSystem();
-            this.fs.setup();
+            FileSystem.setupDirectories();
         } catch (ex) {
             console.log(`!Failed to setup filesystem! ${ex.message}`);
         }
@@ -159,7 +154,7 @@ export class BackendServer {
 
         try {
             console.log("Initializing socket connection...");
-            this.socketService = new SocketService(this.db, this.chatRepo, this.configRepo, this.fs);
+            this.socketService = new SocketService(this.db, this.chatRepo, this.configRepo);
 
             // Start the socket service
             await this.socketService.start(true);
@@ -483,7 +478,15 @@ export class BackendServer {
             } while (currentChunk.byteLength === chunkSize);
 
             // Save the attachment to disk
-            this.fs.saveAttachment(attachment, output);
+            FileSystem.saveAttachment(attachment, output);
+
+            try {
+                // Convert the attachment to a supported format
+                await convertToSupportedType(attachment);
+            } catch (ex) {
+                console.error(`Failed to convert attachment ${attachment.guid}`);
+                console.error(ex.message);
+            }
 
             // Finally, tell the UI we are done
             emitData.progress = 100;
@@ -528,9 +531,16 @@ export class BackendServer {
         });
 
         // Get VCF from server
-        // ipcMain.handle("fetch-contacts", async (_, __) => {
+        ipcMain.handle("send-tapback", async (_, payload) => {
+            this.socketService.server.emit("send-reaction", {
+                chatGuid: payload.chat.guid,
+                message: payload.message,
+                actionMessage: payload.actionMessage,
+                tapback: payload.tapback
+            });
+        });
 
-        // })
+        ipcMain.handle("get-storage-info", async (_, payload) => FileSystem.getAppSizeData());
     }
 
     private startSocketHandlers() {

@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable max-len */
 import * as React from "react";
-import { ipcRenderer } from "electron";
-import { Chat, Message } from "@server/databases/chat/entity";
-import { getDateText, getTimeText } from "@renderer/utils";
 import "./DetailContact.css";
 
 interface Props {

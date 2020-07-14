@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import * as React from "react";
 import { Chat, Message } from "@server/databases/chat/entity";
-import { getDateText, generateChatTitle, generateChatIconText } from "@renderer/utils";
+import { getDateText, generateChatTitle } from "@renderer/helpers/utils";
 
 import { GroupAvatar } from "./Avatar/GroupAvatar";
 import { IndividualAvatar } from "./Avatar/IndividualAvatar";

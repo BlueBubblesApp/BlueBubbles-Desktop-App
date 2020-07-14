@@ -3,10 +3,9 @@
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Chat, Message } from "@server/databases/chat/entity";
-import { generateUuid } from "@renderer/utils";
+import { generateUuid } from "@renderer/helpers/utils";
 
 import "./RightBottomNav.css";
-import { send } from "process";
 import SendIcon from "../../../../../../assets/icons/send-icon.png";
 
 const { dialog } = require("electron").remote;
