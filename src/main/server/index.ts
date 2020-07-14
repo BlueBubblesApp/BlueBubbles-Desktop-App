@@ -190,8 +190,10 @@ export class BackendServer {
             for (let i = 0; i < handles.length; i += 1) {
                 if (result.address === handles[i].address) {
                     const updateData: DeepPartial<Handle> = {};
-                    if (result.firstName) updateData.firstName = result.firstName;
-                    if (result.lastName) updateData.lastName = result.lastName;
+                    if (result.firstName || result.lastName) {
+                        updateData.firstName = result.firstName ?? "";
+                        updateData.lastName = result.lastName ?? "";
+                    }
 
                     // Update the user only if there a non-null name
                     if (Object.keys(updateData).length > 0) {
@@ -230,8 +232,11 @@ export class BackendServer {
             for (const contact of contacts) {
                 if (sanitizeAddress(handle.address) === sanitizeAddress(contact.address)) {
                     const updateData: DeepPartial<Handle> = {};
-                    if (contact.firstName) updateData.firstName = contact.firstName;
-                    if (contact.lastName) updateData.lastName = contact.lastName;
+                    if (contact.firstName || contact.lastName) {
+                        updateData.firstName = contact.firstName ?? "";
+                        updateData.lastName = contact.lastName ?? "";
+                    }
+
                     if (contact.avatar) updateData.avatar = contact.avatar;
 
                     // Update the user only if there a non-null name
