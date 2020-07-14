@@ -1,0 +1,156 @@
+#newReactionDiv {
+    position: relative;
+    width: 300px;
+    height: 40px;
+    clip-path: inset(96% 10% 0% 89% round 20px);
+    background-color: var(--secondary-color);
+    border-radius: 20px;
+    animation: newReaction 0.3s forwards;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    margin: 3px 10% 3px 10%;
+}
+
+#newReactionDiv > svg:last-child {
+    margin: 0 !important;
+}
+
+.reactionIcon {
+    height: 25px;
+    fill: var(--sub-title-color);
+    margin-right: 20px;
+    transition: ease-in-out 0.08s;
+}
+
+.reactionIcon:hover {
+    fill: var(--outgoing-message-color);
+    stroke: var(--outgoing-message-color);
+}
+
+#lovedIcon {
+    transform: scale(0);
+    animation-name: heartbeat;
+    animation-duration: 0.65s;
+    animation-fill-mode: forwards;
+}
+
+#likeIcon {
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: rotate-scale-up 0.5s linear both;
+}
+
+#dislikeIcon {
+    transform: scale(0);
+    transform-origin: top;
+    animation: rotate-scale-up 0.5s linear both;
+}
+
+#hahaIcon {
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: scale-up 0.4s linear both;
+}
+
+#exclamationMarkIcon {
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: scale-up 0.45s linear both;
+}
+
+#questionMarkIcon {
+    height: 30px;
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: scale-up 0.45s linear both;
+}
+
+#questionMarkIcon:hover {
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: scale-up 0.45s linear both;
+}
+
+.activeReactionMessage {
+    z-index: 2;
+}
+
+.activeReactionMessage::after {
+    background-color: var(--background-color) !important;
+}
+
+/* Animations */
+@keyframes newReaction {
+    0% {
+        clip-path: inset(96% 10% 0% 89% round 20px);
+    }
+    30% {
+        clip-path: inset(0% 7% 0% 80% round 20px);
+    }
+    40% {
+        clip-path: inset(0% 4% 0% 70% round 20px);
+    }
+    100% {
+        clip-path: inset(0);
+    }
+}
+
+/* Icon Animations */
+@keyframes heartbeat {
+    0% {
+        transform: scale(0);
+    }
+    25% {
+        transform: scale(0.75);
+    }
+    50% {
+        transform: scale(1);
+    }
+    75% {
+        transform: scale(0.75);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes rotate-scale-up {
+    0% {
+        transform: scale(0) rotateZ(45deg);
+    }
+    50% {
+        transform: scale(0.7) rotateZ(-45deg);
+    }
+    100% {
+        transform: scale(1) rotateZ(0deg);
+    }
+}
+
+@keyframes scale-up {
+    0% {
+        transform: scale(0);
+    }
+    70% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+#mark {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 85px;
+    fill-rule: evenodd;
+    stroke: var(--sub-title-color);
+}
+
+#dot {
+    stroke-width: 1px;
+    stroke-dasharray: 4 2;
+    fill: var(--sub-title-color);
+}

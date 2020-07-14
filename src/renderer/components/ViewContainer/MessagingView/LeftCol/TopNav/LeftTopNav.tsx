@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import * as React from "react";
 import { ipcRenderer } from "electron";
 import "./LeftTopNav.css";
@@ -20,11 +21,19 @@ class LeftTopNav extends React.Component<object, LeftTopNavState> {
 
     componentDidMount() {
         ipcRenderer.on("focused", (_, args) => {
-            try{document.getElementsByClassName("LeftTopNav-Mes")[0].classList.remove("LeftTopNav-Mes-Blurred");} catch{/*Nothing*/}
+            try {
+                document.getElementsByClassName("LeftTopNav-Mes")[0].classList.remove("LeftTopNav-Mes-Blurred");
+            } catch {
+                /* Nothing */
+            }
         });
 
         ipcRenderer.on("blurred", (_, args) => {
-            try{document.getElementsByClassName("LeftTopNav-Mes")[0].classList.add("LeftTopNav-Mes-Blurred");} catch{/*Nothing*/}
+            try {
+                document.getElementsByClassName("LeftTopNav-Mes")[0].classList.add("LeftTopNav-Mes-Blurred");
+            } catch {
+                /* Nothing */
+            }
         });
     }
 

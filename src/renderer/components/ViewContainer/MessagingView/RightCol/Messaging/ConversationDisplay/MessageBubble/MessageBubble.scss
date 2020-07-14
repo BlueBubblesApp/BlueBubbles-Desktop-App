@@ -27,9 +27,10 @@
     margin: 0 30% 0 13px;
     animation: fade 0.25s ease-in-out;
     transition: ease-in-out 0.25s;
+    margin-top: -46px;
 }
 
-.IncomingMessage > .message {
+.IncomingMessage .message {
     max-width: 100%;
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
@@ -44,7 +45,7 @@
     margin-bottom: 0;
 }
 
-.IncomingMessage > .message > p {
+.IncomingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
 }
@@ -57,9 +58,10 @@
     margin: 0 13px 0 30%;
     animation: fade 0.25s ease-in-out;
     transition: ease-in-out 0.25s;
+    margin-top: -46px;
 }
 
-.OutgoingMessage > .message {
+.OutgoingMessage .message {
     max-width: 100%;
     color: white;
     font-family: "SF UI Display Light";
@@ -75,7 +77,7 @@
     margin-bottom: 0;
 }
 
-.OutgoingMessage > .message > p {
+.OutgoingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
 }
@@ -150,6 +152,13 @@
     position: relative;
 }
 
+.IncomingMessage .message:active {
+    animation-name: openReactions;
+    animation-delay: 0.4s;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+}
+
 .IncomingMessage .message.tail:before {
     opacity: var(--hide-pseudo);
     content: "";
@@ -184,7 +193,7 @@
     border-radius: 20px;
     margin-top: 3px;
     cursor: pointer;
-    transition: ease-in .1s;
+    transition: ease-in 0.1s;
 }
 
 .MapLeaflet {
@@ -295,24 +304,68 @@
     }
 }
 
-
-@media (min-width:1000px){
-    .Attachment{
+@media (min-width: 1000px) {
+    .Attachment {
         max-height: 36%;
         max-width: 36%;
     }
 }
 
-@media (min-width:1200px){
-    .Attachment{
+@media (min-width: 1200px) {
+    .Attachment {
         max-height: 33%;
         max-width: 33%;
     }
 }
 
-@media (min-width:1600px){
-    .Attachment{
+@media (min-width: 1600px) {
+    .Attachment {
         max-height: 30%;
         max-width: 30%;
+    }
+}
+
+// Reactions
+#reactionOverlay {
+    top: 35px;
+    height: 100vh;
+    width: calc(100vw - 290px);
+    backdrop-filter: blur(1.4rem);
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    animation: fadeIn ease-in 0.3s;
+    animation-fill-mode: forwards;
+    transition: all 0.2s;
+}
+
+#reactionParticipantsDiv {
+    background-color: var(--secondary-color);
+    height: 55px;
+    width: 75%;
+    border-radius: 10px;
+    z-index: 4 !important;
+    position: absolute;
+    top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 0 5px 0;
+}
+
+.emptyDiv {
+    height: 46px;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
     }
 }

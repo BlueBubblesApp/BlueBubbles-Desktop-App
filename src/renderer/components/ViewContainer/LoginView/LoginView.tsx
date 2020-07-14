@@ -71,11 +71,13 @@ class LoginView extends React.Component<object, LoginViewState> {
         }
 
         ipcRenderer.on("focused", (_, args) => {
-            try{
+            try {
                 document.getElementById("TitleBarRight").classList.add("loginTitleBarRight");
                 document.getElementsByClassName("LoginView")[0].classList.remove("LoginViewBlurred");
                 document.getElementById("TitleBarRight").classList.remove("LoginViewBlurred");
-            } catch{/*Nothing*/}
+            } catch {
+                /* Nothing */
+            }
             try {
                 document.getElementById("loadingContainer").classList.remove("loadingContainerBlurred");
             } catch {
@@ -84,11 +86,13 @@ class LoginView extends React.Component<object, LoginViewState> {
         });
 
         ipcRenderer.on("blurred", (_, args) => {
-            try{
+            try {
                 document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
                 document.getElementsByClassName("LoginView")[0].classList.add("LoginViewBlurred");
                 document.getElementById("TitleBarRight").classList.add("LoginViewBlurred");
-            } catch{/*Nothing*/}
+            } catch {
+                /* Nothing */
+            }
             try {
                 document.getElementById("loadingContainer").classList.add("loadingContainerBlurred");
             } catch {

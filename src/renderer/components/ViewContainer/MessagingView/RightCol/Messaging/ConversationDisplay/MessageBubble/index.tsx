@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 /* eslint-disable max-len */
 import * as React from "react";
 import { remote, ipcRenderer, IpcRendererEvent } from "electron";
@@ -5,6 +6,7 @@ import * as fs from "fs";
 import { Map, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
 import EmojiRegex from "emoji-regex";
+import ClickNHold from "react-click-n-hold";
 
 import { Message as DBMessage, Chat } from "@server/databases/chat/entity";
 import { sanitizeStr, parseUrls, getDateText, getSender, parseAppleLocation } from "@renderer/utils";
@@ -12,9 +14,11 @@ import UnknownImage from "@renderer/assets/img/unknown_img.png";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
+import ReactionParticipant from "../ReactionParticipant/ReactionParticipant";
 
 import "./MessageBubble.scss";
 import "leaflet/dist/leaflet.css";
+import NewReaction from "./NewReaction/NewReaction";
 
 // If we don't do this, the marker won't show
 // eslint-disable-next-line no-underscore-dangle
@@ -41,6 +45,7 @@ type Props = {
 
 type State = {
     attachments: AttachmentDownload[];
+    isReactionsOpen: boolean;
 };
 
 const supportedVideoTypes = ["video/mp4", "video/m4v", "video/ogg", "video/webm", "video/x-m4v"];
@@ -169,7 +174,8 @@ const renderAttachment = (attachment: AttachmentDownload) => {
 
 class MessageBubble extends React.Component<Props, State> {
     state: State = {
-        attachments: []
+        attachments: [],
+        isReactionsOpen: false
     };
 
     async componentDidMount() {
@@ -259,6 +265,34 @@ class MessageBubble extends React.Component<Props, State> {
         return false;
     }
 
+    end(_e, enough) {
+        console.log("END");
+        console.log(enough ? "Click released after enough time" : "Click released too soon");
+    }
+
+    start(_e) {
+        console.log("START");
+    }
+
+    clickNHold(message) {
+        const parent = document.getElementById(message.guid);
+        if (!parent) return;
+
+        parent.classList.toggle("activeReactionMessage");
+        parent.style.setProperty("--hide-pseudo", "0");
+
+        this.setState({ isReactionsOpen: true });
+    }
+
+    closeReactionView() {
+        document.getElementsByClassName("activeReactionMessage")[0].classList.toggle("activeReactionMessage");
+        this.setState({ isReactionsOpen: false });
+    }
+
+    newReaction() {
+        console.log("New Reaction");
+    }
+
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
         const { attachments } = this.state;
@@ -283,12 +317,19 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         // Parse out any links. We can minimize parsing if we do a simple "contains" first
-        if (text.includes("http")) {
+        if (text.includes("http") || text.includes("Https")) {
             links = parseUrls(text);
         }
 
         return (
             <>
+                {this.state.isReactionsOpen ? (
+                    <div id="reactionOverlay" onClick={() => this.closeReactionView()}>
+                        <div id="reactionParticipantsDiv">
+                            <ReactionParticipant reactionSender="Maxwell" reactionType="Like" />
+                        </div>
+                    </div>
+                ) : null}
                 {/* If the message has an attachment */}
                 {message.attachments?.length > 0 ? (
                     <>
@@ -313,32 +354,56 @@ class MessageBubble extends React.Component<Props, State> {
                                     {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
                                 </div>
                                 {text ? (
-                                    <div className={className}>
-                                        <div
-                                            className={messageClass}
-                                            id=""
-                                            style={{ marginBottom: useTail ? "3px" : "0" }}
-                                        >
-                                            <p>{text}</p>
+                                    <>
+                                        <div className="emptyDiv" />
+                                        <div className={className}>
+                                            <ClickNHold
+                                                time={0.8}
+                                                onStart={this.start}
+                                                onClickNHold={() => this.clickNHold(message)}
+                                                onEnd={this.end}
+                                            >
+                                                <div
+                                                    className={messageClass}
+                                                    id={message.guid}
+                                                    style={{ marginBottom: useTail ? "3px" : "0" }}
+                                                >
+                                                    <p>{text}</p>
+                                                </div>
+                                            </ClickNHold>
+                                            {showStatus ? getStatusText(message) : null}
                                         </div>
-                                        {showStatus ? getStatusText(message) : null}
-                                    </div>
+                                    </>
                                 ) : null}
                             </>
                         )}
                     </>
                 ) : (
-                    <div className={className}>
-                        {chat.participants.length > 1 &&
-                        message.handle &&
-                        (!olderMessage || olderMessage.handleId !== message.handleId) ? (
-                            <p className="MessageSender">{sender}</p>
-                        ) : null}
-                        <div className={messageClass} id={message.guid} style={{ marginBottom: useTail ? "3px" : "0" }}>
-                            {text ? <p>{text}</p> : null}
+                    <>
+                        <div className={className}>
+                            {this.state.isReactionsOpen ? <NewReaction /> : <div className="emptyDiv" />}
+                            {chat.participants.length > 1 &&
+                            message.handle &&
+                            (!olderMessage || olderMessage.handleId !== message.handleId) ? (
+                                <p className="MessageSender">{sender}</p>
+                            ) : null}
+                            <ClickNHold
+                                time={0.8}
+                                onStart={this.start}
+                                onClickNHold={() => this.clickNHold(message)}
+                                onEnd={this.end}
+                            >
+                                <div
+                                    className={messageClass}
+                                    id={message.guid}
+                                    style={{ marginBottom: useTail ? "3px" : "0" }}
+                                >
+                                    {text ? <p>{text}</p> : null}
+                                </div>
+                            </ClickNHold>
+                            {showStatus ? getStatusText(message) : null}
                         </div>
-                        {showStatus ? getStatusText(message) : null}
-                    </div>
+                    </>
                 )}
             </>
         );
