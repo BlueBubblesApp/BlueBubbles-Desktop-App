@@ -92,12 +92,13 @@ const loadAttachmentData = (attachment: AttachmentDownload) => {
     ) {
         try {
             const ext = attachment.mimeType.startsWith("video") ? "mp4" : "mp3";
-            const newPath = `${attachmentsDir}/Attachments/${attachment.guid}/${attachment.transferName.replace(
+            const newPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName.replace(
                 path.extname(attachment.transferName),
                 `.${ext}`
             )}`;
             output = fs.readFileSync(newPath).toString(encoding);
         } catch (ex) {
+            console.log(ex);
             /* Do nothing */
         }
     } else {

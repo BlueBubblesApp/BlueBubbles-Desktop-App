@@ -14,6 +14,10 @@ export class FileSystem {
 
     public static attachmentsDir = path.join(FileSystem.baseDir, "Attachments");
 
+    public static modules = path.join(__dirname.replace("app.asar/dist", "app.asar.unpacked"), "node_modules");
+
+    public static resources = __dirname.replace("app.asar/dist", "resources");
+
     // Creates required directories
     static setupDirectories(): void {
         if (!fs.existsSync(FileSystem.attachmentsDir)) fs.mkdirSync(FileSystem.attachmentsDir);

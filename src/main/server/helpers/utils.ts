@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as ffmpeg from "fluent-ffmpeg";
+import * as ffmpegPath from "ffmpeg-static";
 import * as vCard from "vcf";
 import * as path from "path";
 import { Attachment } from "@server/databases/chat/entity";
@@ -7,9 +8,8 @@ import { FileSystem } from "@server/fileSystem";
 
 import { supportedVideoTypes, supportedAudioTypes } from "@renderer/helpers/constants";
 
-let ffmpegPath = "./bin/ffmpeg";
-if (process.env.NODE_ENV !== "production") ffmpegPath = "./node_modules/ffmpeg-static/ffmpeg";
-ffmpeg.setFfmpegPath(ffmpegPath);
+// Set the ffmpeg path for dev & production
+ffmpeg.setFfmpegPath(ffmpegPath.replace("app.asar", "app.asar.unpacked"));
 
 export const mergeUint8Arrays = (first: Uint8Array, second: Uint8Array) => {
     const temp = new Uint8Array(first.byteLength + second.byteLength);

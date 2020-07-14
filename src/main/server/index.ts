@@ -3,7 +3,7 @@ import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as path from "path";
 import * as os from "os";
-import { NotificationCenter, WindowsToaster, NotifySend } from "node-notifier";
+import * as Notifier from "node-notifier";
 
 // Config and FileSystem Imports
 import { FileSystem } from "@server/fileSystem";
@@ -19,8 +19,6 @@ import { SocketService, QueueService } from "@server/services";
 
 // Renderer imports
 import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
-import { supportedVideoTypes } from "@renderer/helpers/constants";
-import AppIcon from "@renderer/assets/logo64.png";
 
 import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
@@ -565,43 +563,39 @@ export class BackendServer {
             const savedChat = await this.chatRepo.saveChat(chat);
             const chatTitle = generateChatTitle(savedChat);
             const text = message.attachments.length === 0 ? message.text : "1 Attachment";
-            const platform = os.platform();
-
-            // Construct which notification platform we should use
-            let notification = null;
-            if (platform === "darwin") notification = new NotificationCenter({ withFallback: true });
-            else if (platform === "win32") notification = new WindowsToaster({ withFallback: true });
-            else if (platform === "linux") notification = new NotifySend({ withFallback: true });
-            else return;
 
             // Build the base notification parameters
-            const notificationData: any = {
-                title: chatTitle,
-                icon: path.join(__dirname, AppIcon)
-            };
+            let customPath = null;
+            if (os.platform() === "darwin")
+                customPath = path.join(
+                    FileSystem.modules,
+                    "node-notifier",
+                    "/vendor/mac.noindex/terminal-notifier.app/Contents/MacOS/terminal-notifier"
+                );
 
-            if (platform === "win32") {
-                notificationData.appId = "com.BlueBubbles.BlueBubbles-Desktop";
-                notificationData.id = message.guid;
-            }
+            const notificationData: any = {
+                appId: "com.BlueBubbles.BlueBubbles-Desktop",
+                id: message.guid,
+                title: chatTitle,
+                icon: path.join(FileSystem.resources, "logo64.png"),
+                customPath
+            };
 
             // Build the notification parameters
             if (message.error) {
-                if (platform === "darwin") notificationData.subtitle = "Error";
+                notificationData.subtitle = "Error";
                 notificationData.message = "Message failed to send";
             } else {
-                if (platform === "darwin") {
-                    notificationData.subtitle = "New Message";
-                    notificationData.reply = true;
-                    notificationData.timeout = 30000;
-                }
+                notificationData.subtitle = "New Message";
+                notificationData.reply = true;
+                notificationData.timeout = 30000;
                 notificationData.message = text;
             }
 
             // Don't show a notification if there is no error or it's from me
             if (!message.error && message.isFromMe) return;
 
-            notification.notify(notificationData, async (error, response, metadata) => {
+            Notifier.notify(notificationData, async (error, response, metadata) => {
                 if (error || response !== "replied") return;
                 const reply = metadata.activationValue;
 

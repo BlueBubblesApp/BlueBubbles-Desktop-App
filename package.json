@@ -58,9 +58,6 @@
    "build": {
       "productName": "BlueBubbles",
       "appId": "com.BlueBubbles.BlueBubbles-Desktop",
-      "mac": {
-         "category": "your.app.category.type"
-      },
       "directories": {
          "output": "release",
          "buildResources": "resources"
@@ -69,10 +66,23 @@
          "dist/",
          "node_modules/",
          "package.json",
-         "resources/*"
+         "resources/"
       ],
+      "asar": true,
+      "asarUnpack": [
+         "**/node_modules/ffmpeg-static/*",
+         "**/node_modules/node-notifier/vendor/**"
+      ],
+      "extraResources": [
+         "**/resources/**"
+      ],
+      "mac": {
+         "category": "public.app-category.social-networking",
+         "icon": "./resources/icon1024.png"
+      },
       "linux": {
-         "target": "deb"
+         "target": "deb",
+         "icon": "./resources/icon1024.png"
       },
       "win": {
          "target": "nsis",
