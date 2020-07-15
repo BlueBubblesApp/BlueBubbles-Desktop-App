@@ -190,6 +190,7 @@
 .Attachment {
     max-height: 40%;
     max-width: 40%;
+    min-width: 40%;
     border-radius: 20px;
     margin-top: 3px;
     cursor: pointer;
@@ -269,7 +270,9 @@
     max-height: 55px;
     background-color: var(--incoming-message-color);
     border-radius: 0 0 15px 15px;
-    width: 50%;
+    width: 40%;
+    max-width: 40%;
+    min-width: 40%;
 }
 
 .linkBottomDiv > p:first-child {
@@ -308,6 +311,11 @@
     .Attachment {
         max-height: 36%;
         max-width: 36%;
+        min-width: 36%;
+    }
+    .linkBottomDiv {
+        max-width: 36%;
+        min-width: 36%;
     }
 }
 
@@ -315,6 +323,11 @@
     .Attachment {
         max-height: 33%;
         max-width: 33%;
+        min-width: 33%;
+    }
+    .linkBottomDiv {
+        max-width: 33%;
+        min-width: 33%;
     }
 }
 
@@ -322,6 +335,11 @@
     .Attachment {
         max-height: 30%;
         max-width: 30%;
+        min-width: 30%;
+    }
+    .linkBottomDiv {
+        max-width: 30%;
+        min-width: 30%;
     }
 }
 
