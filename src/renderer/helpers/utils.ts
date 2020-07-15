@@ -2,6 +2,24 @@
 import { PhoneNumberUtil } from "google-libphonenumber";
 import { Chat, Handle } from "@server/databases/chat/entity";
 
+export const addTapbackTextMap = {
+    like: "Liked",
+    dislike: "Disliked",
+    love: "Loved",
+    question: "Questioned",
+    emphasize: "Emphasized",
+    laugh: "Laugh"
+};
+
+export const removeTapbackTextMap = {
+    like: "a like",
+    dislike: "a dislike",
+    love: "a heart",
+    question: "a question mark",
+    emphasize: "an exclamation",
+    laugh: "a laugh"
+};
+
 export const getTimeText = (date: Date) => {
     return date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
 };
@@ -188,4 +206,20 @@ export const parseAppleLocation = (appleLocation: string): LongLat => {
         longitude: Number.parseFloat(query.split(",")[0]),
         latitude: Number.parseFloat(query.split(",")[1])
     };
+};
+
+export const bytesToSize = bytes => {
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+
+    if (bytes === 0) {
+        return "n/a";
+    }
+
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+
+    if (i === 0) {
+        return `${bytes} ${sizes[i]}`;
+    }
+
+    return `${(bytes / 1024 ** i).toFixed(1)} ${sizes[i]}`;
 };

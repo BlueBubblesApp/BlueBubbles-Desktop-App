@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import * as React from "react";
 import { Chat } from "@server/databases/chat/entity";
-import { getSender } from "@renderer/utils";
+import { getSender } from "@renderer/helpers/utils";
 
 import "./RightTopNav.css";
 

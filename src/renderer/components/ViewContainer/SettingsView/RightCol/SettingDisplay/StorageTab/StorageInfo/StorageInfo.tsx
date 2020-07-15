@@ -1,36 +1,50 @@
 import * as React from "react";
 import "./StorageInfo.css";
+import { bytesToSize } from "@renderer/helpers/utils";
 
 type StorageInfoProps = {
-    totalAppSize: number;
-    totalBaseApp: string;
-    totalTexts: string;
-    totalAttachments: string;
+    appSize: number;
+    storageSize: number;
+    chatDataSize: number;
+    attachmentFolderSize: number;
 };
 
-const StorageInfo = ({ totalAppSize, totalBaseApp, totalTexts, totalAttachments }: StorageInfoProps) => (
-    <div className="StorageInfo">
-        <h1 id="storageMainTitle">Total App Size: {totalAppSize} Mb</h1>
-        <div id="barWrapper">
-            <div id="totalBaseApp" style={{ width: `${totalBaseApp}%` }}>
-                <p className="storage-percent">{totalBaseApp}%</p>
+const StorageInfo = ({ appSize, storageSize, chatDataSize, attachmentFolderSize }: StorageInfoProps) => {
+    const totalSize = appSize + storageSize;
+    const appPercentage = Math.ceil((appSize / totalSize) * 100);
+    const textPercentage = Math.ceil((chatDataSize / totalSize) * 100);
+    const attachmentsPercentage = Math.ceil((attachmentFolderSize / totalSize) * 100);
+
+    console.log(appSize);
+    console.log(storageSize);
+    console.log(totalSize);
+    console.log(chatDataSize);
+    console.log(attachmentFolderSize);
+
+    return (
+        <div className="StorageInfo">
+            <h1 id="storageMainTitle">Total App Size: {bytesToSize(totalSize)}</h1>
+            <div id="barWrapper">
+                <div id="totalBaseApp" style={{ minWidth: "10%", width: `${appPercentage}%` }}>
+                    <p className="storage-percent">{appPercentage}%</p>
+                </div>
+                <div id="totalTexts" style={{ minWidth: "10%", width: `${textPercentage}%` }}>
+                    <p className="storage-percent">{textPercentage}%</p>
+                </div>
+                <div id="totalAttachments" style={{ minWidth: "10%", width: `${attachmentsPercentage}%` }}>
+                    <p className="storage-percent">{attachmentsPercentage}%</p>
+                </div>
             </div>
-            <div id="totalTexts" style={{ width: `${totalTexts}%` }}>
-                <p className="storage-percent">{totalTexts}%</p>
-            </div>
-            <div id="totalAttachments" style={{ width: `${totalAttachments}%` }}>
-                <p className="storage-percent">{totalAttachments}%</p>
+            <div id="keyWrapper">
+                <div className="key-child" />
+                <p id="key-label-1">= Base App</p>
+                <div className="key-child" />
+                <p id="key-label-2">= Texts</p>
+                <div className="key-child" />
+                <p id="key-label-3">= Attachments</p>
             </div>
         </div>
-        <div id="keyWrapper">
-            <div className="key-child" />
-            <p id="key-label-1">= Base App</p>
-            <div className="key-child" />
-            <p id="key-label-2">= Texts</p>
-            <div className="key-child" />
-            <p id="key-label-3">= Attachments</p>
-        </div>
-    </div>
-);
+    );
+};
 
 export default StorageInfo;

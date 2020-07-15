@@ -1,5 +1,5 @@
 import * as React from "react";
-import { getDateText, getTimeText } from "@renderer/utils";
+import { getDateText, getTimeText } from "@renderer/helpers/utils";
 import "./ChatLabel.css";
 
 type ConversationProps = {

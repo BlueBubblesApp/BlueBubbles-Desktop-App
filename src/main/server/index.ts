@@ -3,12 +3,12 @@ import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as path from "path";
 import * as os from "os";
-import { NotificationCenter, WindowsToaster, NotifySend } from "node-notifier";
+import * as Notifier from "node-notifier";
 
 // Config and FileSystem Imports
 import { FileSystem } from "@server/fileSystem";
 import { DEFAULT_CONFIG_ITEMS } from "@server/constants";
-import { mergeUint8Arrays, parseVCards, sanitizeAddress } from "@server/helpers/utils";
+import { mergeUint8Arrays, parseVCards, sanitizeAddress, convertToSupportedType } from "@server/helpers/utils";
 
 // Database Imports
 import { ConfigRepository } from "@server/databases/config";
@@ -18,8 +18,7 @@ import { ChatRepository } from "@server/databases/chat";
 import { SocketService, QueueService } from "@server/services";
 
 // Renderer imports
-import { generateChatTitle, generateUuid } from "@renderer/utils";
-import AppIcon from "@renderer/assets/logo64.png";
+import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
 
 import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
@@ -38,8 +37,6 @@ export class BackendServer {
 
     queueService: QueueService;
 
-    fs: FileSystem;
-
     setupComplete: boolean;
 
     servicesStarted: boolean;
@@ -50,9 +47,6 @@ export class BackendServer {
         // Databases
         this.chatRepo = null;
         this.configRepo = null;
-
-        // Other helpers
-        this.fs = null;
 
         // Services
         this.socketService = null;
@@ -96,8 +90,7 @@ export class BackendServer {
 
         try {
             console.log("Initializing filesystem...");
-            this.fs = new FileSystem();
-            this.fs.setup();
+            FileSystem.setupDirectories();
         } catch (ex) {
             console.log(`!Failed to setup filesystem! ${ex.message}`);
         }
@@ -159,7 +152,7 @@ export class BackendServer {
 
         try {
             console.log("Initializing socket connection...");
-            this.socketService = new SocketService(this.db, this.chatRepo, this.configRepo, this.fs);
+            this.socketService = new SocketService(this.db, this.chatRepo, this.configRepo);
 
             // Start the socket service
             await this.socketService.start(true);
@@ -195,8 +188,10 @@ export class BackendServer {
             for (let i = 0; i < handles.length; i += 1) {
                 if (result.address === handles[i].address) {
                     const updateData: DeepPartial<Handle> = {};
-                    if (result.firstName) updateData.firstName = result.firstName;
-                    if (result.lastName) updateData.lastName = result.lastName;
+                    if (result.firstName || result.lastName) {
+                        updateData.firstName = result.firstName ?? "";
+                        updateData.lastName = result.lastName ?? "";
+                    }
 
                     // Update the user only if there a non-null name
                     if (Object.keys(updateData).length > 0) {
@@ -235,8 +230,11 @@ export class BackendServer {
             for (const contact of contacts) {
                 if (sanitizeAddress(handle.address) === sanitizeAddress(contact.address)) {
                     const updateData: DeepPartial<Handle> = {};
-                    if (contact.firstName) updateData.firstName = contact.firstName;
-                    if (contact.lastName) updateData.lastName = contact.lastName;
+                    if (contact.firstName || contact.lastName) {
+                        updateData.firstName = contact.firstName ?? "";
+                        updateData.lastName = contact.lastName ?? "";
+                    }
+
                     if (contact.avatar) updateData.avatar = contact.avatar;
 
                     // Update the user only if there a non-null name
@@ -483,7 +481,15 @@ export class BackendServer {
             } while (currentChunk.byteLength === chunkSize);
 
             // Save the attachment to disk
-            this.fs.saveAttachment(attachment, output);
+            FileSystem.saveAttachment(attachment, output);
+
+            try {
+                // Convert the attachment to a supported format
+                await convertToSupportedType(attachment);
+            } catch (ex) {
+                console.error(`Failed to convert attachment ${attachment.guid}`);
+                console.error(ex.message);
+            }
 
             // Finally, tell the UI we are done
             emitData.progress = 100;
@@ -528,9 +534,16 @@ export class BackendServer {
         });
 
         // Get VCF from server
-        // ipcMain.handle("fetch-contacts", async (_, __) => {
+        ipcMain.handle("send-tapback", async (_, payload) => {
+            this.socketService.server.emit("send-reaction", {
+                chatGuid: payload.chat.guid,
+                message: payload.message,
+                actionMessage: payload.actionMessage,
+                tapback: payload.tapback
+            });
+        });
 
-        // })
+        ipcMain.handle("get-storage-info", async (_, payload) => FileSystem.getAppSizeData());
     }
 
     private startSocketHandlers() {
@@ -550,43 +563,39 @@ export class BackendServer {
             const savedChat = await this.chatRepo.saveChat(chat);
             const chatTitle = generateChatTitle(savedChat);
             const text = message.attachments.length === 0 ? message.text : "1 Attachment";
-            const platform = os.platform();
-
-            // Construct which notification platform we should use
-            let notification = null;
-            if (platform === "darwin") notification = new NotificationCenter({ withFallback: true });
-            else if (platform === "win32") notification = new WindowsToaster({ withFallback: true });
-            else if (platform === "linux") notification = new NotifySend({ withFallback: true });
-            else return;
 
             // Build the base notification parameters
-            const notificationData: any = {
-                title: chatTitle,
-                icon: path.join(__dirname, AppIcon)
-            };
+            let customPath = null;
+            if (os.platform() === "darwin")
+                customPath = path.join(
+                    FileSystem.modules,
+                    "node-notifier",
+                    "/vendor/mac.noindex/terminal-notifier.app/Contents/MacOS/terminal-notifier"
+                );
 
-            if (platform === "win32") {
-                notificationData.appId = "com.BlueBubbles.BlueBubbles-Desktop";
-                notificationData.id = message.guid;
-            }
+            const notificationData: any = {
+                appId: "com.BlueBubbles.BlueBubbles-Desktop",
+                id: message.guid,
+                title: chatTitle,
+                icon: path.join(FileSystem.resources, "logo64.png"),
+                customPath
+            };
 
             // Build the notification parameters
             if (message.error) {
-                if (platform === "darwin") notificationData.subtitle = "Error";
+                notificationData.subtitle = "Error";
                 notificationData.message = "Message failed to send";
             } else {
-                if (platform === "darwin") {
-                    notificationData.subtitle = "New Message";
-                    notificationData.reply = true;
-                    notificationData.timeout = 30000;
-                }
+                notificationData.subtitle = "New Message";
+                notificationData.reply = true;
+                notificationData.timeout = 30000;
                 notificationData.message = text;
             }
 
             // Don't show a notification if there is no error or it's from me
             if (!message.error && message.isFromMe) return;
 
-            notification.notify(notificationData, async (error, response, metadata) => {
+            Notifier.notify(notificationData, async (error, response, metadata) => {
                 if (error || response !== "replied") return;
                 const reply = metadata.activationValue;
 

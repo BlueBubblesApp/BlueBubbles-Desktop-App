@@ -1,38 +1,28 @@
+import { ipcRenderer } from "electron";
 import * as React from "react";
-import "./StorageTab.css";
-import SettingTitle from "./SettingTitle/SettingTitle";
+
+import { StorageData } from "@server/fileSystem/types";
+
 import StorageInfo from "./StorageInfo/StorageInfo";
-
-
-
-import {getStorageInformation, StorageData} from "@server/helpers/storageHandler";
+import "./StorageTab.css";
 
 interface State {
     storageInfo: StorageData;
     isLoading: boolean;
 }
 
-class StorageTab extends React.Component<object,State> {
-    constructor(props){
-        super(props)
+class StorageTab extends React.Component<object, State> {
+    state = {
+        storageInfo: null,
+        isLoading: true
+    };
 
-        this.state = {
-            storageInfo: null,
-            isLoading: true
-            }
-        }
-
-    async componentDidMount(){
-        await getStorageInformation()
-            .then(res => this.setState({storageInfo : res}))
-            .then(res => this.setState({isLoading : false}))
-            .then(res => console.log("just set state"))
-
-        
+    async componentDidMount() {
+        const storageInfo = (await ipcRenderer.invoke("get-storage-info")) as StorageData;
+        this.setState({ storageInfo, isLoading: false });
     }
-    
 
-    render(){
+    render() {
         const { storageInfo } = this.state;
         return (
             <div id="StorageTab">
@@ -40,21 +30,18 @@ class StorageTab extends React.Component<object,State> {
                     <h1>Storage</h1>
                 </div>
                 {this.state.isLoading ? (
-                    <div className="a">Loader</div>
+                    <div className="loader" />
                 ) : (
-                <StorageInfo
-                    totalAppSize={storageInfo.totalAppSizeMB}
-                    totalBaseApp={storageInfo.baseAppSizePercent}
-                    totalTexts={storageInfo.textDataSizePercent}
-                    totalAttachments={storageInfo.attachmentFolderSizePercent}
-                />
+                    <StorageInfo
+                        appSize={storageInfo.appSize}
+                        storageSize={storageInfo.storageSize}
+                        chatDataSize={storageInfo.chatDataSize}
+                        attachmentFolderSize={storageInfo.attachmentFolderSize}
+                    />
                 )}
             </div>
         );
     }
 }
 
-
-
 export default StorageTab;
-

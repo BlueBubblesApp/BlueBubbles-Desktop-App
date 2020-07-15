@@ -1,4 +1,15 @@
+import * as fs from "fs";
+import * as ffmpeg from "fluent-ffmpeg";
+import * as ffmpegPath from "ffmpeg-static";
 import * as vCard from "vcf";
+import * as path from "path";
+import { Attachment } from "@server/databases/chat/entity";
+import { FileSystem } from "@server/fileSystem";
+
+import { supportedVideoTypes, supportedAudioTypes } from "@renderer/helpers/constants";
+
+// Set the ffmpeg path for dev & production
+ffmpeg.setFfmpegPath(ffmpegPath.replace("app.asar", "app.asar.unpacked"));
 
 export const mergeUint8Arrays = (first: Uint8Array, second: Uint8Array) => {
     const temp = new Uint8Array(first.byteLength + second.byteLength);
@@ -68,4 +79,79 @@ export const sanitizeAddress = (text: string) => {
     output = output.replace(/(\()|(\))/g, ""); // Replace open/close parenthesis
     output = output.replace(/ /g, ""); // Replace spaces
     return output.trim();
+};
+
+export const convertToSupportedType = async (attachment: Attachment) => {
+    if (!attachment.mimeType) return null;
+    const mimePrefix = attachment.mimeType.split("/")[0];
+
+    // If we already support the mimetype, then return
+    if (
+        !["audio", "video"].includes(mimePrefix) ||
+        supportedVideoTypes.includes(attachment.mimeType) ||
+        supportedAudioTypes.includes(attachment.mimeType)
+    )
+        return null;
+
+    let outputFormat = null;
+    if (mimePrefix === "video") outputFormat = "mp4";
+    if (mimePrefix === "audio") outputFormat = "mp3";
+    if (!outputFormat) throw new Error("Attachment does not need to be converted!");
+
+    // Set the original and new path
+    const originalPath = path.join(FileSystem.attachmentsDir, attachment.guid, attachment.transferName);
+    const newPath = path.join(
+        FileSystem.attachmentsDir,
+        attachment.guid,
+        attachment.transferName.replace(path.extname(attachment.transferName), `.${outputFormat}`)
+    );
+
+    let inputFormat = attachment.mimeType.split("/")[1];
+    if (inputFormat === "quicktime") inputFormat = "mov";
+
+    return new Promise((resolve, reject) => {
+        ffmpeg()
+            .input(originalPath)
+            .inputFormat(inputFormat)
+            .output(newPath)
+            .outputFormat(outputFormat)
+            .on("error", (err, _, stderr) => reject(err ?? stderr))
+            .on("end", (stdout, _) => resolve(stdout))
+            .run();
+    });
+};
+
+export const getAllFilesInDirectory = (dirPath, arrayOfFiles = null) => {
+    const files = fs.readdirSync(dirPath);
+
+    let fileList = arrayOfFiles || [];
+
+    files.forEach(file => {
+        const next = path.join(dirPath, file);
+
+        if (fs.statSync(next).isDirectory()) {
+            fileList = getAllFilesInDirectory(next, arrayOfFiles);
+        } else {
+            fileList.push(next);
+        }
+    });
+
+    return fileList;
+};
+
+export const getDirectorySize = directoryPath => {
+    const arrayOfFiles = getAllFilesInDirectory(directoryPath, []);
+
+    let totalSize = 0;
+
+    arrayOfFiles.forEach(filePath => {
+        // console.log(filePath);
+        try {
+            totalSize += fs.statSync(filePath).size;
+        } catch (err) {
+            console.log(err);
+        }
+    });
+
+    return totalSize;
 };

@@ -58,9 +58,6 @@
    "build": {
       "productName": "BlueBubbles",
       "appId": "com.BlueBubbles.BlueBubbles-Desktop",
-      "mac": {
-         "category": "your.app.category.type"
-      },
       "directories": {
          "output": "release",
          "buildResources": "resources"
@@ -69,10 +66,23 @@
          "dist/",
          "node_modules/",
          "package.json",
-         "resources/*"
+         "resources/"
       ],
+      "asar": true,
+      "asarUnpack": [
+         "**/node_modules/ffmpeg-static/*",
+         "**/node_modules/node-notifier/vendor/**"
+      ],
+      "extraResources": [
+         "**/resources/**"
+      ],
+      "mac": {
+         "category": "public.app-category.social-networking",
+         "icon": "./resources/icon1024.png"
+      },
       "linux": {
-         "target": "deb"
+         "target": "deb",
+         "icon": "./resources/icon1024.png"
       },
       "win": {
          "target": "nsis",
@@ -150,11 +160,14 @@
    },
    "dependencies": {
       "@types/emoji-regex": "^8.0.0",
+      "@types/fluent-ffmpeg": "^2.1.14",
       "@types/node-notifier": "^6.0.1",
       "byte-base64": "^1.0.2",
       "cors": "^2.8.5",
       "emoji-regex": "^9.0.0",
       "express": "^4.17.1",
+      "ffmpeg-static": "^4.2.5",
+      "fluent-ffmpeg": "^2.1.2",
       "google-libphonenumber": "^3.2.10",
       "leaflet": "^1.6.0",
       "node-notifier": "^7.0.1",

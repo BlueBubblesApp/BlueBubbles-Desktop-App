@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import * as React from "react";
 import { ipcRenderer } from "electron";
-import { Redirect, NavLink } from "react-router-dom";
+import { Redirect } from "react-router-dom";
 import "./LoginView.css";
 
 interface LoginViewState {
