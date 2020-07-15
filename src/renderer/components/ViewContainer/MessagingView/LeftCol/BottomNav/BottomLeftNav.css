@@ -2,22 +2,79 @@
     height: 44px;
     min-height: 44px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     padding: 0 10px 0 10px;
     border-top: 1px solid gray;
+    flex: 1;
 }
 
 #settingsIconLink {
     height: 25px;
-    transition: transform 0.7s;
+    display: flex;
+    flex: 1;
 }
 
-#settingsIconLink:hover {
+#settingsIcon:hover {
     transform: rotate(180deg);
 }
 
 #settingsIcon {
     height: 25px;
     fill: var(--main-title-color);
+    transition: transform 0.7s;
+}
+
+#statusMessageDiv {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+}
+
+#statusMessageDiv p {
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    color: var(--sub-title-color);
+}
+
+.showStatusMessageDiv {
+    animation: fadeInAndOutMessage;
+    animation-delay: 0.2s;
+    animation-duration: 6s;
+    animation-fill-mode: forwards;
+}
+
+#statusDotDiv {
+    display: flex;
+    flex: 1;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#statusDot {
+    height: 11px;
+    width: 11px;
+    border-radius: 50%;
+    display: inline-block;
+    transition: ease-in-out 0.25s;
+}
+
+@keyframes fadeInAndOutMessage {
+    0% {
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
 }
