@@ -55,8 +55,11 @@ class RightBottomNav extends React.Component<Props, State> {
     };
 
     async sendMessage() {
-        const resourcePath = __dirname.replace("app.asar/dist", "resources");
-        console.log(path.join(resourcePath, "audio", "send.mp3"));
+        let resourcePath = __dirname.replace("app.asar/dist", "resources");
+        if (process.env.NODE_ENV !== "production") {
+            resourcePath = "./resources";
+        }
+
         const sendAudio = new Audio(path.join(resourcePath, "audio", "send.mp3"));
         sendAudio.play();
         if (this.state.enteredMessage.length === 0) return;
