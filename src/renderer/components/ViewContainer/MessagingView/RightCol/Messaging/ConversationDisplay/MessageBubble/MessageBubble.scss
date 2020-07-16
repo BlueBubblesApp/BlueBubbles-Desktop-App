@@ -195,6 +195,11 @@
     margin-top: 3px;
     cursor: pointer;
     transition: ease-in 0.1s;
+    display: flex;
+}
+
+.Attachment:focus {
+    outline: none;
 }
 
 .MapLeaflet {

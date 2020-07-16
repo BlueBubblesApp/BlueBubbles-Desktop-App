@@ -4,10 +4,16 @@
 import * as React from "react";
 import "./BottomLeftNav.css";
 import { Link } from "react-router-dom";
+import { ipcRenderer, IpcRendererEvent } from "electron";
 
 interface State {
     statusMessage: string;
 }
+
+type StatusData = {
+    newMessage: String;
+    newColor?: String;
+};
 
 class BottomLeftNav extends React.Component<unknown, State> {
     constructor(props) {
@@ -19,8 +25,9 @@ class BottomLeftNav extends React.Component<unknown, State> {
     }
 
     componentDidMount() {
-        this.setStatusColor("red");
-        this.setStatusMessage("Disconnected");
+        ipcRenderer.on("new-status", this.handleSetStatus);
+
+        ipcRenderer.invoke("get-status");
     }
 
     setStatusColor(newColor) {
@@ -48,6 +55,13 @@ class BottomLeftNav extends React.Component<unknown, State> {
             this.setState({ statusMessage: newMessage });
         }
     }
+
+    handleSetStatus = (_: IpcRendererEvent, statusData: StatusData) => {
+        this.setStatusMessage(statusData.newMessage);
+        if (statusData.newColor) {
+            this.setStatusColor(statusData.newColor);
+        }
+    };
 
     render() {
         return (

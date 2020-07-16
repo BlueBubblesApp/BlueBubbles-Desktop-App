@@ -157,8 +157,7 @@ const renderAttachment = (attachment: AttachmentDownload) => {
             let mime = attachment.mimeType;
             if (!supportedVideoTypes.includes(mime)) mime = "video/mp4";
             return (
-                // eslint-disable-next-line jsx-a11y/media-has-caption
-                <video key={attachment.guid} className="Attachment" controls>
+                <video key={attachment.guid} id={attachment.guid} className="Attachment" autoPlay muted loop controls>
                     <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
                 </video>
             );

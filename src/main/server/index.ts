@@ -20,7 +20,7 @@ import { SocketService, QueueService } from "@server/services";
 // Renderer imports
 import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
 
-import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse } from "./types";
+import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, StatusData } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
 import { Attachment, Handle } from "./databases/chat/entity";
 
@@ -209,6 +209,23 @@ export class BackendServer {
 
     async fetchContactsFromServerVcf(): Promise<void> {
         console.log("Fetching contacts from server's Contacts App...");
+        let syncComplete = false;
+        const statusData: StatusData = {
+            newMessage: null,
+            newColor: null
+        };
+
+        ipcMain.handle("get-status", () => {
+            if (syncComplete) {
+                statusData.newMessage = "Sync Complete";
+                statusData.newColor = "green";
+                this.emitToUI("new-status", statusData);
+            } else {
+                statusData.newMessage = "Syncing Contacts";
+                statusData.newColor = "yellow";
+                this.emitToUI("new-status", statusData);
+            }
+        });
 
         // First, fetch the corresponding contacts from the server
         const results: ResponseFormat = await new Promise((resolve, _) =>
@@ -244,6 +261,10 @@ export class BackendServer {
         }
 
         console.log("Finished importing contacts from server. Reloading window.");
+        syncComplete = true;
+        statusData.newMessage = "Sync Complete";
+        statusData.newColor = "green";
+        this.emitToUI("new-status", statusData);
         this.window.reload();
     }
 

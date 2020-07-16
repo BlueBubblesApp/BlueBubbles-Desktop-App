@@ -20,7 +20,6 @@ class MessagingView extends React.Component<object, MessagingViewProps> {
 
     async componentDidMount() {
         document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
-        // document.getElementById("TitleBarRight").classList.add("messagingTitleBarRight");\
         const config = await ipcRenderer.invoke("get-config");
         this.setState({ theme: config.theme });
 

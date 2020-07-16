@@ -150,6 +150,7 @@ class LoginView extends React.Component<object, LoginViewState> {
 
     render() {
         if (this.state.redirect) {
+            document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
             return <Redirect to={this.state.redirect} />;
         }
 

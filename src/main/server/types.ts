@@ -119,3 +119,8 @@ export enum ErrorTypes {
 }
 
 export type ValidTapback = "love" | "like" | "dislike" | "laugh" | "emphasize" | "question";
+
+export type StatusData = {
+    newMessage: String;
+    newColor?: String;
+};

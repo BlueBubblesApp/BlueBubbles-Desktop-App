@@ -37,6 +37,7 @@
     font-family: "SF UI Display Bold";
     font-size: 14px;
     color: var(--sub-title-color);
+    white-space: nowrap;
 }
 
 .showStatusMessageDiv {
