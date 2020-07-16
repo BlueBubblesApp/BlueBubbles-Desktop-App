@@ -20,7 +20,7 @@ import { SocketService, QueueService } from "@server/services";
 // Renderer imports
 import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
 
-import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, StatusData } from "./types";
+import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, StatusData, SyncStatus } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
 import { Attachment, Handle } from "./databases/chat/entity";
 
@@ -41,6 +41,8 @@ export class BackendServer {
 
     servicesStarted: boolean;
 
+    syncStatus: SyncStatus;
+
     constructor(window: BrowserWindow) {
         this.window = window;
 
@@ -54,6 +56,13 @@ export class BackendServer {
 
         this.setupComplete = false;
         this.servicesStarted = false;
+
+        // Set a default sync status (defaults to being in progress)
+        this.syncStatus = {
+            completed: false,
+            message: "Syncing...",
+            error: false
+        };
     }
 
     /**
@@ -170,6 +179,7 @@ export class BackendServer {
 
     async fetchContactsFromServerDb(): Promise<void> {
         console.log("Fetching contacts from server's Contacts Database...");
+        this.setSyncStatus({ message: "Fetching Contacts...", completed: false, error: false });
 
         // First, let's get all the handle addresses
         const handles = await this.chatRepo.getHandles();
@@ -182,6 +192,7 @@ export class BackendServer {
         if (results.status !== 200) throw new Error(results.error.message);
 
         const data = results.data as (HandleResponse & { firstName: string; lastName: string })[];
+        this.setSyncStatus({ message: "Updating Contacts...", completed: false, error: false });
         console.log(`Found ${data.length} contacts from server's Contacts Database. Saving.`);
 
         for (const result of data) {
@@ -203,34 +214,23 @@ export class BackendServer {
             }
         }
 
+        this.setSyncStatus({ message: "Sync Finished", completed: true, error: false });
         console.log("Finished importing contacts from server. Reloading window.");
         this.window.reload();
     }
 
     async fetchContactsFromServerVcf(): Promise<void> {
         console.log("Fetching contacts from server's Contacts App...");
-        let syncComplete = false;
-        const statusData: StatusData = {
-            newMessage: null,
-            newColor: null
-        };
+        this.setSyncStatus({ message: "Fetching Contacts...", completed: false, error: false });
 
-        ipcMain.handle("get-status", () => {
-            if (syncComplete) {
-                statusData.newMessage = "Sync Complete";
-                statusData.newColor = "green";
-                this.emitToUI("new-status", statusData);
-            } else {
-                statusData.newMessage = "Syncing Contacts";
-                statusData.newColor = "yellow";
-                this.emitToUI("new-status", statusData);
-            }
-        });
+        let now = new Date().getTime();
 
         // First, fetch the corresponding contacts from the server
         const results: ResponseFormat = await new Promise((resolve, _) =>
             this.socketService.server.emit("get-contacts-from-vcf", null, resolve)
         );
+
+        this.setSyncStatus({ message: "Updating Contacts...", completed: false, error: false });
 
         if (results.status !== 200) throw new Error(results.error.message);
         console.log("Parsing VCF file from server");
@@ -243,6 +243,7 @@ export class BackendServer {
         const handles = await this.chatRepo.getHandles();
 
         // Check if there is a contact for each handle's address
+        now = new Date().getTime();
         for (const handle of handles) {
             for (const contact of contacts) {
                 if (sanitizeAddress(handle.address) === sanitizeAddress(contact.address)) {
@@ -261,10 +262,7 @@ export class BackendServer {
         }
 
         console.log("Finished importing contacts from server. Reloading window.");
-        syncComplete = true;
-        statusData.newMessage = "Sync Complete";
-        statusData.newColor = "green";
-        this.emitToUI("new-status", statusData);
+        this.setSyncStatus({ message: "Sync Finished", completed: true, error: false });
         this.window.reload();
     }
 
@@ -367,9 +365,13 @@ export class BackendServer {
         // Save the last fetch date
         this.configRepo.set("lastFetch", now);
 
-        // Fetch contacts
-        this.fetchContactsFromServerVcf();
-        // this.fetchContactsFromServerDb();
+        try {
+            // Fetch contacts
+            this.fetchContactsFromServerVcf();
+            // this.fetchContactsFromServerDb();
+        } catch (ex) {
+            this.setSyncStatus({ message: ex.message, error: true, completed: true });
+        }
     }
 
     private startConfigListeners() {
@@ -391,6 +393,8 @@ export class BackendServer {
             "get-socket-status",
             (_, args) => this.socketService.server && this.socketService.server.connected
         );
+
+        ipcMain.handle("get-sync-status", (_, __) => this.syncStatus);
 
         ipcMain.handle("send-to-ui", (_, args) => this.window.webContents.send(args.event, args.contents));
     }
@@ -658,6 +662,28 @@ export class BackendServer {
         this.socketService.server.on("participant-left", (message: MessageResponse) =>
             this.queueService.add("save-message", message)
         );
+
+        this.socketService.server.on("disconnect", () => {
+            this.setSyncStatus({ completed: true, error: true, message: "Disconnected!" });
+        });
+
+        this.socketService.server.on("connect", () => {
+            this.setSyncStatus({ completed: true, error: false, message: "Connected!" });
+        });
+
+        this.socketService.server.on("reconnect_attempt", attempt => {
+            this.setSyncStatus({ completed: false, error: false, message: `Reconnecting (${attempt})` });
+        });
+    }
+
+    private setSyncStatus({ completed, message, error }: SyncStatus) {
+        const currentStatus = this.syncStatus;
+        if (completed !== undefined) currentStatus.completed = completed;
+        if (message !== undefined) currentStatus.message = message;
+        if (error !== undefined) currentStatus.error = error;
+
+        this.syncStatus = currentStatus;
+        this.emitToUI("set-sync-status", this.syncStatus);
     }
 
     private emitToUI(event: string, data: any) {

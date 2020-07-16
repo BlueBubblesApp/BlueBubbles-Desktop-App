@@ -41,10 +41,15 @@
 }
 
 .showStatusMessageDiv {
-    animation: fadeInAndOutMessage;
-    animation-delay: 0.2s;
-    animation-duration: 6s;
+    animation: fadeInMessage;
+    animation-duration: 0.5s;
     animation-fill-mode: forwards;
+}
+
+.hideStatusMessageDiv {
+    animation: fadeOutMessage;
+    animation-duration: 0.3s;
+    animation-fill-mode: backwards;
 }
 
 #statusDotDiv {
@@ -62,21 +67,46 @@
     transition: ease-in-out 0.25s;
 }
 
-@keyframes fadeInAndOutMessage {
+@keyframes fadeInMessage {
     0% {
         opacity: 0;
     }
 
-    10% {
+    25% {
+        opacity: 0.25;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    75% {
+        opacity: 0.75;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOutMessage {
+    0% {
         opacity: 1;
     }
 
-    90% {
-        opacity: 1;
+    25% {
+        opacity: 0.75;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    75% {
+        opacity: 0.25;
     }
 
     100% {
         opacity: 0;
-        visibility: hidden;
     }
 }
