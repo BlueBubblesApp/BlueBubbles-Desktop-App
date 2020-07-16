@@ -158,7 +158,7 @@ export const generateChatIconText = (chat: Chat) => {
         }
     }
 
-    return "X";
+    return "?";
 };
 
 export const sanitizeStr = (val: string) => {
