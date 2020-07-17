@@ -273,3 +273,43 @@
         transform: scaleY(1);
     }
 }
+
+/* Record Message  */
+#recordMessageDiv {
+    flex-grow: 1;
+    height: 45px;
+    display: flex;
+}
+
+#recordingVisWrap {
+    border-radius: 15px;
+    height: 28px;
+    width: 98%;
+    margin: auto;
+    background-color: var(--sub-title-color);
+    display: flex;
+}
+
+#recordingVis {
+    flex-grow: 1;
+}
+
+#recordingLengthDiv {
+    width: 45px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 5px 0 5px;
+}
+
+#recordingLengthDiv p {
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    color: var(--secondary-color);
+    margin: 0;
+}
+
+#stopVoiceMessage {
+    fill: red;
+}

@@ -159,6 +159,7 @@
       "webpack-node-externals": "^1.7.2"
    },
    "dependencies": {
+      "@types/dom-mediacapture-record": "^1.0.7",
       "@types/emoji-regex": "^8.0.0",
       "@types/fluent-ffmpeg": "^2.1.14",
       "@types/node-notifier": "^6.0.1",
@@ -175,6 +176,7 @@
       "react-click-n-hold": "^1.0.7",
       "react-dom": "^16.13.1",
       "react-leaflet": "^2.7.0",
+      "react-mic": "^12.4.6",
       "react-redux": "^7.2.0",
       "react-router-dom": "^5.2.0",
       "react-router-transition": "^2.0.0",
