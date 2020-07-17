@@ -48,7 +48,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
     setCurrentChat(chat: Chat) {
         const now = new Date();
 
-        ipcRenderer.invoke("send-to-ui", { event: "new-status-message", contents: "Test" });
+        ipcRenderer.invoke("send-to-ui", { event: "close-details" });
         this.setState({ activeChat: chat });
         ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
         ipcRenderer.invoke("set-chat-last-viewed", { chat, lastViewed: now });

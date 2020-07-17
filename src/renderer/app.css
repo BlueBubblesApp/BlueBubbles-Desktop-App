@@ -16,7 +16,7 @@
 }
 
 /* Rounded Font */
-@import url("https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500&display=swap");
+@import url("https://use.typekit.net/pyr2zko.css");
 
 /* *{
   outline: 1px solid red;
@@ -81,6 +81,7 @@ a {
     --incoming-message-color: #bcbcbc;
     --outgoing-message-color: #006ee4;
     --placeholder-color: #424040;
+    --border-color: #5c5b5b;
 
     /* Blurred */
     --secondary-blurred-color: #e4e4e4;
@@ -104,7 +105,8 @@ a {
     --search-background-color: #545454;
     --incoming-message-color: #6b6b6b;
     --outgoing-message-color: #006ee4;
-    --placeholder-color: #5f5f5f;
+    --placeholder-color: #868686;
+    --border-color: #5c5b5b;
 
     /* Blurred */
     --secondary-blurred-color: #1e1e1e;

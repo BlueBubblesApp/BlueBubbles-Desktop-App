@@ -26,8 +26,8 @@
     max-height: 42px;
     min-height: 42px;
     background-color: var(--secondary-color);
-    border-top: 1px solid grey;
-    border-bottom: 1px solid grey;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,7 +43,7 @@
 
 #addContactWrap > p {
     font-family: "SF UI Display Bold";
-    font-size: 15px;
+    font-size: 14px;
     color: var(--blue-title-color);
 }
 
@@ -59,8 +59,8 @@
     align-items: center;
     justify-content: center;
     background-color: var(--secondary-color);
-    border-top: 1px solid grey;
-    border-bottom: 1px solid grey;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 8px;
 }
 
@@ -156,4 +156,12 @@
 
 .form-switch input:checked + i::after {
     transform: translate3d(22px, 2px, 0);
+}
+
+#recentImages {
+    width: 100%;
+    height: auto;
+    background-color: var(--secondary-color);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
 }

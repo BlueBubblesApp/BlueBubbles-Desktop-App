@@ -3,7 +3,7 @@
 /* eslint-disable class-methods-use-this */
 import { Link } from "react-router-dom";
 import { ipcRenderer, IpcRendererEvent } from "electron";
-import { SyncStatus } from "@server/types";
+import { SyncStatus, StatusData } from "@server/types";
 import * as React from "react";
 import "./BottomLeftNav.css";
 

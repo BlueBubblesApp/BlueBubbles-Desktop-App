@@ -132,29 +132,32 @@
 }
 
 #aContactInitials {
-    font-family: "M PLUS Rounded 1c" !important;
-    font-weight: 500 !important;
+    font-family: quicksand;
+    font-weight: 700;
+    font-style: normal;
     font-size: 23px;
-    fill: white;
 }
 
 #contactInitials {
-    font-family: "M PLUS Rounded 1c" !important;
-    font-weight: 500 !important;
+    font-family: quicksand, sans-serif;
+    font-weight: 700;
+    font-style: normal;
     font-size: 23px;
-    fill: red !important;
+    fill: white !important;
 }
 
 #groupContactInitials-1 {
-    font-family: "M PLUS Rounded 1c" !important;
-    font-weight: 500 !important;
+    font-family: quicksand, sans-serif;
+    font-weight: 700;
+    font-style: normal;
     font-size: 14px;
     fill: white;
 }
 
 #groupContactInitials-2 {
-    font-family: "M PLUS Rounded 1c" !important;
-    font-weight: 500 !important;
+    font-family: quicksand, sans-serif;
+    font-weight: 700;
+    font-style: normal;
     font-size: 14px;
     fill: white;
 }

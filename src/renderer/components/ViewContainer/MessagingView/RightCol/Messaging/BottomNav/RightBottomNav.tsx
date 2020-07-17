@@ -39,11 +39,19 @@ class RightBottomNav extends React.Component<Props, State> {
         });
 
         ipcRenderer.on("focused", (_, args) => {
-            document.getElementsByClassName("RightBottomNav")[0].classList.remove("RightBottomNavBlurred");
+            try {
+                document.getElementsByClassName("RightBottomNav")[0].classList.remove("RightBottomNavBlurred");
+            } catch {
+                // Do nothing
+            }
         });
 
         ipcRenderer.on("blurred", (_, args) => {
-            document.getElementsByClassName("RightBottomNav")[0].classList.add("RightBottomNavBlurred");
+            try {
+                document.getElementsByClassName("RightBottomNav")[0].classList.add("RightBottomNavBlurred");
+            } catch {
+                // Do nothing
+            }
         });
     }
 

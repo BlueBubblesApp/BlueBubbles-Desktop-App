@@ -59,8 +59,9 @@
 }
 
 .cls-2 {
-    font-family: "M PLUS Rounded 1c" !important;
-    font-weight: 500 !important;
+    font-family: quicksand, sans-serif;
+    font-weight: 700;
+    font-style: normal;
     font-size: 23px;
     fill: white;
 }

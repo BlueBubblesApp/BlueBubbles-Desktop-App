@@ -35,7 +35,9 @@ class LoginView extends React.Component<object, LoginViewState> {
 
     async componentDidMount() {
         this._isMounted = true;
-        document.getElementById("TitleBarRight").classList.add("loginTitleBarRight");
+        if (!this.state.redirect) {
+            document.getElementById("TitleBarRight").classList.add("loginTitleBarRight");
+        }
 
         // Add listener for updating the state
         ipcRenderer.on("setup-update", (_, args) => {
@@ -72,7 +74,7 @@ class LoginView extends React.Component<object, LoginViewState> {
 
         ipcRenderer.on("focused", (_, args) => {
             try {
-                document.getElementById("TitleBarRight").classList.add("loginTitleBarRight");
+                // document.getElementById("TitleBarRight").classList.add("loginTitleBarRight");
                 document.getElementsByClassName("LoginView")[0].classList.remove("LoginViewBlurred");
                 document.getElementById("TitleBarRight").classList.remove("LoginViewBlurred");
             } catch {
@@ -87,7 +89,7 @@ class LoginView extends React.Component<object, LoginViewState> {
 
         ipcRenderer.on("blurred", (_, args) => {
             try {
-                document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
+                // document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
                 document.getElementsByClassName("LoginView")[0].classList.add("LoginViewBlurred");
                 document.getElementById("TitleBarRight").classList.add("LoginViewBlurred");
             } catch {

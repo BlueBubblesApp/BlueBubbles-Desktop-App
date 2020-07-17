@@ -161,6 +161,31 @@ export const generateChatIconText = (chat: Chat) => {
     return "?";
 };
 
+export const generateDetailsIconText = (chat: Chat) => {
+    if (!chat) return "?";
+
+    const detailsInitials = [];
+    for (let i = 0; i < chat.participants.length; i += 1) {
+        if (chat.participants[i].firstName && chat.participants[i].lastName) {
+            // eslint-disable-next-line max-len
+            detailsInitials.push(
+                chat.participants[i].firstName.substr(0, 1) + chat.participants[i].lastName.substr(0, 1)
+            );
+        }
+        if (!chat.participants[i].firstName && !chat.participants[i].lastName) {
+            detailsInitials.push("?");
+        }
+        if (chat.participants[i].firstName && !chat.participants[i].lastName) {
+            detailsInitials.push(chat.participants[i].firstName.substr(0, 1));
+        }
+        if (!chat.participants[i].firstName && chat.participants[i].lastName) {
+            detailsInitials.push(chat.participants[i].lastName.substr(0, 1));
+        }
+    }
+
+    return detailsInitials;
+};
+
 export const sanitizeStr = (val: string) => {
     if (!val) return val;
     const objChar = String.fromCharCode(65532);
