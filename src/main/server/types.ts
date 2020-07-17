@@ -124,3 +124,9 @@ export type StatusData = {
     newMessage: String;
     newColor?: String;
 };
+
+export type SyncStatus = {
+    completed?: boolean;
+    message?: string;
+    error?: boolean;
+};

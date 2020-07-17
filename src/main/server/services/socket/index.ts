@@ -44,6 +44,8 @@ export class SocketService {
      * Sets up the socket listeners
      */
     async start(firstConnect = false): Promise<boolean> {
+        let retry = !firstConnect;
+
         if (!this.configRepo || !this.configRepo.get("serverAddress") || !this.configRepo.get("passphrase")) {
             console.error("Setup has not been completed!");
             return false;
@@ -58,6 +60,13 @@ export class SocketService {
 
             this.server.on("connect", () => {
                 console.log("Connected to server via socket.");
+
+                // If we've connected, and stayed connected (authenticated),
+                // Then we want to tell ourselves to retry when disconnected
+                setTimeout(() => {
+                    if (this.server && this.server.connected) retry = true;
+                }, 1000);
+
                 resolve(true);
             });
 
@@ -70,7 +79,7 @@ export class SocketService {
                 console.log("Unable to connect to server.");
 
                 // If this is the first/initial connect, disconnect if there is an error
-                if (firstConnect) this.server.disconnect();
+                if (!retry) this.server.disconnect();
                 reject(new Error("Unable to connect to server."));
             });
         });
