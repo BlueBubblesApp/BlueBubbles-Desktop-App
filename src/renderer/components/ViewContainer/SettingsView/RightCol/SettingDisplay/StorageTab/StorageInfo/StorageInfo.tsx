@@ -15,12 +15,6 @@ const StorageInfo = ({ appSize, storageSize, chatDataSize, attachmentFolderSize 
     const textPercentage = Math.ceil((chatDataSize / totalSize) * 100);
     const attachmentsPercentage = Math.ceil((attachmentFolderSize / totalSize) * 100);
 
-    console.log(appSize);
-    console.log(storageSize);
-    console.log(totalSize);
-    console.log(chatDataSize);
-    console.log(attachmentFolderSize);
-
     return (
         <div className="StorageInfo">
             <h1 id="storageMainTitle">Total App Size: {bytesToSize(totalSize)}</h1>

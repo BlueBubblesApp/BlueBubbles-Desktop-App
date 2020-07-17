@@ -114,3 +114,21 @@
     width: 10px;
     margin: 0px 4px 0px 2px;
 }
+
+#newChatNameInput {
+    outline: none;
+    border: none;
+    flex-grow: 1;
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    color: var(--main-title-color);
+    background-color: var(--secondary-color);
+    margin-bottom: 13px;
+}
+
+#newChatNameInput::placeholder {
+    color: var(--main-title-color);
+}
+
+#newChatNameInput:focus {
+}

@@ -21,6 +21,34 @@
     border-radius: 5px;
 }
 
+#showMore {
+    height: 42px;
+    max-height: 42px;
+    min-height: 42px;
+    background-color: var(--secondary-color);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#showMoreWrap {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    width: 93%;
+}
+
+#showMoreWrap > p {
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    color: var(--blue-title-color);
+}
+
+#showMoreWrap > p:hover {
+    opacity: 0.65;
+}
+
 #addContact {
     height: 42px;
     max-height: 42px;
@@ -48,7 +76,7 @@
 }
 
 #addContactWrap > p:hover {
-    opacity: 0.75;
+    opacity: 0.65;
 }
 
 #muteChat {

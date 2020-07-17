@@ -13,10 +13,28 @@ interface Props {
 }
 
 interface State {
-    participants: Array<String>;
+    showAllContacts: boolean;
 }
 
-class DetailsDisplay extends React.Component<Props, unknown> {
+class DetailsDisplay extends React.Component<Props, State> {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            showAllContacts: false
+        };
+    }
+
+    componentDidMount() {
+        if (this.props.chat.participants.length > 5) {
+            this.setState({ showAllContacts: false });
+        }
+    }
+
+    toggleShowAllContacts() {
+        this.setState({ showAllContacts: !this.state.showAllContacts });
+    }
+
     render() {
         const participants = this.props.chat.participants.map(handle => getSender(handle));
 
@@ -24,17 +42,43 @@ class DetailsDisplay extends React.Component<Props, unknown> {
             // eslint-disable-next-line react/self-closing-comp
             <div id="messageView-DetailsDisplay">
                 <>
-                    {participants
-                        ? participants.map((name, i) => (
-                              <DetailContact
-                                  key={this.props.chat.participants[i].address}
-                                  name={name}
-                                  chat={this.props.chat}
-                                  index={i}
-                              />
-                          ))
-                        : null}
+                    {participants ? (
+                        <>
+                            {this.state.showAllContacts
+                                ? participants.map((name, i) => (
+                                      <DetailContact
+                                          key={this.props.chat.participants[i].address}
+                                          name={name}
+                                          chat={this.props.chat}
+                                          index={i}
+                                      />
+                                  ))
+                                : participants
+                                      .slice(0, 5)
+                                      .map((name, i) => (
+                                          <DetailContact
+                                              key={this.props.chat.participants[i].address}
+                                              name={name}
+                                              chat={this.props.chat}
+                                              index={i}
+                                          />
+                                      ))}
+                        </>
+                    ) : null}
                 </>
+                {participants.length > 5 ? (
+                    <div id="showMore">
+                        <div id="showMoreWrap">
+                            {this.state.showAllContacts ? (
+                                <p onClick={() => this.toggleShowAllContacts()}>Hide</p>
+                            ) : (
+                                <p onClick={() => this.toggleShowAllContacts()}>
+                                    Show More ({participants.length - 5})
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                ) : null}
                 <div id="addContact">
                     <div id="addContactWrap">
                         <p>+ Add Contact</p>
