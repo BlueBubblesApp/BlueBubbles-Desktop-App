@@ -86,7 +86,7 @@ export class ConfigRepository {
             await repo.save(cfg);
         }
 
-        this.config[name] = saniVal;
+        this.config[name] = value;
     }
 
     /**
