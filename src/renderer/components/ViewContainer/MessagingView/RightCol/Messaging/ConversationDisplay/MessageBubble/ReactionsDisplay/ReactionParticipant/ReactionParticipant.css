@@ -46,3 +46,41 @@
     justify-content: center;
     align-items: center; */
 }
+
+.aDisplayedLove {
+    transform: scale(0);
+    animation-name: heartbeat;
+    animation-duration: 0.65s;
+    animation-fill-mode: forwards;
+}
+
+.aDisplayedLike {
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: rotate-scale-up 0.5s linear both;
+}
+
+.aDisplayedDislike {
+    transform: scale(0);
+    transform-origin: top;
+    animation: rotate-scale-up 0.5s linear both;
+}
+
+.aDisplayedLaugh {
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: scale-up 0.4s linear both;
+}
+
+.aDisplayedEmphasize {
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: scale-up 0.45s linear both;
+}
+
+.aDisplayedQuestion {
+    height: 30px;
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: scale-up 0.45s linear both;
+}

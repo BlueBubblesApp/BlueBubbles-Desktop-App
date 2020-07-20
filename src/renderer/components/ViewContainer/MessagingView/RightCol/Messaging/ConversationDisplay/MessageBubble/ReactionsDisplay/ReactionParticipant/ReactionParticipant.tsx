@@ -249,7 +249,7 @@ C654.1641,1099.2389,655.7422,897.9987,654.1641,898.2689z"
                             <p>1</p>
                         </div>
                         <div className="aReactionTypeIcon">
-                            <svg className="aInChatDislike" viewBox="0 0 1567 1640">
+                            <svg className="aDisplayedDislike" viewBox="0 0 1567 1640">
                                 <g
                                     transform="translate(325 280) scale(.55)"
                                     fill={getComputedStyle(document.getElementById("TitleBarRight")).getPropertyValue(
@@ -455,7 +455,7 @@ C654.1641,1099.2389,655.7422,897.9987,654.1641,898.2689z"
                         <div className="aReactionTypeIcon">
                             <svg className="aDisplayedQuestion" viewBox="0 0 31.357 31.357">
                                 <g
-                                    transform="translate(6.7 4.2) scale(.55,.55)"
+                                    transform="translate(9.2 5.5) scale(.55,.55)"
                                     fill={getComputedStyle(document.getElementById("TitleBarRight")).getPropertyValue(
                                         "--sub-title-color"
                                     )}
