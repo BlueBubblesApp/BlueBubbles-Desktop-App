@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable class-methods-use-this */
@@ -428,11 +429,42 @@ class MessageBubble extends React.Component<Props, State> {
         parent.classList.toggle("activeReactionMessage");
         parent.style.setProperty("--hide-pseudo", "0");
 
+        const incomingReactions = document.getElementsByClassName("reactionOnIncoming") as HTMLCollectionOf<
+            HTMLElement
+        >;
+        const outgoingReactions = document.getElementsByClassName("reactionOnOutgoing") as HTMLCollectionOf<
+            HTMLElement
+        >;
+
+        // Hide all reactions
+        for (let i = 0; i < incomingReactions.length; i += 1) {
+            incomingReactions[i].style.display = "none";
+        }
+        for (let i = 0; i < outgoingReactions.length; i += 1) {
+            outgoingReactions[i].style.display = "none";
+        }
+
         this.setState({ isReactionsOpen: true });
     }
 
     closeReactionView() {
         document.getElementsByClassName("activeReactionMessage")[0].classList.toggle("activeReactionMessage");
+
+        const incomingReactions = document.getElementsByClassName("reactionOnIncoming") as HTMLCollectionOf<
+            HTMLElement
+        >;
+        const outgoingReactions = document.getElementsByClassName("reactionOnOutgoing") as HTMLCollectionOf<
+            HTMLElement
+        >;
+
+        // Show all reactions
+        for (let i = 0; i < incomingReactions.length; i += 1) {
+            incomingReactions[i].style.display = "initial";
+        }
+        for (let i = 0; i < outgoingReactions.length; i += 1) {
+            outgoingReactions[i].style.display = "initial";
+        }
+
         this.setState({ isReactionsOpen: false });
     }
 
