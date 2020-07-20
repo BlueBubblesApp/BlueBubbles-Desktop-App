@@ -13,10 +13,6 @@ interface Props {
 }
 
 class InChatReaction extends React.Component<Props, unknown> {
-    componentDidMount() {
-        console.log(this.props.reactionType);
-    }
-
     calculateNewX(offset) {
         const initial = -28;
         return initial + offset * -5;

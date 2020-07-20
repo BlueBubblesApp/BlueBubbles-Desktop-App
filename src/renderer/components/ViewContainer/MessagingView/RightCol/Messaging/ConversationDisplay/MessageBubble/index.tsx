@@ -24,7 +24,8 @@ import UnknownImage from "@renderer/assets/img/unknown_img.png";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
-import ReactionParticipant from "../ReactionParticipant/ReactionParticipant";
+import ReactionParticipant from "./ReactionsDisplay/ReactionParticipant/ReactionParticipant";
+import ReactionsDisplay from "./ReactionsDisplay/ReactionsDisplay";
 
 import "./MessageBubble.scss";
 import "leaflet/dist/leaflet.css";
@@ -501,7 +502,8 @@ class MessageBubble extends React.Component<Props, State> {
                 {this.state.isReactionsOpen ? (
                     <div id="reactionOverlay" onClick={() => this.closeReactionView()}>
                         <div id="reactionParticipantsDiv">
-                            <ReactionParticipant reactionSender="Maxwell" reactionType="Like" />
+                            {/* <ReactionParticipant reactionSender="Maxwell" reactionType="Like" /> */}
+                            <ReactionsDisplay message={message} />
                         </div>
                     </div>
                 ) : null}
