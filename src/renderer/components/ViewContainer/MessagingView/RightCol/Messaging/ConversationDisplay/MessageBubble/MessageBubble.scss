@@ -302,6 +302,90 @@
     text-overflow: ellipsis;
 }
 
+// Audio Attachment
+.OutgoingAudioAttachmentControls {
+    max-width: 100%;
+    min-width: 35%;
+    height: 35px;
+    color: var(--main-title-color);
+    font-family: "SF UI Display Light";
+    font-size: 14px;
+    background-color: var(--outgoing-message-color);
+    border-radius: 20px;
+    margin-top: 3px;
+    margin-bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.IncomingAudioAttachmentControls {
+    max-width: 100%;
+    height: 35px;
+    color: var(--main-title-color);
+    font-family: "SF UI Display Light";
+    font-size: 14px;
+    background-color: var(--incoming-message-color);
+    border-radius: 20px;
+    margin-top: 3px;
+    margin-bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.toggleAudioPlayPause {
+    width: 30px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 3px 0 5px;
+}
+
+.toggleAudioPlayPause > p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.audioVisPrev {
+    height: 5px;
+    flex-grow: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 3px 0 3px;
+    background-color: var(--sub-title-color);
+    border-radius: 10px;
+}
+
+.audioVisProgress {
+    height: 5px;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.audioVisPrev > p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.audioLengthDisplay {
+    width: 35px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 6px 0 3px;
+}
+
+.audioLengthDisplay > p {
+    margin-top: 0;
+    margin-bottom: 0;
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+}
+
 @keyframes fade {
     0% {
         opacity: 0;
@@ -348,7 +432,7 @@
     }
 }
 
-// Reactions
+// New Reactions
 #reactionOverlay {
     top: 35px;
     height: 100vh;
