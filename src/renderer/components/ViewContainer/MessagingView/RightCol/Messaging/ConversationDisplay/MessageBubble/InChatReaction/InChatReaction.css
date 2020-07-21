@@ -1,0 +1,40 @@
+.reactionOnIncoming {
+    position: absolute;
+    top: -17px;
+    right: -25px;
+    transition: ease-in-out 0.2s;
+    animation: scaleIn;
+    animation-duration: 0.2s;
+    animation-fill-mode: forwards;
+}
+
+.reactionOnOutgoing {
+    position: absolute;
+    top: -17px;
+    transition: ease-in-out 0.2s;
+    animation: scaleIn-Outgoing;
+    animation-duration: 0.2s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn-Outgoing {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(-1, 1);
+        opacity: 1;
+    }
+}

@@ -1,3 +1,6 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-unused-expressions */
+/* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable max-len */
 import * as React from "react";
@@ -21,11 +24,13 @@ import UnknownImage from "@renderer/assets/img/unknown_img.png";
 import { AttachmentDownload } from "./@types";
 import DownloadProgress from "./DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
-import ReactionParticipant from "../ReactionParticipant/ReactionParticipant";
+import ReactionParticipant from "./ReactionsDisplay/ReactionParticipant/ReactionParticipant";
+import ReactionsDisplay from "./ReactionsDisplay/ReactionsDisplay";
 
 import "./MessageBubble.scss";
 import "leaflet/dist/leaflet.css";
 import NewReaction from "./NewReaction/NewReaction";
+import InChatReaction from "./InChatReaction/InChatReaction";
 
 // If we don't do this, the marker won't show
 // eslint-disable-next-line no-underscore-dangle
@@ -53,6 +58,7 @@ type Props = {
 type State = {
     attachments: AttachmentDownload[];
     isReactionsOpen: boolean;
+    isAudioPlaying: boolean;
 };
 
 let subdir = "";
@@ -134,74 +140,203 @@ const setFallbackImage = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = UnknownImage;
 };
 
-const renderAttachment = (attachment: AttachmentDownload) => {
-    if (attachment.progress === 100) {
-        const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+class MessageBubble extends React.Component<Props, State> {
+    constructor(props) {
+        super(props);
 
-        // Render based on mime type
-        if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
-            const mime = attachment.mimeType ?? "image/pluginPayloadAttachment";
+        this.state = {
+            attachments: [],
+            isReactionsOpen: false,
+            isAudioPlaying: false
+        };
+    }
+
+    // eslint-disable-next-line react/sort-comp
+    renderAttachment(attachment: AttachmentDownload) {
+        if (attachment.progress === 100) {
+            const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+
+            // Render based on mime type
+            if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
+                const mime = attachment.mimeType ?? "image/pluginPayloadAttachment";
+                return (
+                    <img
+                        key={attachment.guid}
+                        className="Attachment"
+                        src={`data:${mime};base64,${attachment.data}`}
+                        alt={attachment.transferName}
+                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                        onError={setFallbackImage}
+                    />
+                );
+            }
+
+            if (attachment.mimeType.startsWith("video") && attachment.data) {
+                let mime = attachment.mimeType;
+                if (!supportedVideoTypes.includes(mime)) mime = "video/mp4";
+                return (
+                    <video
+                        key={attachment.guid}
+                        id={attachment.guid}
+                        className="Attachment"
+                        autoPlay
+                        muted
+                        loop
+                        controls
+                    >
+                        <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
+                    </video>
+                );
+            }
+
+            if (attachment.mimeType.startsWith("audio") && attachment.data) {
+                let mime = attachment.mimeType;
+                if (!supportedAudioTypes.includes(mime)) mime = "audio/mp3";
+
+                const audio = document.getElementById(attachment.guid) as HTMLAudioElement;
+                const ctrl = document.getElementById("toggleAudioPlayPause");
+
+                const togglePause = () => {
+                    this.setState({ isAudioPlaying: false });
+                    audio.pause();
+                };
+
+                const togglePlay = () => {
+                    this.setState({ isAudioPlaying: true });
+                    audio.play();
+                };
+
+                const audioEnded = () => {
+                    this.setState({ isAudioPlaying: false });
+                };
+                let audioLength;
+
+                if (audio) {
+                    const audioCurrentLength = audio.currentTime;
+                    audioLength = audio.duration;
+                    document.getElementById(`audioVisProgress${attachment.guid}`).style.width = `${(
+                        (audioCurrentLength / audioLength) *
+                        100
+                    ).toString()}%`;
+                    audio.addEventListener(
+                        "ended",
+                        function() {
+                            audioEnded();
+                        },
+                        false
+                    );
+                }
+
+                const calculateTotalValue = length => {
+                    const minutes = Math.floor(length / 60);
+                    const secondsInt = length - minutes * 60;
+                    const secondsStr = secondsInt.toString();
+                    let seconds;
+                    if (secondsStr[1] === ".") {
+                        seconds = `0${secondsStr.substr(0, 1)}`;
+                        if (seconds === "00") {
+                            seconds = "01";
+                        }
+                    } else {
+                        seconds = secondsStr.substr(0, 2);
+                    }
+
+                    const time = `${minutes}:${seconds}`;
+
+                    return time;
+                };
+
+                const updateAudioVisProgress = () => {
+                    document.getElementById(`audioVisProgress${attachment.guid}`).style.width = `${(
+                        (audio.currentTime / audioLength) *
+                        100
+                    ).toString()}%`;
+                };
+
+                return (
+                    <>
+                        <audio
+                            key={`audioVisProgress${attachment.guid}`}
+                            id={attachment.guid}
+                            className="Attachment"
+                            onTimeUpdate={() => updateAudioVisProgress()}
+                        >
+                            <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
+                        </audio>
+                        <div
+                            key={attachment.guid}
+                            className={
+                                attachment.isOutgoing
+                                    ? "OutgoingAudioAttachmentControls"
+                                    : "InComingAudioAttachmentControls"
+                            }
+                        >
+                            <div
+                                className="toggleAudioPlayPause"
+                                onClick={() => {
+                                    audio.paused ? togglePlay() : togglePause();
+                                }}
+                            >
+                                {this.state.isAudioPlaying ? (
+                                    <svg height="100%" width="100%" viewBox="0 0 100 100">
+                                        <circle
+                                            cx="50"
+                                            cy="50"
+                                            r="45"
+                                            fill="transparent"
+                                            stroke="white"
+                                            strokeWidth="5"
+                                        />
+                                        <rect x="30" y="26" width="15" height="46" rx="5" fill="white" />
+                                        <rect x="55" y="26" width="15" height="46" rx="5" fill="white" />
+                                    </svg>
+                                ) : (
+                                    <svg height="100%" width="100%" viewBox="0 0 100 100">
+                                        <circle
+                                            cx="50"
+                                            cy="50"
+                                            r="45"
+                                            fill="transparent"
+                                            stroke="white"
+                                            strokeWidth="5"
+                                        />
+                                        <polygon points="35,25 35,75 75,50" fill="white" />
+                                    </svg>
+                                )}
+                            </div>
+                            <div className="audioVisPrev">
+                                <div className="audioVisProgress" id={`audioVisProgress${attachment.guid}`} />
+                            </div>
+                            <div className="audioLengthDisplay">
+                                <p>{audioLength ? calculateTotalValue(audioLength) : "..."}</p>
+                            </div>
+                        </div>
+                    </>
+                );
+            }
+
+            if (attachment.mimeType === "text/x-vlocation") {
+                const longLat = parseAppleLocation(attachment.data);
+                const position = [longLat.longitude, longLat.latitude];
+                return (
+                    <Map center={position} zoom={13} className="Attachment MapLeaflet" key={attachment.guid}>
+                        <TileLayer url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}" />
+                        <Marker position={position} />
+                    </Map>
+                );
+            }
+
             return (
-                <img
+                <UnsupportedMedia
                     key={attachment.guid}
-                    className="Attachment"
-                    src={`data:${mime};base64,${attachment.data}`}
-                    alt={attachment.transferName}
-                    onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
-                    onError={setFallbackImage}
+                    attachment={attachment}
+                    onClick={() => openAttachment(attachmentPath)}
                 />
             );
         }
 
-        if (attachment.mimeType.startsWith("video") && attachment.data) {
-            let mime = attachment.mimeType;
-            if (!supportedVideoTypes.includes(mime)) mime = "video/mp4";
-            return (
-                <video key={attachment.guid} id={attachment.guid} className="Attachment" autoPlay muted loop controls>
-                    <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
-                </video>
-            );
-        }
-
-        if (attachment.mimeType.startsWith("audio") && attachment.data) {
-            let mime = attachment.mimeType;
-            if (!supportedAudioTypes.includes(mime)) mime = "audio/mp3";
-            return (
-                // eslint-disable-next-line jsx-a11y/media-has-caption
-                <audio key={attachment.guid} className="Attachment" controls>
-                    <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
-                </audio>
-            );
-        }
-
-        if (attachment.mimeType === "text/x-vlocation") {
-            const longLat = parseAppleLocation(attachment.data);
-            const position = [longLat.longitude, longLat.latitude];
-            return (
-                <Map center={position} zoom={13} className="Attachment MapLeaflet" key={attachment.guid}>
-                    <TileLayer url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}" />
-                    <Marker position={position} />
-                </Map>
-            );
-        }
-
-        return (
-            <UnsupportedMedia
-                key={attachment.guid}
-                attachment={attachment}
-                onClick={() => openAttachment(attachmentPath)}
-            />
-        );
+        return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
     }
-
-    return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
-};
-
-class MessageBubble extends React.Component<Props, State> {
-    state: State = {
-        attachments: [],
-        isReactionsOpen: false
-    };
 
     async componentDidMount() {
         const { message } = this.props;
@@ -295,11 +430,42 @@ class MessageBubble extends React.Component<Props, State> {
         parent.classList.toggle("activeReactionMessage");
         parent.style.setProperty("--hide-pseudo", "0");
 
+        const incomingReactions = document.getElementsByClassName("reactionOnIncoming") as HTMLCollectionOf<
+            HTMLElement
+        >;
+        const outgoingReactions = document.getElementsByClassName("reactionOnOutgoing") as HTMLCollectionOf<
+            HTMLElement
+        >;
+
+        // Hide all reactions
+        for (let i = 0; i < incomingReactions.length; i += 1) {
+            incomingReactions[i].style.display = "none";
+        }
+        for (let i = 0; i < outgoingReactions.length; i += 1) {
+            outgoingReactions[i].style.display = "none";
+        }
+
         this.setState({ isReactionsOpen: true });
     }
 
     closeReactionView() {
         document.getElementsByClassName("activeReactionMessage")[0].classList.toggle("activeReactionMessage");
+
+        const incomingReactions = document.getElementsByClassName("reactionOnIncoming") as HTMLCollectionOf<
+            HTMLElement
+        >;
+        const outgoingReactions = document.getElementsByClassName("reactionOnOutgoing") as HTMLCollectionOf<
+            HTMLElement
+        >;
+
+        // Show all reactions
+        for (let i = 0; i < incomingReactions.length; i += 1) {
+            incomingReactions[i].style.display = "initial";
+        }
+        for (let i = 0; i < outgoingReactions.length; i += 1) {
+            outgoingReactions[i].style.display = "initial";
+        }
+
         this.setState({ isReactionsOpen: false });
     }
 
@@ -336,7 +502,8 @@ class MessageBubble extends React.Component<Props, State> {
                 {this.state.isReactionsOpen ? (
                     <div id="reactionOverlay" onClick={() => this.closeReactionView()}>
                         <div id="reactionParticipantsDiv">
-                            <ReactionParticipant reactionSender="Maxwell" reactionType="Like" />
+                            {/* <ReactionParticipant reactionSender="Maxwell" reactionType="Like" /> */}
+                            <ReactionsDisplay message={message} />
                         </div>
                     </div>
                 ) : null}
@@ -346,7 +513,7 @@ class MessageBubble extends React.Component<Props, State> {
                         {/* If the attachment is a link */}
                         {links.length > 0 ? (
                             <div className={linkClassName} onClick={() => openLink(links[0])}>
-                                {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
+                                {attachments.map((attachment: AttachmentDownload) => this.renderAttachment(attachment))}
                                 <div className="linkBottomDiv">
                                     {/* Change first one Zach */}
                                     <p>{new URL(links[0]).hostname}</p>
@@ -361,7 +528,9 @@ class MessageBubble extends React.Component<Props, State> {
                                     (!olderMessage || olderMessage.handleId !== message.handleId) ? (
                                         <p className="MessageSender">{sender}</p>
                                     ) : null}
-                                    {attachments.map((attachment: AttachmentDownload) => renderAttachment(attachment))}
+                                    {attachments.map((attachment: AttachmentDownload) =>
+                                        this.renderAttachment(attachment)
+                                    )}
                                 </div>
                                 {text ? (
                                     <>
@@ -406,6 +575,19 @@ class MessageBubble extends React.Component<Props, State> {
                                     id={message.guid}
                                     style={{ marginBottom: useTail ? "3px" : "0" }}
                                 >
+                                    {message.hasReactions === true ? (
+                                        <>
+                                            {message.reactions.map((reaction, i) => (
+                                                <InChatReaction
+                                                    key={reaction.guid}
+                                                    isMessageFromMe={message.isFromMe}
+                                                    isReactionFromMe={reaction.isFromMe}
+                                                    reactionType={reaction.associatedMessageType}
+                                                    offset={i}
+                                                />
+                                            ))}
+                                        </>
+                                    ) : null}
                                     {text ? <p>{text}</p> : null}
                                 </div>
                             </ClickNHold>

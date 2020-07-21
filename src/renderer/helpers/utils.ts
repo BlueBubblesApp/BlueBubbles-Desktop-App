@@ -186,6 +186,28 @@ export const generateDetailsIconText = (chat: Chat) => {
     return detailsInitials;
 };
 
+export const generateReactionsDisplayIconText = (handle: Handle) => {
+    if (!handle) return "?";
+    if (handle === null) return "?";
+
+    const detailsInitials = [];
+    if (handle.firstName && handle.lastName) {
+        // eslint-disable-next-line max-len
+        return handle.firstName.substr(0, 1) + handle.lastName.substr(0, 1);
+    }
+    if (!handle.firstName && !handle.lastName) {
+        return "?";
+    }
+    if (handle.firstName && !handle.lastName) {
+        return handle.firstName.substr(0, 1);
+    }
+    if (!handle.firstName && handle.lastName) {
+        return handle.lastName.substr(0, 1);
+    }
+
+    return "?";
+};
+
 export const sanitizeStr = (val: string) => {
     if (!val) return val;
     const objChar = String.fromCharCode(65532);
