@@ -1,38 +1,16 @@
+/* eslint-disable react/prefer-stateless-function */
 import * as React from "react";
 import { BrowserRouter as Router, Route, HashRouter } from "react-router-dom";
 import "./ViewContainer.css";
-import { ipcRenderer } from "electron";
+import { AnimatedSwitch } from "react-router-transition";
 import MessagingView from "./MessagingView/MessagingView";
 import SettingsView from "./SettingsView/SettingsView";
 import LoginView from "./LoginView/LoginView";
 
-const { AnimatedSwitch } = require("react-router-transition");
-
-interface ViewContainerProps {
-    theme: string;
-}
-
-class ViewContainer extends React.Component<object, ViewContainerProps> {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            theme: ""
-        };
-    }
-
-    async componentDidMount() {
-        const config = await ipcRenderer.invoke("get-config");
-        this.setState({ theme: config.theme });
-
-        ipcRenderer.on("config-update", (_, args) => {
-            this.setState({ theme: args.theme });
-        });
-    }
-
+class ViewContainer extends React.Component {
     render() {
         return (
-            <div className="ViewContainer" data-theme={this.state.theme}>
+            <div className="ViewContainer">
                 <HashRouter>
                     <AnimatedSwitch
                         atEnter={{ opacity: 0.1 }}

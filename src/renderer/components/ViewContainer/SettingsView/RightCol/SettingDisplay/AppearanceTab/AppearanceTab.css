@@ -1,11 +1,11 @@
-.AppearanceTab{
+.AppearanceTab {
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-#AppearanceTitle{
+#AppearanceTitle {
     height: 35px;
     min-height: 35px;
     display: flex;
@@ -22,51 +22,66 @@
     margin: 0;
 }
 
-.testButton{
+.testButton {
     width: 25%;
     margin-bottom: 20px;
 }
 
-#AppearanceContainer{
+#AppearanceContainer {
     display: flex;
-    flex-flow: row nowrap;
+    flex-direction: column;
     flex-grow: 1;
+    justify-content: flex-start;
+    align-items: center;
+    width: 95%;
+}
+#windowFocusedDiv {
+    margin-left: 15%;
+    width: 85%;
+    display: flex;
+    margin-bottom: 10px;
+}
+
+#windowFocusedDiv > div > h1 {
+    margin: 0;
+    font-size: 26px;
+    font-family: "SF UI Display Bold";
+    color: var(--main-title-color);
+}
+
+#windowFocusedDiv > div {
+    display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
+    border: 2px solid grey;
+    border-radius: 10px;
+    padding: 5px;
 }
 
-#half1{
-    margin-right: 30px;
-    margin-left: 30px;
-}
-
-#half2{
-    margin-right: 30px;
-}
-
-#darkExample{
-    max-width:100%;
-    max-height:100%;
-    border-radius: 40px;
-    pointer-events: none;
-    border: 3px solid var(--background-color);
-}
-
-#lightExample{
-    max-width:100%;
-    max-height:100%;
-    border-radius: 40px;
-    pointer-events: none;
-    border: 3px solid var(--background-color);
-}
-
-.active-theme{
-    border: 3px solid var(--blue-color) !important;
-}
-
-.themeTitle{
+#windowFocusedDiv > div > p {
     color: var(--main-title-color);
-    font-family: "SF UI Display Bold";
-    font-size: 24px;
+    margin: 0 5px 0 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.down {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+}
+
+@media (max-width: 800px) {
+    #windowFocusedDiv {
+        margin-left: 5%;
+        width: 95%;
+    }
+}
+
+@media (max-width: 600px) {
+    #windowFocusedDiv {
+        margin-left: 0%;
+        width: 100%;
+    }
 }

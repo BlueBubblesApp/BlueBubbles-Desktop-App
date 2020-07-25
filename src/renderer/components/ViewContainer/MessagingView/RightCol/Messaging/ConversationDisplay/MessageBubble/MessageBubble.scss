@@ -1,8 +1,7 @@
 .MessageStatus {
-    color: grey;
-    font-size: 11px;
-    font-family: unset;
-    font-weight: bolder;
+    color: var(--chat-label-color);
+    font-family: "SF UI Display Bold";
+    font-size: 12px;
     margin-top: 1px;
     animation: fade 0.25s ease-in-out;
     transition: ease-in-out 0.25s;

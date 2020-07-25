@@ -7,7 +7,7 @@ import * as Notifier from "node-notifier";
 
 // Config and FileSystem Imports
 import { FileSystem } from "@server/fileSystem";
-import { DEFAULT_CONFIG_ITEMS } from "@server/constants";
+import { DEFAULT_CONFIG_ITEMS, DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME, DEFAULT_NORD_THEME } from "@server/constants";
 import { mergeUint8Arrays, parseVCards, sanitizeAddress, convertToSupportedType } from "@server/helpers/utils";
 
 // Database Imports
@@ -23,6 +23,7 @@ import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
 import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, StatusData, SyncStatus } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
 import { Attachment, Handle } from "./databases/chat/entity";
+import { Theme } from "./databases/config/entity";
 
 export class BackendServer {
     window: BrowserWindow;
@@ -140,6 +141,42 @@ export class BackendServer {
             }
         } catch (ex) {
             console.log(`Failed to setup default configurations! ${ex.message}`);
+        }
+
+        // Sets up dark theme
+        try {
+            const theme = new Theme();
+            for (const key of Object.keys(DEFAULT_DARK_THEME)) {
+                theme[key] = DEFAULT_DARK_THEME[key]();
+            }
+            console.log(theme);
+            await this.configRepo.setTheme(theme);
+        } catch (ex) {
+            console.log(`Failed to setup dark theme! ${ex.message}`);
+        }
+
+        // Sets up light theme
+        try {
+            const theme = new Theme();
+            for (const key of Object.keys(DEFAULT_LIGHT_THEME)) {
+                theme[key] = DEFAULT_LIGHT_THEME[key]();
+            }
+            console.log(theme);
+            await this.configRepo.setTheme(theme);
+        } catch (ex) {
+            console.log(`Failed to setup light theme! ${ex.message}`);
+        }
+
+        // Sets up nord theme
+        try {
+            const theme = new Theme();
+            for (const key of Object.keys(DEFAULT_NORD_THEME)) {
+                theme[key] = DEFAULT_NORD_THEME[key]();
+            }
+            console.log(theme);
+            await this.configRepo.setTheme(theme);
+        } catch (ex) {
+            console.log(`Failed to setup nord theme! ${ex.message}`);
         }
     }
 
@@ -388,6 +425,19 @@ export class BackendServer {
             return this.configRepo.config;
         });
 
+        ipcMain.handle("get-theme", async (_, themeName) => this.configRepo.getThemeByName(themeName));
+
+        // ipcMain.handle("get-theme", async (event, themeName) => {
+        //     const theme = await this.configRepo.getThemeByName(themeName);
+        //     console.log(theme);
+        //     return theme;
+        // });
+
+        ipcMain.handle("set-theme-value", async (event, args) => {
+            console.log(args);
+            await this.configRepo.setThemeValue(args.themeName, args.key, args.newValue);
+        });
+
         // eslint-disable-next-line no-return-await
         ipcMain.handle(
             "get-socket-status",
@@ -615,6 +665,7 @@ export class BackendServer {
                 notificationData.reply = true;
                 notificationData.timeout = 30000;
                 notificationData.message = text;
+                notificationData.sound = !this.configRepo.get("globalNotificationsMuted");
             }
 
             // Don't show a notification if there is no error or it's from me

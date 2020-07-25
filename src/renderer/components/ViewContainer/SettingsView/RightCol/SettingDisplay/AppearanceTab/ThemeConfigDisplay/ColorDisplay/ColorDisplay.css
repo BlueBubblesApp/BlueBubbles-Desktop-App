@@ -1,0 +1,59 @@
+.aColorDisplay {
+    height: 100%;
+    width: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 2px 0 2px;
+}
+
+.aColor {
+    height: 35px;
+    min-height: 35px;
+    width: 35px;
+    min-width: 35px;
+    border: 3px solid var(--sub-title-color);
+    border-radius: 10px;
+    margin-bottom: 3px;
+}
+
+.aColorHex {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Light";
+    font-size: 13px;
+    outline: none;
+    border: none;
+    background-color: var(--background-color);
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+}
+
+.popover {
+    position: absolute;
+    top: 35%;
+    z-index: 2;
+    animation: fade;
+    animation-duration: 0.4s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fade {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.cover {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 290px;
+}

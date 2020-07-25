@@ -1,16 +1,19 @@
 import { app } from "electron";
 import { createConnection, Connection, Long } from "typeorm";
 
-import { Config } from "./entity";
+import { Config, Theme } from "./entity";
 
 export class ConfigRepository {
     db: Connection = null;
 
     config: { [key: string]: any };
 
+    themes: Theme[];
+
     constructor() {
         this.db = null;
         this.config = {};
+        this.themes = [];
     }
 
     async initialize(): Promise<Connection> {
@@ -29,7 +32,7 @@ export class ConfigRepository {
             name: "config",
             type: "sqlite",
             database: dbPath,
-            entities: [Config],
+            entities: [Config, Theme],
             synchronize: isDev,
             logging: false
         });
@@ -39,6 +42,10 @@ export class ConfigRepository {
 
         // Load default config items
         await this.loadConfig();
+
+        // Load default themes
+        await this.loadDefaultThemes();
+
         return this.db;
     }
 
@@ -46,6 +53,12 @@ export class ConfigRepository {
         const repo = this.db.getRepository(Config);
         const items: Config[] = await repo.find();
         for (const i of items) this.config[i.name] = ConfigRepository.convertFromDbValue(i.value);
+    }
+
+    private async loadDefaultThemes() {
+        const repo = this.db.getRepository(Theme);
+        this.themes = await repo.find();
+        console.log(this.themes);
     }
 
     /**
@@ -87,6 +100,56 @@ export class ConfigRepository {
         }
 
         this.config[name] = saniVal;
+    }
+
+    /**
+     * Retrieves a theme in the database by the theme name
+     *
+     * @param themeName The theme name
+     */
+    async getThemeByName(themeName: string): Promise<Theme> {
+        const repo = this.db.getRepository(Theme);
+        const theme = await repo.findOne({ name: themeName });
+
+        return theme;
+    }
+
+    /**
+     * Sets a single value within a theme
+     *
+     * @param themeName The theme whose value should be changed
+     * @param key The column name to be changed
+     * @param newValue The new column value
+     */
+    async setThemeValue(themeName: string, key: string, newValue: string): Promise<void> {
+        const repo = this.db.getRepository(Theme);
+        const theme = await repo.findOne({ name: themeName });
+
+        if (theme) {
+            theme[key] = newValue;
+            await repo.update(theme, theme);
+        } else {
+            const newTheme = new Theme();
+            newTheme.name = themeName;
+            newTheme[key] = newValue;
+            await repo.save(newTheme);
+        }
+    }
+
+    /**
+     * Sets a theme in the database
+     *
+     * @param newTheme The theme to set
+     */
+    async setTheme(newTheme: Theme): Promise<void> {
+        const repo = this.db.getRepository(Theme);
+        const theme = await repo.findOne({ name: newTheme.name });
+
+        if (theme) {
+            await repo.update(theme, newTheme);
+        } else {
+            await repo.save(newTheme);
+        }
     }
 
     /**
