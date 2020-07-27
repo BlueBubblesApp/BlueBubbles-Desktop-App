@@ -292,7 +292,10 @@ class RightBottomNav extends React.Component<Props, State> {
                             )}
                         </>
                     ) : (
-                        <img id="sendIcon" onClick={() => this.sendMessage()} src={SendIcon} alt="send" />
+                        <svg id="sendIcon" viewBox="0 0 1000 1000" onClick={() => this.sendMessage()}>
+                            <circle r="500" cx="500" cy="500" id="sendIconBackground" />
+                            <polyline id="arrow" points="240 422 500 218 500 775 500 218 760 422" />
+                        </svg>
                     )}
                 </div>
             </div>

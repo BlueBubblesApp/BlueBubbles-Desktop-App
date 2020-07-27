@@ -55,7 +55,7 @@
 
 #close-button {
     margin-left: 10px;
-    background-color: #fc4e50;
+    background-color: var(--title-bar-close);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -63,7 +63,7 @@
 }
 
 #minimize-button {
-    background-color: #febe30;
+    background-color: var(--title-bar-minimize);
     margin: 0 8px 0 8px;
     display: flex;
     justify-content: center;
@@ -72,7 +72,7 @@
 }
 
 #maximize-button {
-    background-color: #38d744;
+    background-color: var(--title-bar-maximize);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -80,7 +80,7 @@
 }
 
 #unmaximize-button {
-    background-color: #38d744;
+    background-color: var(--title-bar-maximize);
     display: flex;
     justify-content: center;
     align-items: center;

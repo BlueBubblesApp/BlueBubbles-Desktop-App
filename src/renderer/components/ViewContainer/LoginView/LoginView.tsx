@@ -51,15 +51,6 @@ class LoginView extends React.Component<object, LoginViewState> {
         // Get the config, if we have a serverAddress and password, automatically
         // invoke the "submit" method
         const config = await ipcRenderer.invoke("get-config");
-        if (this._isMounted) {
-            this.setState({ theme: config.theme });
-        }
-
-        ipcRenderer.on("config-update", (_, args) => {
-            if (this._isMounted) {
-                this.setState({ theme: args.theme });
-            }
-        });
 
         if (config.serverAddress && config.passphrase) {
             const isConnected = await ipcRenderer.invoke("get-socket-status");
@@ -162,7 +153,7 @@ class LoginView extends React.Component<object, LoginViewState> {
         };
 
         return (
-            <div className="LoginView" data-theme={this.state.theme}>
+            <div className="LoginView">
                 {this.state.loading ? (
                     <div id="loadingContainer">
                         <h1>{this.state.loadingMessage}</h1>

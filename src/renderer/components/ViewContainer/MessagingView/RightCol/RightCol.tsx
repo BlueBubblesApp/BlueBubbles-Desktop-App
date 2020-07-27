@@ -30,9 +30,6 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
     }
 
     async componentDidMount() {
-        // const config = await ipcRenderer.invoke("get-config");
-        // this.setState({ isDetailsOpen: config.isDetailsOpen });
-
         ipcRenderer.on("open-details", () => {
             this.setState({ isDetailsOpen: true });
         });

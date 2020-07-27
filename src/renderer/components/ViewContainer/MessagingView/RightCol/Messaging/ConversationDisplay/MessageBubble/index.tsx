@@ -502,7 +502,6 @@ class MessageBubble extends React.Component<Props, State> {
                 {this.state.isReactionsOpen ? (
                     <div id="reactionOverlay" onClick={() => this.closeReactionView()}>
                         <div id="reactionParticipantsDiv">
-                            {/* <ReactionParticipant reactionSender="Maxwell" reactionType="Like" /> */}
                             <ReactionsDisplay message={message} />
                         </div>
                     </div>

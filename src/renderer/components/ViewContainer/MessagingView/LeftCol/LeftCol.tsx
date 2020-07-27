@@ -6,27 +6,8 @@ import LeftTopNav from "./TopNav/LeftTopNav";
 import LeftConversationNav from "./ConversationsNav/LeftConversationsNav";
 import BottomLeftNav from "./BottomNav/BottomLeftNav";
 
-interface LeftColProps {
-    theme: string;
-}
-
-class LeftCol extends React.Component<object, LeftColProps> {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            theme: ""
-        };
-    }
-
+class LeftCol extends React.Component {
     async componentDidMount() {
-        const config = await ipcRenderer.invoke("get-config");
-        this.setState({ theme: config.theme });
-
-        ipcRenderer.on("config-update", (_, args) => {
-            this.setState({ theme: args.theme });
-        });
-
         ipcRenderer.on("focused", (_, args) => {
             try {
                 document.getElementsByClassName("LeftCol-Mes")[0].classList.remove("LeftCol-Mes-Blurred");
@@ -72,7 +53,7 @@ class LeftCol extends React.Component<object, LeftColProps> {
 
     render() {
         return (
-            <div className="LeftCol-Mes" data-theme={this.state.theme}>
+            <div className="LeftCol-Mes">
                 <LeftTopNav />
                 <LeftConversationNav />
                 <BottomLeftNav />

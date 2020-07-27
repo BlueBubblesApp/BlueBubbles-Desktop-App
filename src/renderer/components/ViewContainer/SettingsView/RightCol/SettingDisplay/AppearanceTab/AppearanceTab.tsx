@@ -1,12 +1,16 @@
+/* eslint-disable max-len */
+/* eslint-disable react/no-unused-state */
 import * as React from "react";
 import { ipcRenderer, App } from "electron";
 
 import "./AppearanceTab.css";
-import DarkExample from "./dark-example.png";
-import LightExample from "./light-example.png";
+import ThemeCarousel from "./ThemeCarousel/ThemeCarousel";
+import ThemeConfigDisplay from "./ThemeConfigDisplay/ThemeConfigDisplay";
 
 interface AppearanceTabState {
-    theme: string;
+    currentTheme: string;
+    isEditingBlurred: boolean;
+    allThemes: Array<string>;
 }
 
 class AppearanceTab extends React.Component<object, AppearanceTabState> {
@@ -14,61 +18,64 @@ class AppearanceTab extends React.Component<object, AppearanceTabState> {
         super(props);
 
         this.state = {
-            theme: ""
+            currentTheme: "",
+            isEditingBlurred: false,
+            allThemes: null
         };
     }
 
     async componentDidMount() {
         const config = await ipcRenderer.invoke("get-config");
-        this.setState({ theme: config.theme });
+        this.setState({ currentTheme: config.currentTheme, allThemes: config.allThemes });
 
         ipcRenderer.on("config-update", (_, args) => {
-            this.setState({ theme: args.theme });
+            this.setState({ currentTheme: args.currentTheme, allThemes: args.allThemes });
         });
     }
 
     handleThemeChange(e) {
         const newTheme = e.target.getAttribute("data-set-theme");
-        this.setState({ theme: newTheme });
-    
+        this.setState({ currentTheme: newTheme });
+
         // Find every element with data-theme attribute and set to new theme
         const themeElements = [document.querySelectorAll("*[data-theme]")];
         for (let i = 0; i < themeElements[0].length; i += 1) {
             themeElements[0][i].setAttribute("data-theme", newTheme);
         }
-    
+
         // Set new theme and save to databse
-        const config = { theme: newTheme };
+        const config = { currentTheme: newTheme };
         ipcRenderer.invoke("set-config", config);
-    };
+    }
 
     render() {
         return (
-            <div className="AppearanceTab">
+            <>
                 <div id="AppearanceTitle">
                     <h1>Appearance</h1>
                 </div>
-                <div id="AppearanceContainer">
-                    <div id="half1" onClick={(e) => this.handleThemeChange(e)} data-set-theme="dark">
-                        <p className="themeTitle">Dark</p>
-                        <img
-                            id="darkExample"
-                            className={this.state.theme === "dark" ? "active-theme" : ""}
-                            src={DarkExample}
-                            alt="dark-example"
-                        />
-                    </div>
-                    <div id="half2" onClick={(e) => this.handleThemeChange(e)} data-set-theme="light">
-                        <p className="themeTitle">Light</p>
-                        <img
-                            id="lightExample"
-                            className={this.state.theme === "light" ? "active-theme" : ""}
-                            src={LightExample}
-                            alt="light-example"
-                        />
+                <div className="AppearanceTab">
+                    <div id="AppearanceContainer">
+                        <ThemeCarousel isEditingBlurred={this.state.isEditingBlurred} />
+                        <div id="windowFocusedDiv">
+                            <div>
+                                <h1 id="windowFocusedSetting">
+                                    {this.state.isEditingBlurred ? "Unfocused" : "Focused"}
+                                </h1>
+                                <p>
+                                    <i
+                                        className="arrow down"
+                                        onClick={() =>
+                                            this.setState({ isEditingBlurred: !this.state.isEditingBlurred })
+                                        }
+                                    />
+                                </p>
+                            </div>
+                        </div>
+                        <ThemeConfigDisplay isEditingBlurred={this.state.isEditingBlurred} />
                     </div>
                 </div>
-            </div>
+            </>
         );
     }
 }

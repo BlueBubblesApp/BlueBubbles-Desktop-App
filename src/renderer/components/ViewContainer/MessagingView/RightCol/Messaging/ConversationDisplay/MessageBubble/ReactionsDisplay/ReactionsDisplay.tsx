@@ -2,11 +2,17 @@
 /* eslint-disable max-len */
 /* eslint-disable no-underscore-dangle */
 import * as React from "react";
-import { Message } from "@server/databases/chat/entity";
+import { Message as DBMessage, Chat } from "@server/databases/chat/entity";
 import { getSender, generateReactionsDisplayIconText } from "@renderer/helpers/utils";
 import ReactionParticipant from "./ReactionParticipant/ReactionParticipant";
 
 import "./ReactionsDisplay.css";
+
+type Message = DBMessage & {
+    tempGuid: string;
+    reactions: DBMessage[];
+    reactionsChecked: boolean;
+};
 
 interface Props {
     message: Message;

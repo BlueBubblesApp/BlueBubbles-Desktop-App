@@ -15,7 +15,7 @@
 #leftAttachmentButton-NewMessage {
     width: 20px;
     height: 20px;
-    background-color: grey;
+    background-color: var(--attachment-button-color);
     margin-left: 10px;
     padding: 3px;
     border-radius: 3px;
@@ -33,7 +33,7 @@
 }
 
 #attachIcon-NewMessage {
-    fill: white;
+    fill: var(--attachment-clip-color);
     height: 17px;
 }
 
@@ -54,9 +54,9 @@
     padding: 3px 35px 3px 8px;
     font-family: "SF UI Display Bold";
     font-size: 15px;
-    color: var(--main-title-color);
+    color: var(--right-primary-color);
     outline: none;
-    border: 1px solid var(--sub-title-color);
+    border: 1px solid var(--right-secondary-color);
     margin: 0px 2px 0px 12px;
     background-color: var(--secondary-color);
 }
@@ -77,13 +77,28 @@
 #sendIcon {
     margin-bottom: 2px;
     height: 28px;
-    transition: all 0.3s ease;
+    transition: ease-in-out 0.1s;
+}
+
+#sendIcon {
+    margin-bottom: 2px;
+    height: 28px;
+    transition: ease-in-out 0.1s;
+    fill: var(--send-button-color);
+}
+
+#arrow {
+    fill: none;
+    stroke: var(--send-button-arrow-color);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 80px;
 }
 
 #emojiPickerButton {
     position: absolute;
     right: 54px;
-    fill: var(--sub-title-color);
+    fill: var(--right-secondary-color);
     transition: ease-in-out 0.1s;
 }
 
@@ -153,7 +168,7 @@
 }
 
 #recordVoiceMessage {
-    fill: var(--sub-title-color);
+    fill: var(--right-secondary-color);
 }
 
 #recordVoiceMessage:hover {
