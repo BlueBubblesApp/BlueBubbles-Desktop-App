@@ -17,6 +17,7 @@
     margin-left: 12px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
 .NotificationsTitle > div > p {
