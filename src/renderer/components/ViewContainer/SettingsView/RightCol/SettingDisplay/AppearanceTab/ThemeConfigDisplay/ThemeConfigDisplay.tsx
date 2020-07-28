@@ -39,6 +39,7 @@ class ThemeConfigDisplay extends React.Component<Props, State> {
                 backgroundColor: "",
                 rightSidePrimaryColor: "",
                 rightSideSecondaryColor: "",
+                rightSideDetailsTitleColor: "",
                 chatLabelColor: "",
                 incomingMessageColor: "",
                 incomingMessageTextColor: "",
@@ -137,7 +138,12 @@ class ThemeConfigDisplay extends React.Component<Props, State> {
                             hex4={this.state.currentTheme.sendButtonColor}
                             hex5={this.state.currentTheme.sendArrowColor}
                         />
-                        <ColorDisplayRow title1="In Chat Labels" hex1={this.state.currentTheme.chatLabelColor} />
+                        <ColorDisplayRow
+                            title1="In Chat Labels"
+                            title2="Accent Title"
+                            hex1={this.state.currentTheme.chatLabelColor}
+                            hex4={this.state.currentTheme.rightSideDetailsTitleColor}
+                        />
                     </>
                 )}
             </div>

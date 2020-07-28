@@ -27,18 +27,10 @@ class NotificationsTitle extends React.Component<Props, State> {
 
     async componentDidMount() {
         const config = await ipcRenderer.invoke("get-config");
-
-        if (config.globalNotificationsMuted === "1" || config.globalNotificationsMuted === true) {
-            this.setState({ globalNotificationsMuted: true });
-        } else {
-            this.setState({ globalNotificationsMuted: false });
-        }
-
-        if (config.globalNotificationsDisabled === "1" || config.globalNotificationsDisabled === true) {
-            this.setState({ globalNotificationsDisabled: true });
-        } else {
-            this.setState({ globalNotificationsDisabled: false });
-        }
+        this.setState({
+            globalNotificationsMuted: config.globalNotificationsMuted,
+            globalNotificationsDisabled: config.globalNotificationsDisabled
+        });
 
         console.log(config);
 

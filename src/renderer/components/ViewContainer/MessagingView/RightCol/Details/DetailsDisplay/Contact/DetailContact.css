@@ -39,7 +39,7 @@
 }
 
 #JumpToContact {
-    fill: var(--blue-title-color);
+    fill: var(--right-accent-title-color);
     justify-self: flex-end;
     height: 23px;
     width: 23px;

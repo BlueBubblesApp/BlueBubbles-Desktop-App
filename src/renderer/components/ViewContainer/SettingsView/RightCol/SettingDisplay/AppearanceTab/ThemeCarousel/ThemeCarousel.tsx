@@ -39,6 +39,7 @@ class ThemeCarousel extends React.Component<Props, State> {
                 backgroundColor: "",
                 rightSidePrimaryColor: "",
                 rightSideSecondaryColor: "",
+                rightSideDetailsTitleColor: "",
                 chatLabelColor: "",
                 incomingMessageColor: "",
                 incomingMessageTextColor: "",
@@ -133,6 +134,16 @@ class ThemeCarousel extends React.Component<Props, State> {
                             width="275"
                             fill={this.state.currentTheme.searchBackgroundColor}
                         />
+                        {/* Search Placeholder */}
+                        <text
+                            x="35"
+                            y="105"
+                            fontFamily="SF UI Display Bold"
+                            fontSize="40"
+                            fill={this.state.currentTheme.searchPlaceholderColor}
+                        >
+                            Search
+                        </text>
                         {/* Active Chat */}
                         <rect x="0" y="284" height="140" width="400" fill={this.state.currentTheme.blueColor} />
                         {/* New Chat Button */}
@@ -244,6 +255,15 @@ class ThemeCarousel extends React.Component<Props, State> {
                         >
                             Chat Participants
                         </text>
+                        <text
+                            x="1435"
+                            y="100"
+                            fontFamily="SF UI Display Bold"
+                            fontSize="40"
+                            fill={this.state.currentTheme.rightSideDetailsTitleColor}
+                        >
+                            Details
+                        </text>
                         {/* Outgoing Message */}
                         <rect
                             x="1175"
@@ -253,6 +273,15 @@ class ThemeCarousel extends React.Component<Props, State> {
                             width="400"
                             fill={this.state.currentTheme.outgoingMessageColor}
                         />
+                        <text
+                            x="1200"
+                            y="250"
+                            fontFamily="SF UI Display Bold"
+                            fontSize="40"
+                            fill={this.state.currentTheme.outgoingMessageTextColor}
+                        >
+                            Outgoing message
+                        </text>
                         <rect
                             x="1025"
                             y="300"
@@ -261,6 +290,16 @@ class ThemeCarousel extends React.Component<Props, State> {
                             width="550"
                             fill={this.state.currentTheme.outgoingMessageColor}
                         />
+                        {/* Chat Label */}
+                        <text
+                            x="1350"
+                            y="420"
+                            fontFamily="SF UI Display Bold"
+                            fontSize="35"
+                            fill={this.state.currentTheme.chatLabelColor}
+                        >
+                            Read 1:13 PM
+                        </text>
                         {/* Incoming Message */}
                         <rect
                             x="425"
@@ -270,6 +309,15 @@ class ThemeCarousel extends React.Component<Props, State> {
                             width="400"
                             fill={this.state.currentTheme.incomingMessageColor}
                         />
+                        <text
+                            x="450"
+                            y="450"
+                            fontFamily="SF UI Display Bold"
+                            fontSize="40"
+                            fill={this.state.currentTheme.incomingMessageTextColor}
+                        >
+                            Incoming message
+                        </text>
                         <rect
                             x="425"
                             y="500"
