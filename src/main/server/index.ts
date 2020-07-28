@@ -656,6 +656,9 @@ export class BackendServer {
                 customPath
             };
 
+            // Don't show a notificaiton if they have been disabled
+            if (this.configRepo.get("globalNotificationsDisabled")) return;
+
             // Build the notification parameters
             if (message.error) {
                 notificationData.subtitle = "Error";

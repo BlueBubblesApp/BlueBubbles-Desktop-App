@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable react/no-unused-state */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable react/prefer-stateless-function */
@@ -11,6 +12,7 @@ type Props = {
 
 type State = {
     globalNotificationsMuted: boolean;
+    globalNotificationsDisabled: boolean;
 };
 
 class NotificationsTitle extends React.Component<Props, State> {
@@ -18,20 +20,41 @@ class NotificationsTitle extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            globalNotificationsMuted: null
+            globalNotificationsMuted: null,
+            globalNotificationsDisabled: null
         };
     }
 
     async componentDidMount() {
         const config = await ipcRenderer.invoke("get-config");
-        this.setState({ globalNotificationsMuted: config.globalNotificationsMuted });
 
-        const checkBox: HTMLInputElement = document.getElementById("globalMuteCheckbox") as HTMLInputElement;
+        if (config.globalNotificationsMuted === "1" || config.globalNotificationsMuted === true) {
+            this.setState({ globalNotificationsMuted: true });
+        } else {
+            this.setState({ globalNotificationsMuted: false });
+        }
+
+        if (config.globalNotificationsDisabled === "1" || config.globalNotificationsDisabled === true) {
+            this.setState({ globalNotificationsDisabled: true });
+        } else {
+            this.setState({ globalNotificationsDisabled: false });
+        }
+
+        console.log(config);
+
+        const checkBoxMuted: HTMLInputElement = document.getElementById("globalMuteCheckbox") as HTMLInputElement;
+        const checkBoxDisabled: HTMLInputElement = document.getElementById("globalDisableCheckbox") as HTMLInputElement;
 
         if (this.state.globalNotificationsMuted) {
-            checkBox.checked = true;
+            checkBoxMuted.checked = true;
         } else {
-            checkBox.checked = false;
+            checkBoxMuted.checked = false;
+        }
+
+        if (this.state.globalNotificationsDisabled) {
+            checkBoxDisabled.checked = true;
+        } else {
+            checkBoxDisabled.checked = false;
         }
     }
 
@@ -41,14 +64,27 @@ class NotificationsTitle extends React.Component<Props, State> {
         this.setState({ globalNotificationsMuted: !this.state.globalNotificationsMuted });
     }
 
+    async handleChangeDisabled() {
+        const newConfig = { globalNotificationsDisabled: !this.state.globalNotificationsDisabled };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ globalNotificationsDisabled: !this.state.globalNotificationsDisabled });
+    }
+
     render() {
         return (
             <div className="NotificationsTitle">
                 <h2>{this.props.title}</h2>
                 <div>
-                    <p>Globally Muted</p>
+                    <p>Muted</p>
                     <label className="form-switch">
                         <input id="globalMuteCheckbox" type="checkbox" onClick={() => this.handleChangeMute()} />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Disabled</p>
+                    <label className="form-switch">
+                        <input id="globalDisableCheckbox" type="checkbox" onClick={() => this.handleChangeDisabled()} />
                         <i />
                     </label>
                 </div>

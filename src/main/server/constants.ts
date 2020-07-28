@@ -4,9 +4,10 @@ export const DEFAULT_CONFIG_ITEMS: { [key: string]: Function } = {
     lastFetch: () => 0,
     currentTheme: () => "dark",
     allThemes: () => ["dark", "light", "nord"],
-    isMakingNewChat: () => false,
+    isMakingNewChat: () => "0",
     chunkSize: () => 1024,
-    globalNotificationsMuted: () => false
+    globalNotificationsMuted: () => "0",
+    globalNotificationsDisabled: () => "0"
 };
 
 export const DEFAULT_DARK_THEME: { [key: string]: Function } = {
