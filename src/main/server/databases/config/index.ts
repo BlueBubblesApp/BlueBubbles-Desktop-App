@@ -99,7 +99,7 @@ export class ConfigRepository {
             await repo.save(cfg);
         }
 
-        this.config[name] = value;
+        this.config[name] = ConfigRepository.convertFromDbValue(saniVal);
     }
 
     /**

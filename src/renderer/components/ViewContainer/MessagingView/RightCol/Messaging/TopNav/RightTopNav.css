@@ -90,14 +90,14 @@
 }
 
 #convoDetailsDiv > p {
-    color: #007aff;
+    color: var(--right-accent-title-color);
     font-family: "SF UI Display Light";
     font-size: 15px;
     margin-bottom: 13px;
 }
 
 #convoDetailsDiv > p:hover {
-    color: #1a55c2;
+    opacity: 0.65;
     cursor: pointer;
 }
 

@@ -10,7 +10,23 @@ app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors");
 
 let win: BrowserWindow | null;
 const BlueBubbles = new BackendServer(win);
-BlueBubbles.start();
+
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+    app.quit();
+} else {
+    app.on("second-instance", (event, commandLine, workingDirectory) => {
+        if (win) {
+            if (win.isMinimized()) win.restore();
+            win.focus();
+        }
+    });
+
+    app.whenReady().then(() => {
+        BlueBubbles.start();
+    });
+}
 
 const createWindow = async () => {
     win = new BrowserWindow({

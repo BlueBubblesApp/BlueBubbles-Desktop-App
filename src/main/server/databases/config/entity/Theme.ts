@@ -44,6 +44,9 @@ export class Theme {
     @Column("text", { name: "rightSideSecondaryColor", nullable: true })
     rightSideSecondaryColor: string;
 
+    @Column("text", { name: "rightSideDetailsTitleColor", nullable: true })
+    rightSideDetailsTitleColor: string;
+
     @Column("text", { name: "chatLabelColor", nullable: true })
     chatLabelColor: string;
 

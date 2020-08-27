@@ -57,6 +57,7 @@ class TitleBar extends React.Component {
         document.documentElement.style.setProperty("--background-color", theme.backgroundColor);
         document.documentElement.style.setProperty("--right-primary-color", theme.rightSidePrimaryColor);
         document.documentElement.style.setProperty("--right-secondary-color", theme.rightSideSecondaryColor);
+        document.documentElement.style.setProperty("--right-accent-title-color", theme.rightSideDetailsTitleColor);
         document.documentElement.style.setProperty("--chat-label-color", theme.chatLabelColor);
         document.documentElement.style.setProperty("--incoming-message-color", theme.incomingMessageColor);
         document.documentElement.style.setProperty("--incoming-message-text-color", theme.incomingMessageTextColor);
@@ -87,6 +88,7 @@ class TitleBar extends React.Component {
             document.documentElement.style.setProperty("--background-color", newTheme.backgroundColor);
             document.documentElement.style.setProperty("--right-primary-color", newTheme.rightSidePrimaryColor);
             document.documentElement.style.setProperty("--right-secondary-color", newTheme.rightSideSecondaryColor);
+            document.documentElement.style.setProperty("--right-accent-title-color", theme.rightSideDetailsTitleColor);
             document.documentElement.style.setProperty("--chat-label-color", newTheme.chatLabelColor);
             document.documentElement.style.setProperty("--incoming-message-color", newTheme.incomingMessageColor);
             document.documentElement.style.setProperty(

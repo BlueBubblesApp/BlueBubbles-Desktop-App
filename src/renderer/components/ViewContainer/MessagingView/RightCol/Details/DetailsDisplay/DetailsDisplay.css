@@ -42,7 +42,7 @@
 #showMoreWrap > p {
     font-family: "SF UI Display Bold";
     font-size: 14px;
-    color: var(--blue-title-color);
+    color: var(--right-accent-title-color);
 }
 
 #showMoreWrap > p:hover {
@@ -72,7 +72,7 @@
 #addContactWrap > p {
     font-family: "SF UI Display Bold";
     font-size: 14px;
-    color: var(--blue-title-color);
+    color: var(--right-accent-title-color);
 }
 
 #addContactWrap > p:hover {
