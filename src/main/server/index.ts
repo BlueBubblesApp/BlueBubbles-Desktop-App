@@ -20,7 +20,7 @@ import { SocketService, QueueService } from "@server/services";
 // Renderer imports
 import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
 
-import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, StatusData, SyncStatus } from "./types";
+import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, SyncStatus } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
 import { Attachment, Handle } from "./databases/chat/entity";
 import { Theme } from "./databases/config/entity";
@@ -87,7 +87,7 @@ export class BackendServer {
 
         // Fetch the chats upon start
         console.log("Syncing initial chats...");
-        await this.fetchChats();
+        await this.syncWithServer();
     }
 
     /**
@@ -308,12 +308,91 @@ export class BackendServer {
      * This is what the server itself calls when it is refreshed or reloaded.
      * The front-end _should not_ call this function.
      */
-    async fetchChats(): Promise<void> {
+    async syncWithServer(): Promise<void> {
         if (!this.socketService?.server?.connected) {
             console.warn("Cannot fetch chats when no socket is connected!");
             return;
         }
 
+        const now = new Date();
+        const lastFetch = this.configRepo.get("lastFetch");
+        console.log(lastFetch);
+        if (!lastFetch) {
+            await this.performFullSync();
+        } else {
+            await this.performIncrementalSync(lastFetch as number);
+        }
+
+        // Save the last fetch date
+        this.configRepo.set("lastFetch", now);
+    }
+
+    async performIncrementalSync(lastFetch: number) {
+        const emitData = {
+            loading: true,
+            syncProgress: 0,
+            loginIsValid: true,
+            loadingMessage: "Connected to the server! Fetching messages...",
+            redirect: null
+        };
+        console.log(emitData.loadingMessage);
+        this.emitToUI("setup-update", emitData);
+
+        const args: GetChatMessagesParams = {
+            limit: 5000,
+            after: lastFetch,
+            withChats: true,
+            withHandle: true,
+            withAttachments: true,
+            withBlurhash: false,
+            where: [
+                {
+                    statement: "message.service = 'iMessage'",
+                    args: null
+                }
+            ]
+        };
+        const messages: MessageResponse[] = await this.socketService.getMessages(args);
+        emitData.loadingMessage = `Syncing ${messages.length} messages`;
+        console.log(emitData.loadingMessage);
+        this.emitToUI("setup-update", emitData);
+
+        let count = 1;
+        for (const message of messages) {
+            // Iterate over the chats that are associated with the message
+            for (const chat of message.chats ?? []) {
+                try {
+                    // Save each chat
+                    const chatData = ChatRepository.createChatFromResponse(chat);
+                    const savedChat = await this.chatRepo.saveChat(chatData);
+
+                    // Create the message and link it to the chat
+                    const msg = ChatRepository.createMessageFromResponse(message);
+                    await this.chatRepo.saveMessage(savedChat, msg);
+                } catch (ex) {
+                    console.error(`Failed to save message, [${message.guid}]`);
+                    console.log(ex);
+                }
+            }
+
+            // Emit status updates to the UI
+            emitData.loadingMessage = `Synced ${count} of ${messages.length} messages`;
+            emitData.syncProgress = Math.ceil((count / messages.length) * 100);
+            if (emitData.syncProgress > 100) emitData.syncProgress = 100;
+            console.log(emitData.loadingMessage);
+            this.emitToUI("setup-update", emitData);
+            this.emitToUI("message", message);
+            count += 1;
+        }
+
+        emitData.loadingMessage = "Finished syncing messages";
+        emitData.redirect = "/messaging";
+        emitData.syncProgress = 100;
+        console.log(emitData.loadingMessage);
+        this.emitToUI("setup-update", emitData);
+    }
+
+    async performFullSync() {
         const emitData = {
             loading: true,
             syncProgress: 0,
@@ -323,13 +402,10 @@ export class BackendServer {
         };
 
         const now = new Date();
-        const lastFetch = this.configRepo.get("lastFetch") as number;
         const chats: ChatResponse[] = await this.socketService.getChats({});
 
         emitData.syncProgress = 1;
-        emitData.loadingMessage = `Got ${chats.length} chats from the server since last fetch at ${new Date(
-            lastFetch
-        ).toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}`;
+        emitData.loadingMessage = `Got ${chats.length} chats from the server`;
         console.log(emitData.loadingMessage);
         this.emitToUI("setup-update", emitData);
 
@@ -351,10 +427,12 @@ export class BackendServer {
 
             // Build message request params
             const payload: GetChatMessagesParams = {
+                chatGuid: chat.guid,
                 withChats: false,
                 limit: 25,
                 offset: 0,
                 withBlurhash: true,
+                after: 1,
                 where: [
                     {
                         statement: "message.service = 'iMessage'",
@@ -362,14 +440,9 @@ export class BackendServer {
                     }
                 ]
             };
-            if (lastFetch) {
-                payload.after = lastFetch;
-                // Since we are fetching after a date, we want to get as much as we can
-                payload.limit = 1000;
-            }
 
             // Third, let's fetch the messages from the DB
-            const messages: MessageResponse[] = await this.socketService.getChatMessages(chat.guid, payload);
+            const messages: MessageResponse[] = await this.socketService.getMessages(payload);
             emitData.loadingMessage = `Syncing ${messages.length} messages for ${count} of ${chats.length} chats`;
             console.log(emitData.loadingMessage);
 
@@ -398,17 +471,6 @@ export class BackendServer {
             now.getTime()} ms].`;
         console.log(emitData.loadingMessage);
         this.emitToUI("setup-update", emitData);
-
-        // Save the last fetch date
-        this.configRepo.set("lastFetch", now);
-
-        try {
-            // Fetch contacts
-            this.fetchContactsFromServerVcf();
-            // this.fetchContactsFromServerDb();
-        } catch (ex) {
-            this.setSyncStatus({ message: ex.message, error: true, completed: true });
-        }
     }
 
     private startConfigListeners() {
@@ -499,7 +561,7 @@ export class BackendServer {
 
             // Start fetching the data
             this.startSocketHandlers();
-            this.fetchChats();
+            this.syncWithServer();
             return null; // Consistent return
         });
 
@@ -507,14 +569,14 @@ export class BackendServer {
         ipcMain.handle("get-chats", async (_, __) => await this.chatRepo.getChats());
 
         // eslint-disable-next-line no-return-await
-        ipcMain.handle("get-chat-messages", async (_, args) => {
+        ipcMain.handle("get-messages", async (_, args) => {
             const messages = await this.chatRepo.getMessages(args);
 
             // If there are no messages, let's check the server
             if (messages.length === 0) {
                 const chats = await this.chatRepo.getChats(args.chatGuid);
                 if (chats.length > 0) {
-                    const newMessages = await this.socketService.getChatMessages(args.chatGuid, args);
+                    const newMessages = await this.socketService.getMessages(args);
 
                     // Add the new messages to the list
                     for (const message of newMessages) {

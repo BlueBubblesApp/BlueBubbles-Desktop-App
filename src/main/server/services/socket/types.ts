@@ -8,6 +8,7 @@ export type DBWhereItem = {
 };
 
 export type GetChatMessagesParams = {
+    chatGuid?: string;
     offset?: number;
     limit?: number;
     after?: Date | number;

@@ -14,6 +14,8 @@ export class FileSystem {
 
     public static attachmentsDir = path.join(FileSystem.baseDir, "Attachments");
 
+    public static fcmDir = path.join(FileSystem.baseDir, "FCM");
+
     public static modules = path.join(__dirname.replace("app.asar/dist", "app.asar.unpacked"), "node_modules");
 
     public static resources = __dirname.replace("app.asar/dist", "resources");

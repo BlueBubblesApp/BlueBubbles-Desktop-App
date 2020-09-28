@@ -153,13 +153,14 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             // If there is no last message attached, get the last message
             const newChat = chat;
             if (!chat.lastMessage) {
-                const lastMessage = await ipcRenderer.invoke("get-chat-messages", {
+                const lastMessage = await ipcRenderer.invoke("get-messages", {
                     chatGuid: chat.guid,
                     withHandle: false,
                     withAttachments: false,
                     withChats: false,
                     offset: 0,
                     limit: 1,
+                    after: 1,
                     where: [
                         {
                             statement: "message.text IS NOT NULL",

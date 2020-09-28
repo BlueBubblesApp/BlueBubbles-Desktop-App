@@ -114,12 +114,13 @@ class RightConversationDisplay extends React.Component<Props, State> {
         this.setState({ isLoading: true });
 
         // Get the next page of messages
-        const messages: DBMessage[] = await ipcRenderer.invoke("get-chat-messages", {
+        const messages: DBMessage[] = await ipcRenderer.invoke("get-messages", {
             chatGuid: this.props.chat.guid,
             withHandle: true,
             withAttachments: true,
             withChat: false,
             limit: 50,
+            after: 1,
             before: messageTimestamp ?? new Date().getTime(),
             where: []
         });

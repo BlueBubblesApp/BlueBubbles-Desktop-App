@@ -97,26 +97,24 @@ export class SocketService {
         });
     }
 
-    async getChatMessages(
-        identifier: string,
-        {
-            offset = 0,
-            limit = 25,
-            after = null,
-            before = null,
-            withChats = false,
-            withHandle = true,
-            withAttachments = true,
-            withBlurhash = true,
-            sort = "DESC",
-            where = []
-        }: GetChatMessagesParams
-    ): Promise<MessageResponse[]> {
+    async getMessages({
+        chatGuid = null,
+        offset = 0,
+        limit = 25,
+        after = null,
+        before = null,
+        withChats = false,
+        withHandle = true,
+        withAttachments = true,
+        withBlurhash = true,
+        sort = "DESC",
+        where = []
+    }: GetChatMessagesParams): Promise<MessageResponse[]> {
         return new Promise<MessageResponse[]>((resolve, reject) => {
             this.server.emit(
-                "get-chat-messages",
+                "get-messages",
                 {
-                    identifier,
+                    chatGuid,
                     offset,
                     limit,
                     after,
