@@ -1,9 +1,6 @@
 import { ipcMain, BrowserWindow, shell, app } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
-import * as path from "path";
-import * as os from "os";
-import * as Notifier from "node-notifier";
 
 // Config and FileSystem Imports
 import { FileSystem } from "@server/fileSystem";
@@ -15,17 +12,14 @@ import { ConfigRepository } from "@server/databases/config";
 import { ChatRepository } from "@server/databases/chat";
 
 // Service Imports
-import { SocketService, QueueService } from "@server/services";
-
-// Renderer imports
-import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
+import { SocketService, QueueService, FCMService } from "@server/services";
 
 import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, SyncStatus } from "./types";
 import { GetChatMessagesParams } from "./services/socket/types";
 import { Attachment, Handle } from "./databases/chat/entity";
 import { Theme } from "./databases/config/entity";
 
-export class BackendServer {
+class BackendServer {
     window: BrowserWindow;
 
     db: Connection;
@@ -37,6 +31,8 @@ export class BackendServer {
     socketService: SocketService;
 
     queueService: QueueService;
+
+    fcmService: FCMService;
 
     setupComplete: boolean;
 
@@ -54,6 +50,7 @@ export class BackendServer {
         // Services
         this.socketService = null;
         this.queueService = null;
+        this.fcmService = null;
 
         this.setupComplete = false;
         this.servicesStarted = false;
@@ -84,10 +81,6 @@ export class BackendServer {
 
         console.log("Starting Configuration IPC Listeners...");
         this.startActionListeners();
-
-        // Fetch the chats upon start
-        console.log("Syncing initial chats...");
-        await this.syncWithServer();
     }
 
     /**
@@ -149,7 +142,6 @@ export class BackendServer {
             for (const key of Object.keys(DEFAULT_DARK_THEME)) {
                 theme[key] = DEFAULT_DARK_THEME[key]();
             }
-            console.log(theme);
             await this.configRepo.setTheme(theme);
         } catch (ex) {
             console.log(`Failed to setup dark theme! ${ex.message}`);
@@ -161,7 +153,7 @@ export class BackendServer {
             for (const key of Object.keys(DEFAULT_LIGHT_THEME)) {
                 theme[key] = DEFAULT_LIGHT_THEME[key]();
             }
-            console.log(theme);
+
             await this.configRepo.setTheme(theme);
         } catch (ex) {
             console.log(`Failed to setup light theme! ${ex.message}`);
@@ -173,7 +165,7 @@ export class BackendServer {
             for (const key of Object.keys(DEFAULT_NORD_THEME)) {
                 theme[key] = DEFAULT_NORD_THEME[key]();
             }
-            console.log(theme);
+
             await this.configRepo.setTheme(theme);
         } catch (ex) {
             console.log(`Failed to setup nord theme! ${ex.message}`);
@@ -202,13 +194,15 @@ export class BackendServer {
 
             // Start the socket service
             await this.socketService.start(true);
-
-            // Wait 1 second, then start the handlers if we are connected
-            setTimeout(() => {
-                if (this.socketService.server && this.socketService.server.connected) this.startSocketHandlers();
-            }, 1000);
         } catch (ex) {
             console.log(`Failed to setup socket service! ${ex.message}`);
+        }
+
+        try {
+            console.log("Initializing FCM service...");
+            FCMService.start();
+        } catch (ex) {
+            console.log(`Failed to setup queue service! ${ex.message}`);
         }
 
         this.servicesStarted = true;
@@ -316,7 +310,6 @@ export class BackendServer {
 
         const now = new Date();
         const lastFetch = this.configRepo.get("lastFetch");
-        console.log(lastFetch);
         if (!lastFetch) {
             await this.performFullSync();
         } else {
@@ -559,9 +552,6 @@ export class BackendServer {
                 return this.emitToUI("setup-update", errData);
             }
 
-            // Start fetching the data
-            this.startSocketHandlers();
-            this.syncWithServer();
             return null; // Consistent return
         });
 
@@ -695,116 +685,7 @@ export class BackendServer {
         ipcMain.handle("get-storage-info", async (_, payload) => FileSystem.getAppSizeData());
     }
 
-    private startSocketHandlers() {
-        if (!this.socketService.server || !this.socketService.server.connected) return;
-
-        const handleNewMessage = async (event: string, message: MessageResponse) => {
-            // First, add the message to the queue
-            this.queueService.add(event, message);
-
-            // Next, we want to create a notification for the new message
-            // If the window is focused, don't show a notification
-            if (this.window && this.window.isFocused()) return;
-
-            // Save the associated chat so we can get the participants to build the title
-            const chatData = message.chats[0];
-            const chat = ChatRepository.createChatFromResponse(chatData);
-            const savedChat = await this.chatRepo.saveChat(chat);
-            const chatTitle = generateChatTitle(savedChat);
-            const text = message.attachments.length === 0 ? message.text : "1 Attachment";
-
-            // Build the base notification parameters
-            let customPath = null;
-            if (os.platform() === "darwin")
-                customPath = path.join(
-                    FileSystem.modules,
-                    "node-notifier",
-                    "/vendor/mac.noindex/terminal-notifier.app/Contents/MacOS/terminal-notifier"
-                );
-
-            const notificationData: any = {
-                appId: "com.BlueBubbles.BlueBubbles-Desktop",
-                id: message.guid,
-                title: chatTitle,
-                icon: path.join(FileSystem.resources, "logo64.png"),
-                customPath
-            };
-
-            // Don't show a notificaiton if they have been disabled
-            if (this.configRepo.get("globalNotificationsDisabled")) return;
-
-            // Build the notification parameters
-            if (message.error) {
-                notificationData.subtitle = "Error";
-                notificationData.message = "Message failed to send";
-            } else {
-                notificationData.subtitle = "New Message";
-                notificationData.reply = true;
-                notificationData.timeout = 30000;
-                notificationData.message = text;
-                notificationData.sound = !this.configRepo.get("globalNotificationsMuted");
-            }
-
-            // Don't show a notification if there is no error or it's from me
-            if (!message.error && message.isFromMe) return;
-
-            Notifier.notify(notificationData, async (error, response, metadata) => {
-                if (error || response !== "replied") return;
-                const reply = metadata.activationValue;
-
-                // Create the message
-                const newMessage = ChatRepository.createMessage({
-                    chat,
-                    guid: `temp-${generateUuid()}`,
-                    text: reply,
-                    dateCreated: new Date()
-                });
-
-                // Save the message
-                await this.chatRepo.saveMessage(chat, newMessage);
-
-                // Send the message
-                this.socketService.server.emit("send-message", {
-                    tempGuid: newMessage.guid,
-                    guid: chat.guid,
-                    message: newMessage.text
-                });
-            });
-        };
-
-        this.socketService.server.on("new-message", (message: MessageResponse) =>
-            handleNewMessage("save-message", message)
-        );
-        this.socketService.server.on("updated-message", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
-        );
-        this.socketService.server.on("group-name-change", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
-        );
-        this.socketService.server.on("participant-removed", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
-        );
-        this.socketService.server.on("participant-added", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
-        );
-        this.socketService.server.on("participant-left", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
-        );
-
-        this.socketService.server.on("disconnect", () => {
-            this.setSyncStatus({ completed: true, error: true, message: "Disconnected!" });
-        });
-
-        this.socketService.server.on("connect", () => {
-            this.setSyncStatus({ completed: true, error: false, message: "Connected!" });
-        });
-
-        this.socketService.server.on("reconnect_attempt", attempt => {
-            this.setSyncStatus({ completed: false, error: false, message: `Reconnecting (${attempt})` });
-        });
-    }
-
-    private setSyncStatus({ completed, message, error }: SyncStatus) {
+    setSyncStatus({ completed, message, error }: SyncStatus) {
         const currentStatus = this.syncStatus;
         if (completed !== undefined) currentStatus.completed = completed;
         if (message !== undefined) currentStatus.message = message;
@@ -818,3 +699,20 @@ export class BackendServer {
         if (this.window) this.window.webContents.send(event, data);
     }
 }
+
+/**
+ * Create a singleton for the server so that it can be referenced everywhere.
+ * Plus, we only want one instance of it running at all times.
+ */
+let server: BackendServer = null;
+export const Server = (win: BrowserWindow = null) => {
+    // If we already have a server, update the window (if not null) and return
+    // the same instance
+    if (server) {
+        if (win) server.window = win;
+        return server;
+    }
+
+    server = new BackendServer(win);
+    return server;
+};

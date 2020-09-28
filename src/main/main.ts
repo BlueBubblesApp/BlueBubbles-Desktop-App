@@ -3,13 +3,13 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import * as url from "url";
 
-import { BackendServer } from "@server/index";
+import { Server } from "@server/index";
 
 // To allow CORS
 app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors");
 
 let win: BrowserWindow | null;
-const BlueBubbles = new BackendServer(win);
+const BlueBubbles = Server(win);
 
 const gotTheLock = app.requestSingleInstanceLock();
 

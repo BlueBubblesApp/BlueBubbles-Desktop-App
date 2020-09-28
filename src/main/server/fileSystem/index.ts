@@ -23,12 +23,17 @@ export class FileSystem {
     // Creates required directories
     static setupDirectories(): void {
         if (!fs.existsSync(FileSystem.attachmentsDir)) fs.mkdirSync(FileSystem.attachmentsDir);
+        if (!fs.existsSync(FileSystem.fcmDir)) fs.mkdirSync(FileSystem.fcmDir);
     }
 
     static saveAttachment(attachment: Attachment, data: Uint8Array) {
         const dirPath = `${FileSystem.attachmentsDir}/${attachment.guid}`;
         fs.mkdirSync(dirPath, { recursive: true });
         fs.writeFileSync(`${dirPath}/${attachment.transferName}`, data);
+    }
+
+    static saveFCMClient(data: any) {
+        fs.writeFileSync(`${FileSystem.fcmDir}/client.json`, JSON.stringify(data));
     }
 
     static getAppSizeData(): StorageData {
