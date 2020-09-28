@@ -10,7 +10,7 @@ import ThemeConfigDisplay from "./ThemeConfigDisplay/ThemeConfigDisplay";
 interface AppearanceTabState {
     currentTheme: string;
     isEditingBlurred: boolean;
-    allThemes: Array<string>;
+    allThemes: string;
 }
 
 class AppearanceTab extends React.Component<object, AppearanceTabState> {
@@ -29,6 +29,7 @@ class AppearanceTab extends React.Component<object, AppearanceTabState> {
         this.setState({ currentTheme: config.currentTheme, allThemes: config.allThemes });
 
         ipcRenderer.on("config-update", (_, args) => {
+            console.log("config updated");
             this.setState({ currentTheme: args.currentTheme, allThemes: args.allThemes });
         });
     }
@@ -36,12 +37,6 @@ class AppearanceTab extends React.Component<object, AppearanceTabState> {
     handleThemeChange(e) {
         const newTheme = e.target.getAttribute("data-set-theme");
         this.setState({ currentTheme: newTheme });
-
-        // Find every element with data-theme attribute and set to new theme
-        const themeElements = [document.querySelectorAll("*[data-theme]")];
-        for (let i = 0; i < themeElements[0].length; i += 1) {
-            themeElements[0][i].setAttribute("data-theme", newTheme);
-        }
 
         // Set new theme and save to databse
         const config = { currentTheme: newTheme };
@@ -72,7 +67,11 @@ class AppearanceTab extends React.Component<object, AppearanceTabState> {
                                 </p>
                             </div>
                         </div>
-                        <ThemeConfigDisplay isEditingBlurred={this.state.isEditingBlurred} />
+                        <ThemeConfigDisplay
+                            currentTheme={this.state.currentTheme}
+                            allThemes={this.state.allThemes}
+                            isEditingBlurred={this.state.isEditingBlurred}
+                        />
                     </div>
                 </div>
             </>

@@ -123,11 +123,14 @@ export class ConfigRepository {
      */
     async setThemeValue(themeName: string, key: string, newValue: string): Promise<void> {
         const repo = this.db.getRepository(Theme);
-        const theme = await repo.findOne({ name: themeName });
+        const theme: Theme = await repo.findOne({ name: themeName });
+        console.log(theme);
 
         if (theme) {
+            // const newTheme = theme;
             theme[key] = newValue;
-            await repo.update(theme, theme);
+            console.log(theme);
+            await repo.update(await this.getThemeByName(themeName), theme);
         } else {
             const newTheme = new Theme();
             newTheme.name = themeName;
@@ -151,6 +154,70 @@ export class ConfigRepository {
             await repo.save(newTheme);
         }
     }
+
+    /**
+     * Deletes a theme in the database
+     *
+     * @param oldTheme The theme to delete
+     */
+    async deleteTheme(oldTheme: Theme): Promise<void> {
+        const repo = this.db.getRepository(Theme);
+        const theme = await repo.findOne({ name: oldTheme.name });
+
+        if (theme) {
+            const allThemes: string = this.get("allThemes") as string;
+            const arr = allThemes.split(",");
+
+            // Set the theme to prev theme
+            this.setTheme(await this.getThemeByName(arr[arr.indexOf(oldTheme.name) - 1]));
+            this.set("currentTheme", arr[arr.indexOf(oldTheme.name) - 1]);
+            // Remove old theme from all themes
+            const newArr = arr.filter(themeName => themeName !== oldTheme.name);
+            let newAllThemes = "";
+            for (const aTheme of newArr) {
+                if (newArr.indexOf(aTheme) === newArr.length - 1) {
+                    newAllThemes += aTheme;
+                } else {
+                    newAllThemes += `${aTheme},`;
+                }
+            }
+            await this.set("allThemes", newAllThemes);
+            // Remove theme from db
+            await repo.remove(theme);
+        }
+    }
+
+    // /**
+    //  * Replaces a theme within allThemes
+    //  *
+    //  * @param oldTheme The theme to be re
+    //  */
+    // async deleteTheme(oldTheme: Theme): Promise<void> {
+    //     const repo = this.db.getRepository(Theme);
+    //     const theme = await repo.findOne({ name: oldTheme.name });
+
+    //     if (theme) {
+    //         const allThemes: string = this.get("allThemes") as string;
+    //         const arr = allThemes.split(",");
+
+    //         // Set the theme to prev theme
+    //         this.setTheme(await this.getThemeByName(arr[arr.indexOf(oldTheme.name) - 1]));
+    //         this.set("currentTheme", arr[arr.indexOf(oldTheme.name) - 1]);
+    //         // Remove old theme from all themes
+    //         const newArr = arr.filter(themeName => themeName !== oldTheme.name);
+    //         let newAllThemes = "";
+    //         for (const aTheme of newArr) {
+    //             if (newArr.indexOf(aTheme) === newArr.length - 1) {
+    //                 newAllThemes += aTheme;
+    //             } else {
+    //                 newAllThemes += `${aTheme},`
+    //             }
+    //         }
+    //         await this.set("allThemes", newAllThemes);
+    //         // Remove theme from db
+    //         await repo.remove(theme);
+    //     }
+    // }
 
     /**
      * Converts a generic string value from the database

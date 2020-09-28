@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 /* eslint-disable react/no-unused-state */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable max-len */
@@ -68,6 +69,16 @@ class ThemeCarousel extends React.Component<Props, State> {
 
             currentTheme = await ipcRenderer.invoke("get-theme", args.currentTheme);
             this.setState({ currentTheme });
+            // console.log(currentTheme);
+        });
+
+        const input = document.getElementById("currentThemeTitle");
+        input.addEventListener("keyup", event => {
+            // Number 13 is the "Enter" key on the keyboard
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                this.handleThemeTitleSubmit(event);
+            }
         });
     }
 
@@ -94,20 +105,123 @@ class ThemeCarousel extends React.Component<Props, State> {
         return this.state.allThemes[this.state.allThemes.indexOf(this.state.configTheme) + 1];
     }
 
+    handleThemeTitleChange(e) {
+        console.log(this.state.configTheme);
+        this.setState({ configTheme: e.target.value });
+    }
+
+    handleThemeTitleSubmit(e) {
+        const themeChange = { oldTitle: this.state.currentTheme.name, newTitle: this.state.configTheme };
+        ipcRenderer.invoke("set-theme-title", themeChange);
+    }
+
+    handleDeleteTheme(e) {
+        ipcRenderer.invoke("delete-theme", this.state.currentTheme);
+        console.log("deleting theme");
+        const x = document.getElementById("LeftArrow");
+        x.click();
+        console.log(this.state.allThemes);
+    }
+
+    handleNewTheme() {
+        if (
+            this.state.currentTheme.name === "dark" ||
+            this.state.currentTheme.name === "light" ||
+            this.state.currentTheme.name === "nord"
+        ) {
+            console.log("is default theme");
+
+            // get the full theme and change the only value we want
+            const currentThemeFull: Theme = this.state.currentTheme;
+            currentThemeFull.name = `${this.state.currentTheme.name.substr(0, 1).toUpperCase() +
+                this.state.currentTheme.name.substr(1, this.state.currentTheme.name.length)} - Copy`;
+
+            // save new theme
+            ipcRenderer.invoke("set-theme", currentThemeFull);
+
+            // push the new theme name to the config
+            let allThemesNew = "";
+            for (const themeName of this.state.allThemes) {
+                if (this.state.allThemes.indexOf(themeName) === this.state.allThemes.length - 1) {
+                    allThemesNew += themeName;
+                } else {
+                    allThemesNew += `${themeName},`;
+                }
+            }
+
+            allThemesNew = `${allThemesNew},${currentThemeFull.name}`;
+            const config = { allThemes: allThemesNew, currentTheme: currentThemeFull.name };
+            ipcRenderer.invoke("set-config", config);
+
+            console.log(currentThemeFull);
+        } else {
+            console.log("custom theme");
+            // get the full theme and change the only value we want
+            const currentThemeFull: Theme = this.state.currentTheme;
+            currentThemeFull.name += " - Copy";
+
+            // save new theme
+            ipcRenderer.invoke("set-theme", currentThemeFull);
+
+            // push the new theme name to the config
+            let allThemesNew = "";
+            for (const themeName of this.state.allThemes) {
+                if (this.state.allThemes.indexOf(themeName) === this.state.allThemes.length - 1) {
+                    allThemesNew += themeName;
+                } else {
+                    allThemesNew += `${themeName},`;
+                }
+            }
+
+            allThemesNew = `${allThemesNew},${currentThemeFull.name}`;
+            const config = { allThemes: allThemesNew, currentTheme: currentThemeFull.name };
+            ipcRenderer.invoke("set-config", config);
+        }
+    }
+
     render() {
+        if (["dark", "light", "nord"].includes(this.state.currentTheme.name)) {
+            const hideButton = "hidden";
+        }
         return (
             <div id="ThemeCarousel">
                 <div id="prevThemeArrowDiv">
                     <i
+                        id="LeftArrow"
                         className="arrow left"
                         data-set-theme={this.handleBackArrowTheme()}
                         onClick={e => this.handleThemeChange(e)}
                     />
                 </div>
                 <div id="currentThemeDiv">
-                    <h1 className="currentThemeTitle">
+                    {/* <h1 className="currentThemeTitle">
                         {this.state.configTheme.charAt(0).toUpperCase() + this.state.configTheme.slice(1)}
-                    </h1>
+                    </h1> */}
+                    <div id="currentThemeTitleContainer">
+                        {["dark", "light", "nord"].includes(this.state.currentTheme.name) ? (
+                            <button id="deleteThemeButton" style={{ visibility: "hidden", pointerEvents: "none" }}>
+                                Delete
+                            </button>
+                        ) : (
+                            <button onClick={e => this.handleDeleteTheme(e)} id="deleteThemeButton">
+                                Delete
+                            </button>
+                        )}
+                        {["dark", "light", "nord"].includes(this.state.currentTheme.name) ? (
+                            <input id="currentThemeTitle" value={this.state.configTheme} readOnly={true} />
+                        ) : (
+                            <input
+                                id="currentThemeTitle"
+                                value={this.state.configTheme}
+                                onChange={e => this.handleThemeTitleChange(e)}
+                                onSubmit={e => this.handleThemeTitleChange(e)}
+                                onBlur={e => this.handleThemeTitleSubmit(e)}
+                            />
+                        )}
+                        <button id="newThemeButton" onClick={() => this.handleNewTheme()}>
+                            + New
+                        </button>
+                    </div>
                     <svg viewBox="0 0 1600 1000">
                         {/* Left Nav */}
                         <rect
