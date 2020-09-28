@@ -427,15 +427,27 @@ export class BackendServer {
 
         ipcMain.handle("get-theme", async (_, themeName) => this.configRepo.getThemeByName(themeName));
 
-        // ipcMain.handle("get-theme", async (event, themeName) => {
-        //     const theme = await this.configRepo.getThemeByName(themeName);
-        //     console.log(theme);
-        //     return theme;
-        // });
+        ipcMain.handle("set-theme", async (_, newTheme: Theme) => this.configRepo.setTheme(newTheme));
 
         ipcMain.handle("set-theme-value", async (event, args) => {
             console.log(args);
             await this.configRepo.setThemeValue(args.themeName, args.key, args.newValue);
+        });
+
+        ipcMain.handle("delete-theme", async (_, themeName) => {
+            await this.configRepo.deleteTheme(themeName);
+            console.log(this.configRepo.config);
+            this.emitToUI("config-update", this.configRepo.config);
+        });
+
+        ipcMain.handle("set-theme-title", async (_, themeChange) => {
+            await this.configRepo.setThemeValue(themeChange.oldTitle, "name", themeChange.newTitle);
+            await this.configRepo.set("currentTheme", themeChange.newTitle);
+            const allThemes = this.configRepo.get("allThemes") as string;
+            const newAllThemes = allThemes.replace(themeChange.oldTitle, themeChange.newTitle);
+            console.log(newAllThemes);
+            await this.configRepo.set("allThemes", newAllThemes);
+            this.emitToUI("config-update", this.configRepo.config);
         });
 
         // eslint-disable-next-line no-return-await

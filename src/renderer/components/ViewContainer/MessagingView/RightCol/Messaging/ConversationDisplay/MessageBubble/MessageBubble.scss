@@ -83,7 +83,7 @@
 
 .MessageSender {
     margin: 10px 0 0 5px;
-    color: var(--sub-title-color);
+    color: var(--chat-label-color);
     font-size: 11px;
 }
 
@@ -91,12 +91,15 @@
     0% {
         transform: scale(1, 1);
     }
+
     65% {
         transform: scale(0.9, 0.9);
     }
+
     85% {
         transform: scale(1.05, 1.05);
     }
+
     100% {
         transform: scale(1, 1);
     }
@@ -217,6 +220,7 @@
     0% {
         box-shadow: none;
     }
+
     100% {
         box-shadow: 0 0 25px 20px rgba(0, 0, 0, 0.7);
     }
@@ -259,6 +263,7 @@
     flex-direction: column;
     margin: 0 13px 0 0;
 }
+
 .OutgoingLink > .Attachment {
     border-radius: 15px 15px 0 0;
     z-index: 2;
@@ -401,6 +406,7 @@
         max-width: 36%;
         min-width: 36%;
     }
+
     .linkBottomDiv {
         max-width: 36%;
         min-width: 36%;
@@ -413,6 +419,7 @@
         max-width: 33%;
         min-width: 33%;
     }
+
     .linkBottomDiv {
         max-width: 33%;
         min-width: 33%;
@@ -425,6 +432,7 @@
         max-width: 30%;
         min-width: 30%;
     }
+
     .linkBottomDiv {
         max-width: 30%;
         min-width: 30%;
@@ -472,6 +480,7 @@
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
