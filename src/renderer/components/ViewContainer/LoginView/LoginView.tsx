@@ -41,8 +41,9 @@ class LoginView extends React.Component<object, LoginViewState> {
 
         // Add listener for updating the state
         ipcRenderer.on("setup-update", (_, args) => {
-            if (args?.redirect) document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
+            if (args.redirect) document.getElementById("TitleBarRight").classList.remove("loginTitleBarRight");
 
+            console.log(args);
             if (this._isMounted) {
                 this.setState(args);
             }
@@ -114,14 +115,15 @@ class LoginView extends React.Component<object, LoginViewState> {
         }
     };
 
-    handleSubmit = () => {
+    handleSubmit = async () => {
         try {
             if (this._isMounted) {
                 this.setState({ loading: true });
             }
 
             // The server will handle setting the redirect and updating
-            ipcRenderer.invoke("start-socket-setup", this.state);
+            const x = await ipcRenderer.invoke("start-socket-setup", this.state);
+            console.log(x);
         } catch (err) {
             if (this._isMounted) {
                 this.setState({ loading: false });
@@ -163,7 +165,11 @@ class LoginView extends React.Component<object, LoginViewState> {
                                 <span style={setProgressPercent} id="progressBarSpan" />
                             </div>
                         ) : (
-                            <></>
+                            <>
+                                <button id="returnToLoginButton" onClick={() => this.reset()}>
+                                    Return to login
+                                </button>
+                            </>
                         )}
                     </div>
                 ) : (
