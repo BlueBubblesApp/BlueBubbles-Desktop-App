@@ -1,0 +1,29 @@
+.ImportsTitle {
+    display: flex;
+    flex-direction: column;
+    margin: 15px 35px 0 35px;
+}
+
+.ImportsTitle > h2 {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 21px;
+    /* border-bottom: 1px solid gray; */
+    margin: 0;
+    margin-bottom: 10px;
+}
+
+.importsSubTitle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.importsSubTitle > h3 {
+    color: var(--sub-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 18px;
+    margin: 0;
+    margin-left: 10px;
+}

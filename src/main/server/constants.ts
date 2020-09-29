@@ -7,7 +7,8 @@ export const DEFAULT_CONFIG_ITEMS: { [key: string]: Function } = {
     isMakingNewChat: () => "0",
     chunkSize: () => 1024,
     globalNotificationsMuted: () => "0",
-    globalNotificationsDisabled: () => "0"
+    globalNotificationsDisabled: () => "0",
+    importContactsFrom: () => "serverDB"
 };
 
 export const DEFAULT_DARK_THEME: { [key: string]: Function } = {

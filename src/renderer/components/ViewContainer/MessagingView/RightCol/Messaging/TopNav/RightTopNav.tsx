@@ -73,9 +73,12 @@ class RightTopNav extends React.Component<Props, State> {
                         <>
                             {this.props.chat
                                 ? participants.map((item, i) => (
-                                      <div key={this.props.chat.participants[i].address}>
-                                          <p>{`${item}${participants.length === i + 1 ? "" : ","}`}</p>{" "}
-                                      </div>
+                                      <>
+                                          <div key={this.props.chat.participants[i].address}>
+                                              <p>{item}</p>{" "}
+                                          </div>
+                                          {participants.length === i + 1 ? null : <p>,</p>}
+                                      </>
                                   ))
                                 : null}
                         </>

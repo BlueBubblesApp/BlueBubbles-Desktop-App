@@ -180,9 +180,7 @@ class BackendServer {
 
         try {
             console.log("Initializing queue service...");
-            this.queueService = new QueueService(this.chatRepo, (event: string, data: any) =>
-                this.emitToUI(event, data)
-            );
+            this.queueService = new QueueService((event: string, data: any) => this.emitToUI(event, data));
             this.queueService.start();
         } catch (ex) {
             console.log(`Failed to setup queue service! ${ex.message}`);
@@ -190,7 +188,7 @@ class BackendServer {
 
         try {
             console.log("Initializing socket connection...");
-            this.socketService = new SocketService(this.db, this.chatRepo, this.configRepo);
+            this.socketService = new SocketService(this.db);
 
             // Start the socket service
             await this.socketService.start(true);
@@ -314,6 +312,21 @@ class BackendServer {
             await this.performFullSync();
         } else {
             await this.performIncrementalSync(lastFetch as number);
+        }
+
+        try {
+            // Fetch contacts
+            if (this.configRepo.get("importContactsFrom") === "serverDB") {
+                this.fetchContactsFromServerDb();
+            } else if (this.configRepo.get("importContactsFrom") === "serverVCF") {
+                this.fetchContactsFromServerVcf();
+            } else if (this.configRepo.get("importContactsFrom") === "androidClient") {
+                console.log("Fetching contacts from android client");
+            } else if (this.configRepo.get("importContactsFrom") === "localVCF") {
+                console.log("Fetching contacts from local VCF");
+            }
+        } catch (ex) {
+            this.setSyncStatus({ message: ex.message, error: true, completed: true });
         }
 
         // Save the last fetch date
@@ -464,6 +477,9 @@ class BackendServer {
             now.getTime()} ms].`;
         console.log(emitData.loadingMessage);
         this.emitToUI("setup-update", emitData);
+
+        // Save the last fetch date
+        this.configRepo.set("lastFetch", now);
     }
 
     private startConfigListeners() {
@@ -514,6 +530,24 @@ class BackendServer {
         ipcMain.handle("get-sync-status", (_, __) => this.syncStatus);
 
         ipcMain.handle("send-to-ui", (_, args) => this.window.webContents.send(args.event, args.contents));
+
+        ipcMain.handle("import-contacts", (_, location) => {
+            if (location === "serverDB") {
+                this.fetchContactsFromServerDb();
+            } else if (location === "serverVCF") {
+                this.fetchContactsFromServerVcf();
+            } else if (location === "androidClient") {
+                console.log("Fetching contacts from android client");
+            } else if (location === "localVCF") {
+                console.log("Fetching contacts from local VCF");
+            }
+        });
+
+        // Temporary get handlers endpoint
+        ipcMain.handle("get-handles", (_, __) => {
+            const handles = this.chatRepo.getHandles();
+            return handles;
+        });
     }
 
     private startActionListeners() {
@@ -695,7 +729,7 @@ class BackendServer {
         this.emitToUI("set-sync-status", this.syncStatus);
     }
 
-    private emitToUI(event: string, data: any) {
+    emitToUI(event: string, data: any) {
         if (this.window) this.window.webContents.send(event, data);
     }
 }

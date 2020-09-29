@@ -11,6 +11,9 @@ function SettingTitles() {
             <NavLink exact to="/settings/generaltab" activeClassName="active">
                 <Setting title="General" subTitle="Connection, Notifications, Features " />
             </NavLink>
+            <NavLink exact to="/settings/contactstab" activeClassName="active">
+                <Setting title="Contacts" subTitle="Manage contacts" />
+            </NavLink>
             <NavLink exact to="/settings/storagetab" activeClassName="active">
                 {" "}
                 <Setting title="Storage" subTitle="Manage local data" />

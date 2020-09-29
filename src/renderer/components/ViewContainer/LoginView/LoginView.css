@@ -33,8 +33,7 @@
     font-size: 2vw;
 }
 
-#loginForm > button,
-#backBtn {
+#loginForm > button {
     background-color: #007aff;
     outline: none;
     border: none;
@@ -45,6 +44,10 @@
     border-radius: 10px;
     padding: 7px 13px 7px 13px;
     color: white;
+}
+
+#loginForm > button:hover {
+    cursor: pointer;
 }
 
 #loginContainer > form {
@@ -212,4 +215,21 @@
     position: absolute;
     bottom: 8px;
     margin: 0;
+}
+
+#returnToLoginButton {
+    background-color: #007aff;
+    outline: none;
+    border: none;
+    text-decoration: none;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    margin-top: 20px;
+    border-radius: 10px;
+    padding: 7px 13px 7px 13px;
+    color: white;
+}
+
+#returnToLoginButton:hover {
+    cursor: pointer;
 }

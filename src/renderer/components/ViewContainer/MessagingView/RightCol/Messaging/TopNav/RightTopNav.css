@@ -34,9 +34,10 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    margin: 5px 0 0 0 !important;
+    margin-top: 0px;
     overflow-x: auto;
     margin-right: 1em;
+    margin-bottom: 7px;
 }
 
 #convoDetailsDiv:after {
@@ -57,7 +58,10 @@
     align-items: center;
     justify-content: flex-start;
     /* background-color: rgba(0,122,255,0.8); */
-    margin: 0 10px 15px 3px;
+    height: 87%;
+    padding: 0 3px 0 3px;
+    margin: 0 0px 0px 3px;
+    border-radius: 5px;
     text-overflow: ellipsis;
 }
 
@@ -73,8 +77,12 @@
     white-space: nowrap;
 }
 
-#recipDiv > div > p:hover {
-    background: rgba(0, 122, 255, 0.8);
+#recipDiv > p {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 12px;
+    margin: 0px 0px 0px 0px;
+    white-space: nowrap;
 }
 
 #convoDetailsDiv {

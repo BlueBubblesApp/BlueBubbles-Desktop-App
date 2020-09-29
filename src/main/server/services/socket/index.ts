@@ -1,3 +1,4 @@
+import { ipcMain } from "electron";
 import * as io from "socket.io-client";
 import * as os from "os";
 import * as path from "path";
@@ -6,7 +7,7 @@ import { Connection } from "typeorm";
 
 // Internal Libraries
 import { FileSystem } from "@server/fileSystem";
-import { ResponseFormat, ChatResponse, MessageResponse, AttachmentResponse } from "@server/types";
+import { ResponseFormat, ChatResponse, MessageResponse } from "@server/types";
 
 // Database Dependency Imports
 import { Server } from "@server/index";
@@ -22,10 +23,6 @@ export class SocketService {
 
     server: SocketIOClient.Socket;
 
-    chatRepo: ChatRepository;
-
-    configRepo: ConfigRepository;
-
     serverAddress: string;
 
     passphrase: string;
@@ -38,12 +35,10 @@ export class SocketService {
      * @param configRepo The app's settings repository
      * @param fs The filesystem class handler
      */
-    constructor(db: Connection, chatRepo: ChatRepository, configRepo: ConfigRepository) {
+    constructor(db: Connection) {
         this.db = db;
 
         this.server = null;
-        this.chatRepo = chatRepo;
-        this.configRepo = configRepo;
     }
 
     dispose() {
@@ -62,16 +57,20 @@ export class SocketService {
     async start(firstConnect = false): Promise<boolean> {
         let retry = !firstConnect;
 
-        if (!this.configRepo || !this.configRepo.get("serverAddress") || !this.configRepo.get("passphrase")) {
+        if (
+            !Server().configRepo ||
+            !Server().configRepo.get("serverAddress") ||
+            !Server().configRepo.get("passphrase")
+        ) {
             console.error("Setup has not been completed!");
             return false;
         }
 
         return new Promise((resolve, reject) => {
-            const address = this.configRepo.get("serverAddress") as string;
+            const address = Server().configRepo.get("serverAddress") as string;
             this.server = io(address, {
                 query: {
-                    guid: this.configRepo.get("passphrase")
+                    guid: Server().configRepo.get("passphrase")
                 }
             });
 
@@ -125,7 +124,7 @@ export class SocketService {
             // Save the associated chat so we can get the participants to build the title
             const chatData = message.chats[0];
             const chat = ChatRepository.createChatFromResponse(chatData);
-            const savedChat = await this.chatRepo.saveChat(chat);
+            const savedChat = await Server().chatRepo.saveChat(chat);
             const chatTitle = generateChatTitle(savedChat);
             const text = message.attachments.length === 0 ? message.text : "1 Attachment";
 
@@ -147,7 +146,7 @@ export class SocketService {
             };
 
             // Don't show a notificaiton if they have been disabled
-            if (this.configRepo.get("globalNotificationsDisabled")) return;
+            if (Server().configRepo.get("globalNotificationsDisabled")) return;
 
             // Build the notification parameters
             if (message.error) {
@@ -155,10 +154,12 @@ export class SocketService {
                 notificationData.message = "Message failed to send";
             } else {
                 notificationData.subtitle = "New Message";
-                notificationData.reply = true;
-                notificationData.timeout = 30000;
                 notificationData.message = text;
-                notificationData.sound = !this.configRepo.get("globalNotificationsMuted");
+                notificationData.sound = !Server().configRepo.get("globalNotificationsMuted");
+                notificationData.wait = true;
+                notificationData.reply = true;
+                notificationData.actions = "Reply";
+                notificationData.closeLabel = "Close";
             }
 
             // Don't show a notification if there is no error or it's from me
@@ -177,7 +178,7 @@ export class SocketService {
                 });
 
                 // Save the message
-                await this.chatRepo.saveMessage(chat, newMessage);
+                await Server().chatRepo.saveMessage(chat, newMessage);
 
                 // Send the message
                 this.server.emit("send-message", {
@@ -185,6 +186,12 @@ export class SocketService {
                     guid: chat.guid,
                     message: newMessage.text
                 });
+            });
+
+            Notifier.on("click", async (notifierObject, options, clickEvent) => {
+                // Focus the window, and set the current chat to the clicked chat
+                ipcMain.emit("force-focus");
+                Server().emitToUI("notification-clicked", savedChat);
             });
         };
 
