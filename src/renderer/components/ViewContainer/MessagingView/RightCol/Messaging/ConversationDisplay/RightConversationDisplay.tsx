@@ -310,7 +310,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                             {/* If the last previous message is older than 30 minutes, display the time */}
                             {message.text &&
                             olderMessage &&
-                            message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 5 ? (
+                            message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 60 ? (
                                 <ChatLabel
                                     text={`${getDateText(new Date(message.dateCreated), true)}, ${getTimeText(
                                         new Date(message.dateCreated)
