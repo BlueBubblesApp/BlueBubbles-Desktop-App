@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { ipcMain, BrowserWindow, shell, app } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
@@ -772,6 +773,20 @@ export class BackendServer {
 
         this.socketService.server.on("reconnect_attempt", attempt => {
             this.setSyncStatus({ completed: false, error: false, message: `Reconnecting (${attempt})` });
+        });
+
+        ipcMain.handle("start-new-chat", async (_, payload) => {
+            const params = { participants: payload.newChatAddresses };
+
+            this.socketService.server.emit("start-chat", params, async createdChat => {
+                this.emitToUI("set-current-new-chat", createdChat.data);
+                await this.chatRepo.saveChat(createdChat.data);
+                this.socketService.server.emit("send-message", {
+                    tempGuid: `temp-${generateUuid()}`,
+                    guid: createdChat.data.guid,
+                    message: payload.message
+                });
+            });
         });
     }
 

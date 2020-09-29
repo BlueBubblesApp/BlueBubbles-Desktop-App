@@ -45,6 +45,8 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         });
 
         ipcRenderer.on("notification-clicked", (_, chat) => this.setCurrentChat(chat));
+
+        ipcRenderer.on("set-current-new-chat", (_, chat) => this.setCurrentChat(chat));
     }
 
     setCurrentChat(chat: Chat) {

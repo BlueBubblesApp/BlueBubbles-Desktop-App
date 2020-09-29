@@ -12,7 +12,7 @@ import { ipcRenderer } from "electron";
 type State = {
     chat: Chat;
     newRecipInput: string;
-    newChatRecips: Array<string>;
+    newChatRecips: Array<Handle>;
     contacts: Array<Handle>;
     activeContactHoverNumber: number;
 };
@@ -30,9 +30,6 @@ class NewMessageTopNav extends React.Component<unknown, State> {
         document.getElementById("newMessageRecipInput").focus();
 
         this.setState({ contacts: await ipcRenderer.invoke("get-handles") });
-        this.state.contacts.forEach(element => {
-            console.log(element.address);
-        });
 
         // Prevent from moving cursor in input
         document.getElementById("newMessageRecipInput").addEventListener(
@@ -42,6 +39,16 @@ class NewMessageTopNav extends React.Component<unknown, State> {
             },
             false
         );
+
+        ipcRenderer.on("send-message-to-new-chat", async (_, message) => {
+            const newChatAddresses = new Array<string>();
+            this.state.newChatRecips.forEach(handle => {
+                newChatAddresses.push(handle.address);
+            });
+            const payload = { newChatAddresses, message };
+            ipcRenderer.invoke("start-new-chat", payload);
+            this.setState({ newChatRecips: [] });
+        });
     }
 
     inputChangeHandler(e) {
@@ -110,6 +117,11 @@ class NewMessageTopNav extends React.Component<unknown, State> {
                     name.lastName?.toLowerCase().includes(this.state.newRecipInput.toLowerCase()) ||
                     name.address?.toLowerCase().includes(this.state.newRecipInput.toLowerCase())
             );
+
+            const matchingRows = document.getElementsByClassName("activeContactRow");
+            if (newMatch.length === 0 || matchingRows.length === 0) {
+                return;
+            }
             this.handleAddRecipToNewChat(newMatch[this.state.activeContactHoverNumber - 1]);
         }
     }
@@ -125,6 +137,18 @@ class NewMessageTopNav extends React.Component<unknown, State> {
     }
 
     handleAddRecipToNewChat(handle: Handle) {
+        const { newChatRecips } = this.state;
+        if (newChatRecips.indexOf(handle) === -1) {
+            newChatRecips.push(handle);
+            this.setState({ newChatRecips, newRecipInput: "" });
+            document.getElementById("newMessageRecipInput").focus();
+        } else {
+            this.setState({ newRecipInput: "" });
+            document.getElementById("newMessageRecipInput").focus();
+        }
+    }
+
+    formatHandleName(handle: Handle) {
         let nameToAdd = "";
         if (handle.firstName != null && handle.lastName != null) {
             nameToAdd = `${handle.firstName} ${handle.lastName}`;
@@ -136,15 +160,7 @@ class NewMessageTopNav extends React.Component<unknown, State> {
             nameToAdd = this.formatAddress(handle.address);
         }
 
-        const { newChatRecips } = this.state;
-        if (newChatRecips.indexOf(nameToAdd) === -1) {
-            newChatRecips.push(nameToAdd);
-            this.setState({ newChatRecips, newRecipInput: "" });
-            document.getElementById("newMessageRecipInput").focus();
-        } else {
-            this.setState({ newRecipInput: "" });
-            document.getElementById("newMessageRecipInput").focus();
-        }
+        return nameToAdd;
     }
 
     render() {
@@ -175,8 +191,8 @@ class NewMessageTopNav extends React.Component<unknown, State> {
                         <>
                             {this.state.newChatRecips.map(recip => {
                                 return (
-                                    <div key={recip}>
-                                        <p>{recip}</p>
+                                    <div key={recip.address}>
+                                        <p>{this.formatHandleName(recip)}</p>
                                         <img
                                             onClick={() => this.removeRecipFromNewChat(recip)}
                                             src={CloseIcon}

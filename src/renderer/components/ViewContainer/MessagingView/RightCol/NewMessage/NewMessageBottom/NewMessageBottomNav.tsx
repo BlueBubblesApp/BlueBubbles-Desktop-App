@@ -55,12 +55,10 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
         });
     };
 
-    sendMessage() {
+    async sendMessage() {
         const input: HTMLInputElement = document.getElementById("messageFieldInput-NewMessage") as HTMLInputElement;
-        // Ping server to send message here
-        console.log("Sent Message: ", input.value);
-        ipcRenderer.invoke("set-config", input.value);
-        input.value = "";
+        if (this.state.enteredMessage.length === 0) return;
+        ipcRenderer.invoke("send-to-ui", { event: "send-message-to-new-chat", contents: this.state.enteredMessage });
     }
 
     handleAddAttachment() {
