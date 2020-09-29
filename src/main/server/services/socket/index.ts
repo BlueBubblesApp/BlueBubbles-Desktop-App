@@ -7,7 +7,7 @@ import { Connection } from "typeorm";
 
 // Internal Libraries
 import { FileSystem } from "@server/fileSystem";
-import { ResponseFormat, ChatResponse, MessageResponse } from "@server/types";
+import { ResponseFormat, ChatResponse, MessageResponse, AttachmentResponse } from "@server/types";
 
 // Database Dependency Imports
 import { Server } from "@server/index";
@@ -16,7 +16,7 @@ import { ConfigRepository } from "@server/databases/config";
 import { ChatRepository } from "@server/databases/chat";
 import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
 
-import { GetChatsParams, GetChatMessagesParams, GetAttachmentChunkParams } from "./types";
+import { GetChatsParams, GetChatMessagesParams, GetAttachmentChunkParams, AttachmentChunkParams } from "./types";
 
 export class SocketService {
     db: Connection;
@@ -233,6 +233,18 @@ export class SocketService {
             this.server.emit("get-fcm-client", null, res => {
                 if ([200, 201].includes(res.status)) {
                     resolve(res.data);
+                } else {
+                    reject(res.message);
+                }
+            });
+        });
+    }
+
+    async sendAttachmentChunk(params: AttachmentChunkParams): Promise<AttachmentResponse> {
+        return new Promise<AttachmentResponse>((resolve, reject) => {
+            this.server.emit("send-message-chunk", params, (res: ResponseFormat) => {
+                if ([200, 201].includes(res.status)) {
+                    resolve(res.data as AttachmentResponse);
                 } else {
                     reject(res.message);
                 }

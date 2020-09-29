@@ -4,11 +4,10 @@
 import * as React from "react";
 import * as path from "path";
 import { ipcRenderer } from "electron";
-import { Chat, Message } from "@server/databases/chat/entity";
+import { Attachment, Chat, Message } from "@server/databases/chat/entity";
 import { generateUuid } from "@renderer/helpers/utils";
 
 import "./RightBottomNav.css";
-import SendIcon from "../../../../../../assets/icons/send-icon.png";
 
 const { dialog } = require("electron").remote;
 
@@ -19,6 +18,7 @@ type Props = {
 type State = {
     enteredMessage: string;
     isRecording: boolean;
+    attachmentPaths: string[];
 };
 
 class RightBottomNav extends React.Component<Props, State> {
@@ -27,7 +27,8 @@ class RightBottomNav extends React.Component<Props, State> {
 
         this.state = {
             enteredMessage: "",
-            isRecording: false
+            isRecording: false,
+            attachmentPaths: []
         };
     }
 
@@ -66,6 +67,50 @@ class RightBottomNav extends React.Component<Props, State> {
     };
 
     async sendMessage() {
+        // If we don't have any message or attachments, don't do anything
+        if (this.state.enteredMessage.length === 0 && this.state.attachmentPaths.length === 0) return;
+
+        const textMessage = this.state.enteredMessage.trim();
+        const message: Message = await ipcRenderer.invoke("create-message", {
+            chat: this.props.chat,
+            guid: `temp-${generateUuid()}`,
+            text: textMessage,
+            dateCreated: new Date()
+        });
+
+        for (const aPath of this.state.attachmentPaths) {
+            // Create the attachment
+            const attachment: Attachment & { filepath: string } = await ipcRenderer.invoke("create-attachment", {
+                guid: `temp-${generateUuid()}`,
+                attachmentPath: aPath
+            });
+            attachment.filepath = aPath;
+
+            // Create the message for the attachment
+            const assocMsg: Message = await ipcRenderer.invoke("create-message", {
+                chat: this.props.chat,
+                guid: attachment.guid,
+                text: "",
+                dateCreated: new Date()
+            });
+            assocMsg.attachments.push(attachment);
+
+            // Make sure that each of the associated messages gets added to the UI and saved/sent
+            // ipcRenderer.invoke("send-to-ui", { event: "add-message", contents: assocMsg });
+            // ipcRenderer.invoke("save-message", { chat: this.props.chat, message: assocMsg });
+            ipcRenderer.invoke("send-message", { chat: this.props.chat, message: assocMsg });
+        }
+
+        // Send the main text
+        if (textMessage && textMessage.length > 0) {
+            ipcRenderer.invoke("send-to-ui", { event: "add-message", contents: message });
+            ipcRenderer.invoke("save-message", { chat: this.props.chat, message });
+            ipcRenderer.invoke("send-message", { chat: this.props.chat, message });
+        }
+
+        // Clear the send box
+        this.setState({ enteredMessage: "" });
+
         let resourcePath = __dirname.replace("app.asar/dist", "resources");
         if (process.env.NODE_ENV !== "production") {
             resourcePath = "./resources";
@@ -73,20 +118,6 @@ class RightBottomNav extends React.Component<Props, State> {
 
         const sendAudio = new Audio(path.join(resourcePath, "audio", "send.mp3"));
         sendAudio.play();
-        if (this.state.enteredMessage.length === 0) return;
-
-        const message: Message = await ipcRenderer.invoke("create-message", {
-            chat: this.props.chat,
-            guid: `temp-${generateUuid()}`,
-            text: this.state.enteredMessage,
-            dateCreated: new Date()
-        });
-
-        ipcRenderer.invoke("send-to-ui", { event: "add-message", contents: message });
-        ipcRenderer.invoke("save-message", { chat: this.props.chat, message });
-        ipcRenderer.invoke("send-message", { chat: this.props.chat, message });
-
-        this.setState({ enteredMessage: "" });
     }
 
     handleAddAttachment() {

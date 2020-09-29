@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
+import { sync } from "read-chunk";
 
 import { Attachment } from "@server/databases/chat/entity";
 import { getDirectorySize } from "@server/helpers/utils";
@@ -46,5 +47,15 @@ export class FileSystem {
         output.chatDataSize = fs.statSync(path.join(this.baseDir, "chat.db")).size;
 
         return output as StorageData;
+    }
+
+    static readFileChunk(filePath: string, start: number, chunkSize = 1024): Uint8Array {
+        // Get the file size
+        const stats = fs.statSync(filePath);
+        let fStart = start;
+
+        // Make sure the start are not bigger than the size
+        if (fStart > stats.size) fStart = stats.size;
+        return Uint8Array.from(sync(filePath, fStart, chunkSize));
     }
 }

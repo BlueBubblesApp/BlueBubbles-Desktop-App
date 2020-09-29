@@ -1,6 +1,8 @@
 import { ipcMain, BrowserWindow, shell, app } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
+import * as fs from "fs";
+import * as path from "path";
 
 // Config and FileSystem Imports
 import { FileSystem } from "@server/fileSystem";
@@ -15,8 +17,8 @@ import { ChatRepository } from "@server/databases/chat";
 import { SocketService, QueueService, FCMService } from "@server/services";
 
 import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, SyncStatus } from "./types";
-import { GetChatMessagesParams } from "./services/socket/types";
-import { Attachment, Handle } from "./databases/chat/entity";
+import { AttachmentChunkParams, GetChatMessagesParams } from "./services/socket/types";
+import { Attachment, Chat, Handle, Message } from "./databases/chat/entity";
 import { Theme } from "./databases/config/entity";
 
 class BackendServer {
@@ -670,14 +672,55 @@ class BackendServer {
 
         ipcMain.handle("get-reactions", async (_, message) => this.chatRepo.getMessageReactions(message));
         ipcMain.handle("create-message", async (_, payload) => ChatRepository.createMessage(payload));
+        ipcMain.handle("create-attachment", async (_, payload) => ChatRepository.createAttachment(payload));
         ipcMain.handle("save-message", async (_, payload) => this.chatRepo.saveMessage(payload.chat, payload.message));
         ipcMain.handle("send-message", async (_, payload) => {
-            const { chat, message } = payload;
-            this.socketService.server.emit("send-message", {
-                tempGuid: message.guid,
-                guid: chat.guid,
-                message: message.text
-            });
+            const { chat, message }: { chat: Chat; message: Message } = payload;
+            if (!message.attachments || message.attachments.length === 0) {
+                this.socketService.server.emit("send-message", {
+                    tempGuid: message.guid,
+                    guid: chat.guid,
+                    message: message.text
+                });
+            } else {
+                const CHUNK_SIZE = 512 * 1024;
+
+                // Iterate over each attachment and split it up into chunks
+                for (const attachment of message.attachments as (Attachment & { filepath: string })[]) {
+                    // Check if the file exists before trying to read it
+                    if (!fs.existsSync(attachment.filepath)) continue;
+
+                    console.log(`Sending attachment: ${attachment.filepath}`);
+                    const stats = fs.statSync(attachment.filepath);
+
+                    const numOfChunks = Math.ceil(stats.size / CHUNK_SIZE);
+                    const attachmentParams: Partial<AttachmentChunkParams> = {
+                        guid: chat.guid,
+                        tempGuid: message.guid,
+                        message: message.text,
+                        attachmentGuid: message.guid
+                    };
+
+                    for (let i = 0; i < numOfChunks; i += 1) {
+                        attachmentParams.attachmentChunkStart = i === 0 ? 0 : i + CHUNK_SIZE;
+                        attachmentParams.hasMore = i + CHUNK_SIZE < stats.size;
+                        attachmentParams.attachmentName = path.basename(attachment.filepath);
+
+                        // Get data as a Uint8Array and convert to base64
+                        const data = FileSystem.readFileChunk(
+                            attachment.filepath,
+                            attachmentParams.attachmentChunkStart,
+                            CHUNK_SIZE
+                        );
+                        attachmentParams.attachmentData = base64.bytesToBase64(data);
+
+                        // Send the attachment
+                        this.socketService.sendAttachmentChunk(attachmentParams as AttachmentChunkParams);
+                    }
+
+                    console.log(`Finished sending attachment: ${attachment.filepath}`);
+                }
+            }
         });
 
         // Handle Opening Attachment

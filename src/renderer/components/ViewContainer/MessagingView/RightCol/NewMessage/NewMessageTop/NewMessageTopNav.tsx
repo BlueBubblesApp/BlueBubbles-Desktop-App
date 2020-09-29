@@ -30,9 +30,6 @@ class NewMessageTopNav extends React.Component<unknown, State> {
         document.getElementById("newMessageRecipInput").focus();
 
         this.setState({ contacts: await ipcRenderer.invoke("get-handles") });
-        this.state.contacts.forEach(element => {
-            console.log(element.address);
-        });
 
         // Prevent from moving cursor in input
         document.getElementById("newMessageRecipInput").addEventListener(

@@ -26,3 +26,14 @@ export type GetAttachmentChunkParams = {
     chunkSize?: number;
     compress?: boolean;
 };
+
+export type AttachmentChunkParams = {
+    guid: string;
+    tempGuid: string;
+    message: string;
+    attachmentGuid: string;
+    attachmentChunkStart: number;
+    attachmentName: string;
+    hasMore: boolean;
+    attachmentData: string;
+};
