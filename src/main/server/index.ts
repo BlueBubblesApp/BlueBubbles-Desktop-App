@@ -404,8 +404,15 @@ export class BackendServer {
 
         try {
             // Fetch contacts
-            this.fetchContactsFromServerVcf();
-            // this.fetchContactsFromServerDb();
+            if (this.configRepo.get("importContactsFrom") === "serverDB") {
+                this.fetchContactsFromServerDb();
+            } else if (this.configRepo.get("importContactsFrom") === "serverVCF") {
+                this.fetchContactsFromServerVcf();
+            } else if (this.configRepo.get("importContactsFrom") === "androidClient") {
+                console.log("Fetching contacts from android client");
+            } else if (this.configRepo.get("importContactsFrom") === "localVCF") {
+                console.log("Fetching contacts from local VCF");
+            }
         } catch (ex) {
             this.setSyncStatus({ message: ex.message, error: true, completed: true });
         }
@@ -459,6 +466,24 @@ export class BackendServer {
         ipcMain.handle("get-sync-status", (_, __) => this.syncStatus);
 
         ipcMain.handle("send-to-ui", (_, args) => this.window.webContents.send(args.event, args.contents));
+
+        ipcMain.handle("import-contacts", (_, location) => {
+            if (location === "serverDB") {
+                this.fetchContactsFromServerDb();
+            } else if (location === "serverVCF") {
+                this.fetchContactsFromServerVcf();
+            } else if (location === "androidClient") {
+                console.log("Fetching contacts from android client");
+            } else if (location === "localVCF") {
+                console.log("Fetching contacts from local VCF");
+            }
+        });
+
+        // Temporary get handlers endpoint
+        ipcMain.handle("get-handles", (_, __) => {
+            const handles = this.chatRepo.getHandles();
+            return handles;
+        });
     }
 
     private startActionListeners() {
