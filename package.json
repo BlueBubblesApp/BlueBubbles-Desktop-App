@@ -172,7 +172,7 @@
       "fluent-ffmpeg": "^2.1.2",
       "google-libphonenumber": "^3.2.10",
       "leaflet": "^1.6.0",
-      "node-notifier": "^7.0.1",
+      "node-notifier": "^5.4.3",
       "node-pre-gyp": "^0.15.0",
       "react": "^16.13.1",
       "react-click-n-hold": "^1.0.7",

@@ -94,6 +94,10 @@ ipcMain.handle("unmaximize-event", () => {
     if (win && win.webContents) win.unmaximize();
 });
 
+ipcMain.on("force-focus", () => {
+    if (win && win.webContents) win.focus();
+});
+
 ipcMain.handle("close-event", () => {
     app.quit();
     app.exit(0);

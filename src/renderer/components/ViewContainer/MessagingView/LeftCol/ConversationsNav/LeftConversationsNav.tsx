@@ -43,6 +43,8 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             await this.addChatsToState(chats);
             this.setState({ isLoading: false });
         });
+
+        ipcRenderer.on("notification-clicked", (_, chat) => this.setCurrentChat(chat));
     }
 
     setCurrentChat(chat: Chat) {

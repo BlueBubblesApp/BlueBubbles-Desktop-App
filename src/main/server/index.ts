@@ -702,10 +702,12 @@ export class BackendServer {
                 notificationData.message = "Message failed to send";
             } else {
                 notificationData.subtitle = "New Message";
-                notificationData.reply = true;
-                notificationData.timeout = 30000;
                 notificationData.message = text;
                 notificationData.sound = !this.configRepo.get("globalNotificationsMuted");
+                notificationData.wait = true;
+                notificationData.reply = true;
+                notificationData.actions = "Reply";
+                notificationData.closeLabel = "Close";
             }
 
             // Don't show a notification if there is no error or it's from me
@@ -732,6 +734,12 @@ export class BackendServer {
                     guid: chat.guid,
                     message: newMessage.text
                 });
+            });
+
+            Notifier.on("click", async (notifierObject, options, clickEvent) => {
+                // Focus the window, and set the current chat to the clicked chat
+                ipcMain.emit("force-focus");
+                this.emitToUI("notification-clicked", savedChat);
             });
         };
 
