@@ -235,7 +235,6 @@ class BackendServer {
 
                     // Update the user only if there a non-null name
                     if (Object.keys(updateData).length > 0) {
-                        console.log(`Updating handle ${handles[i].address}`);
                         await this.chatRepo.updateHandle(handles[i], updateData);
                     }
                     break;

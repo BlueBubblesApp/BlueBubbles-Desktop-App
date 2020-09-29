@@ -21,7 +21,7 @@
       "pretest:e2e": "npm run build",
       "test:e2e": "jest '(\\/test\\/e2e/).*'",
       "pack": "npm run build && electron-builder --dir",
-      "dist": "npm run build && electron-builder",
+      "dist": "npm run build && electron-builder -wl",
       "postinstall": "electron-builder install-app-deps"
    },
    "husky": {
