@@ -1,6 +1,5 @@
 .RightBottomNav {
-    height: 45px;
-    min-height: 45px;
+    height: auto;
     display: flex;
     background-color: var(--secondary-color);
     align-items: center;
@@ -39,7 +38,8 @@
 
 #messageField {
     flex-grow: 1;
-    height: 100%;
+    min-height: 45px;
+    height: auto;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -50,7 +50,7 @@
     background-repeat: no-repeat;
     border-radius: 25px;
     border: none;
-    width: 97%;
+    flex-grow: 1;
     padding: 3px 35px 3px 8px;
     font-family: "SF UI Display Bold";
     font-size: 15px;
@@ -321,4 +321,63 @@
 
 #stopVoiceMessage {
     fill: red;
+}
+
+.aNewAttachmentDiv {
+    min-width: 45px;
+    width: auto;
+    height: auto;
+    background-color: rgba(0, 122, 255, 0.9);
+    margin: 5px;
+    margin-right: 0px;
+    padding: 3px 6px 3px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 5px;
+}
+
+.aNewAttachmentDiv > div {
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    justify-content: center;
+    align-items: center;
+    margin-right: 5px;
+}
+
+.aNewAttachmentDiv > div > p {
+    min-height: 10px;
+    margin: 1px 0 0 0;
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 12px;
+}
+
+.aNewAttachmentRemoveButton {
+    height: 10px;
+    width: 10px;
+    user-select: none;
+}
+
+.aNewAttachmentRemoveButton:hover {
+    filter: invert(100%);
+}
+
+.aNewAttachment {
+    object-fit: cover;
+    height: 80%;
+    width: auto;
+    /* max-width: 30px;
+    min-width: 30px; */
+    border-radius: 5px;
+}
+
+.aNewAttachment:hover {
+    cursor: pointer;
+}
+
+.RightBottomNav {
+    height: auto !important;
 }
