@@ -1,3 +1,4 @@
+import { Server } from "@server/index";
 import { ChatRepository } from "@server/databases/chat";
 
 type QueueItem = {
@@ -10,12 +11,9 @@ export class QueueService {
 
     queue: QueueItem[] = [];
 
-    chatRepo: ChatRepository;
-
     callback: Function;
 
-    constructor(chatRepo: ChatRepository, callback: Function) {
-        this.chatRepo = chatRepo;
+    constructor(callback: Function) {
         this.callback = callback;
     }
 
@@ -43,7 +41,7 @@ export class QueueService {
         switch (item.event) {
             case "save-message": {
                 const msg = ChatRepository.createMessageFromResponse(item.data);
-                const newMsg = await this.chatRepo.saveMessage(msg.chats[0], msg, item.data.tempGuid ?? null);
+                const newMsg = await Server().chatRepo.saveMessage(msg.chats[0], msg, item.data.tempGuid ?? null);
                 this.callback("message", { message: newMsg, tempGuid: item.data.tempGuid });
                 break;
             }

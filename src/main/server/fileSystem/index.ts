@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
+import { sync } from "read-chunk";
 
 import { Attachment } from "@server/databases/chat/entity";
 import { getDirectorySize } from "@server/helpers/utils";
@@ -14,6 +15,8 @@ export class FileSystem {
 
     public static attachmentsDir = path.join(FileSystem.baseDir, "Attachments");
 
+    public static fcmDir = path.join(FileSystem.baseDir, "FCM");
+
     public static modules = path.join(__dirname.replace("app.asar/dist", "app.asar.unpacked"), "node_modules");
 
     public static resources = __dirname.replace("app.asar/dist", "resources");
@@ -21,12 +24,17 @@ export class FileSystem {
     // Creates required directories
     static setupDirectories(): void {
         if (!fs.existsSync(FileSystem.attachmentsDir)) fs.mkdirSync(FileSystem.attachmentsDir);
+        if (!fs.existsSync(FileSystem.fcmDir)) fs.mkdirSync(FileSystem.fcmDir);
     }
 
     static saveAttachment(attachment: Attachment, data: Uint8Array) {
         const dirPath = `${FileSystem.attachmentsDir}/${attachment.guid}`;
         fs.mkdirSync(dirPath, { recursive: true });
         fs.writeFileSync(`${dirPath}/${attachment.transferName}`, data);
+    }
+
+    static saveFCMClient(data: any) {
+        fs.writeFileSync(`${FileSystem.fcmDir}/client.json`, JSON.stringify(data));
     }
 
     static getAppSizeData(): StorageData {
@@ -39,5 +47,15 @@ export class FileSystem {
         output.chatDataSize = fs.statSync(path.join(this.baseDir, "chat.db")).size;
 
         return output as StorageData;
+    }
+
+    static readFileChunk(filePath: string, start: number, chunkSize = 1024): Uint8Array {
+        // Get the file size
+        const stats = fs.statSync(filePath);
+        let fStart = start;
+
+        // Make sure the start are not bigger than the size
+        if (fStart > stats.size) fStart = stats.size;
+        return Uint8Array.from(sync(filePath, fStart, chunkSize));
     }
 }

@@ -76,6 +76,10 @@
     margin-bottom: 0;
 }
 
+.OutgoingMessage .message.unsent {
+    opacity: 0.6;
+}
+
 .OutgoingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;

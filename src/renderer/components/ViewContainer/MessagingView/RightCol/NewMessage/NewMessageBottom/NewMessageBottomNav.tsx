@@ -135,7 +135,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
 
     render() {
         return (
-            <div className="RightBottomNav">
+            <div className="RightBottomNav-NewMessage">
                 {this.state.isRecording ? (
                     <div id="recordMessageDiv">
                         <div id="recordingVisWrap">

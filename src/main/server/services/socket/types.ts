@@ -8,6 +8,7 @@ export type DBWhereItem = {
 };
 
 export type GetChatMessagesParams = {
+    chatGuid?: string;
     offset?: number;
     limit?: number;
     after?: Date | number;
@@ -24,4 +25,15 @@ export type GetAttachmentChunkParams = {
     start?: number;
     chunkSize?: number;
     compress?: boolean;
+};
+
+export type AttachmentChunkParams = {
+    guid: string;
+    tempGuid: string;
+    message: string;
+    attachmentGuid: string;
+    attachmentChunkStart: number;
+    attachmentName: string;
+    hasMore: boolean;
+    attachmentData: string;
 };

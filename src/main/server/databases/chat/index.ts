@@ -1,9 +1,13 @@
 import { app } from "electron";
+import * as path from "path";
+import * as fs from "fs";
+import * as mime from "mime";
+
 import { createConnection, Connection, FindManyOptions, DeepPartial } from "typeorm";
 import { ChatResponse, HandleResponse, MessageResponse, AttachmentResponse } from "@server/types";
 
 import { Attachment, Chat, Handle, Message } from "./entity";
-import { GetMessagesParams, CreateMessageParams } from "./types";
+import { GetMessagesParams, CreateMessageParams, CreateAttachmentParams } from "./types";
 
 export class ChatRepository {
     db: Connection = null;
@@ -87,6 +91,28 @@ export class ChatRepository {
         }
 
         return message;
+    }
+
+    static createAttachment({ attachmentPath, guid }: CreateAttachmentParams) {
+        const exists = fs.existsSync(attachmentPath);
+        if (!exists) return null;
+
+        const stats = fs.statSync(attachmentPath);
+        const attachment = new Attachment();
+        attachment.guid = guid;
+        attachment.uti = "public.jpeg";
+        attachment.mimeType = mime.getType(attachmentPath) ?? "application/octet-stream";
+        attachment.transferState = 0;
+        attachment.isOutgoing = true;
+        attachment.transferName = path.basename(attachmentPath);
+        attachment.totalBytes = stats.size;
+        attachment.isSticker = false;
+        attachment.hideAttachment = false;
+        attachment.blurhash = null;
+        attachment.height = null;
+        attachment.width = null;
+
+        return attachment;
     }
 
     async getHandles(address = null) {

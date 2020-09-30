@@ -30,3 +30,8 @@ export type CreateMessageParams = {
     associatedMessageGuid?: string;
     associatedMessageType?: ValidTapback;
 };
+
+export type CreateAttachmentParams = {
+    guid: string;
+    attachmentPath: string;
+};

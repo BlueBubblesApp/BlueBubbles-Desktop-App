@@ -58,7 +58,6 @@ export class ConfigRepository {
     private async loadDefaultThemes() {
         const repo = this.db.getRepository(Theme);
         this.themes = await repo.find();
-        console.log(this.themes);
     }
 
     /**
@@ -124,12 +123,10 @@ export class ConfigRepository {
     async setThemeValue(themeName: string, key: string, newValue: string): Promise<void> {
         const repo = this.db.getRepository(Theme);
         const theme: Theme = await repo.findOne({ name: themeName });
-        console.log(theme);
 
         if (theme) {
             // const newTheme = theme;
             theme[key] = newValue;
-            console.log(theme);
             await repo.update(await this.getThemeByName(themeName), theme);
         } else {
             const newTheme = new Theme();

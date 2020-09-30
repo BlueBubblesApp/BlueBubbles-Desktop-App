@@ -114,12 +114,13 @@ class RightConversationDisplay extends React.Component<Props, State> {
         this.setState({ isLoading: true });
 
         // Get the next page of messages
-        const messages: DBMessage[] = await ipcRenderer.invoke("get-chat-messages", {
+        const messages: DBMessage[] = await ipcRenderer.invoke("get-messages", {
             chatGuid: this.props.chat.guid,
             withHandle: true,
             withAttachments: true,
             withChat: false,
             limit: 50,
+            after: 1,
             before: messageTimestamp ?? new Date().getTime(),
             where: []
         });
@@ -309,7 +310,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                             {/* If the last previous message is older than 30 minutes, display the time */}
                             {message.text &&
                             olderMessage &&
-                            message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 5 ? (
+                            message.dateCreated - olderMessage.dateCreated > 1000 * 60 * 60 ? (
                                 <ChatLabel
                                     text={`${getDateText(new Date(message.dateCreated), true)}, ${getTimeText(
                                         new Date(message.dateCreated)

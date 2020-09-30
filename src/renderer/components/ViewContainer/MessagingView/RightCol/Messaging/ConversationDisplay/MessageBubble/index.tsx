@@ -486,6 +486,11 @@ class MessageBubble extends React.Component<Props, State> {
         const useTail = this.shouldHaveTail();
         let messageClass = useTail ? "message tail" : "message"; // Fix this to reflect having a tail
 
+        // Is it sent?
+        if (!message.guid || message.guid.length === 0 || message.guid.startsWith("temp")) {
+            messageClass += " unsent";
+        }
+
         // Figure out the "real string" and then figure out if we need to make it big emojis
         const text = sanitizeStr(message.text);
         if (text.length <= 4 * 3 && allEmojis(text)) {

@@ -2,9 +2,8 @@
 import { ipcMain, BrowserWindow, shell, app } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
+import * as fs from "fs";
 import * as path from "path";
-import * as os from "os";
-import * as Notifier from "node-notifier";
 
 // Config and FileSystem Imports
 import { FileSystem } from "@server/fileSystem";
@@ -16,17 +15,15 @@ import { ConfigRepository } from "@server/databases/config";
 import { ChatRepository } from "@server/databases/chat";
 
 // Service Imports
-import { SocketService, QueueService } from "@server/services";
+import { SocketService, QueueService, FCMService } from "@server/services";
 
-// Renderer imports
-import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
-
-import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, StatusData, SyncStatus } from "./types";
-import { GetChatMessagesParams } from "./services/socket/types";
-import { Attachment, Handle } from "./databases/chat/entity";
+import { generateUuid } from "@renderer/helpers/utils";
+import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, SyncStatus } from "./types";
+import { AttachmentChunkParams, GetChatMessagesParams } from "./services/socket/types";
+import { Attachment, Chat, Handle, Message } from "./databases/chat/entity";
 import { Theme } from "./databases/config/entity";
 
-export class BackendServer {
+class BackendServer {
     window: BrowserWindow;
 
     db: Connection;
@@ -38,6 +35,8 @@ export class BackendServer {
     socketService: SocketService;
 
     queueService: QueueService;
+
+    fcmService: FCMService;
 
     setupComplete: boolean;
 
@@ -55,6 +54,7 @@ export class BackendServer {
         // Services
         this.socketService = null;
         this.queueService = null;
+        this.fcmService = null;
 
         this.setupComplete = false;
         this.servicesStarted = false;
@@ -85,10 +85,6 @@ export class BackendServer {
 
         console.log("Starting Configuration IPC Listeners...");
         this.startActionListeners();
-
-        // Fetch the chats upon start
-        console.log("Syncing initial chats...");
-        await this.fetchChats();
     }
 
     /**
@@ -150,7 +146,6 @@ export class BackendServer {
             for (const key of Object.keys(DEFAULT_DARK_THEME)) {
                 theme[key] = DEFAULT_DARK_THEME[key]();
             }
-            console.log(theme);
             await this.configRepo.setTheme(theme);
         } catch (ex) {
             console.log(`Failed to setup dark theme! ${ex.message}`);
@@ -162,7 +157,7 @@ export class BackendServer {
             for (const key of Object.keys(DEFAULT_LIGHT_THEME)) {
                 theme[key] = DEFAULT_LIGHT_THEME[key]();
             }
-            console.log(theme);
+
             await this.configRepo.setTheme(theme);
         } catch (ex) {
             console.log(`Failed to setup light theme! ${ex.message}`);
@@ -174,7 +169,7 @@ export class BackendServer {
             for (const key of Object.keys(DEFAULT_NORD_THEME)) {
                 theme[key] = DEFAULT_NORD_THEME[key]();
             }
-            console.log(theme);
+
             await this.configRepo.setTheme(theme);
         } catch (ex) {
             console.log(`Failed to setup nord theme! ${ex.message}`);
@@ -189,9 +184,7 @@ export class BackendServer {
 
         try {
             console.log("Initializing queue service...");
-            this.queueService = new QueueService(this.chatRepo, (event: string, data: any) =>
-                this.emitToUI(event, data)
-            );
+            this.queueService = new QueueService((event: string, data: any) => this.emitToUI(event, data));
             this.queueService.start();
         } catch (ex) {
             console.log(`Failed to setup queue service! ${ex.message}`);
@@ -199,17 +192,19 @@ export class BackendServer {
 
         try {
             console.log("Initializing socket connection...");
-            this.socketService = new SocketService(this.db, this.chatRepo, this.configRepo);
+            this.socketService = new SocketService(this.db);
 
             // Start the socket service
             await this.socketService.start(true);
-
-            // Wait 1 second, then start the handlers if we are connected
-            setTimeout(() => {
-                if (this.socketService.server && this.socketService.server.connected) this.startSocketHandlers();
-            }, 1000);
         } catch (ex) {
             console.log(`Failed to setup socket service! ${ex.message}`);
+        }
+
+        try {
+            console.log("Initializing FCM service...");
+            FCMService.start();
+        } catch (ex) {
+            console.log(`Failed to setup queue service! ${ex.message}`);
         }
 
         this.servicesStarted = true;
@@ -244,7 +239,6 @@ export class BackendServer {
 
                     // Update the user only if there a non-null name
                     if (Object.keys(updateData).length > 0) {
-                        console.log(`Updating handle ${handles[i].address}`);
                         await this.chatRepo.updateHandle(handles[i], updateData);
                     }
                     break;
@@ -309,12 +303,105 @@ export class BackendServer {
      * This is what the server itself calls when it is refreshed or reloaded.
      * The front-end _should not_ call this function.
      */
-    async fetchChats(): Promise<void> {
+    async syncWithServer(): Promise<void> {
         if (!this.socketService?.server?.connected) {
             console.warn("Cannot fetch chats when no socket is connected!");
             return;
         }
 
+        const now = new Date();
+        const lastFetch = this.configRepo.get("lastFetch");
+        if (!lastFetch) {
+            await this.performFullSync();
+        } else {
+            await this.performIncrementalSync(lastFetch as number);
+        }
+
+        try {
+            // Fetch contacts
+            if (this.configRepo.get("importContactsFrom") === "serverDB") {
+                this.fetchContactsFromServerDb();
+            } else if (this.configRepo.get("importContactsFrom") === "serverVCF") {
+                this.fetchContactsFromServerVcf();
+            } else if (this.configRepo.get("importContactsFrom") === "androidClient") {
+                console.log("Fetching contacts from android client");
+            } else if (this.configRepo.get("importContactsFrom") === "localVCF") {
+                console.log("Fetching contacts from local VCF");
+            }
+        } catch (ex) {
+            this.setSyncStatus({ message: ex.message, error: true, completed: true });
+        }
+
+        // Save the last fetch date
+        this.configRepo.set("lastFetch", now);
+    }
+
+    async performIncrementalSync(lastFetch: number) {
+        const emitData = {
+            loading: true,
+            syncProgress: 0,
+            loginIsValid: true,
+            loadingMessage: "Connected to the server! Fetching messages...",
+            redirect: null
+        };
+        console.log(emitData.loadingMessage);
+        this.emitToUI("setup-update", emitData);
+
+        const args: GetChatMessagesParams = {
+            limit: 5000,
+            after: lastFetch,
+            withChats: true,
+            withHandle: true,
+            withAttachments: true,
+            withBlurhash: false,
+            where: [
+                {
+                    statement: "message.service = 'iMessage'",
+                    args: null
+                }
+            ]
+        };
+        const messages: MessageResponse[] = await this.socketService.getMessages(args);
+        emitData.loadingMessage = `Syncing ${messages.length} messages`;
+        console.log(emitData.loadingMessage);
+        this.emitToUI("setup-update", emitData);
+
+        let count = 1;
+        for (const message of messages) {
+            // Iterate over the chats that are associated with the message
+            for (const chat of message.chats ?? []) {
+                try {
+                    // Save each chat
+                    const chatData = ChatRepository.createChatFromResponse(chat);
+                    const savedChat = await this.chatRepo.saveChat(chatData);
+
+                    // Create the message and link it to the chat
+                    const msg = ChatRepository.createMessageFromResponse(message);
+                    await this.chatRepo.saveMessage(savedChat, msg);
+                } catch (ex) {
+                    console.error(`Failed to save message, [${message.guid}]`);
+                    console.log(ex);
+                }
+            }
+
+            // Emit status updates to the UI
+            emitData.loadingMessage = `Synced ${count} of ${messages.length} messages`;
+            emitData.syncProgress = Math.ceil((count / messages.length) * 100);
+            if (emitData.syncProgress > 100) emitData.syncProgress = 100;
+            console.log(emitData.loadingMessage);
+            this.emitToUI("setup-update", emitData);
+            this.emitToUI("message", message);
+            count += 1;
+        }
+
+        emitData.loadingMessage = "Finished syncing messages";
+        emitData.redirect = "/messaging";
+        emitData.syncProgress = 100;
+        console.log(emitData.loadingMessage);
+        this.emitToUI("setup-update", emitData);
+    }
+
+    async performFullSync() {
         const emitData = {
             loading: true,
             syncProgress: 0,
@@ -324,13 +411,10 @@ export class BackendServer {
         };
 
         const now = new Date();
-        const lastFetch = this.configRepo.get("lastFetch") as number;
         const chats: ChatResponse[] = await this.socketService.getChats({});
 
         emitData.syncProgress = 1;
-        emitData.loadingMessage = `Got ${chats.length} chats from the server since last fetch at ${new Date(
-            lastFetch
-        ).toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true })}`;
+        emitData.loadingMessage = `Got ${chats.length} chats from the server`;
         console.log(emitData.loadingMessage);
         this.emitToUI("setup-update", emitData);
 
@@ -352,10 +436,12 @@ export class BackendServer {
 
             // Build message request params
             const payload: GetChatMessagesParams = {
+                chatGuid: chat.guid,
                 withChats: false,
                 limit: 25,
                 offset: 0,
                 withBlurhash: true,
+                after: 1,
                 where: [
                     {
                         statement: "message.service = 'iMessage'",
@@ -363,14 +449,9 @@ export class BackendServer {
                     }
                 ]
             };
-            if (lastFetch) {
-                payload.after = lastFetch;
-                // Since we are fetching after a date, we want to get as much as we can
-                payload.limit = 1000;
-            }
 
             // Third, let's fetch the messages from the DB
-            const messages: MessageResponse[] = await this.socketService.getChatMessages(chat.guid, payload);
+            const messages: MessageResponse[] = await this.socketService.getMessages(payload);
             emitData.loadingMessage = `Syncing ${messages.length} messages for ${count} of ${chats.length} chats`;
             console.log(emitData.loadingMessage);
 
@@ -402,21 +483,6 @@ export class BackendServer {
 
         // Save the last fetch date
         this.configRepo.set("lastFetch", now);
-
-        try {
-            // Fetch contacts
-            if (this.configRepo.get("importContactsFrom") === "serverDB") {
-                this.fetchContactsFromServerDb();
-            } else if (this.configRepo.get("importContactsFrom") === "serverVCF") {
-                this.fetchContactsFromServerVcf();
-            } else if (this.configRepo.get("importContactsFrom") === "androidClient") {
-                console.log("Fetching contacts from android client");
-            } else if (this.configRepo.get("importContactsFrom") === "localVCF") {
-                console.log("Fetching contacts from local VCF");
-            }
-        } catch (ex) {
-            this.setSyncStatus({ message: ex.message, error: true, completed: true });
-        }
     }
 
     private startConfigListeners() {
@@ -523,9 +589,6 @@ export class BackendServer {
                 return this.emitToUI("setup-update", errData);
             }
 
-            // Start fetching the data
-            this.startSocketHandlers();
-            this.fetchChats();
             return null; // Consistent return
         });
 
@@ -533,14 +596,14 @@ export class BackendServer {
         ipcMain.handle("get-chats", async (_, __) => await this.chatRepo.getChats());
 
         // eslint-disable-next-line no-return-await
-        ipcMain.handle("get-chat-messages", async (_, args) => {
+        ipcMain.handle("get-messages", async (_, args) => {
             const messages = await this.chatRepo.getMessages(args);
 
             // If there are no messages, let's check the server
             if (messages.length === 0) {
                 const chats = await this.chatRepo.getChats(args.chatGuid);
                 if (chats.length > 0) {
-                    const newMessages = await this.socketService.getChatMessages(args.chatGuid, args);
+                    const newMessages = await this.socketService.getMessages(args);
 
                     // Add the new messages to the list
                     for (const message of newMessages) {
@@ -611,14 +674,55 @@ export class BackendServer {
 
         ipcMain.handle("get-reactions", async (_, message) => this.chatRepo.getMessageReactions(message));
         ipcMain.handle("create-message", async (_, payload) => ChatRepository.createMessage(payload));
+        ipcMain.handle("create-attachment", async (_, payload) => ChatRepository.createAttachment(payload));
         ipcMain.handle("save-message", async (_, payload) => this.chatRepo.saveMessage(payload.chat, payload.message));
         ipcMain.handle("send-message", async (_, payload) => {
-            const { chat, message } = payload;
-            this.socketService.server.emit("send-message", {
-                tempGuid: message.guid,
-                guid: chat.guid,
-                message: message.text
-            });
+            const { chat, message }: { chat: Chat; message: Message } = payload;
+            if (!message.attachments || message.attachments.length === 0) {
+                this.socketService.server.emit("send-message", {
+                    tempGuid: message.guid,
+                    guid: chat.guid,
+                    message: message.text
+                });
+            } else {
+                const CHUNK_SIZE = 512 * 1024;
+
+                // Iterate over each attachment and split it up into chunks
+                for (const attachment of message.attachments as (Attachment & { filepath: string })[]) {
+                    // Check if the file exists before trying to read it
+                    if (!fs.existsSync(attachment.filepath)) continue;
+
+                    console.log(`Sending attachment: ${attachment.filepath}`);
+                    const stats = fs.statSync(attachment.filepath);
+
+                    const numOfChunks = Math.ceil(stats.size / CHUNK_SIZE);
+                    const attachmentParams: Partial<AttachmentChunkParams> = {
+                        guid: chat.guid,
+                        tempGuid: message.guid,
+                        message: message.text,
+                        attachmentGuid: message.guid
+                    };
+
+                    for (let i = 0; i < numOfChunks; i += 1) {
+                        attachmentParams.attachmentChunkStart = i === 0 ? 0 : i + CHUNK_SIZE;
+                        attachmentParams.hasMore = i + CHUNK_SIZE < stats.size;
+                        attachmentParams.attachmentName = path.basename(attachment.filepath);
+
+                        // Get data as a Uint8Array and convert to base64
+                        const data = FileSystem.readFileChunk(
+                            attachment.filepath,
+                            attachmentParams.attachmentChunkStart,
+                            CHUNK_SIZE
+                        );
+                        attachmentParams.attachmentData = base64.bytesToBase64(data);
+
+                        // Send the attachment
+                        this.socketService.sendAttachmentChunk(attachmentParams as AttachmentChunkParams);
+                    }
+
+                    console.log(`Finished sending attachment: ${attachment.filepath}`);
+                }
+            }
         });
 
         // Handle Opening Attachment
@@ -657,123 +761,6 @@ export class BackendServer {
         });
 
         ipcMain.handle("get-storage-info", async (_, payload) => FileSystem.getAppSizeData());
-    }
-
-    private startSocketHandlers() {
-        if (!this.socketService.server || !this.socketService.server.connected) return;
-
-        const handleNewMessage = async (event: string, message: MessageResponse) => {
-            // First, add the message to the queue
-            this.queueService.add(event, message);
-
-            // Next, we want to create a notification for the new message
-            // If the window is focused, don't show a notification
-            if (this.window && this.window.isFocused()) return;
-
-            // Save the associated chat so we can get the participants to build the title
-            const chatData = message.chats[0];
-            const chat = ChatRepository.createChatFromResponse(chatData);
-            const savedChat = await this.chatRepo.saveChat(chat);
-            const chatTitle = generateChatTitle(savedChat);
-            const text = message.attachments.length === 0 ? message.text : "1 Attachment";
-
-            // Build the base notification parameters
-            let customPath = null;
-            if (os.platform() === "darwin")
-                customPath = path.join(
-                    FileSystem.modules,
-                    "node-notifier",
-                    "/vendor/mac.noindex/terminal-notifier.app/Contents/MacOS/terminal-notifier"
-                );
-
-            const notificationData: any = {
-                appId: "com.BlueBubbles.BlueBubbles-Desktop",
-                id: message.guid,
-                title: chatTitle,
-                icon: path.join(FileSystem.resources, "logo64.png"),
-                customPath
-            };
-
-            // Don't show a notificaiton if they have been disabled
-            if (this.configRepo.get("globalNotificationsDisabled")) return;
-
-            // Build the notification parameters
-            if (message.error) {
-                notificationData.subtitle = "Error";
-                notificationData.message = "Message failed to send";
-            } else {
-                notificationData.subtitle = "New Message";
-                notificationData.message = text;
-                notificationData.sound = !this.configRepo.get("globalNotificationsMuted");
-                notificationData.wait = true;
-                notificationData.reply = true;
-                notificationData.actions = "Reply";
-                notificationData.closeLabel = "Close";
-            }
-
-            // Don't show a notification if there is no error or it's from me
-            if (!message.error && message.isFromMe) return;
-
-            Notifier.notify(notificationData, async (error, response, metadata) => {
-                if (error || response !== "replied") return;
-                const reply = metadata.activationValue;
-
-                // Create the message
-                const newMessage = ChatRepository.createMessage({
-                    chat,
-                    guid: `temp-${generateUuid()}`,
-                    text: reply,
-                    dateCreated: new Date()
-                });
-
-                // Save the message
-                await this.chatRepo.saveMessage(chat, newMessage);
-
-                // Send the message
-                this.socketService.server.emit("send-message", {
-                    tempGuid: newMessage.guid,
-                    guid: chat.guid,
-                    message: newMessage.text
-                });
-            });
-
-            Notifier.on("click", async (notifierObject, options, clickEvent) => {
-                // Focus the window, and set the current chat to the clicked chat
-                ipcMain.emit("force-focus");
-                this.emitToUI("notification-clicked", savedChat);
-            });
-        };
-
-        this.socketService.server.on("new-message", (message: MessageResponse) =>
-            handleNewMessage("save-message", message)
-        );
-        this.socketService.server.on("updated-message", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
-        );
-        this.socketService.server.on("group-name-change", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
-        );
-        this.socketService.server.on("participant-removed", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
-        );
-        this.socketService.server.on("participant-added", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
-        );
-        this.socketService.server.on("participant-left", (message: MessageResponse) =>
-            this.queueService.add("save-message", message)
-        );
-
-        this.socketService.server.on("disconnect", () => {
-            this.setSyncStatus({ completed: true, error: true, message: "Disconnected!" });
-        });
-
-        this.socketService.server.on("connect", () => {
-            this.setSyncStatus({ completed: true, error: false, message: "Connected!" });
-        });
-
-        this.socketService.server.on("reconnect_attempt", attempt => {
-            this.setSyncStatus({ completed: false, error: false, message: `Reconnecting (${attempt})` });
-        });
 
         ipcMain.handle("start-new-chat", async (_, payload) => {
             const params = { participants: payload.newChatAddresses };
@@ -790,7 +777,7 @@ export class BackendServer {
         });
     }
 
-    private setSyncStatus({ completed, message, error }: SyncStatus) {
+    setSyncStatus({ completed, message, error }: SyncStatus) {
         const currentStatus = this.syncStatus;
         if (completed !== undefined) currentStatus.completed = completed;
         if (message !== undefined) currentStatus.message = message;
@@ -800,7 +787,24 @@ export class BackendServer {
         this.emitToUI("set-sync-status", this.syncStatus);
     }
 
-    private emitToUI(event: string, data: any) {
+    emitToUI(event: string, data: any) {
         if (this.window) this.window.webContents.send(event, data);
     }
 }
+
+/**
+ * Create a singleton for the server so that it can be referenced everywhere.
+ * Plus, we only want one instance of it running at all times.
+ */
+let server: BackendServer = null;
+export const Server = (win: BrowserWindow = null) => {
+    // If we already have a server, update the window (if not null) and return
+    // the same instance
+    if (server) {
+        if (win) server.window = win;
+        return server;
+    }
+
+    server = new BackendServer(win);
+    return server;
+};
