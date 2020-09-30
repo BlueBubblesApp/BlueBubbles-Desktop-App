@@ -327,7 +327,7 @@
     min-width: 45px;
     width: auto;
     height: auto;
-    background-color: rgba(0, 122, 255, 0.9);
+    background-color: var(--right-accent-title-color);
     margin: 5px;
     margin-right: 0px;
     padding: 3px 6px 3px 5px;
@@ -353,6 +353,11 @@
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-size: 12px;
+    max-width: 100px;
+    overflow: scroll;
+    text-overflow: hidden;
+    word-wrap: break-word;
+    white-space: nowrap;
 }
 
 .aNewAttachmentRemoveButton {
@@ -369,8 +374,6 @@
     object-fit: cover;
     height: 80%;
     width: auto;
-    /* max-width: 30px;
-    min-width: 30px; */
     border-radius: 5px;
 }
 
@@ -380,4 +383,26 @@
 
 .RightBottomNav {
     height: auto !important;
+}
+
+.cantSupportPreview {
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid var(--main-title-color);
+    border-radius: 7px;
+    padding: 0 4px;
+}
+
+.cantSupportPreview:hover {
+    cursor: pointer;
+}
+
+.cantSupportPreview > p {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 12px;
+    margin: 0;
 }

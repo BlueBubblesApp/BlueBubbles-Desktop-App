@@ -1,6 +1,5 @@
 .RightBottomNav-NewMessage {
-    height: 45px;
-    min-height: 45px;
+    height: auto;
     display: flex;
     background-color: var(--secondary-color);
     align-items: center;
@@ -39,7 +38,8 @@
 
 #messageField-NewMessage {
     flex-grow: 1;
-    height: 100%;
+    min-height: 45px;
+    height: auto;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -50,7 +50,7 @@
     background-repeat: no-repeat;
     border-radius: 25px;
     border: none;
-    width: 97%;
+    flex-grow: 1;
     padding: 3px 35px 3px 8px;
     font-family: "SF UI Display Bold";
     font-size: 15px;

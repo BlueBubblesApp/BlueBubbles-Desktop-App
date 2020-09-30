@@ -9,7 +9,6 @@ import { ipcRenderer } from "electron";
 import { Attachment, Chat, Message } from "@server/databases/chat/entity";
 import { generateUuid } from "@renderer/helpers/utils";
 import CloseIcon from "@renderer/components/TitleBar/close.png";
-// import Monkey from "C://Users/Maxwell/Downloads/1.jpeg";
 
 import "./RightBottomNav.css";
 
@@ -135,16 +134,13 @@ class RightBottomNav extends React.Component<Props, State> {
 
     async handleAddAttachment() {
         const dialogReturn = await dialog.showOpenDialog({
-            properties: ["openFile"],
-            filters: [{ name: "Images", extensions: ["jpg", "jpeg", "png"] }]
+            properties: ["openFile"]
         });
 
         const chosenFiles = dialogReturn.filePaths;
         const attachmentPathsCopy = this.state.attachmentPaths;
 
         chosenFiles.forEach(filePath => {
-            // const output = fs.readFileSync(filePath).toString("base64");
-            // console.log(output);
             attachmentPathsCopy.push(filePath);
         });
         console.log(attachmentPathsCopy);
@@ -251,13 +247,42 @@ class RightBottomNav extends React.Component<Props, State> {
                                 ? this.state.attachmentPaths.map(filePath => (
                                       <div className="aNewAttachmentDiv" key={filePath}>
                                           <div>
-                                              <img
-                                                  className="aNewAttachment"
-                                                  src={`data:image;base64,${fs
-                                                      .readFileSync(filePath)
-                                                      .toString("base64")}`}
-                                                  onClick={() => this.openAttachment(filePath)}
-                                              />
+                                              {filePath.split(".").pop() === "jpg" ||
+                                              filePath.split(".").pop() === "jpeg" ||
+                                              filePath.split(".").pop() === "png" ||
+                                              filePath.split(".").pop() === "svg" ||
+                                              filePath.split(".").pop() === "gif" ||
+                                              filePath.split(".").pop() === "tiff" ? (
+                                                  <img
+                                                      className="aNewAttachment"
+                                                      src={`data:image;base64,${fs
+                                                          .readFileSync(filePath)
+                                                          .toString("base64")}`}
+                                                      onClick={() => this.openAttachment(filePath)}
+                                                  />
+                                              ) : null}
+                                              {filePath.split(".").pop() === "mp4" ||
+                                              filePath.split(".").pop() === "m4a" ||
+                                              filePath.split(".").pop() === "avi" ||
+                                              filePath.split(".").pop() === "mov" ? (
+                                                  <div
+                                                      className="cantSupportPreview"
+                                                      onClick={() => this.openAttachment(filePath)}
+                                                  >
+                                                      <p>Video</p>
+                                                      <p>(Click to open)</p>
+                                                  </div>
+                                              ) : null}
+                                              {filePath.split(".").pop() === "pfd" ||
+                                              filePath.split(".").pop() === "docx" ? (
+                                                  <div
+                                                      className="cantSupportPreview"
+                                                      onClick={() => this.openAttachment(filePath)}
+                                                  >
+                                                      <p>Document</p>
+                                                      <p>(Click to open)</p>
+                                                  </div>
+                                              ) : null}
                                               <p>{filePath.replace(/^.*[\\/]/, "")}</p>
                                           </div>
                                           <img

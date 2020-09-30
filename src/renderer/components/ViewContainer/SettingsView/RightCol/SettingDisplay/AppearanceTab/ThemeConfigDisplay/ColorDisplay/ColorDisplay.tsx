@@ -41,10 +41,8 @@ class ColorDisplay extends React.Component<Props, State> {
     };
 
     handleChangeComplete = async color => {
-        console.log(color);
         this.setState({ hexValue: color.hex });
 
-        console.log(this.props.currentTheme);
         if (
             this.props.currentTheme === "dark" ||
             this.props.currentTheme === "light" ||
@@ -63,7 +61,6 @@ class ColorDisplay extends React.Component<Props, State> {
 
             // push the new theme name to the config
             let allThemesNew = this.props.allThemes;
-            console.log(this.props.allThemes);
             allThemesNew = `${allThemesNew},${currentThemeFull.name}`;
             const config = { allThemes: allThemesNew, currentTheme: currentThemeFull.name };
             ipcRenderer.invoke("set-config", config);
@@ -76,13 +73,11 @@ class ColorDisplay extends React.Component<Props, State> {
                 key: this.props.themeVariableTitle,
                 newValue: color.hex
             };
-            console.log(this.props.currentTheme);
             ipcRenderer.invoke("set-theme-value", newThemeValue);
 
             const config = { allThemes: this.props.allThemes, currentTheme: this.props.currentTheme };
             ipcRenderer.invoke("set-config", config);
         }
-        // ipcRenderer.invoke("set-theme-value", {test:color.hex})
     };
 
     render() {
