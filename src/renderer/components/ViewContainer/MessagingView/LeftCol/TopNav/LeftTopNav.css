@@ -52,6 +52,21 @@
     border: 2px solid #3c7ca8 !important;
 }
 
+#resetSearchString {
+    height: 12px;
+    width: 12px;
+    position: absolute;
+    top: 8px;
+    left: 200px;
+    filter: invert(100%);
+    transition: filter ease-in-out 0.13s;
+}
+
+#resetSearchString:hover {
+    filter: invert(0%);
+    cursor: pointer;
+}
+
 #newMessage {
     background-color: var(--new-chat-button-color);
     padding: 2px 7px 0px 9px;

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-empty */
 import * as React from "react";
 import { ipcRenderer } from "electron";
@@ -16,6 +17,7 @@ interface State {
     chats: Chat[];
     chatGuids: string[];
     isLoading: boolean;
+    chatSearchString: string;
 }
 
 class LeftConversationsNav extends React.Component<unknown, State> {
@@ -26,7 +28,8 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             activeChat: null,
             chats: [],
             chatGuids: [],
-            isLoading: false
+            isLoading: false,
+            chatSearchString: ""
         };
     }
 
@@ -47,6 +50,8 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         ipcRenderer.on("notification-clicked", (_, chat) => this.setCurrentChat(chat));
 
         ipcRenderer.on("set-current-new-chat", (_, chat) => this.setCurrentChat(chat));
+
+        ipcRenderer.on("send-chat-search-string", (_, payload) => this.setState({ chatSearchString: payload }));
     }
 
     setCurrentChat(chat: Chat) {
@@ -218,30 +223,67 @@ class LeftConversationsNav extends React.Component<unknown, State> {
     }
 
     render() {
-        const { chats, isLoading, activeChat } = this.state;
+        const { chats, isLoading, activeChat, chatSearchString } = this.state;
         chats.sort((a, b) => (a.lastMessage?.dateCreated > b.lastMessage?.dateCreated ? -1 : 1));
 
         return (
             <div className="LeftConversationsNav">
                 {isLoading ? <div id="loader" /> : null}
-                {chats.map(chat => {
-                    let hasNotification =
-                        chat.lastMessage &&
-                        !chat.lastMessage.isFromMe &&
-                        chat.lastViewed < chat.lastMessage.dateCreated;
-                    if (!chat.lastViewed || (hasNotification && activeChat && activeChat.guid === chat.guid))
-                        hasNotification = false;
-                    return (
-                        <div
-                            key={chat.guid}
-                            onClick={() => this.setCurrentChat(chat)}
-                            className={activeChat?.guid === chat.guid ? "activeChat" : ""}
-                        >
-                            {hasNotification ? <div className="notification" /> : null}
-                            <Conversation chat={chat} />
-                        </div>
-                    );
-                })}
+                {chatSearchString.length > 0
+                    ? chats
+                          .filter(
+                              chat =>
+                                  chat.displayName.toLowerCase().includes(chatSearchString.toLowerCase()) ||
+                                  chat.participants.some(handle => {
+                                      return (
+                                          handle.firstName?.toLowerCase().includes(chatSearchString.toLowerCase()) ||
+                                          handle.lastName?.toLowerCase().includes(chatSearchString.toLowerCase()) ||
+                                          handle.address.includes(chatSearchString)
+                                      );
+                                  }) ||
+                                  chat.messages?.some(message => {
+                                      return message.text?.includes(chatSearchString);
+                                  })
+                          )
+                          .map(filteredChat => {
+                              let hasNotification =
+                                  filteredChat.lastMessage &&
+                                  !filteredChat.lastMessage.isFromMe &&
+                                  filteredChat.lastViewed < filteredChat.lastMessage.dateCreated;
+                              if (
+                                  !filteredChat.lastViewed ||
+                                  (hasNotification && activeChat && activeChat.guid === filteredChat.guid)
+                              )
+                                  hasNotification = false;
+                              return (
+                                  <div
+                                      key={filteredChat.guid}
+                                      onClick={() => this.setCurrentChat(filteredChat)}
+                                      className={activeChat?.guid === filteredChat.guid ? "activeChat" : ""}
+                                  >
+                                      {hasNotification ? <div className="notification" /> : null}
+                                      <Conversation chat={filteredChat} />
+                                  </div>
+                              );
+                          })
+                    : chats.map(chat => {
+                          let hasNotification =
+                              chat.lastMessage &&
+                              !chat.lastMessage.isFromMe &&
+                              chat.lastViewed < chat.lastMessage.dateCreated;
+                          if (!chat.lastViewed || (hasNotification && activeChat && activeChat.guid === chat.guid))
+                              hasNotification = false;
+                          return (
+                              <div
+                                  key={chat.guid}
+                                  onClick={() => this.setCurrentChat(chat)}
+                                  className={activeChat?.guid === chat.guid ? "activeChat" : ""}
+                              >
+                                  {hasNotification ? <div className="notification" /> : null}
+                                  <Conversation chat={chat} />
+                              </div>
+                          );
+                      })}
             </div>
         );
     }
