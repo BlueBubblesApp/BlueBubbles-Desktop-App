@@ -33,24 +33,28 @@
     font-size: 2vw;
 }
 
-#loginForm > button {
+#loginForm > div > button {
     background-color: #007aff;
     outline: none;
     border: none;
     text-decoration: none;
     font-family: "SF UI Display Bold";
     font-size: 15px;
-    margin-top: 20px;
+    margin-top: 10px;
     border-radius: 10px;
-    padding: 7px 13px 7px 13px;
+    padding: 8px 13px 8px 13px;
     color: white;
+    transition: border-radius 0.2s;
 }
 
-#loginForm > button:hover {
+#loginForm > div > button:hover {
     cursor: pointer;
+    border-radius: 15px;
 }
 
-#loginContainer > form {
+#loginForm {
+    max-width: 250px;
+    min-width: 150px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -67,6 +71,89 @@
     padding: 7px;
     border-radius: 10px;
     width: 100%;
+}
+
+#loginForm > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+#scanQrImage {
+    height: 25px;
+    position: absolute;
+    right: -8px;
+    top: 10px;
+    margin-top: 0px;
+    background-color: #007aff;
+    border-radius: 10px;
+    padding: 5px 6px;
+    fill: white;
+    transition: border-radius 0.2s;
+}
+
+#scanQrImage:hover {
+    cursor: pointer;
+    /* border-radius: 13px; */
+}
+
+#scanQRTooltip {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    background-color: #007aff;
+    width: auto;
+    max-height: 150px;
+    z-index: 1;
+    right: -132px;
+    top: -30px;
+    border-radius: 10px;
+    padding: 4px 7px;
+    border: 1px solid white;
+    animation: fade 0.2s ease-in-out forwards;
+}
+
+#scanQRTooltip > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#scanQRTooltip > div:hover {
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+#scanQRTooltip > div > p {
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    color: var(--main-title-color);
+    margin: 0;
+    margin-right: 7px;
+}
+
+#scanQRTooltip > div:first-child {
+    margin-bottom: 3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.733);
+    padding-bottom: 4px;
+}
+
+#localFileIcon {
+    height: 17px;
+    width: 17px;
+    fill: var(--main-title-color);
+    margin: 0;
+}
+
+#clipboardIcon {
+    height: 17px;
+    width: 17px;
+    fill: var(--main-title-color);
+    margin: 0;
 }
 
 #loadingContainer {
@@ -226,10 +313,12 @@
     font-size: 15px;
     margin-top: 20px;
     border-radius: 10px;
-    padding: 7px 13px 7px 13px;
+    padding: 8px 13px 8px 13px;
     color: white;
+    transition: border-radius 0.2s;
 }
 
 #returnToLoginButton:hover {
     cursor: pointer;
+    border-radius: 15px;
 }

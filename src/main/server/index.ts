@@ -775,6 +775,48 @@ class BackendServer {
                 });
             });
         });
+
+        ipcMain.handle("read-data-from-local-image", async (_, filePath) => {
+            const { nativeImage } = require("electron");
+            const jsQR = require("jsqr");
+            const image = nativeImage.createFromPath(filePath);
+            const code = jsQR(image.toBitmap(), image.getSize().width, image.getSize().height);
+
+            if (code) {
+                const data = code.chunks[0].text
+                    .replace(/['"]+/g, "")
+                    .substr(1, code.chunks[0].text.replace(/['"]+/g, "").length - 2)
+                    .split(",");
+                console.log(data);
+
+                this.configRepo.set("serverAddress", data[1]);
+                this.configRepo.set("passphrase", data[0]);
+                const dataReturn = { serverAddress: data[1], passphrase: data[0] };
+                return dataReturn;
+            }
+            return "No QR Code Found";
+        });
+
+        ipcMain.handle("read-data-from-clipboard", async _ => {
+            const { clipboard } = require("electron");
+            const jsQR = require("jsqr");
+            const image = clipboard.readImage();
+            const code = jsQR(image.toBitmap(), image.getSize().width, image.getSize().height);
+
+            if (code) {
+                const data = code.chunks[0].text
+                    .replace(/['"]+/g, "")
+                    .substr(1, code.chunks[0].text.replace(/['"]+/g, "").length - 2)
+                    .split(",");
+                console.log(data);
+
+                this.configRepo.set("serverAddress", data[1]);
+                this.configRepo.set("passphrase", data[0]);
+                const dataReturn = { serverAddress: data[1], passphrase: data[0] };
+                return dataReturn;
+            }
+            return "No QR Code Found";
+        });
     }
 
     setSyncStatus({ completed, message, error }: SyncStatus) {
