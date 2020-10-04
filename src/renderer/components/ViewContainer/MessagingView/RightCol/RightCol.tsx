@@ -1,6 +1,7 @@
+/* eslint-disable max-len */
 import * as React from "react";
 import { ipcRenderer, IpcRendererEvent } from "electron";
-import { Chat } from "@server/databases/chat/entity";
+import { Chat, Handle } from "@server/databases/chat/entity";
 import "./RightCol.css";
 
 import RightTopNav from "./Messaging/TopNav/RightTopNav";
@@ -16,6 +17,7 @@ import DetailsDisplay from "./Details/DetailsDisplay/DetailsDisplay";
 type ServerInputTitleState = {
     currentChat: Chat;
     isDetailsOpen: boolean;
+    newChatPreloadParticipant: Handle;
 };
 
 class RightCol extends React.Component<object, ServerInputTitleState> {
@@ -24,8 +26,8 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
 
         this.state = {
             currentChat: null,
-            isDetailsOpen: false
-            // Set this true to see detail view
+            isDetailsOpen: false,
+            newChatPreloadParticipant: null
         };
     }
 
@@ -39,6 +41,14 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
         });
 
         ipcRenderer.on("set-current-chat", this.onChatChange);
+
+        // ipcRenderer.on("move-to-new-chat-view", async (_, newChatPreloadParticipant) => {
+        //     this.setState({currentChat: null,newChatPreloadParticipant});
+        // })
+
+        ipcRenderer.on("preload-new-chat", async (_, participant: Handle) => {
+            this.setState({ currentChat: null, newChatPreloadParticipant: participant });
+        });
     }
 
     componentWillUnmount() {
@@ -46,7 +56,7 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
     }
 
     onChatChange = async (_: IpcRendererEvent, chat: Chat) => {
-        this.setState({ currentChat: chat });
+        this.setState({ currentChat: chat, newChatPreloadParticipant: null });
     };
 
     render() {
@@ -54,7 +64,11 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
             <div className="RightCol-Mes">
                 {!this.state.currentChat ? (
                     <>
-                        <NewMessageTopNav />
+                        {this.state.newChatPreloadParticipant ? (
+                            <NewMessageTopNav newChatPreloadParticipant={this.state.newChatPreloadParticipant} />
+                        ) : (
+                            <NewMessageTopNav />
+                        )}
                         <NewMessageConversationDisplay />
                         <NewMessageBottomNav />
                     </>

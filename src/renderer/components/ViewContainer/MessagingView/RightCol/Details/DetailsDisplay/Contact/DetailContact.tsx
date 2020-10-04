@@ -1,23 +1,33 @@
+/* eslint-disable class-methods-use-this */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable max-len */
 import * as React from "react";
 import "./DetailContact.css";
 import { Chat } from "@server/databases/chat/entity";
 import { getSender, generateDetailsIconText } from "@renderer/helpers/utils";
+import { ipcRenderer } from "electron";
 import DetailContactAvatar from "./DetailContactAvatar/DetailContactAvatar";
 
 interface Props {
     chat: Chat;
     index: number;
-    name: String;
+    name: string;
+    address: string;
 }
 
 interface State {}
 
 class DetailContact extends React.Component<Props, State> {
-    state = {};
+    async jumpToContactChat() {
+        // const chat = ipcRenderer.invoke("get-chats")
+        // ipcRenderer.invoke("send-to-ui", { event: "set-current-new-chat", contents: chat });
+
+        const payload = { newChatAddresses: this.props.address, matchingAddress: this.props.address };
+        await ipcRenderer.invoke("start-new-chat", payload);
+    }
 
     render() {
+        console.log(this.props.chat);
         const detailsIconText = generateDetailsIconText(this.props.chat);
         const participants = this.props.chat.participants.map(handle => getSender(handle));
 
@@ -72,6 +82,7 @@ class DetailContact extends React.Component<Props, State> {
                             id="JumpToContact"
                             enableBackground="new 0 0 511.096 511.096"
                             viewBox="0 0 511.096 511.096"
+                            onClick={() => this.jumpToContactChat()}
                         >
                             <g id="Speech_Bubble_48_">
                                 <g>

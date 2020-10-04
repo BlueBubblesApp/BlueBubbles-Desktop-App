@@ -548,8 +548,7 @@ class BackendServer {
 
         // Temporary get handlers endpoint
         ipcMain.handle("get-handles", (_, __) => {
-            const handles = this.chatRepo.getHandles();
-            return handles;
+            return this.chatRepo.getHandles();
         });
     }
 
@@ -593,7 +592,7 @@ class BackendServer {
         });
 
         // eslint-disable-next-line no-return-await
-        ipcMain.handle("get-chats", async (_, __) => await this.chatRepo.getChats());
+        ipcMain.handle("get-chats", async (_, guid?) => await this.chatRepo.getChats(guid));
 
         // eslint-disable-next-line no-return-await
         ipcMain.handle("get-messages", async (_, args) => {
@@ -765,9 +764,26 @@ class BackendServer {
         ipcMain.handle("start-new-chat", async (_, payload) => {
             const params = { participants: payload.newChatAddresses };
 
+            // Check to see if a chat matching the address already exits and sets to current or makes a new chat
+            if (!payload.message && payload.matchingAddress) {
+                const chats = await this.chatRepo.getChats();
+                const newChats = chats.filter(aChat => {
+                    return aChat.participants.length === 1 && aChat.participants[0].address === payload.matchingAddress;
+                });
+                if (newChats.length !== 1) {
+                    this.socketService.server.emit("start-chat", params, async createdChat => {
+                        const handleWithName = await this.chatRepo.getHandles(createdChat.data.participants[0].address);
+                        this.emitToUI("preload-new-chat", handleWithName[0]);
+                    });
+                    return;
+                }
+                this.emitToUI("set-current-new-chat", newChats[0]);
+                return;
+            }
+
             this.socketService.server.emit("start-chat", params, async createdChat => {
-                this.emitToUI("set-current-new-chat", createdChat.data);
                 await this.chatRepo.saveChat(createdChat.data);
+                this.emitToUI("set-current-new-chat", createdChat.data);
                 this.socketService.server.emit("send-message", {
                     tempGuid: `temp-${generateUuid()}`,
                     guid: createdChat.data.guid,

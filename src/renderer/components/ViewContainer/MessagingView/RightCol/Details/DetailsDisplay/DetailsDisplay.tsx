@@ -51,6 +51,7 @@ class DetailsDisplay extends React.Component<Props, State> {
                                           name={name}
                                           chat={this.props.chat}
                                           index={i}
+                                          address={this.props.chat.participants[i].address}
                                       />
                                   ))
                                 : participants
@@ -61,6 +62,7 @@ class DetailsDisplay extends React.Component<Props, State> {
                                               name={name}
                                               chat={this.props.chat}
                                               index={i}
+                                              address={this.props.chat.participants[i].address}
                                           />
                                       ))}
                         </>
