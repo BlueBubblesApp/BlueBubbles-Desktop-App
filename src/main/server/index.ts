@@ -772,6 +772,7 @@ class BackendServer {
                 });
                 if (newChats.length !== 1) {
                     this.socketService.server.emit("start-chat", params, async createdChat => {
+                        await this.chatRepo.saveChat(createdChat.data);
                         const handleWithName = await this.chatRepo.getHandles(createdChat.data.participants[0].address);
                         this.emitToUI("preload-new-chat", handleWithName[0]);
                     });

@@ -39,15 +39,22 @@ export const getDateText = (date: Date, useToday = false) => {
 };
 
 export const getiMessageNumberFormat = (address: string) => {
+    if (address.length > 50) return "ERR";
     if (!address) return address;
 
     // If it's an email, just return the email
     if (address.includes("@")) return address;
 
-    const phoneUtil = PhoneNumberUtil.getInstance();
-    const number = phoneUtil.parseAndKeepRawInput(address, "US");
-    const formatted = phoneUtil.formatOutOfCountryCallingNumber(number, "US");
-    return `+${formatted}`;
+    try {
+        const phoneUtil = PhoneNumberUtil.getInstance();
+        const number = phoneUtil.parseAndKeepRawInput(address, "US");
+        const formatted = phoneUtil.formatOutOfCountryCallingNumber(number, "US");
+        console.log(formatted);
+        return `+${formatted}`;
+    } catch {
+        console.log(address);
+        return "ERR: >MAXLEN";
+    }
 };
 
 export const getFullName = (participant: Handle) => {
