@@ -39,7 +39,6 @@ export const getDateText = (date: Date, useToday = false) => {
 };
 
 export const getiMessageNumberFormat = (address: string) => {
-    if (address.length > 50) return "ERR";
     if (!address) return address;
 
     // If it's an email, just return the email
@@ -49,10 +48,8 @@ export const getiMessageNumberFormat = (address: string) => {
         const phoneUtil = PhoneNumberUtil.getInstance();
         const number = phoneUtil.parseAndKeepRawInput(address, "US");
         const formatted = phoneUtil.formatOutOfCountryCallingNumber(number, "US");
-        console.log(formatted);
         return `+${formatted}`;
     } catch {
-        console.log(address);
         return "ERR: >MAXLEN";
     }
 };

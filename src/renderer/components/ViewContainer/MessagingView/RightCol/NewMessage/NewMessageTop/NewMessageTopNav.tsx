@@ -60,17 +60,6 @@ class NewMessageTopNav extends React.Component<Props, State> {
             ipcRenderer.invoke("start-new-chat", payload);
             this.setState({ newChatRecips: [] });
         });
-
-        // ipcRenderer.on("preload-new-chat", async (_, participant:Handle) => {
-        //     console.log(participant);
-        //     ipcRenderer.emit("move-to-new-chat-view", participant);
-        //     // await new Promise(resolve => setTimeout(resolve, 3000));
-        //     // await this.handleAddRecipToNewChat(participant);
-        //     if(this.props.newChatPreloadParticipant) {
-        //         console.log(this.props)
-        //         this.handleAddRecipToNewChat(this.props.newChatPreloadParticipant);
-        //     }
-        // })
     }
 
     inputChangeHandler(e) {

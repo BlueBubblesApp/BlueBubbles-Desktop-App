@@ -47,7 +47,7 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
         // })
 
         ipcRenderer.on("preload-new-chat", async (_, participant: Handle) => {
-            this.setState({ currentChat: null, newChatPreloadParticipant: participant });
+            this.setState({ currentChat: null, isDetailsOpen: false, newChatPreloadParticipant: participant });
         });
     }
 
@@ -56,7 +56,7 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
     }
 
     onChatChange = async (_: IpcRendererEvent, chat: Chat) => {
-        this.setState({ currentChat: chat, newChatPreloadParticipant: null });
+        this.setState({ currentChat: chat, isDetailsOpen: false, newChatPreloadParticipant: null });
     };
 
     render() {

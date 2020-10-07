@@ -19,9 +19,6 @@ interface State {}
 
 class DetailContact extends React.Component<Props, State> {
     async jumpToContactChat() {
-        // const chat = ipcRenderer.invoke("get-chats")
-        // ipcRenderer.invoke("send-to-ui", { event: "set-current-new-chat", contents: chat });
-
         const payload = { newChatAddresses: this.props.address, matchingAddress: this.props.address };
         await ipcRenderer.invoke("start-new-chat", payload);
     }

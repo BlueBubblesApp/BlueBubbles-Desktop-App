@@ -486,6 +486,9 @@ class BackendServer {
     }
 
     private startConfigListeners() {
+        // Set maximum listener count
+        require("events").EventEmitter.defaultMaxListeners = 15;
+
         // eslint-disable-next-line no-return-await
         ipcMain.handle("get-config", async (_, __) => await this.configRepo.config);
 
@@ -770,18 +773,49 @@ class BackendServer {
                 const newChats = chats.filter(aChat => {
                     return aChat.participants.length === 1 && aChat.participants[0].address === payload.matchingAddress;
                 });
+
+                // If chat doesnt already exist
                 if (newChats.length !== 1) {
-                    this.socketService.server.emit("start-chat", params, async createdChat => {
-                        await this.chatRepo.saveChat(createdChat.data);
-                        const handleWithName = await this.chatRepo.getHandles(createdChat.data.participants[0].address);
-                        this.emitToUI("preload-new-chat", handleWithName[0]);
-                    });
+                    const matchingHandle = await this.chatRepo.getHandles(payload.matchingAddress);
+                    this.emitToUI("preload-new-chat", matchingHandle[0]);
                     return;
                 }
+
+                // Check if the chat has a lastMessage
+                const args = {
+                    chatGuid: newChats[0].guid,
+                    withHandle: false,
+                    withAttachments: false,
+                    withChats: false,
+                    offset: 0,
+                    limit: 1,
+                    after: 1,
+                    where: [
+                        {
+                            statement: "message.text IS NOT NULL",
+                            args: null
+                        },
+                        {
+                            statement: "message.associatedMessageType IS NULL",
+                            args: null
+                        }
+                    ]
+                };
+                const messages = await this.chatRepo.getMessages(args);
+
+                // If there is no last message, preload new chat
+                if (messages.length === 0) {
+                    const matchingHandle = await this.chatRepo.getHandles(payload.matchingAddress);
+                    this.emitToUI("preload-new-chat", matchingHandle[0]);
+                    return;
+                }
+
+                // Otherwise set chat to already existing chat
                 this.emitToUI("set-current-new-chat", newChats[0]);
                 return;
             }
 
+            // If their doesnt already exist a chat, make a new one
             this.socketService.server.emit("start-chat", params, async createdChat => {
                 await this.chatRepo.saveChat(createdChat.data);
                 this.emitToUI("set-current-new-chat", createdChat.data);

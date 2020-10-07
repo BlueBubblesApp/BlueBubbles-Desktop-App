@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 /* eslint-disable max-len */
 /* eslint-disable no-empty */
 import * as React from "react";
@@ -52,12 +53,20 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         ipcRenderer.on("set-current-new-chat", (_, chat) => this.setCurrentChat(chat));
 
         ipcRenderer.on("send-chat-search-string", (_, payload) => this.setState({ chatSearchString: payload }));
+
+        ipcRenderer.on("check-if-chat-has-last-message", (_, address) => {
+            let hasLastMessage = true;
+            this.state.chats.forEach(chat => {
+                if (chat.participants[0].address === address && !chat.hasOwnProperty("lastMessage")) {
+                    hasLastMessage = false;
+                }
+            });
+            return hasLastMessage;
+        });
     }
 
     setCurrentChat(chat: Chat) {
         const now = new Date();
-
-        ipcRenderer.invoke("send-to-ui", { event: "close-details" });
         this.setState({ activeChat: chat });
         ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
         ipcRenderer.invoke("set-chat-last-viewed", { chat, lastViewed: now });
@@ -233,17 +242,20 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                     ? chats
                           .filter(
                               chat =>
-                                  chat.displayName.toLowerCase().includes(chatSearchString.toLowerCase()) ||
-                                  chat.participants.some(handle => {
-                                      return (
-                                          handle.firstName?.toLowerCase().includes(chatSearchString.toLowerCase()) ||
-                                          handle.lastName?.toLowerCase().includes(chatSearchString.toLowerCase()) ||
-                                          handle.address.includes(chatSearchString)
-                                      );
-                                  }) ||
-                                  chat.messages?.some(message => {
-                                      return message.text?.includes(chatSearchString);
-                                  })
+                                  chat.hasOwnProperty("lastMessage") &&
+                                  (chat.displayName.toLowerCase().includes(chatSearchString.toLowerCase()) ||
+                                      chat.participants.some(handle => {
+                                          return (
+                                              handle.firstName
+                                                  ?.toLowerCase()
+                                                  .includes(chatSearchString.toLowerCase()) ||
+                                              handle.lastName?.toLowerCase().includes(chatSearchString.toLowerCase()) ||
+                                              handle.address.includes(chatSearchString)
+                                          );
+                                      }) ||
+                                      chat.messages?.some(message => {
+                                          return message.text?.includes(chatSearchString);
+                                      }))
                           )
                           .map(filteredChat => {
                               let hasNotification =
@@ -273,6 +285,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                               chat.lastViewed < chat.lastMessage.dateCreated;
                           if (!chat.lastViewed || (hasNotification && activeChat && activeChat.guid === chat.guid))
                               hasNotification = false;
+                          if (!chat.hasOwnProperty("lastMessage")) return null;
                           return (
                               <div
                                   key={chat.guid}
