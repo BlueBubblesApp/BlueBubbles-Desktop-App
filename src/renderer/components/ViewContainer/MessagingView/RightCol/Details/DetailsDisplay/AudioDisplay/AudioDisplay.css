@@ -1,0 +1,11 @@
+.aAudio {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* max-height: 200px; */
+    width: 100%;
+    background-color: grey;
+    border-radius: 10px;
+    padding: 6px 5px;
+    transition: background-color ease-in-out 0.1s;
+}

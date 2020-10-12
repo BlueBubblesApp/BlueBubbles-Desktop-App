@@ -2,8 +2,8 @@ export const DEFAULT_CONFIG_ITEMS: { [key: string]: Function } = {
     serverAddress: () => "",
     passphrase: () => "",
     lastFetch: () => 0,
-    currentTheme: () => "dark",
-    allThemes: () => ["dark", "light", "nord"],
+    currentTheme: () => "Dark",
+    allThemes: () => ["Dark", "Light", "Nord"],
     isMakingNewChat: () => "0",
     chunkSize: () => 1024,
     globalNotificationsMuted: () => "0",
@@ -12,7 +12,7 @@ export const DEFAULT_CONFIG_ITEMS: { [key: string]: Function } = {
 };
 
 export const DEFAULT_DARK_THEME: { [key: string]: Function } = {
-    name: () => "dark",
+    name: () => "Dark",
     titleBarCloseColor: () => "#fc4e50",
     titleBarMinimizeColor: () => "#febe30",
     titleBarMaximizeColor: () => "#38d744",
@@ -42,7 +42,7 @@ export const DEFAULT_DARK_THEME: { [key: string]: Function } = {
 };
 
 export const DEFAULT_LIGHT_THEME: { [key: string]: Function } = {
-    name: () => "light",
+    name: () => "Light",
     titleBarCloseColor: () => "#fc4e50",
     titleBarMinimizeColor: () => "#febe30",
     titleBarMaximizeColor: () => "#38d744",
@@ -72,7 +72,7 @@ export const DEFAULT_LIGHT_THEME: { [key: string]: Function } = {
 };
 
 export const DEFAULT_NORD_THEME: { [key: string]: Function } = {
-    name: () => "nord",
+    name: () => "Nord",
     titleBarCloseColor: () => "#fc4e50",
     titleBarMinimizeColor: () => "#febe30",
     titleBarMaximizeColor: () => "#38d744",

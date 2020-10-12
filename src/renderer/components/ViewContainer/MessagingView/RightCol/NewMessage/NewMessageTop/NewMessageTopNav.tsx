@@ -51,13 +51,18 @@ class NewMessageTopNav extends React.Component<Props, State> {
             false
         );
 
-        ipcRenderer.on("send-message-to-new-chat", async (_, message) => {
+        ipcRenderer.on("send-message-to-new-chat", async (_, payload) => {
             const newChatAddresses = new Array<string>();
             this.state.newChatRecips.forEach(handle => {
                 newChatAddresses.push(handle.address);
             });
-            const payload = { newChatAddresses, message };
-            ipcRenderer.invoke("start-new-chat", payload);
+
+            console.log(payload);
+
+            const args = { newChatAddresses, message: payload.message, attachmentPaths: payload.attachmentPaths };
+            console.log(args);
+
+            ipcRenderer.invoke("start-new-chat", args);
             this.setState({ newChatRecips: [] });
         });
     }
@@ -174,12 +179,11 @@ class NewMessageTopNav extends React.Component<Props, State> {
             nameToAdd = this.formatAddress(handle.address);
         }
 
-        console.log(nameToAdd);
         return nameToAdd;
     }
 
     render() {
-        const { chat, contacts, newRecipInput } = this.state;
+        const { chat, newRecipInput } = this.state;
 
         let x = "No recipients";
         if (this.state.newRecipInput.length > 0 || this.state.newChatRecips.length > 0) {

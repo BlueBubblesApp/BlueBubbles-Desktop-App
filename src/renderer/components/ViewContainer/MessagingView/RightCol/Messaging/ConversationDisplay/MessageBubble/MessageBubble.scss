@@ -23,7 +23,7 @@
     justify-content: center;
     align-items: flex-start;
     flex-direction: column;
-    margin: 0 30% 0 13px;
+    margin: 0 30% 0 0;
     animation: fade 0.25s ease-in-out;
     transition: ease-in-out 0.25s;
     margin-top: -46px;
@@ -244,7 +244,7 @@
     justify-content: center;
     align-items: flex-start;
     flex-direction: column;
-    margin: 0 0 0 13px;
+    margin: 0 0 0 40px;
     animation: fade 0.25s ease-in-out;
 }
 
@@ -253,7 +253,7 @@
     justify-content: center;
     align-items: flex-start;
     flex-direction: column;
-    margin: 0 0 0 13px;
+    margin: 0 0 0 40px;
 }
 
 .IncomingLink > .Attachment {
@@ -356,6 +356,14 @@
     margin-bottom: 0;
 }
 
+.toggleAudioPlayPause svg {
+    fill: var(--main-title-color);
+}
+
+.toggleAudioPlayPause svg:hover {
+    cursor: pointer;
+}
+
 .audioVisPrev {
     height: 5px;
     flex-grow: 1;
@@ -364,6 +372,17 @@
     align-items: center;
     margin: 0 3px 0 3px;
     background-color: var(--sub-title-color);
+    border-radius: 15px;
+}
+
+.audioVisPrev-Message {
+    height: 5px;
+    flex-grow: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 3px 0 3px;
+    background-color: var(--secondary-color);
     border-radius: 15px;
 }
 
@@ -488,4 +507,57 @@
     100% {
         opacity: 1;
     }
+}
+
+#ImageContextMenu {
+    background-color: var(--background-color);
+    min-width: 100px;
+    min-height: 30px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    white-space: nowrap;
+    border: 2px solid var(--main-title-color);
+    transition: background-color ease-in-out 0.12s;
+    z-index: 999;
+}
+
+#ImageContextMenu div {
+    z-index: 999;
+    border-bottom: 2px solid var(--main-title-color);
+    width: calc(100% - 20px);
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#ImageContextMenu div:last-of-type {
+    border: none !important;
+}
+
+#ImageContextMenu div p {
+    color: var(--main-title-color);
+    margin: 0;
+    word-wrap: none;
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    transition: background-color ease-in-out 0.12s;
+    z-index: 999;
+    padding: 6px;
+}
+
+// #ImageContextMenu div:last-of-type p {
+//     padding: 0;
+// }
+
+#ImageContextMenu div:hover {
+    cursor: pointer;
+    background-color: var(--main-title-color);
+}
+
+#ImageContextMenu div:hover > p {
+    color: var(--background-color);
 }

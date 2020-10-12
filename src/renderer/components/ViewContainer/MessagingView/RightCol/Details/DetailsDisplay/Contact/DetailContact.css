@@ -2,19 +2,36 @@
     height: 42px;
     max-height: 42px;
     min-height: 42px;
-    background-color: var(--secondary-color);
+    /* background-color: var(--secondary-color); */
     display: flex;
     align-items: center;
     justify-content: center;
-    border-top: 1px solid grey;
+    width: 100%;
+    /* border-top: 1px solid var(--sub-title-color); */
+    /* border-bottom: 1px solid grey; */
 }
 
 .ContactWrap {
     height: 100%;
-    width: 93%;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 0 13px;
+    border-radius: 15px;
+    transition: background-color ease-in-out 0.1s;
+}
+
+.ContactWrap:hover {
+    background-color: var(--right-accent-title-color);
+}
+
+.ContactWrap:hover #detailContactsContainer {
+    background-color: var(--right-accent-title-color);
+}
+
+.ContactWrap:hover #JumpToContact {
+    fill: white !important;
 }
 
 .ContactLeft {
@@ -43,6 +60,7 @@
     justify-self: flex-end;
     height: 23px;
     width: 23px;
+    transition: fill ease-in-out 0.1s;
 }
 
 #JumpToContact:hover {

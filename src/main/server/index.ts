@@ -1,5 +1,6 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
-import { ipcMain, BrowserWindow, shell, app } from "electron";
+import { ipcMain, BrowserWindow, shell, app, dialog, remote } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as fs from "fs";
@@ -765,10 +766,9 @@ class BackendServer {
         ipcMain.handle("get-storage-info", async (_, payload) => FileSystem.getAppSizeData());
 
         ipcMain.handle("start-new-chat", async (_, payload) => {
-            const params = { participants: payload.newChatAddresses };
-
-            // Check to see if a chat matching the address already exits and sets to current or makes a new chat
-            if (!payload.message && payload.matchingAddress) {
+            // if we have a matching address, that means we are jumping from details page to chat matching address
+            if (payload.matchingAddress) {
+                // Check to see if a chat matching the address already exits and sets to current or makes a new chat
                 const chats = await this.chatRepo.getChats();
                 const newChats = chats.filter(aChat => {
                     return aChat.participants.length === 1 && aChat.participants[0].address === payload.matchingAddress;
@@ -781,7 +781,7 @@ class BackendServer {
                     return;
                 }
 
-                // Check if the chat has a lastMessage
+                // If chat already exists check if the chat has a lastMessage
                 const args = {
                     chatGuid: newChats[0].guid,
                     withHandle: false,
@@ -815,16 +815,215 @@ class BackendServer {
                 return;
             }
 
-            // If their doesnt already exist a chat, make a new one
-            this.socketService.server.emit("start-chat", params, async createdChat => {
-                await this.chatRepo.saveChat(createdChat.data);
-                this.emitToUI("set-current-new-chat", createdChat.data);
-                this.socketService.server.emit("send-message", {
-                    tempGuid: `temp-${generateUuid()}`,
-                    guid: createdChat.data.guid,
-                    message: payload.message
+            // If we arent jumping from a chat, but are creating a new chat
+            if (payload.newChatAddresses && (payload.message || payload.attachmentPaths)) {
+                // Check to see if a chat matching the address already exits and sets to current or makes a new chat
+                const chats = await this.chatRepo.getChats();
+
+                console.log(payload);
+
+                const checkIfAllChatAddressesMatch = (aChat: Chat) => {
+                    let areAllEqual = true;
+                    aChat.participants.forEach((handle: Handle, i) => {
+                        console.log(handle.address);
+                        console.log(payload.newChatAddresses[i]);
+                        if (!payload.newChatAddresses.includes(handle.address)) {
+                            areAllEqual = false;
+                        }
+                    });
+
+                    return areAllEqual;
+                };
+
+                const newChats = chats.filter(aChat => {
+                    return (
+                        aChat.participants.length === payload.newChatAddresses.length &&
+                        checkIfAllChatAddressesMatch(aChat)
+                    );
                 });
-            });
+
+                console.log(newChats.length);
+                // If chat already exists
+                if (newChats.length === 1) {
+                    this.emitToUI("set-current-new-chat", newChats[0]);
+                    if (payload.message && payload.message !== "") {
+                        console.log(`Sending message: ${payload.message}`);
+                        this.socketService.server.emit("send-message", {
+                            tempGuid: `temp-${generateUuid()}`,
+                            guid: newChats[0].guid,
+                            message: payload.message
+                        });
+                    }
+
+                    if (payload.attachmentPaths as Array<string>) {
+                        console.log(payload.attachmentPaths);
+                        payload.attachmentPaths.forEach(async (aPath: string) => {
+                            const attachPayload = {
+                                guid: `temp-${generateUuid()}`,
+                                attachmentPath: aPath
+                            };
+
+                            const attachment = ChatRepository.createAttachment(attachPayload) as Attachment & {
+                                filepath: string;
+                            };
+                            attachment.filepath = aPath;
+                            console.log(attachment);
+
+                            const attachMesPayload = {
+                                chat: newChats[0],
+                                guid: attachment.guid,
+                                text: "",
+                                dateCreated: new Date()
+                            };
+                            const message: Message = ChatRepository.createMessage(attachMesPayload);
+
+                            message.attachments.push(attachment);
+
+                            console.log(message);
+
+                            // this.chatRepo.saveAttachment(newChats[0], message, attachment);
+                            this.chatRepo.saveMessage(newChats[0], message);
+                            this.emitToUI("add-message", message);
+                            console.log("Saved the attachment");
+
+                            const CHUNK_SIZE = 512 * 1024;
+
+                            for (const aAttachment of message.attachments as (Attachment & { filepath: string })[]) {
+                                // Check if the file exists before trying to read it
+                                if (!fs.existsSync(aAttachment.filepath)) continue;
+
+                                console.log(`Sending attachment: ${aAttachment.filepath}`);
+                                const stats = fs.statSync(aAttachment.filepath);
+
+                                const numOfChunks = Math.ceil(stats.size / CHUNK_SIZE);
+                                const attachmentParams: Partial<AttachmentChunkParams> = {
+                                    guid: newChats[0].guid,
+                                    tempGuid: message.guid,
+                                    message: message.text,
+                                    attachmentGuid: message.guid
+                                };
+
+                                for (let i = 0; i < numOfChunks; i += 1) {
+                                    attachmentParams.attachmentChunkStart = i === 0 ? 0 : i + CHUNK_SIZE;
+                                    attachmentParams.hasMore = i + CHUNK_SIZE < stats.size;
+                                    attachmentParams.attachmentName = path.basename(aAttachment.filepath);
+
+                                    // Get data as a Uint8Array and convert to base64
+                                    const data = FileSystem.readFileChunk(
+                                        aAttachment.filepath,
+                                        attachmentParams.attachmentChunkStart,
+                                        CHUNK_SIZE
+                                    );
+                                    attachmentParams.attachmentData = base64.bytesToBase64(data);
+
+                                    // Send the attachment
+                                    this.socketService.sendAttachmentChunk(attachmentParams as AttachmentChunkParams);
+                                }
+
+                                console.log(`Finished sending attachment: ${aAttachment.filepath}`);
+                            }
+                        });
+                    }
+                } else {
+                    const params = { participants: payload.newChatAddresses };
+                    this.socketService.server.emit("start-chat", params, async createdChat => {
+                        const newChat = await this.chatRepo.saveChat(createdChat.data);
+                        this.emitToUI("set-current-new-chat", newChat);
+
+                        console.log(payload);
+                        if (payload.attachmentPath) {
+                            console.log(payload.attachmentPath);
+                            payload.attachmentPaths.forEach(async (aPath: string) => {
+                                const attachPayload = {
+                                    guid: `temp-${generateUuid()}`,
+                                    attachmentPath: aPath
+                                };
+
+                                let attachment = ChatRepository.createAttachment(attachPayload) as Attachment & {
+                                    filepath: string;
+                                };
+                                attachment.filepath = aPath;
+                                console.log(attachment);
+
+                                const attachMesPayload = {
+                                    chat: newChat,
+                                    guid: attachment.guid,
+                                    text: "",
+                                    dateCreated: new Date()
+                                };
+                                const message: Message = ChatRepository.createMessage(attachMesPayload);
+                                attachment = (await this.chatRepo.saveAttachment(
+                                    newChats[0],
+                                    message,
+                                    attachment
+                                )) as Attachment & { filepath: string };
+                                message.attachments.push(attachment);
+
+                                console.log(message);
+
+                                this.chatRepo.saveMessage(newChat, message);
+                                this.emitToUI("add-message", message);
+                                console.log("Saved the attachment");
+
+                                const CHUNK_SIZE = 512 * 1024;
+
+                                for (const aAttachment of message.attachments as (Attachment & {
+                                    filepath: string;
+                                })[]) {
+                                    // Check if the file exists before trying to read it
+                                    if (!fs.existsSync(aAttachment.filepath)) continue;
+
+                                    console.log(`Sending attachment: ${aAttachment.filepath}`);
+                                    const stats = fs.statSync(aAttachment.filepath);
+
+                                    const numOfChunks = Math.ceil(stats.size / CHUNK_SIZE);
+                                    const attachmentParams: Partial<AttachmentChunkParams> = {
+                                        guid: newChat.guid,
+                                        tempGuid: message.guid,
+                                        message: message.text,
+                                        attachmentGuid: message.guid
+                                    };
+
+                                    for (let i = 0; i < numOfChunks; i += 1) {
+                                        attachmentParams.attachmentChunkStart = i === 0 ? 0 : i + CHUNK_SIZE;
+                                        attachmentParams.hasMore = i + CHUNK_SIZE < stats.size;
+                                        attachmentParams.attachmentName = path.basename(aAttachment.filepath);
+
+                                        // Get data as a Uint8Array and convert to base64
+                                        const data = FileSystem.readFileChunk(
+                                            aAttachment.filepath,
+                                            attachmentParams.attachmentChunkStart,
+                                            CHUNK_SIZE
+                                        );
+                                        attachmentParams.attachmentData = base64.bytesToBase64(data);
+
+                                        // Send the attachment
+                                        this.socketService.sendAttachmentChunk(
+                                            attachmentParams as AttachmentChunkParams
+                                        );
+                                    }
+
+                                    console.log(`Finished sending attachment: ${aAttachment.filepath}`);
+                                }
+                            });
+                        }
+
+                        if (payload.message) {
+                            this.socketService.server.emit("send-message", {
+                                tempGuid: `temp-${generateUuid()}`,
+                                guid: newChat.guid,
+                                message: payload.message
+                            });
+                        }
+                    });
+                }
+            }
+        });
+
+        ipcMain.handle("save-blob", async (_, payload) => {
+            console.log("SAVING BLOB");
+            console.log(payload);
+            return FileSystem.saveNewAudioFile(payload);
         });
 
         ipcMain.handle("read-data-from-local-image", async (_, filePath) => {
@@ -867,6 +1066,27 @@ class BackendServer {
                 return dataReturn;
             }
             return "No QR Code Found";
+        });
+
+        ipcMain.handle("show-save-file", async (_, oldPath) => {
+            const options = {
+                title: "Save Attachment",
+
+                defaultPath: oldPath.replace(/^.*[\\/]/, ""),
+
+                filters: [
+                    { name: "Images", extensions: ["jpg", "jpeg", "png", "gif"] },
+                    { name: "Videos", extensions: ["mkv", "avi", "mp4"] },
+                    { name: "Audio", extensions: ["mp3", "m4a", "caf", "wav"] },
+                    { name: "All Files", extensions: ["*"] }
+                ]
+            };
+
+            return dialog.showSaveDialog(this.window, options);
+        });
+
+        ipcMain.handle("show-file-in-folder", async (_, aPath) => {
+            shell.showItemInFolder(aPath.replace(/\//g, "\\"));
         });
     }
 

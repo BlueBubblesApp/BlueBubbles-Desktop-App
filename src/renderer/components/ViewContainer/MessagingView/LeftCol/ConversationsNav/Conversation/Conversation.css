@@ -8,6 +8,10 @@
     border-bottom: 1px solid grey;
 }
 
+.Conversation:hover {
+    cursor: pointer;
+}
+
 .contact-card {
     display: flex;
     justify-content: flex-start;
@@ -160,4 +164,41 @@
     font-style: normal;
     font-size: 14px;
     fill: white;
+}
+
+#ConversationContextMenu {
+    background-color: var(--background-color);
+    width: 100px;
+    height: 30px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    white-space: nowrap;
+    border: 2px solid var(--main-title-color);
+    transition: background-color ease-in-out 0.12s;
+    z-index: 999;
+}
+#ConversationContextMenu div {
+    z-index: 999;
+}
+
+#ConversationContextMenu div p {
+    color: var(--main-title-color);
+    margin: 0;
+    word-wrap: none;
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    transition: background-color ease-in-out 0.12s;
+    z-index: 999;
+}
+
+#ConversationContextMenu:hover {
+    cursor: pointer;
+    background-color: var(--main-title-color);
+}
+
+#ConversationContextMenu:hover div p {
+    color: var(--background-color);
 }

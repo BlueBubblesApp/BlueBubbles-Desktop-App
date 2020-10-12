@@ -21,32 +21,49 @@
     border-radius: 5px;
 }
 
+#detailContactsContainer {
+    height: auto;
+    width: 92%;
+    margin: 15px auto;
+    background-color: var(--secondary-color);
+    padding: 0px 0;
+    border-radius: 15px;
+}
+
 #showMore {
     height: 42px;
     max-height: 42px;
     min-height: 42px;
     background-color: var(--secondary-color);
-    border-top: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 15px;
+    transition: background-color ease-in-out 0.1s;
+}
+
+#showMore:hover {
+    background-color: var(--right-accent-title-color);
+    cursor: pointer;
+}
+
+#showMore:hover > div > p {
+    color: var(--main-title-color);
 }
 
 #showMoreWrap {
     height: 100%;
     display: flex;
     align-items: center;
-    width: 93%;
+    width: 100%;
+    padding: 0 15px;
 }
 
 #showMoreWrap > p {
     font-family: "SF UI Display Bold";
     font-size: 14px;
     color: var(--right-accent-title-color);
-}
-
-#showMoreWrap > p:hover {
-    opacity: 0.65;
+    transition: color ease-in-out 0.1s;
 }
 
 #addContact {
@@ -54,30 +71,44 @@
     max-height: 42px;
     min-height: 42px;
     background-color: var(--secondary-color);
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 8px;
+    border-radius: 15px;
+}
+
+#addContact:hover {
+    cursor: pointer;
 }
 
 #addContactWrap {
     height: 100%;
     display: flex;
     align-items: center;
-    width: 93%;
+    width: 100%;
+    transition: background-color ease-in-out 0.1s;
+    border-radius: 15px;
+    padding: 0 13px;
+}
+
+#addContactWrap:hover {
+    background-color: var(--right-accent-title-color);
+}
+
+#addContactWrap:hover #addContactTitle {
+    color: var(--main-title-color) !important;
 }
 
 #addContactWrap > p {
     font-family: "SF UI Display Bold";
     font-size: 14px;
     color: var(--right-accent-title-color);
+    transition: color ease-in-out 0.1s;
 }
 
-#addContactWrap > p:hover {
+/* #addContactWrap > p:hover {
     opacity: 0.65;
-}
+} */
 
 #muteChat {
     height: 42px;
@@ -87,18 +118,26 @@
     align-items: center;
     justify-content: center;
     background-color: var(--secondary-color);
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
     margin-bottom: 8px;
+    border-radius: 15px;
+    width: 92%;
+    margin: 0 auto;
 }
 
 #muteChatWrap {
     height: 100%;
-    width: 93%;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
     background-color: var(--secondary-color);
+    padding: 0 13px;
+    border-radius: 15px;
+    transition: background-color ease-in-out 0.1s;
+}
+
+#muteChatWrap:hover {
+    background-color: var(--right-accent-title-color);
 }
 
 #muteChatLeft {
@@ -186,10 +225,164 @@
     transform: translate3d(22px, 2px, 0);
 }
 
-#recentImages {
-    width: 100%;
+#recentImagesContainer {
+    width: 92%;
+    max-width: 92%;
     height: auto;
     background-color: var(--secondary-color);
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
+    margin: 30px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    padding: 10px 0;
+}
+
+#recentImagesContainer > p {
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    color: var(--main-title-color);
+    margin: 5px 0;
+}
+
+#recentImages {
+    width: calc(100% - 50px);
+    height: 100%;
+    column-count: 4;
+    column-gap: 15px;
+    /* padding: 30px 25px; */
+    /* margin: 30px 25px; */
+    overflow-x: visible;
+    column-fill: balance;
+    margin: 0;
+}
+
+.aChatAttachment {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    margin-bottom: 15px;
+    page-break-inside: avoid;
+    break-inside: avoid-column;
+    border-radius: 10px;
+    padding: 5px;
+    transition: background-color ease-in-out 0.1s;
+}
+
+.aChatAttachment:hover {
+    background-color: var(--right-accent-title-color);
+    cursor: pointer;
+}
+
+.aChatAttachment:hover > .aAudio {
+    background-color: var(--right-accent-title-color);
+}
+
+.aChatAttachment:hover > .aUnsupported {
+    background-color: var(--right-accent-title-color);
+}
+
+.aChatAttachment > div > p {
+    margin: 6px 0 3px 0;
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    color: var(--main-title-color);
+    word-wrap: break-word;
+    white-space: normal;
+    overflow: hidden;
+}
+
+.aChatAttachment > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* max-height: 200px; */
+    width: 100%;
+}
+
+.aChatAttachment > div > img {
+    max-width: 100%;
+    max-height: 100%;
+    /* max-height: 200px; */
+    height: auto;
+    border-radius: 10px;
+}
+
+.aChatAttachment > div > video {
+    max-width: 100%;
+    max-height: 100%;
+    /* max-height: 200px; */
+    height: auto;
+    border-radius: 10px;
+}
+
+.aUnsupported {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background-color: grey;
+    border-radius: 10px;
+    padding: 6px 5px;
+    transition: background-color ease-in-out 0.1s;
+}
+
+.aUnsupported > p {
+    margin: 0;
+    padding: 10px 0;
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    color: var(--main-title-color);
+}
+
+@media (max-width: 900px) {
+    #recentImages {
+        column-count: 3;
+    }
+
+    .aChatAttachment > p {
+        font-size: 12px;
+    }
+
+    #bubbleChatTitle > p {
+        font-size: 18px !important;
+    }
+}
+
+#participantsBubblesContainer {
+    width: 100%;
+    min-height: 220px;
+    max-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: 15px;
+}
+
+#aChatHandleBubble > text {
+    fill: white;
+    font-family: quicksand, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+#bubbleChatTitle {
+    max-width: 85%;
+    overflow: scroll;
+    text-overflow: clip;
+    white-space: nowrap;
+}
+
+#bubbleChatTitle > p {
+    margin: 0 auto;
+    margin-top: 13px;
+    font-family: "SF UI Display Bold";
+    font-size: 24px;
+    color: var(--main-title-color);
+    max-height: 30px;
+    width: 100%;
 }

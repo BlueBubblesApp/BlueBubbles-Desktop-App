@@ -292,15 +292,19 @@
 
 #recordingVisWrap {
     border-radius: 15px;
-    height: 28px;
+    height: 30px;
     width: 98%;
     margin: auto;
-    background-color: var(--sub-title-color);
+    background-color: var(--attachment-button-color);
     display: flex;
 }
 
 #recordingVis {
     flex-grow: 1;
+    padding-left: 10px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 #recordingLengthDiv {
@@ -315,12 +319,16 @@
 #recordingLengthDiv p {
     font-family: "SF UI Display Bold";
     font-size: 14px;
-    color: var(--secondary-color);
+    color: var(--main-title-color);
     margin: 0;
 }
 
 #stopVoiceMessage {
     fill: red;
+}
+
+#stopVoiceCircle {
+    fill: var(--main-title-color);
 }
 
 .aNewAttachmentDiv {

@@ -54,18 +54,31 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
         ipcRenderer.on("send-chat-search-string", (_, payload) => this.setState({ chatSearchString: payload }));
 
-        ipcRenderer.on("check-if-chat-has-last-message", (_, address) => {
-            let hasLastMessage = true;
-            this.state.chats.forEach(chat => {
-                if (chat.participants[0].address === address && !chat.hasOwnProperty("lastMessage")) {
-                    hasLastMessage = false;
-                }
-            });
-            return hasLastMessage;
+        ipcRenderer.on("remove-active-chat", (_, __) => {
+            this.setCurrentChat(null);
         });
     }
 
     setCurrentChat(chat: Chat) {
+        if (chat === null) {
+            this.setState({ activeChat: null });
+            // Remove old attibutes
+            try {
+                const p = document.querySelectorAll(".cls-2-active");
+                p.forEach(x => x.classList.remove("cls-2-active"));
+            } catch {}
+            try {
+                const p = document.querySelectorAll(".cls-1-active");
+                p.forEach(x => x.classList.remove("cls-1-active"));
+            } catch {}
+            try {
+                document.getElementsByClassName("activeColor")[0].classList.remove("activeColor");
+                document.getElementsByClassName("activeColor2")[0].classList.remove("activeColor2");
+                document.getElementsByClassName("activeColor3")[0].classList.remove("activeColor3");
+            } catch {}
+            return;
+        }
+
         const now = new Date();
         this.setState({ activeChat: chat });
         ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
@@ -252,9 +265,6 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                                               handle.lastName?.toLowerCase().includes(chatSearchString.toLowerCase()) ||
                                               handle.address.includes(chatSearchString)
                                           );
-                                      }) ||
-                                      chat.messages?.some(message => {
-                                          return message.text?.includes(chatSearchString);
                                       }))
                           )
                           .map(filteredChat => {
@@ -300,13 +310,6 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             </div>
         );
     }
-}
-
-export interface ChatPrev {
-    ROWID: number;
-    address: string;
-    country: string;
-    uncanonicalizedId: string;
 }
 
 export default LeftConversationsNav;

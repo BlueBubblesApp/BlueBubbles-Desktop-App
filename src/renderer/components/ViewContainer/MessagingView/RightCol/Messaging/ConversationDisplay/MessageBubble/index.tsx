@@ -1,10 +1,12 @@
+/* eslint-disable react/sort-comp */
+/* eslint-disable no-loop-func */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable max-len */
 import * as React from "react";
-import { remote, ipcRenderer, IpcRendererEvent } from "electron";
+import { remote, ipcRenderer, IpcRendererEvent, dialog } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { Map, Marker, TileLayer } from "react-leaflet";
@@ -16,13 +18,20 @@ import ClickNHold from "react-click-n-hold";
 import { Message as DBMessage, Chat } from "@server/databases/chat/entity";
 
 // Renderer imports
-import { sanitizeStr, parseUrls, getDateText, getSender, parseAppleLocation } from "@renderer/helpers/utils";
+import {
+    sanitizeStr,
+    parseUrls,
+    getDateText,
+    getSender,
+    parseAppleLocation,
+    generateReactionsDisplayIconText
+} from "@renderer/helpers/utils";
 import { supportedVideoTypes, supportedAudioTypes } from "@renderer/helpers/constants";
 import UnknownImage from "@renderer/assets/img/unknown_img.png";
 
 // Relative imports
 import { AttachmentDownload } from "./@types";
-import DownloadProgress from "./DownloadProgress";
+import DownloadProgress from "./DownloadProgress/DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
 import ReactionParticipant from "./ReactionsDisplay/ReactionParticipant/ReactionParticipant";
 import ReactionsDisplay from "./ReactionsDisplay/ReactionsDisplay";
@@ -59,6 +68,8 @@ type State = {
     attachments: AttachmentDownload[];
     isReactionsOpen: boolean;
     isAudioPlaying: boolean;
+    showContextMenu: boolean;
+    currentContextMenuElement: Element;
 };
 
 let subdir = "";
@@ -82,7 +93,7 @@ const isSupportedMime = (mimeType: string) => {
 const loadAttachmentData = (attachment: AttachmentDownload) => {
     if (!isSupportedMime(attachment.mimeType)) return null;
     if (attachment.data) return attachment.data;
-    const fPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+    const fPath = `${attachmentsDir}\\${attachment.guid}\\${attachment.transferName}`;
     let encoding = "base64";
 
     // If it's a location card, read as utf-8
@@ -97,13 +108,15 @@ const loadAttachmentData = (attachment: AttachmentDownload) => {
         !supportedVideoTypes.includes(attachment.mimeType)
     ) {
         try {
+            console.log(attachment);
             const ext = attachment.mimeType.startsWith("video") ? "mp4" : "mp3";
-            const newPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName.replace(
+            const newPath = `${attachmentsDir}\\${attachment.guid}\\${attachment.transferName.replace(
                 path.extname(attachment.transferName),
                 `.${ext}`
             )}`;
             output = fs.readFileSync(newPath).toString(encoding);
         } catch (ex) {
+            console.log("ERRR HERER");
             console.log(ex);
             /* Do nothing */
         }
@@ -139,6 +152,8 @@ const openLink = link => {
 const setFallbackImage = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = UnknownImage;
 };
+let xPos;
+let yPos;
 
 class MessageBubble extends React.Component<Props, State> {
     constructor(props) {
@@ -147,8 +162,18 @@ class MessageBubble extends React.Component<Props, State> {
         this.state = {
             attachments: [],
             isReactionsOpen: false,
-            isAudioPlaying: false
+            isAudioPlaying: false,
+            showContextMenu: false,
+            currentContextMenuElement: null
         };
+    }
+
+    handleImageRightClick(e) {
+        xPos = `${e.pageX}px`;
+        yPos = `${e.pageY - 25}px`;
+        console.log(xPos + yPos);
+        this.setState({ showContextMenu: true });
+        this.setState({ currentContextMenuElement: e.target });
     }
 
     // eslint-disable-next-line react/sort-comp
@@ -159,13 +184,16 @@ class MessageBubble extends React.Component<Props, State> {
             // Render based on mime type
             if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
                 const mime = attachment.mimeType ?? "image/pluginPayloadAttachment";
+
                 return (
                     <img
                         key={attachment.guid}
+                        id={attachmentPath}
                         className="Attachment"
                         src={`data:${mime};base64,${attachment.data}`}
                         alt={attachment.transferName}
                         onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                        onContextMenu={e => this.handleImageRightClick(e)}
                         onError={setFallbackImage}
                     />
                 );
@@ -339,6 +367,10 @@ class MessageBubble extends React.Component<Props, State> {
     }
 
     async componentDidMount() {
+        document.addEventListener("click", e => {
+            e.preventDefault();
+            this.setState({ showContextMenu: false });
+        });
         const { message } = this.props;
 
         // Get the attachments
@@ -469,6 +501,19 @@ class MessageBubble extends React.Component<Props, State> {
         this.setState({ isReactionsOpen: false });
     }
 
+    async downloadImageToNewPath() {
+        const saveDialogReturn = await ipcRenderer.invoke("show-save-file", this.state.currentContextMenuElement.id);
+        if (saveDialogReturn.canceled === false) {
+            const oldFileData = fs.readFileSync(this.state.currentContextMenuElement.id);
+            fs.writeFileSync(saveDialogReturn.filePath, oldFileData);
+            console.log(`Saved file to: ${saveDialogReturn.filePath}`);
+        }
+    }
+
+    async openFileBrowserToPath() {
+        await ipcRenderer.invoke("show-file-in-folder", this.state.currentContextMenuElement.id);
+    }
+
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
         const { attachments } = this.state;
@@ -505,6 +550,20 @@ class MessageBubble extends React.Component<Props, State> {
 
         return (
             <>
+                {this.state.showContextMenu ? (
+                    <div
+                        id="ImageContextMenu"
+                        onClick={() => console.log("Clicked")}
+                        style={{ position: "absolute", top: yPos, left: xPos }}
+                    >
+                        <div onClick={() => this.downloadImageToNewPath()}>
+                            <p>Download File</p>
+                        </div>
+                        <div onClick={() => this.openFileBrowserToPath()}>
+                            <p>Open In File Explorer</p>
+                        </div>
+                    </div>
+                ) : null}
                 {this.state.isReactionsOpen ? (
                     <div id="reactionOverlay" onClick={() => this.closeReactionView()}>
                         <div id="reactionParticipantsDiv">
@@ -533,23 +592,155 @@ class MessageBubble extends React.Component<Props, State> {
                                     (!olderMessage || olderMessage.handleId !== message.handleId) ? (
                                         <p className="MessageSender">{sender}</p>
                                     ) : null}
-                                    {attachments.map((attachment: AttachmentDownload) =>
-                                        this.renderAttachment(attachment)
-                                    )}
+                                    {attachments.map((attachment: AttachmentDownload) => {
+                                        return this.renderAttachment(attachment);
+                                    })}
                                 </div>
                                 {text ? (
                                     <>
                                         <div className="emptyDiv" />
-                                        <div className={className}>
-                                            <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
-                                                <div
-                                                    className={messageClass}
-                                                    id={message.guid}
-                                                    style={{ marginBottom: useTail ? "3px" : "0" }}
-                                                >
-                                                    <p>{text}</p>
-                                                </div>
-                                            </ClickNHold>
+                                        <div className={className} style={{ marginLeft: useTail ? "5px" : "40px" }}>
+                                            <div style={{ display: "flex", alignItems: "center" }}>
+                                                {useTail && !message.isFromMe ? (
+                                                    <>
+                                                        {generateReactionsDisplayIconText(message.handle) === "?" ? (
+                                                            <svg
+                                                                style={{ marginRight: "10px", minWidth: "25px" }}
+                                                                height="25px"
+                                                                width="25px"
+                                                                viewBox="0 0 1000 1000"
+                                                            >
+                                                                <defs>
+                                                                    <linearGradient
+                                                                        id="Gradient1"
+                                                                        x1="0"
+                                                                        x2="0"
+                                                                        y1="1"
+                                                                        y2="0"
+                                                                    >
+                                                                        <stop
+                                                                            className="stop1"
+                                                                            offset="0%"
+                                                                            stopColor="#686868"
+                                                                        />
+                                                                        <stop
+                                                                            className="stop2"
+                                                                            offset="100%"
+                                                                            stopColor="#928E8E"
+                                                                        />
+                                                                    </linearGradient>
+                                                                </defs>
+                                                                <circle
+                                                                    className="cls-1"
+                                                                    cx="50%"
+                                                                    cy="50%"
+                                                                    r="500"
+                                                                    fill="url(#Gradient1)"
+                                                                />
+                                                                <mask id="rmvProfile">
+                                                                    <circle cx="50%" cy="50%" r="435" fill="white" />
+                                                                </mask>
+                                                                <ellipse
+                                                                    className="cls-2"
+                                                                    fill="white"
+                                                                    cx="50%"
+                                                                    cy="34%"
+                                                                    rx="218"
+                                                                    ry="234"
+                                                                />
+                                                                <circle
+                                                                    className="cls-2"
+                                                                    mask="url(#rmvProfile)"
+                                                                    fill="white"
+                                                                    cx="50%"
+                                                                    cy="106%"
+                                                                    r="400"
+                                                                />
+                                                            </svg>
+                                                        ) : (
+                                                            <svg
+                                                                style={{ marginRight: "10px", minWidth: "25px" }}
+                                                                id="testContact"
+                                                                className="dynamicIcon"
+                                                                height="25px"
+                                                                width="25px"
+                                                                viewBox="0 0 1000 1000"
+                                                            >
+                                                                <defs>
+                                                                    <linearGradient
+                                                                        id="Gradient1"
+                                                                        x1="0"
+                                                                        x2="0"
+                                                                        y1="1"
+                                                                        y2="0"
+                                                                    >
+                                                                        <stop
+                                                                            className="stop1"
+                                                                            offset="0%"
+                                                                            stopColor="#686868"
+                                                                        />
+                                                                        <stop
+                                                                            className="stop2"
+                                                                            offset="100%"
+                                                                            stopColor="#928E8E"
+                                                                        />
+                                                                    </linearGradient>
+                                                                </defs>
+                                                                <circle
+                                                                    className="cls-1"
+                                                                    fill="url(#Gradient1)"
+                                                                    cx="50%"
+                                                                    cy="50%"
+                                                                    r="50%"
+                                                                />
+                                                                <text
+                                                                    style={{
+                                                                        fontFamily: "quicksand",
+                                                                        fontWeight: 700,
+                                                                        fontStyle: "normal",
+                                                                        fontSize:
+                                                                            generateReactionsDisplayIconText(
+                                                                                message.handle
+                                                                            ).length >= 2
+                                                                                ? "530px"
+                                                                                : "650px"
+                                                                    }}
+                                                                    className="cls-2"
+                                                                    x="50%"
+                                                                    y="70%"
+                                                                    textAnchor="middle"
+                                                                    fill="white"
+                                                                    stroke="white"
+                                                                >
+                                                                    {generateReactionsDisplayIconText(message.handle)}
+                                                                </text>
+                                                            </svg>
+                                                        )}
+                                                    </>
+                                                ) : null}
+                                                <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
+                                                    <div
+                                                        className={messageClass}
+                                                        id={message.guid}
+                                                        style={{ marginBottom: useTail ? "3px" : "0" }}
+                                                    >
+                                                        {message.hasReactions === true ? (
+                                                            <>
+                                                                {message.reactions.map((reaction, i) => (
+                                                                    <InChatReaction
+                                                                        key={reaction.guid}
+                                                                        isMessageFromMe={message.isFromMe}
+                                                                        isReactionFromMe={reaction.isFromMe}
+                                                                        reactionType={reaction.associatedMessageType}
+                                                                        offset={i}
+                                                                    />
+                                                                ))}
+                                                            </>
+                                                        ) : null}
+                                                        <p>{text}</p>
+                                                    </div>
+                                                </ClickNHold>
+                                            </div>
                                             {showStatus ? getStatusText(message) : null}
                                         </div>
                                     </>
@@ -559,7 +750,7 @@ class MessageBubble extends React.Component<Props, State> {
                     </>
                 ) : (
                     <>
-                        <div className={className}>
+                        <div className={className} style={{ marginLeft: useTail ? "5px" : "40px" }}>
                             {this.state.isReactionsOpen ? (
                                 <NewReaction
                                     message={message}
@@ -572,30 +763,121 @@ class MessageBubble extends React.Component<Props, State> {
                             {chat.participants.length > 1 &&
                             message.handle &&
                             (!olderMessage || olderMessage.handleId !== message.handleId) ? (
-                                <p className="MessageSender">{sender}</p>
+                                <p className="MessageSender" style={{ marginLeft: useTail ? "38px" : "5px" }}>
+                                    {sender}
+                                </p>
                             ) : null}
-                            <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
-                                <div
-                                    className={messageClass}
-                                    id={message.guid}
-                                    style={{ marginBottom: useTail ? "3px" : "0" }}
-                                >
-                                    {message.hasReactions === true ? (
-                                        <>
-                                            {message.reactions.map((reaction, i) => (
-                                                <InChatReaction
-                                                    key={reaction.guid}
-                                                    isMessageFromMe={message.isFromMe}
-                                                    isReactionFromMe={reaction.isFromMe}
-                                                    reactionType={reaction.associatedMessageType}
-                                                    offset={i}
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                {useTail && !message.isFromMe ? (
+                                    <>
+                                        {generateReactionsDisplayIconText(message.handle) === "?" ? (
+                                            <svg
+                                                style={{ marginRight: "10px", minWidth: "25px" }}
+                                                height="25px"
+                                                width="25px"
+                                                viewBox="0 0 1000 1000"
+                                            >
+                                                <defs>
+                                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                                        <stop className="stop1" offset="0%" stopColor="#686868" />
+                                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <circle
+                                                    className="cls-1"
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    r="500"
+                                                    fill="url(#Gradient1)"
                                                 />
-                                            ))}
-                                        </>
-                                    ) : null}
-                                    {text ? <p>{text}</p> : null}
-                                </div>
-                            </ClickNHold>
+                                                <mask id="rmvProfile">
+                                                    <circle cx="50%" cy="50%" r="435" fill="white" />
+                                                </mask>
+                                                <ellipse
+                                                    className="cls-2"
+                                                    fill="white"
+                                                    cx="50%"
+                                                    cy="34%"
+                                                    rx="218"
+                                                    ry="234"
+                                                />
+                                                <circle
+                                                    className="cls-2"
+                                                    mask="url(#rmvProfile)"
+                                                    fill="white"
+                                                    cx="50%"
+                                                    cy="106%"
+                                                    r="400"
+                                                />
+                                            </svg>
+                                        ) : (
+                                            <svg
+                                                style={{ marginRight: "10px", minWidth: "25px" }}
+                                                id="testContact"
+                                                className="dynamicIcon"
+                                                height="25px"
+                                                width="25px"
+                                                viewBox="0 0 1000 1000"
+                                            >
+                                                <defs>
+                                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                                        <stop className="stop1" offset="0%" stopColor="#686868" />
+                                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <circle
+                                                    className="cls-1"
+                                                    fill="url(#Gradient1)"
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    r="50%"
+                                                />
+                                                <text
+                                                    style={{
+                                                        fontFamily: "quicksand",
+                                                        fontWeight: 700,
+                                                        fontStyle: "normal",
+                                                        fontSize:
+                                                            generateReactionsDisplayIconText(message.handle).length >= 2
+                                                                ? "530px"
+                                                                : "650px"
+                                                    }}
+                                                    className="cls-2"
+                                                    x="50%"
+                                                    y="70%"
+                                                    textAnchor="middle"
+                                                    fill="white"
+                                                    stroke="white"
+                                                >
+                                                    {generateReactionsDisplayIconText(message.handle)}
+                                                </text>
+                                            </svg>
+                                        )}
+                                    </>
+                                ) : null}
+                                <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
+                                    <div
+                                        className={messageClass}
+                                        id={message.guid}
+                                        style={{ marginBottom: useTail ? "3px" : "0" }}
+                                    >
+                                        {message.hasReactions === true ? (
+                                            <>
+                                                {message.reactions.map((reaction, i) => (
+                                                    <InChatReaction
+                                                        key={reaction.guid}
+                                                        isMessageFromMe={message.isFromMe}
+                                                        isReactionFromMe={reaction.isFromMe}
+                                                        reactionType={reaction.associatedMessageType}
+                                                        offset={i}
+                                                    />
+                                                ))}
+                                            </>
+                                        ) : null}
+                                        {text ? <p>{text}</p> : null}
+                                    </div>
+                                </ClickNHold>
+                            </div>
                             {showStatus ? getStatusText(message) : null}
                         </div>
                     </>

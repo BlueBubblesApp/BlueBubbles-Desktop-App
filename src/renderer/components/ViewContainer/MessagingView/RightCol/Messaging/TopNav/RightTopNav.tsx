@@ -68,19 +68,26 @@ class RightTopNav extends React.Component<Props, State> {
                             id="newChatNameInput"
                             value={this.state.enteredDisplayName}
                             onChange={this.handleDisplayNameChange}
+                            placeholder={this.props.chat.displayName}
                         />
                     ) : (
                         <>
-                            {this.props.chat
-                                ? participants.map((item, i) => (
-                                      <>
-                                          <div key={this.props.chat.participants[i].address}>
-                                              <p>{item}</p>{" "}
-                                          </div>
-                                          {participants.length === i + 1 ? null : <p>,</p>}
-                                      </>
-                                  ))
-                                : null}
+                            {this.props.chat.displayName ? (
+                                <input id="newChatNameInput" placeholder={this.props.chat.displayName} readOnly />
+                            ) : (
+                                <>
+                                    {this.props.chat
+                                        ? participants.map((item, i) => (
+                                              <>
+                                                  <div key={this.props.chat.participants[i].address}>
+                                                      <p>{item}</p>{" "}
+                                                  </div>
+                                                  {participants.length === i + 1 ? null : <p>,</p>}
+                                              </>
+                                          ))
+                                        : null}
+                                </>
+                            )}
                         </>
                     )}
                 </div>

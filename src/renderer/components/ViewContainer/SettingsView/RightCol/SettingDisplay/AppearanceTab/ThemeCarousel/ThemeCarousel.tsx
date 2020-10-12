@@ -125,9 +125,9 @@ class ThemeCarousel extends React.Component<Props, State> {
 
     handleNewTheme() {
         if (
-            this.state.currentTheme.name === "dark" ||
-            this.state.currentTheme.name === "light" ||
-            this.state.currentTheme.name === "nord"
+            this.state.currentTheme.name === "Dark" ||
+            this.state.currentTheme.name === "Light" ||
+            this.state.currentTheme.name === "Nord"
         ) {
             console.log("is default theme");
 
@@ -180,7 +180,7 @@ class ThemeCarousel extends React.Component<Props, State> {
     }
 
     render() {
-        if (["dark", "light", "nord"].includes(this.state.currentTheme.name)) {
+        if (["Dark", "Light", "Nord"].includes(this.state.currentTheme.name)) {
             const hideButton = "hidden";
         }
         return (
@@ -198,7 +198,7 @@ class ThemeCarousel extends React.Component<Props, State> {
                         {this.state.configTheme.charAt(0).toUpperCase() + this.state.configTheme.slice(1)}
                     </h1> */}
                     <div id="currentThemeTitleContainer">
-                        {["dark", "light", "nord"].includes(this.state.currentTheme.name) ? (
+                        {["Dark", "Light", "Nord"].includes(this.state.currentTheme.name) ? (
                             <button id="deleteThemeButton" style={{ visibility: "hidden", pointerEvents: "none" }}>
                                 Delete
                             </button>
@@ -207,7 +207,7 @@ class ThemeCarousel extends React.Component<Props, State> {
                                 Delete
                             </button>
                         )}
-                        {["dark", "light", "nord"].includes(this.state.currentTheme.name) ? (
+                        {["Dark", "Light", "Nord"].includes(this.state.currentTheme.name) ? (
                             <input id="currentThemeTitle" value={this.state.configTheme} readOnly={true} />
                         ) : (
                             <input

@@ -1,6 +1,6 @@
 import * as React from "react";
 import "./SettingDisplay.css";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Redirect, Link } from "react-router-dom";
 import GeneralTab from "./GeneralTab/GeneralTab";
 import StorageTab from "./StorageTab/StorageTab";
 import AppearanceTab from "./AppearanceTab/AppearanceTab";
@@ -16,7 +16,7 @@ function SettingDisplay() {
                 <Route path="/settings/storagetab" component={StorageTab} />
                 <Route path="/settings/appearancetab" component={AppearanceTab} />
                 <Route path="/settings/abouttab" component={AboutTab} />
-                <GeneralTab />
+                <Redirect to="/settings/generaltab" />
             </Switch>
         </div>
     );

@@ -44,9 +44,9 @@ class ColorDisplay extends React.Component<Props, State> {
         this.setState({ hexValue: color.hex });
 
         if (
-            this.props.currentTheme === "dark" ||
-            this.props.currentTheme === "light" ||
-            this.props.currentTheme === "nord"
+            this.props.currentTheme === "Dark" ||
+            this.props.currentTheme === "Light" ||
+            this.props.currentTheme === "Nord"
         ) {
             console.log("is default theme");
 

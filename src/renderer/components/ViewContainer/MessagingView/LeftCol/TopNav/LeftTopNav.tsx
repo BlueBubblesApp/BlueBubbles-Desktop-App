@@ -46,6 +46,7 @@ class LeftTopNav extends React.Component<object, LeftTopNavState> {
     }
 
     handleNewMessage() {
+        ipcRenderer.invoke("send-to-ui", { event: "remove-active-chat" });
         ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: null });
     }
 

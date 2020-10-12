@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
@@ -5,6 +6,7 @@ import { sync } from "read-chunk";
 
 import { Attachment } from "@server/databases/chat/entity";
 import { getDirectorySize } from "@server/helpers/utils";
+import { generateUuid } from "@renderer/helpers/utils";
 import { StorageData } from "./types";
 
 let subdir = "";
@@ -31,6 +33,43 @@ export class FileSystem {
         const dirPath = `${FileSystem.attachmentsDir}/${attachment.guid}`;
         fs.mkdirSync(dirPath, { recursive: true });
         fs.writeFileSync(`${dirPath}/${attachment.transferName}`, data);
+    }
+
+    static async rewriteFilePath(oldPath: string, newPath: string) {
+        const ffmpeg = require("fluent-ffmpeg");
+        await new Promise((resolve1, reject) => {
+            ffmpeg()
+                .input(oldPath)
+                .output(newPath)
+                .on("error", (err, _, stderr) => reject(err ?? stderr))
+                .on("end", (stdout, _) => resolve1(stdout))
+                .run();
+        });
+
+        fs.unlinkSync(oldPath);
+    }
+
+    static async saveNewAudioFile(data: Uint8Array) {
+        const dirPath = `${FileSystem.attachmentsDir}/audioTemp`;
+        fs.mkdirSync(dirPath, { recursive: true });
+        const filePath = `${dirPath}/temp-${generateUuid()}.m4a`;
+        fs.writeFileSync(filePath, Buffer.from(data));
+
+        const ffmpeg = require("fluent-ffmpeg");
+
+        await new Promise((resolve1, reject) => {
+            ffmpeg()
+                .input(filePath)
+                .output(`${filePath.substr(0, filePath.length - 3)}mp3`)
+                .outputFormat("mp3")
+                .on("error", (err, _, stderr) => reject(err ?? stderr))
+                .on("end", (stdout, _) => resolve1(stdout))
+                .run();
+        });
+
+        fs.unlinkSync(filePath);
+
+        return `${filePath.substr(0, filePath.length - 3)}mp3`;
     }
 
     static saveFCMClient(data: any) {

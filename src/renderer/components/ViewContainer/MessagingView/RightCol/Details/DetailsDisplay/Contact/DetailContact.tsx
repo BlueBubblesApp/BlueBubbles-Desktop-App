@@ -40,7 +40,6 @@ class DetailContact extends React.Component<Props, State> {
         }
 
         return (
-            // eslint-disable-next-line react/self-closing-comp
             <div className="DetailContact">
                 <div className="ContactWrap">
                     <div className="ContactLeft">

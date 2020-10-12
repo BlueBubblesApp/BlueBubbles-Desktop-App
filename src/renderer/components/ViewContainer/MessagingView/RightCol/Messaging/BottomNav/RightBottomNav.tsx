@@ -1,3 +1,6 @@
+/* eslint-disable lines-between-class-members */
+/* eslint-disable no-unused-expressions */
+/* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable react/sort-comp */
 /* eslint-disable max-len */
@@ -5,9 +8,10 @@
 import * as React from "react";
 import * as path from "path";
 import * as fs from "fs";
-import { ipcRenderer } from "electron";
+import { desktopCapturer, ipcRenderer } from "electron";
 import { Attachment, Chat, Message } from "@server/databases/chat/entity";
 import { generateUuid } from "@renderer/helpers/utils";
+import AudioAnalyser from "@renderer/components/ViewContainer/MessagingView/RightCol/NewMessage/NewMessageBottom/AudioVisualizer/AudioVisualizer";
 import CloseIcon from "@renderer/components/TitleBar/close.png";
 
 import "./RightBottomNav.css";
@@ -22,17 +26,37 @@ type State = {
     enteredMessage: string;
     isRecording: boolean;
     attachmentPaths: string[];
+    audioHasData: boolean;
+    audioData: any;
+    isAudioPlaying: boolean;
+    audioLength: string;
+    tempAudioFilePath: string;
 };
 
+declare const MediaRecorder: any;
+
 class RightBottomNav extends React.Component<Props, State> {
+    audioContext: any;
+    analyser: any;
+    dataArray: Uint8Array;
+    source: any;
+    rafId: number;
+
     constructor(props) {
         super(props);
 
         this.state = {
             enteredMessage: "",
             isRecording: false,
-            attachmentPaths: []
+            attachmentPaths: [],
+            audioHasData: false,
+            audioData: new Uint8Array(0),
+            isAudioPlaying: false,
+            audioLength: null,
+            tempAudioFilePath: null
         };
+
+        this.tick = this.tick.bind(this);
     }
 
     async componentDidMount() {
@@ -64,6 +88,24 @@ class RightBottomNav extends React.Component<Props, State> {
         ipcRenderer.on("set-current-chat", () => {
             this.setState({ attachmentPaths: [] });
         });
+
+        const audio = document.getElementById("myAudioDiv") as HTMLAudioElement;
+
+        audio.addEventListener("loadedmetadata", () => {
+            this.setState({ audioLength: (audio.duration as unknown) as string });
+        });
+    }
+
+    componentWillUnmount() {
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+        }
+        if (this.analyser) {
+            this.analyser.disconnect();
+        }
+        if (this.source) {
+            this.source.disconnect();
+        }
     }
 
     handleMessageChange = event => {
@@ -129,6 +171,7 @@ class RightBottomNav extends React.Component<Props, State> {
         }
 
         const sendAudio = new Audio(path.join(resourcePath, "audio", "send.mp3"));
+        console.log(sendAudio);
         sendAudio.play();
     }
 
@@ -196,45 +239,259 @@ class RightBottomNav extends React.Component<Props, State> {
     }
 
     async startRecording() {
-        await this.setState({
+        this.setState({
             isRecording: true
         });
+
+        // Have to wait for el to be in dom
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        await delay(50);
+
         const el = document.getElementById("secondsCounter");
         let timer = 0;
+        let interval;
 
-        function convertSecondstoTime(givenSeconds) {
+        const convertSecondstoTime = givenSeconds => {
+            if (this.state.isRecording === false && this.state.audioHasData) {
+                clearInterval(interval);
+            }
+
             const dateObj = new Date(givenSeconds * 1000);
             const minutes = dateObj.getUTCMinutes();
             const seconds = dateObj.getSeconds();
 
             const timeString = `${minutes.toString().padStart(1, "0")}:${seconds.toString().padStart(2, "0")}`;
             el.innerText = timeString;
-        }
+            this.setState({ audioLength: timeString });
+        };
 
         function incrementSeconds() {
             timer += 1;
             convertSecondstoTime(timer);
         }
+        interval = setInterval(incrementSeconds, 1000);
 
-        setInterval(incrementSeconds, 1000);
+        this.startMic();
     }
 
-    async stopRecording() {
-        await this.setState({ isRecording: false });
+    stopRecording() {
+        this.setState({ isRecording: false });
+    }
+
+    startMic() {
+        desktopCapturer.getSources({ types: ["screen"] }).then(async sources => {
+            for (const source of sources) {
+                console.log(source);
+                if (source.name === "Entire Screen") {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            audio: true,
+                            video: false
+                        });
+                        this.handleStream(stream);
+                    } catch (e) {
+                        this.handleError(e);
+                    }
+                    return;
+                }
+            }
+        });
+    }
+
+    tick() {
+        this.analyser.getByteTimeDomainData(this.dataArray);
+        this.setState({ audioData: this.dataArray });
+        this.rafId = requestAnimationFrame(this.tick);
+    }
+
+    handleStream(stream: MediaStream) {
+        this.audioContext = new window.AudioContext();
+        this.analyser = this.audioContext.createAnalyser();
+        this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+        this.source = this.audioContext.createMediaStreamSource(stream);
+        this.source.connect(this.analyser);
+        this.rafId = requestAnimationFrame(this.tick);
+
+        let chunks = [];
+
+        const stopButton = document.getElementById("stopVoiceMessage");
+        // const startButton = document.getElementById("recordVoiceMessage");
+
+        const audioRec = new MediaRecorder(stream);
+
+        audioRec.start();
+
+        stopButton.onclick = e => {
+            audioRec.stop();
+        };
+
+        // startButton.onclick = (e) => {
+        //     audioRec.start();
+        //     console.log(audioRec.state);
+        //     console.log("recorder started");
+        // }
+
+        audioRec.onstop = async e => {
+            const audio = document.getElementById("myAudioDiv") as HTMLAudioElement;
+
+            const audioEnded = () => {
+                this.setState({ isAudioPlaying: false });
+            };
+
+            let audioLength;
+            if (audio) {
+                const audioCurrentLength = audio.currentTime;
+                audioLength = audio.duration;
+                document.getElementById(`audioVisProgress-Message`).style.width = `${(
+                    (audioCurrentLength / audioLength) *
+                    100
+                ).toString()}%`;
+                audio.addEventListener(
+                    "ended",
+                    function() {
+                        audioEnded();
+                    },
+                    false
+                );
+            }
+
+            const blob = new Blob(chunks, { type: "audio/m4a;" });
+            console.log("Saving Blob");
+            const data = new Uint8Array(await blob.arrayBuffer());
+            const newFilePath = await ipcRenderer.invoke("save-blob", data);
+            this.setState({ tempAudioFilePath: newFilePath });
+            console.log(newFilePath);
+            chunks = [];
+            const audioURL = URL.createObjectURL(blob);
+            audio.src = audioURL;
+        };
+
+        audioRec.ondataavailable = e2 => {
+            if (e2.data) {
+                this.setState({ audioHasData: true });
+                chunks.push(e2.data);
+            }
+        };
+    }
+
+    deleteAudio() {
+        try {
+            fs.unlinkSync(this.state.tempAudioFilePath);
+        } catch (err) {
+            console.error(err);
+        }
+        this.setState({
+            isRecording: false,
+            audioData: null,
+            audioHasData: false,
+            isAudioPlaying: false,
+            audioLength: null,
+            tempAudioFilePath: null
+        });
+    }
+
+    handleError(e) {
+        console.log(e);
+    }
+
+    togglePlay() {
+        const audio = document.getElementById("myAudioDiv") as HTMLAudioElement;
+
+        this.setState({ isAudioPlaying: true });
+        audio.play();
+    }
+
+    togglePause() {
+        const audio = document.getElementById("myAudioDiv") as HTMLAudioElement;
+
+        this.setState({ isAudioPlaying: false });
+        audio.pause();
+    }
+
+    async addAudioToChat() {
+        const { tempAudioFilePath, attachmentPaths } = this.state;
+
+        const attachmentPathsCopy = new Array<string>();
+        attachmentPaths.forEach(aPath => {
+            attachmentPathsCopy.push(aPath);
+        });
+
+        attachmentPathsCopy.push(tempAudioFilePath);
+
+        this.setState({
+            attachmentPaths: attachmentPathsCopy,
+            isRecording: false,
+            audioHasData: null,
+            audioData: null
+        });
     }
 
     render() {
+        let audio = document.getElementById("myAudioDiv") as HTMLAudioElement;
+
+        const updateAudioVisProgress = () => {
+            audio = document.getElementById("myAudioDiv") as HTMLAudioElement;
+            document.getElementById(`audioVisProgress-Message`).style.width = `${(
+                (audio.currentTime / audio.duration) *
+                100
+            ).toString()}%`;
+        };
+
         return (
             <div className="RightBottomNav">
-                {this.state.isRecording ? (
-                    <div id="recordMessageDiv">
-                        <div id="recordingVisWrap">
-                            <div id="recordingVis" />
-                            <div id="recordingLengthDiv">
-                                <p id="secondsCounter">0:00</p>
+                {this.state.isRecording || this.state.audioHasData ? (
+                    <>
+                        {this.state.audioHasData ? (
+                            <div id="recordMessageDiv">
+                                <div id="recordingVisWrap">
+                                    <div id="recordingVis">
+                                        <audio
+                                            id="myAudioDiv"
+                                            style={{ display: "none" }}
+                                            onTimeUpdate={() => updateAudioVisProgress()}
+                                        />
+                                        <div
+                                            className="toggleAudioPlayPause"
+                                            onClick={() => {
+                                                !this.state.isAudioPlaying ? this.togglePlay() : this.togglePause();
+                                            }}
+                                            style={{ marginLeft: "0" }}
+                                        >
+                                            {this.state.isAudioPlaying ? (
+                                                <svg height="100%" width="100%" viewBox="0 0 100 100">
+                                                    <circle cx="50" cy="50" r="45" fill="transparent" strokeWidth="5" />
+                                                    <rect x="30" y="26" width="15" height="46" rx="5" />
+                                                    <rect x="55" y="26" width="15" height="46" rx="5" />
+                                                </svg>
+                                            ) : (
+                                                <svg height="100%" width="100%" viewBox="0 0 100 100">
+                                                    <circle cx="50" cy="50" r="45" fill="transparent" strokeWidth="5" />
+                                                    <polygon points="35,25 35,75 75,50" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                        <div className="audioVisPrev-Message">
+                                            <div className="audioVisProgress" id="audioVisProgress-Message" />
+                                        </div>
+                                    </div>
+                                    <div id="recordingLengthDiv">
+                                        <p id="secondsCounter">{this.state.audioLength}</p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        ) : (
+                            <div id="recordMessageDiv">
+                                <div id="recordingVisWrap">
+                                    <div id="recordingVis">
+                                        <AudioAnalyser audioData={this.state.audioData} />
+                                    </div>
+                                    <div id="recordingLengthDiv">
+                                        <p id="secondsCounter">0:00</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <>
                         <div id="leftAttachmentButton" onClick={() => this.handleAddAttachment()}>
@@ -314,14 +571,12 @@ class RightBottomNav extends React.Component<Props, State> {
                         </svg>
                     </>
                 )}
-                <div id="rightBottomButton">
+                <div id="rightBottomButton" style={{ width: this.state.audioHasData ? "85px" : "45px" }}>
                     {this.state.enteredMessage === "" ? (
                         <>
                             {this.state.isRecording ? (
                                 <svg
                                     id="stopVoiceMessage"
-                                    // onMouseEnter={this.handleRecordEnter}
-                                    // onMouseLeave={this.handleRecordLeave}
                                     onClick={() => this.stopRecording()}
                                     viewBox="0 0 1300 1300"
                                     width="45"
@@ -357,50 +612,107 @@ class RightBottomNav extends React.Component<Props, State> {
                                         />
                                         {/* <animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite" /> */}
                                     </circle>
-                                    <circle mask="url(#whiteCircleMask)" cx="50%" cy="50%" r="450" fill="white" />
+                                    <circle
+                                        id="stopVoiceCircle"
+                                        mask="url(#whiteCircleMask)"
+                                        cx="50%"
+                                        cy="50%"
+                                        r="450"
+                                    />
                                     <rect x="462.5" y="462.5" height="375" width="375" rx="70" fill="red" />
                                 </svg>
                             ) : (
-                                <svg
-                                    id="recordVoiceMessage"
-                                    onMouseEnter={this.handleRecordEnter}
-                                    onMouseLeave={this.handleRecordLeave}
-                                    onClick={() => this.startRecording()}
-                                    viewBox="0 0 1000 1000"
-                                    width="25"
-                                    height="25"
-                                >
-                                    <path
-                                        id="bar1"
-                                        className="shp0"
-                                        d="M54 374.7L114 374.7C125.06 374.7 134 383.64 134 394.7L134 606.9C134 617.96 125.06 626.9 114 626.9L54 626.9C42.94 626.9 34 617.96 34 606.9L34 394.7C34 383.64 42.94 374.7 54 374.7Z"
-                                    />
-                                    <path
-                                        id="bar2"
-                                        className="shp0"
-                                        d="M206.5 253.1L266.5 253.1C277.56 253.1 286.5 262.04 286.5 273.1L286.5 728.4C286.5 739.46 277.56 748.4 266.5 748.4L206.5 748.4C195.44 748.4 186.5 739.46 186.5 728.4L186.5 273.1C186.5 262.04 195.44 253.1 206.5 253.1Z"
-                                    />
-                                    <path
-                                        id="bar3"
-                                        className="shp0"
-                                        d="M368 118L428 118C439.06 118 448 126.94 448 138L448 863.5C448 874.56 439.06 883.5 428 883.5L368 883.5C356.94 883.5 348 874.56 348 863.5L348 138C348 126.94 356.94 118 368 118Z"
-                                    />
-                                    <path
-                                        id="bar4"
-                                        className="shp0"
-                                        d="M529.5 271.1L589.5 271.1C600.56 271.1 609.5 280.04 609.5 291.1L609.5 710.4C609.5 721.46 600.56 730.4 589.5 730.4L529.5 730.4C518.44 730.4 509.5 721.46 509.5 710.4L509.5 291.1C509.5 280.04 518.44 271.1 529.5 271.1Z"
-                                    />
-                                    <path
-                                        id="bar5"
-                                        className="shp0"
-                                        d="M699.9 208.1L759.9 208.1C770.96 208.1 779.9 217.04 779.9 228.1L779.9 773.5C779.9 784.56 770.96 793.5 759.9 793.5L699.9 793.5C688.84 793.5 679.9 784.56 679.9 773.5L679.9 228.1C679.9 217.04 688.84 208.1 699.9 208.1Z"
-                                    />
-                                    <path
-                                        id="bar6"
-                                        className="shp0"
-                                        d="M882 388L942 388C953.06 388 962 396.94 962 408L962 593C962 604.06 953.06 613 942 613L882 613C870.94 613 862 604.06 862 593L862 408C862 396.94 870.94 388 882 388Z"
-                                    />
-                                </svg>
+                                <>
+                                    {this.state.audioHasData ? (
+                                        <>
+                                            <div id="deleteAudioIcon" onClick={() => this.deleteAudio()}>
+                                                <img src={CloseIcon} />
+                                            </div>
+                                            <svg
+                                                id="sendIcon"
+                                                viewBox="0 0 512 512"
+                                                onClick={() => this.addAudioToChat()}
+                                            >
+                                                <circle r="256" cx="256" cy="256" id="sendIconBackground" />
+                                                <line
+                                                    x1="100"
+                                                    y1="256"
+                                                    x2="412"
+                                                    y2="256"
+                                                    stroke="white"
+                                                    strokeLinecap="round"
+                                                    style={{ fill: "white", strokeWidth: "50" }}
+                                                />
+                                                <line
+                                                    x1="256"
+                                                    y1="100"
+                                                    x2="256"
+                                                    y2="412"
+                                                    stroke="white"
+                                                    strokeLinecap="round"
+                                                    style={{ fill: "white", strokeWidth: "50" }}
+                                                />
+                                            </svg>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {this.state.attachmentPaths.length > 0 ? (
+                                                <svg
+                                                    id="sendIcon"
+                                                    viewBox="0 0 1000 1000"
+                                                    onClick={() => this.sendMessage()}
+                                                >
+                                                    <circle r="500" cx="500" cy="500" id="sendIconBackground" />
+                                                    <polyline
+                                                        id="arrow"
+                                                        points="240 422 500 218 500 775 500 218 760 422"
+                                                    />
+                                                </svg>
+                                            ) : (
+                                                <svg
+                                                    id="recordVoiceMessage"
+                                                    onMouseEnter={this.handleRecordEnter}
+                                                    onMouseLeave={this.handleRecordLeave}
+                                                    onClick={() => this.startRecording()}
+                                                    viewBox="0 0 1000 1000"
+                                                    width="25"
+                                                    height="25"
+                                                >
+                                                    <path
+                                                        id="bar1"
+                                                        className="shp0"
+                                                        d="M54 374.7L114 374.7C125.06 374.7 134 383.64 134 394.7L134 606.9C134 617.96 125.06 626.9 114 626.9L54 626.9C42.94 626.9 34 617.96 34 606.9L34 394.7C34 383.64 42.94 374.7 54 374.7Z"
+                                                    />
+                                                    <path
+                                                        id="bar2"
+                                                        className="shp0"
+                                                        d="M206.5 253.1L266.5 253.1C277.56 253.1 286.5 262.04 286.5 273.1L286.5 728.4C286.5 739.46 277.56 748.4 266.5 748.4L206.5 748.4C195.44 748.4 186.5 739.46 186.5 728.4L186.5 273.1C186.5 262.04 195.44 253.1 206.5 253.1Z"
+                                                    />
+                                                    <path
+                                                        id="bar3"
+                                                        className="shp0"
+                                                        d="M368 118L428 118C439.06 118 448 126.94 448 138L448 863.5C448 874.56 439.06 883.5 428 883.5L368 883.5C356.94 883.5 348 874.56 348 863.5L348 138C348 126.94 356.94 118 368 118Z"
+                                                    />
+                                                    <path
+                                                        id="bar4"
+                                                        className="shp0"
+                                                        d="M529.5 271.1L589.5 271.1C600.56 271.1 609.5 280.04 609.5 291.1L609.5 710.4C609.5 721.46 600.56 730.4 589.5 730.4L529.5 730.4C518.44 730.4 509.5 721.46 509.5 710.4L509.5 291.1C509.5 280.04 518.44 271.1 529.5 271.1Z"
+                                                    />
+                                                    <path
+                                                        id="bar5"
+                                                        className="shp0"
+                                                        d="M699.9 208.1L759.9 208.1C770.96 208.1 779.9 217.04 779.9 228.1L779.9 773.5C779.9 784.56 770.96 793.5 759.9 793.5L699.9 793.5C688.84 793.5 679.9 784.56 679.9 773.5L679.9 228.1C679.9 217.04 688.84 208.1 699.9 208.1Z"
+                                                    />
+                                                    <path
+                                                        id="bar6"
+                                                        className="shp0"
+                                                        d="M882 388L942 388C953.06 388 962 396.94 962 408L962 593C962 604.06 953.06 613 942 613L882 613C870.94 613 862 604.06 862 593L862 408C862 396.94 870.94 388 882 388Z"
+                                                    />
+                                                </svg>
+                                            )}
+                                        </>
+                                    )}
+                                </>
                             )}
                         </>
                     ) : (

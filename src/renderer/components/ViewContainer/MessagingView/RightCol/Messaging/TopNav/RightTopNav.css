@@ -130,7 +130,7 @@
     font-size: 13px;
     color: var(--main-title-color);
     background-color: var(--secondary-color);
-    margin-bottom: 13px;
+    margin-bottom: 2px;
 }
 
 #newChatNameInput::placeholder {

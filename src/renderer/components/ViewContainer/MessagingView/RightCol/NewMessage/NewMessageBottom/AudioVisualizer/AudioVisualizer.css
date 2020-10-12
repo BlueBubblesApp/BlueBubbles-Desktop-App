@@ -1,0 +1,6 @@
+#audioVisWave {
+    min-width: 100% !important;
+    max-height: 45px;
+    margin-bottom: 0px !important;
+    stroke: var(--main-title-color);
+}

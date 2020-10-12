@@ -8,21 +8,21 @@ import Setting from "./Setting/Setting";
 function SettingTitles() {
     return (
         <div className="SettingTitles">
-            <NavLink exact to="/settings/generaltab" activeClassName="active">
+            <NavLink to="/settings/generaltab" activeClassName="active">
                 <Setting title="General" subTitle="Connection, Notifications, Features " />
             </NavLink>
-            <NavLink exact to="/settings/contactstab" activeClassName="active">
+            <NavLink to="/settings/contactstab" activeClassName="active">
                 <Setting title="Contacts" subTitle="Manage contacts" />
             </NavLink>
-            <NavLink exact to="/settings/storagetab" activeClassName="active">
+            <NavLink to="/settings/storagetab" activeClassName="active">
                 {" "}
                 <Setting title="Storage" subTitle="Manage local data" />
             </NavLink>
-            <NavLink exact to="/settings/appearancetab" activeClassName="active">
+            <NavLink to="/settings/appearancetab" activeClassName="active">
                 {" "}
                 <Setting title="Appearance" subTitle="Change the way the app looks" />
             </NavLink>
-            <NavLink exact to="/settings/abouttab" activeClassName="active">
+            <NavLink to="/settings/abouttab" activeClassName="active">
                 {" "}
                 <Setting title="About" subTitle="Version, Developers" />
             </NavLink>
