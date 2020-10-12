@@ -1026,7 +1026,7 @@ class BackendServer {
             return FileSystem.saveNewAudioFile(payload);
         });
 
-        ipcMain.handle("read-data-from-local-image", async (_, filePath) => {
+        ipcMain.handle("read-qr-data-from-local-image", async (_, filePath) => {
             const { nativeImage } = require("electron");
             const jsQR = require("jsqr");
             const image = nativeImage.createFromPath(filePath);
@@ -1047,7 +1047,7 @@ class BackendServer {
             return "No QR Code Found";
         });
 
-        ipcMain.handle("read-data-from-clipboard", async _ => {
+        ipcMain.handle("read-qr-data-from-clipboard", async _ => {
             const { clipboard } = require("electron");
             const jsQR = require("jsqr");
             const image = clipboard.readImage();
@@ -1066,6 +1066,27 @@ class BackendServer {
                 return dataReturn;
             }
             return "No QR Code Found";
+        });
+
+        ipcMain.handle("read-clipboard", async _ => {
+            const { clipboard } = require("electron");
+            const image = clipboard.readImage();
+            const text = clipboard.readText();
+
+            let filePath = null;
+            let clipText = null;
+
+            if (!image.isEmpty()) {
+                const bufImage = new Uint8Array(image.toJPEG(100));
+                filePath = await FileSystem.saveImageFromClipboard(bufImage);
+            }
+            if (text.length > 0) {
+                clipText = text;
+            }
+
+            const myClipboard = { filePath, clipText };
+            console.log(myClipboard);
+            return myClipboard;
         });
 
         ipcMain.handle("show-save-file", async (_, oldPath) => {

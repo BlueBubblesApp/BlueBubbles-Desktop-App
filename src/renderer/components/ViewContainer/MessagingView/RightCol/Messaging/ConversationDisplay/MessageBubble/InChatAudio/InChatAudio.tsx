@@ -132,9 +132,7 @@ class InChatAudio extends React.Component<Props, State> {
                         <div className="audioVisProgress" id={`audioVisProgress${attachment.guid}`} />
                     </div>
                     <div className="audioLengthDisplay">
-                        <p>
-                            {this.state.audio ? <p>{this.calculateTotalValue(this.state.audioLength)}</p> : <p>.:..</p>}
-                        </p>
+                        {this.state.audio ? <p>{this.calculateTotalValue(this.state.audioLength)}</p> : <p>.:..</p>}
                     </div>
                 </div>
             </>

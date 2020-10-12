@@ -63,9 +63,32 @@ class RightBottomNav extends React.Component<Props, State> {
         const input = document.getElementById("messageFieldInput");
         input.addEventListener("keyup", event => {
             // Number 13 is the "Enter" key on the keyboard
-            if (event.keyCode === 13) {
+            if (event.key === "Enter") {
                 event.preventDefault();
                 this.sendMessage();
+            }
+
+            if (
+                event.key === "Backspace" &&
+                this.state.attachmentPaths.length > 0 &&
+                this.state.enteredMessage.length === 0
+            ) {
+                this.setState({ attachmentPaths: this.state.attachmentPaths.slice(0, -1) });
+            }
+        });
+
+        input.addEventListener("paste", async event => {
+            const myClipboard = await ipcRenderer.invoke("read-clipboard");
+            console.log(myClipboard);
+            event.preventDefault();
+
+            if (myClipboard.filePath) {
+                const attachmentPathsCopy = this.state.attachmentPaths;
+                attachmentPathsCopy.push(myClipboard.filePath);
+                this.setState({ attachmentPaths: attachmentPathsCopy });
+            }
+            if (myClipboard.clipText) {
+                this.setState({ enteredMessage: this.state.enteredMessage + myClipboard.clipText });
             }
         });
 
@@ -130,6 +153,7 @@ class RightBottomNav extends React.Component<Props, State> {
         const newAttachmentPaths = new Array<string>();
         for (const aPath of this.state.attachmentPaths) {
             // Create the attachment
+            console.log(aPath);
             const attachment: Attachment & { filepath: string } = await ipcRenderer.invoke("create-attachment", {
                 guid: `temp-${generateUuid()}`,
                 attachmentPath: aPath

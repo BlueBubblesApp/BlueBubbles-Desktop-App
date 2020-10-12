@@ -4,6 +4,8 @@ import * as path from "path";
 import * as url from "url";
 
 import { Server } from "@server/index";
+import { FileSystem } from "@server/fileSystem";
+import * as fs from "fs";
 
 // To allow CORS
 app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors");
@@ -98,7 +100,8 @@ ipcMain.on("force-focus", () => {
     if (win && win.webContents) win.focus();
 });
 
-ipcMain.handle("close-event", () => {
+ipcMain.handle("close-event", async () => {
+    await FileSystem.deleteTempFiles();
     app.quit();
     app.exit(0);
 });

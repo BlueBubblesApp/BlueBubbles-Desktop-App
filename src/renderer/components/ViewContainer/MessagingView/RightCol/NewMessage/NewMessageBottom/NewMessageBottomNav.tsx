@@ -59,9 +59,32 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
         const input = document.getElementById("messageFieldInput-NewMessage");
         input.addEventListener("keyup", event => {
             // Number 13 is the "Enter" key on the keyboard
-            if (event.keyCode === 13) {
+            if (event.key === "Enter") {
                 event.preventDefault();
                 this.sendMessage();
+            }
+
+            if (
+                event.key === "Backspace" &&
+                this.state.attachmentPaths.length > 0 &&
+                this.state.enteredMessage.length === 0
+            ) {
+                this.setState({ attachmentPaths: this.state.attachmentPaths.slice(0, -1) });
+            }
+        });
+
+        input.addEventListener("paste", async event => {
+            const myClipboard = await ipcRenderer.invoke("read-clipboard");
+            console.log(myClipboard);
+            event.preventDefault();
+
+            if (myClipboard.filePath) {
+                const attachmentPathsCopy = this.state.attachmentPaths;
+                attachmentPathsCopy.push(myClipboard.filePath);
+                this.setState({ attachmentPaths: attachmentPathsCopy });
+            }
+            if (myClipboard.clipText) {
+                this.setState({ enteredMessage: this.state.enteredMessage + myClipboard.clipText });
             }
         });
 

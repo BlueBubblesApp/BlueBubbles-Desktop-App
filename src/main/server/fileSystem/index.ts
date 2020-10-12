@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable max-len */
 import * as fs from "fs";
 import * as path from "path";
@@ -70,6 +71,39 @@ export class FileSystem {
         fs.unlinkSync(filePath);
 
         return `${filePath.substr(0, filePath.length - 3)}mp3`;
+    }
+
+    static async saveImageFromClipboard(data: Uint8Array) {
+        const dirPath = `${FileSystem.attachmentsDir}/clipboardTemp`;
+        fs.mkdirSync(dirPath, { recursive: true });
+        const filePath = `${dirPath}/fromClipboard-${generateUuid()}.jpeg`;
+        fs.writeFileSync(filePath, data);
+
+        return filePath;
+    }
+
+    static async deleteTempFiles() {
+        let dirPath = `${FileSystem.attachmentsDir}/clipboardTemp`;
+        fs.readdir(dirPath, (err, files) => {
+            if (err) throw err;
+
+            for (const file of files) {
+                fs.unlink(path.join(dirPath, file), err => {
+                    if (err) throw err;
+                });
+            }
+        });
+
+        dirPath = `${FileSystem.attachmentsDir}/audioTemp`;
+        fs.readdir(dirPath, (err, files) => {
+            if (err) throw err;
+
+            for (const file of files) {
+                fs.unlink(path.join(dirPath, file), err => {
+                    if (err) throw err;
+                });
+            }
+        });
     }
 
     static saveFCMClient(data: any) {

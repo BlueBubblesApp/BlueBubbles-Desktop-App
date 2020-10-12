@@ -149,7 +149,7 @@ class LoginView extends React.Component<object, LoginViewState> {
     };
 
     readFromClipboard = async () => {
-        const clipboardReturn = await ipcRenderer.invoke("read-data-from-clipboard");
+        const clipboardReturn = await ipcRenderer.invoke("read-qr-data-from-clipboard");
         console.log(clipboardReturn);
 
         this.setState({
@@ -169,7 +169,10 @@ class LoginView extends React.Component<object, LoginViewState> {
 
         if (dialogReturn.filePaths.length === 1) {
             this.setState({ loading: true });
-            const localImageReturn = await ipcRenderer.invoke("read-data-from-local-image", dialogReturn.filePaths[0]);
+            const localImageReturn = await ipcRenderer.invoke(
+                "read-qr-data-from-local-image",
+                dialogReturn.filePaths[0]
+            );
             console.log(localImageReturn);
 
             if (localImageReturn === "No QR Code Found") {
