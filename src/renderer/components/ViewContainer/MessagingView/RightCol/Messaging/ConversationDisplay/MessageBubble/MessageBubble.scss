@@ -371,7 +371,7 @@
     justify-content: flex-start;
     align-items: center;
     margin: 0 3px 0 3px;
-    background-color: var(--sub-title-color);
+    background-color: var(--secondary-color);
     border-radius: 15px;
 }
 
@@ -388,8 +388,9 @@
 
 .audioVisProgress {
     height: 5px;
-    background-color: white;
+    background-color: var(--main-title-color);
     border-radius: 15px;
+    max-width: 100% !important;
 }
 
 .audioVisPrev > p {

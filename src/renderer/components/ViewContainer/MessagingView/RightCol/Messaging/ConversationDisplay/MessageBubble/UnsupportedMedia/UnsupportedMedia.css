@@ -9,6 +9,7 @@
     margin-top: 3px;
     cursor: pointer;
     animation: fade 0.25s ease-in-out;
+    max-width: 250px;
 }
 
 .UnsupportedMedia > p:first-child {

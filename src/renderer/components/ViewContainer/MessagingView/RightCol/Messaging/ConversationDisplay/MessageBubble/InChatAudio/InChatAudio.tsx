@@ -1,52 +1,43 @@
+import { supportedAudioTypes } from "@renderer/helpers/constants";
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable class-methods-use-this */
-/* eslint-disable @typescript-eslint/no-empty-interface */
+/* eslint-disable react/prefer-stateless-function */
 /* eslint-disable max-len */
+/* eslint-disable no-underscore-dangle */
 import * as React from "react";
-import "./AudioDisplay.css";
-import { Attachment, Chat } from "@server/databases/chat/entity";
-import { getSender, generateDetailsIconText } from "@renderer/helpers/utils";
-import { ipcRenderer } from "electron";
-import { supportedAudioTypes } from "@renderer/helpers/constants";
-import { AttachmentDownload } from "../../../Messaging/ConversationDisplay/MessageBubble/@types";
+import { AttachmentDownload } from "../@types";
+import "./InChatAudio.css";
 
 interface Props {
     attachment: AttachmentDownload;
 }
 
 interface State {
+    audioLength: any;
     isAudioPlaying: boolean;
     audio: HTMLAudioElement;
-    audioLength: string;
 }
 
-class AudioDisplay extends React.Component<Props, State> {
+class InChatAudio extends React.Component<Props, State> {
     constructor(props) {
         super(props);
 
         this.state = {
+            audioLength: null,
             isAudioPlaying: false,
-            audio: null,
-            audioLength: null
+            audio: null
         };
     }
 
     componentDidMount() {
         const audio = document.getElementById(this.props.attachment.guid) as HTMLAudioElement;
-        console.log(audio);
-
-        audio.addEventListener("loadedmetadata", () => {
-            this.setState({ audioLength: (audio.duration as unknown) as string });
-        });
-
-        this.setState({ audio });
-
-        const audioEnded = () => {
-            this.setState({ isAudioPlaying: false });
-        };
 
         if (audio) {
-            console.log(audio);
+            audio.addEventListener("loadedmetadata", () => {
+                this.setState({ audioLength: (audio.duration as unknown) as string });
+            });
+
+            this.setState({ audio });
             document.getElementById(`audioVisProgress${this.props.attachment.guid}`).style.width = `${(
                 (audio.currentTime / audio.duration) *
                 100
@@ -57,22 +48,11 @@ class AudioDisplay extends React.Component<Props, State> {
 
     updateAudioVisProgress = () => {
         const audio = document.getElementById(this.props.attachment.guid) as HTMLAudioElement;
+
         document.getElementById(`audioVisProgress${this.props.attachment.guid}`).style.width = `${(
-            (audio.currentTime / audio.duration) *
+            (audio.currentTime / this.state.audioLength) *
             100
         ).toString()}%`;
-    };
-
-    toggleAudio = () => {
-        const audio = document.getElementById(this.props.attachment.guid) as HTMLAudioElement;
-
-        if (audio.paused) {
-            this.setState({ isAudioPlaying: true });
-            audio.play();
-            return;
-        }
-        this.setState({ isAudioPlaying: false });
-        audio.pause();
     };
 
     calculateTotalValue = length => {
@@ -88,26 +68,53 @@ class AudioDisplay extends React.Component<Props, State> {
         } else {
             seconds = secondsStr.substr(0, 2);
         }
+
         const time = `${minutes}:${seconds}`;
+
         if (time === "Infinity:Na") {
             return "00:0";
         }
         return time;
     };
 
+    toggleAudio = () => {
+        const audio = document.getElementById(this.props.attachment.guid) as HTMLAudioElement;
+
+        if (audio.paused) {
+            this.setState({ isAudioPlaying: true });
+            audio.play();
+            return;
+        }
+        this.setState({ isAudioPlaying: false });
+        audio.pause();
+    };
+
+    audioEnded = () => {
+        this.setState({ isAudioPlaying: false });
+    };
+
     render() {
-        let mime = this.props.attachment.mimeType;
+        const { attachment } = this.props;
+        let mime = attachment.mimeType;
         if (!supportedAudioTypes.includes(mime)) mime = "audio/mp3";
 
         return (
-            <div className="aChatAttachment" key={this.props.attachment.guid}>
-                <div className="aAudio">
-                    <div
-                        className="toggleAudioPlayPause"
-                        onClick={() => {
-                            this.toggleAudio();
-                        }}
-                    >
+            <>
+                <audio
+                    key={`audioVisProgress${attachment.guid}`}
+                    id={attachment.guid}
+                    className="Attachment"
+                    onTimeUpdate={() => this.updateAudioVisProgress()}
+                >
+                    <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
+                </audio>
+                <div
+                    key={attachment.guid}
+                    className={
+                        attachment.isOutgoing ? "OutgoingAudioAttachmentControls" : "InComingAudioAttachmentControls"
+                    }
+                >
+                    <div className="toggleAudioPlayPause" onClick={() => this.toggleAudio()}>
                         {this.state.isAudioPlaying ? (
                             <svg height="100%" width="100%" viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="45" fill="transparent" stroke="white" strokeWidth="5" />
@@ -122,25 +129,17 @@ class AudioDisplay extends React.Component<Props, State> {
                         )}
                     </div>
                     <div className="audioVisPrev">
-                        <div className="audioVisProgress" id={`audioVisProgress${this.props.attachment.guid}`} />
+                        <div className="audioVisProgress" id={`audioVisProgress${attachment.guid}`} />
                     </div>
                     <div className="audioLengthDisplay">
-                        {this.state.audio ? <p>{this.calculateTotalValue(this.state.audioLength)}</p> : <p>.:..</p>}
+                        <p>
+                            {this.state.audio ? <p>{this.calculateTotalValue(this.state.audioLength)}</p> : <p>.:..</p>}
+                        </p>
                     </div>
-                    <audio
-                        key={`audioVisProgress${this.props.attachment.guid}`}
-                        id={this.props.attachment.guid}
-                        onTimeUpdate={() => this.updateAudioVisProgress()}
-                    >
-                        <source src={`data:${mime};base64,${this.props.attachment.data}`} type={mime} />
-                    </audio>
                 </div>
-                <div>
-                    <p>{this.props.attachment.transferName}</p>
-                </div>
-            </div>
+            </>
         );
     }
 }
 
-export default AudioDisplay;
+export default InChatAudio;

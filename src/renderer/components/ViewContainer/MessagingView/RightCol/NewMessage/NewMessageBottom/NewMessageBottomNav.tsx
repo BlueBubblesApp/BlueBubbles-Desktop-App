@@ -9,7 +9,6 @@ import * as React from "react";
 import * as fs from "fs";
 import "./NewMessageBottomNav.css";
 import { desktopCapturer, ipcRenderer, StringProtocolResponse } from "electron";
-import { ReactMic } from "react-mic";
 import CloseIcon from "@renderer/components/TitleBar/close.png";
 import { FileSystem } from "@server/fileSystem";
 import { Attachment } from "@server/databases/chat/entity";

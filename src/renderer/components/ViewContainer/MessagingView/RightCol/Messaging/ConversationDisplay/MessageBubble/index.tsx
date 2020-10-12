@@ -40,6 +40,7 @@ import "./MessageBubble.scss";
 import "leaflet/dist/leaflet.css";
 import NewReaction from "./NewReaction/NewReaction";
 import InChatReaction from "./InChatReaction/InChatReaction";
+import InChatAudio from "./InChatAudio/InChatAudio";
 
 // If we don't do this, the marker won't show
 // eslint-disable-next-line no-underscore-dangle
@@ -67,7 +68,6 @@ type Props = {
 type State = {
     attachments: AttachmentDownload[];
     isReactionsOpen: boolean;
-    isAudioPlaying: boolean;
     showContextMenu: boolean;
     currentContextMenuElement: Element;
 };
@@ -162,7 +162,6 @@ class MessageBubble extends React.Component<Props, State> {
         this.state = {
             attachments: [],
             isReactionsOpen: false,
-            isAudioPlaying: false,
             showContextMenu: false,
             currentContextMenuElement: null
         };
@@ -218,129 +217,7 @@ class MessageBubble extends React.Component<Props, State> {
             }
 
             if (attachment.mimeType.startsWith("audio") && attachment.data) {
-                let mime = attachment.mimeType;
-                if (!supportedAudioTypes.includes(mime)) mime = "audio/mp3";
-
-                const audio = document.getElementById(attachment.guid) as HTMLAudioElement;
-                const ctrl = document.getElementById("toggleAudioPlayPause");
-
-                const togglePause = () => {
-                    this.setState({ isAudioPlaying: false });
-                    audio.pause();
-                };
-
-                const togglePlay = () => {
-                    this.setState({ isAudioPlaying: true });
-                    audio.play();
-                };
-
-                const audioEnded = () => {
-                    this.setState({ isAudioPlaying: false });
-                };
-                let audioLength;
-
-                if (audio) {
-                    const audioCurrentLength = audio.currentTime;
-                    audioLength = audio.duration;
-                    document.getElementById(`audioVisProgress${attachment.guid}`).style.width = `${(
-                        (audioCurrentLength / audioLength) *
-                        100
-                    ).toString()}%`;
-                    audio.addEventListener(
-                        "ended",
-                        function() {
-                            audioEnded();
-                        },
-                        false
-                    );
-                }
-
-                const calculateTotalValue = length => {
-                    const minutes = Math.floor(length / 60);
-                    const secondsInt = length - minutes * 60;
-                    const secondsStr = secondsInt.toString();
-                    let seconds;
-                    if (secondsStr[1] === ".") {
-                        seconds = `0${secondsStr.substr(0, 1)}`;
-                        if (seconds === "00") {
-                            seconds = "01";
-                        }
-                    } else {
-                        seconds = secondsStr.substr(0, 2);
-                    }
-
-                    const time = `${minutes}:${seconds}`;
-
-                    return time;
-                };
-
-                const updateAudioVisProgress = () => {
-                    document.getElementById(`audioVisProgress${attachment.guid}`).style.width = `${(
-                        (audio.currentTime / audioLength) *
-                        100
-                    ).toString()}%`;
-                };
-
-                return (
-                    <>
-                        <audio
-                            key={`audioVisProgress${attachment.guid}`}
-                            id={attachment.guid}
-                            className="Attachment"
-                            onTimeUpdate={() => updateAudioVisProgress()}
-                        >
-                            <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
-                        </audio>
-                        <div
-                            key={attachment.guid}
-                            className={
-                                attachment.isOutgoing
-                                    ? "OutgoingAudioAttachmentControls"
-                                    : "InComingAudioAttachmentControls"
-                            }
-                        >
-                            <div
-                                className="toggleAudioPlayPause"
-                                onClick={() => {
-                                    audio.paused ? togglePlay() : togglePause();
-                                }}
-                            >
-                                {this.state.isAudioPlaying ? (
-                                    <svg height="100%" width="100%" viewBox="0 0 100 100">
-                                        <circle
-                                            cx="50"
-                                            cy="50"
-                                            r="45"
-                                            fill="transparent"
-                                            stroke="white"
-                                            strokeWidth="5"
-                                        />
-                                        <rect x="30" y="26" width="15" height="46" rx="5" fill="white" />
-                                        <rect x="55" y="26" width="15" height="46" rx="5" fill="white" />
-                                    </svg>
-                                ) : (
-                                    <svg height="100%" width="100%" viewBox="0 0 100 100">
-                                        <circle
-                                            cx="50"
-                                            cy="50"
-                                            r="45"
-                                            fill="transparent"
-                                            stroke="white"
-                                            strokeWidth="5"
-                                        />
-                                        <polygon points="35,25 35,75 75,50" fill="white" />
-                                    </svg>
-                                )}
-                            </div>
-                            <div className="audioVisPrev">
-                                <div className="audioVisProgress" id={`audioVisProgress${attachment.guid}`} />
-                            </div>
-                            <div className="audioLengthDisplay">
-                                <p>{audioLength ? calculateTotalValue(audioLength) : "..."}</p>
-                            </div>
-                        </div>
-                    </>
-                );
+                return <InChatAudio attachment={attachment} />;
             }
 
             if (attachment.mimeType === "text/x-vlocation") {
