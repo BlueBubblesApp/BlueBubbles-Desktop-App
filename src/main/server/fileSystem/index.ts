@@ -28,6 +28,10 @@ export class FileSystem {
     static setupDirectories(): void {
         if (!fs.existsSync(FileSystem.attachmentsDir)) fs.mkdirSync(FileSystem.attachmentsDir);
         if (!fs.existsSync(FileSystem.fcmDir)) fs.mkdirSync(FileSystem.fcmDir);
+        if (!fs.existsSync(`${FileSystem.attachmentsDir}/audioTemp`))
+            fs.mkdirSync(`${FileSystem.attachmentsDir}/audioTemp`);
+        if (!fs.existsSync(`${FileSystem.attachmentsDir}/clipboardTemp`))
+            fs.mkdirSync(`${FileSystem.attachmentsDir}/clipboardTemp`);
     }
 
     static saveAttachment(attachment: Attachment, data: Uint8Array) {

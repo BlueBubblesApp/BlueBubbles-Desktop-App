@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
-import { ipcMain, BrowserWindow, shell, app, dialog, remote } from "electron";
+import { ipcMain, BrowserWindow, shell, app, dialog, remote, NativeImage, nativeImage } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as fs from "fs";
@@ -1027,7 +1027,6 @@ class BackendServer {
         });
 
         ipcMain.handle("read-qr-data-from-local-image", async (_, filePath) => {
-            const { nativeImage } = require("electron");
             const jsQR = require("jsqr");
             const image = nativeImage.createFromPath(filePath);
             const code = jsQR(image.toBitmap(), image.getSize().width, image.getSize().height);
@@ -1087,6 +1086,13 @@ class BackendServer {
             const myClipboard = { filePath, clipText };
             console.log(myClipboard);
             return myClipboard;
+        });
+
+        ipcMain.handle("copy-image-to-clipboard", async (_, filePath) => {
+            const { clipboard } = require("electron");
+
+            const image = nativeImage.createFromPath(filePath);
+            clipboard.writeImage(image);
         });
 
         ipcMain.handle("show-save-file", async (_, oldPath) => {

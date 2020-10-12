@@ -406,6 +406,10 @@ class MessageBubble extends React.Component<Props, State> {
         await ipcRenderer.invoke("show-file-in-folder", this.state.currentContextMenuElement.id);
     }
 
+    async copyImageToClipboard() {
+        await ipcRenderer.invoke("copy-image-to-clipboard", this.state.currentContextMenuElement.id);
+    }
+
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
         const { attachments } = this.state;
@@ -448,8 +452,11 @@ class MessageBubble extends React.Component<Props, State> {
                         onClick={() => console.log("Clicked")}
                         style={{ position: "absolute", top: yPos, left: xPos }}
                     >
+                        <div onClick={() => this.copyImageToClipboard()}>
+                            <p>Copy Image</p>
+                        </div>
                         <div onClick={() => this.downloadImageToNewPath()}>
-                            <p>Download File</p>
+                            <p>Download Image</p>
                         </div>
                         <div onClick={() => this.openFileBrowserToPath()}>
                             <p>Open In File Explorer</p>
