@@ -23,10 +23,12 @@
     justify-content: center;
     align-items: flex-start;
     flex-direction: column;
-    margin: 0 30% 0 0;
+    max-width: 65%;
+    margin: 0 auto 0 0;
     animation: fade 0.25s ease-in-out;
     transition: ease-in-out 0.25s;
     margin-top: -46px;
+    margin-right: auto !important;
 }
 
 .IncomingMessage .message {
@@ -54,10 +56,11 @@
     justify-content: center;
     align-items: flex-end;
     flex-direction: column;
-    margin: 0 13px 0 30%;
+    max-width: 65%;
+    margin: 0 13px 0 auto !important;
     animation: fade 0.25s ease-in-out;
     transition: ease-in-out 0.25s;
-    margin-top: -46px;
+    margin-top: -46px !important;
 }
 
 .OutgoingMessage .message {
@@ -68,7 +71,6 @@
     padding: 8px 15px 8px 15px;
     background-color: var(--outgoing-message-color);
     border-radius: 20px;
-    word-break: normal;
     word-break: normal;
     overflow-wrap: break-word;
     word-wrap: break-word;
@@ -288,6 +290,10 @@
     min-width: 40%;
 }
 
+.linkBottomDiv:hover {
+    cursor: pointer;
+}
+
 .linkBottomDiv > p:first-child {
     margin: 0;
     color: var(--main-title-color);
@@ -421,6 +427,26 @@
 
     100% {
         opacity: 1;
+    }
+}
+
+@media (max-width: 1000px) {
+    .OutgoingMessage {
+        max-width: 75% !important;
+    }
+
+    .IncomingMessage {
+        max-width: 75% !important;
+    }
+}
+
+@media (max-width: 700px) {
+    .OutgoingMessage {
+        max-width: 85% !important;
+    }
+
+    .IncomingMessage {
+        max-width: 85% !important;
     }
 }
 

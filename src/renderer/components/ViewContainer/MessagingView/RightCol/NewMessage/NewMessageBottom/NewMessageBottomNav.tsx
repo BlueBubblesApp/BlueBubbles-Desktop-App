@@ -148,6 +148,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
             attachmentPathsCopy.push(filePath);
         });
         this.setState({ attachmentPaths: attachmentPathsCopy });
+        document.getElementById("messageFieldInput-NewMessage").focus();
     }
 
     handleRecordEnter() {

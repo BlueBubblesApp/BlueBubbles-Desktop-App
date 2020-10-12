@@ -13,6 +13,7 @@ import { Map, Marker, TileLayer } from "react-leaflet";
 import L from "leaflet";
 import EmojiRegex from "emoji-regex";
 import ClickNHold from "react-click-n-hold";
+import { getLinkPreview } from "link-preview-js";
 
 // Server imports
 import { Message as DBMessage, Chat } from "@server/databases/chat/entity";
@@ -70,6 +71,7 @@ type State = {
     isReactionsOpen: boolean;
     showContextMenu: boolean;
     currentContextMenuElement: Element;
+    linkTitle: string;
 };
 
 let subdir = "";
@@ -163,7 +165,8 @@ class MessageBubble extends React.Component<Props, State> {
             attachments: [],
             isReactionsOpen: false,
             showContextMenu: false,
-            currentContextMenuElement: null
+            currentContextMenuElement: null,
+            linkTitle: null
         };
     }
 
@@ -249,6 +252,15 @@ class MessageBubble extends React.Component<Props, State> {
             this.setState({ showContextMenu: false });
         });
         const { message } = this.props;
+
+        if (message.text.includes("http") || message.text.includes("Https")) {
+            const linkPrev: any = await getLinkPreview(message.text);
+            if (linkPrev.title) {
+                this.setState({ linkTitle: linkPrev.title });
+            } else {
+                this.setState({ linkTitle: linkPrev.description });
+            }
+        }
 
         // Get the attachments
         const attachments: AttachmentDownload[] = [];
@@ -357,7 +369,10 @@ class MessageBubble extends React.Component<Props, State> {
         this.setState({ isReactionsOpen: true });
     }
 
-    closeReactionView() {
+    closeReactionView(message) {
+        const parent = document.getElementById(message.guid);
+        parent.style.setProperty("--hide-pseudo", "1");
+
         document.getElementsByClassName("activeReactionMessage")[0].classList.toggle("activeReactionMessage");
 
         const incomingReactions = document.getElementsByClassName("reactionOnIncoming") as HTMLCollectionOf<
@@ -442,7 +457,7 @@ class MessageBubble extends React.Component<Props, State> {
                     </div>
                 ) : null}
                 {this.state.isReactionsOpen ? (
-                    <div id="reactionOverlay" onClick={() => this.closeReactionView()}>
+                    <div id="reactionOverlay" onClick={() => this.closeReactionView(message)}>
                         <div id="reactionParticipantsDiv">
                             <ReactionsDisplay message={message} />
                         </div>
@@ -457,7 +472,7 @@ class MessageBubble extends React.Component<Props, State> {
                                 {attachments.map((attachment: AttachmentDownload) => this.renderAttachment(attachment))}
                                 <div className="linkBottomDiv">
                                     {/* Change first one Zach */}
-                                    <p>{new URL(links[0]).hostname}</p>
+                                    <p>{this.state.linkTitle || "Loading ..."}</p>
                                     <p>{new URL(links[0]).hostname}</p>
                                 </div>
                             </div>

@@ -212,6 +212,7 @@ class RightBottomNav extends React.Component<Props, State> {
         });
         console.log(attachmentPathsCopy);
         this.setState({ attachmentPaths: attachmentPathsCopy });
+        document.getElementById("messageFieldInput").focus();
     }
 
     openAttachment(attachmentPath) {
@@ -258,7 +259,7 @@ class RightBottomNav extends React.Component<Props, State> {
     }
 
     async openEmojiPicker() {
-        await document.getElementById("messageFieldInput").focus();
+        document.getElementById("messageFieldInput").focus();
         ipcRenderer.invoke("open-emoji-picker");
     }
 
