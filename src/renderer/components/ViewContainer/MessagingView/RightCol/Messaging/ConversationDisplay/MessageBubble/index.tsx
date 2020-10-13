@@ -95,7 +95,7 @@ const isSupportedMime = (mimeType: string) => {
 const loadAttachmentData = (attachment: AttachmentDownload) => {
     if (!isSupportedMime(attachment.mimeType)) return null;
     if (attachment.data) return attachment.data;
-    const fPath = `${attachmentsDir}\\${attachment.guid}\\${attachment.transferName}`;
+    const fPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
     let encoding = "base64";
 
     // If it's a location card, read as utf-8
@@ -112,7 +112,7 @@ const loadAttachmentData = (attachment: AttachmentDownload) => {
         try {
             console.log(attachment);
             const ext = attachment.mimeType.startsWith("video") ? "mp4" : "mp3";
-            const newPath = `${attachmentsDir}\\${attachment.guid}\\${attachment.transferName.replace(
+            const newPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName.replace(
                 path.extname(attachment.transferName),
                 `.${ext}`
             )}`;
