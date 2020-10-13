@@ -87,9 +87,9 @@ class RightBottomNav extends React.Component<Props, State> {
                 attachmentPathsCopy.push(myClipboard.filePath);
                 this.setState({ attachmentPaths: attachmentPathsCopy });
             }
-            if (myClipboard.clipText) {
-                this.setState({ enteredMessage: this.state.enteredMessage + myClipboard.clipText });
-            }
+            // if (myClipboard.clipText) {
+            //     this.setState({ enteredMessage: this.state.enteredMessage + myClipboard.clipText });
+            // }
         });
 
         ipcRenderer.on("focused", (_, args) => {
