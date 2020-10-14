@@ -1,3 +1,5 @@
+/* eslint-disable import/order */
+/* eslint-disable react/no-unused-state */
 /* eslint-disable react/sort-comp */
 /* eslint-disable no-loop-func */
 /* eslint-disable no-param-reassign */
@@ -14,6 +16,7 @@ import L from "leaflet";
 import EmojiRegex from "emoji-regex";
 import ClickNHold from "react-click-n-hold";
 import { getLinkPreview } from "link-preview-js";
+import Confetti from "react-confetti";
 
 // Server imports
 import { Message as DBMessage, Chat } from "@server/databases/chat/entity";
@@ -42,6 +45,7 @@ import "leaflet/dist/leaflet.css";
 import NewReaction from "./NewReaction/NewReaction";
 import InChatReaction from "./InChatReaction/InChatReaction";
 import InChatAudio from "./InChatAudio/InChatAudio";
+import * as FireworksCanvas from "fireworks-canvas";
 
 // If we don't do this, the marker won't show
 // eslint-disable-next-line no-underscore-dangle
@@ -72,6 +76,7 @@ type State = {
     showContextMenu: boolean;
     currentContextMenuElement: Element;
     linkTitle: string;
+    playMessageAnimation: boolean;
 };
 
 let subdir = "";
@@ -166,7 +171,8 @@ class MessageBubble extends React.Component<Props, State> {
             isReactionsOpen: false,
             showContextMenu: false,
             currentContextMenuElement: null,
-            linkTitle: null
+            linkTitle: null,
+            playMessageAnimation: true
         };
     }
 
@@ -314,6 +320,18 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         this.setState({ attachments: attachmentsCopy });
+
+        if (message.expressiveSendStyleId) {
+            if (this.props.message.expressiveSendStyleId.includes("CKFireworksEffect")) {
+                const container = document.getElementById(`fireworksContainer ${message.guid}`);
+                const fireworks = new FireworksCanvas(container);
+                fireworks.start();
+            }
+
+            const delay = ms => new Promise(res => setTimeout(res, ms));
+            await delay(5000);
+            this.setState({ playMessageAnimation: false });
+        }
     }
 
     onAttachmentUpdate(_: IpcRendererEvent, args: any) {
@@ -413,6 +431,9 @@ class MessageBubble extends React.Component<Props, State> {
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
         const { attachments } = this.state;
+        const animationHeight = document.getElementById("messageView").offsetHeight;
+        const animationWidth = document.getElementById("messageView").offsetWidth;
+
         let links = [];
 
         // Pull out the sender name or number
@@ -432,6 +453,49 @@ class MessageBubble extends React.Component<Props, State> {
             messageClass += " unsent";
         }
 
+        // Check if we have a special imessage send style
+        let expressiveSendStyle: string;
+        if (message.expressiveSendStyleId) {
+            if (message.expressiveSendStyleId.includes("invisibleink")) {
+                expressiveSendStyle = "invisibleink";
+            }
+            if (message.expressiveSendStyleId.includes("impact")) {
+                expressiveSendStyle = "impact";
+            }
+            if (message.expressiveSendStyleId.includes("gentle")) {
+                expressiveSendStyle = "gentle";
+            }
+            if (message.expressiveSendStyleId.includes("loud")) {
+                expressiveSendStyle = "loud";
+            }
+            // if(message.expressiveSendStyleId.includes("CKHeartEffect")) {
+            //     expressiveSendStyle = "CKHeartEffect";
+            // }
+            if (message.expressiveSendStyleId.includes("CKConfettiEffect")) {
+                expressiveSendStyle = "CKConfettiEffect";
+            }
+            // if(message.expressiveSendStyleId.includes("CKHappyBirthdayEffect")) {
+            //     expressiveSendStyle = "CKHappyBirthdayEffect";
+            // }
+            // if(message.expressiveSendStyleId.includes("CKSpotlightEffect")) {
+            //     expressiveSendStyle = "CKSpotlightEffect";
+            // }
+            // if(message.expressiveSendStyleId.includes("CKEchoEffect")) {
+            //     expressiveSendStyle = "CKEchoEffect";
+            // }
+            // if(message.expressiveSendStyleId.includes("CKLasersEffect")) {
+            //     expressiveSendStyle = "CKLasersEffect";
+            // }
+            if (message.expressiveSendStyleId.includes("CKFireworksEffect")) {
+                expressiveSendStyle = "CKFireworksEffect";
+            }
+            // if(message.expressiveSendStyleId.includes("CKEchoEffect")) {
+            //     expressiveSendStyle = "CKEchoEffect";
+            // }
+
+            // Commented out for now becasue they are not implemented in the UI
+        }
+
         // Figure out the "real string" and then figure out if we need to make it big emojis
         const text = sanitizeStr(message.text);
 
@@ -443,6 +507,41 @@ class MessageBubble extends React.Component<Props, State> {
         if (text.includes("http") || text.includes("Https")) {
             links = parseUrls(text);
         }
+
+        const handleReplayAnimation = async e => {
+            if (
+                expressiveSendStyle.includes(
+                    "CKConfettiEffect" ||
+                        "CKEchoEffect" ||
+                        "CKLasersEffect" ||
+                        "CKHappyBirthdayEffect" ||
+                        "CKHeartEffect"
+                )
+            ) {
+                this.setState({ playMessageAnimation: true });
+                const delay = ms => new Promise(res => setTimeout(res, ms));
+                await delay(5000);
+                this.setState({ playMessageAnimation: false });
+                return;
+            }
+
+            if (expressiveSendStyle.includes("CKFireworksEffect")) {
+                const delay = ms => new Promise(res => setTimeout(res, ms));
+                await delay(100);
+                this.setState({ playMessageAnimation: true });
+                const container = document.getElementById(`fireworksContainer ${message.guid}`);
+                const fireworks = new FireworksCanvas(container);
+                fireworks.start();
+                await delay(5000);
+                this.setState({ playMessageAnimation: false });
+                return;
+            }
+            const messageDiv = document.getElementById(this.props.message.guid);
+            messageDiv.classList.remove(expressiveSendStyle);
+            const delay = ms => new Promise(res => setTimeout(res, ms));
+            await delay(50);
+            messageDiv.classList.add(expressiveSendStyle);
+        };
 
         return (
             <>
@@ -619,7 +718,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                 ) : null}
                                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                                     <div
-                                                        className={messageClass}
+                                                        className={`${expressiveSendStyle} ${messageClass}`}
                                                         id={message.guid}
                                                         style={{ marginBottom: useTail ? "3px" : "0" }}
                                                     >
@@ -640,6 +739,50 @@ class MessageBubble extends React.Component<Props, State> {
                                                     </div>
                                                 </ClickNHold>
                                             </div>
+                                            {expressiveSendStyle && !expressiveSendStyle.includes("invisibleink") ? (
+                                                <>
+                                                    {expressiveSendStyle === "CKConfettiEffect" ? (
+                                                        <Confetti height="100px" width="100px" />
+                                                    ) : null}
+                                                    <div
+                                                        className="replayMessageEffect"
+                                                        onClick={e => handleReplayAnimation(e)}
+                                                        style={{
+                                                            marginLeft:
+                                                                useTail && className === "IncomingMessage"
+                                                                    ? "35px"
+                                                                    : "0px"
+                                                        }}
+                                                    >
+                                                        {expressiveSendStyle === "CKConfettiEffect" &&
+                                                        this.state.playMessageAnimation ? (
+                                                            <Confetti height={animationHeight} width={animationWidth} />
+                                                        ) : null}
+                                                        {expressiveSendStyle === "CKFireworksEffect" &&
+                                                        this.state.playMessageAnimation ? (
+                                                            <div
+                                                                id={`fireworksContainer ${message.guid}`}
+                                                                style={{
+                                                                    top: "35px",
+                                                                    left: "290px",
+                                                                    position: "absolute",
+                                                                    height: animationHeight,
+                                                                    width: animationWidth
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        <svg viewBox="0 0 74.999 74.999" height="10px" width="10px">
+                                                            <path
+                                                                d="M33.511,71.013c15.487,0,28.551-10.563,32.375-24.859h9.113L61.055,22L47.111,46.151h8.006
+                                                            c-3.44,8.563-11.826,14.628-21.605,14.628c-12.837,0-23.28-10.443-23.28-23.28c0-12.836,10.443-23.28,23.28-23.28
+                                                            c6.604,0,12.566,2.768,16.809,7.196l5.258-9.108c-5.898-5.176-13.619-8.32-22.065-8.32C15.034,3.987,0,19.019,0,37.5
+                                                            C-0.002,55.981,15.03,71.013,33.511,71.013z"
+                                                            />
+                                                        </svg>
+                                                        <p>Replay</p>
+                                                    </div>
+                                                </>
+                                            ) : null}
                                             {showStatus ? getStatusText(message) : null}
                                         </div>
                                     </>
@@ -756,7 +899,7 @@ class MessageBubble extends React.Component<Props, State> {
                                 ) : null}
                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                     <div
-                                        className={messageClass}
+                                        className={`${expressiveSendStyle} ${messageClass}`}
                                         id={message.guid}
                                         style={{ marginBottom: useTail ? "3px" : "0" }}
                                     >
@@ -777,7 +920,44 @@ class MessageBubble extends React.Component<Props, State> {
                                     </div>
                                 </ClickNHold>
                             </div>
-                            {showStatus ? getStatusText(message) : null}
+                            {expressiveSendStyle && !expressiveSendStyle.includes("invisibleink") ? (
+                                <>
+                                    <div
+                                        className="replayMessageEffect"
+                                        onClick={e => handleReplayAnimation(e)}
+                                        style={{
+                                            marginLeft: useTail && className === "IncomingMessage" ? "35px" : "0px"
+                                        }}
+                                    >
+                                        {expressiveSendStyle === "CKConfettiEffect" &&
+                                        this.state.playMessageAnimation ? (
+                                            <Confetti height={animationHeight} width={animationWidth} />
+                                        ) : null}
+                                        {expressiveSendStyle === "CKFireworksEffect" &&
+                                        this.state.playMessageAnimation ? (
+                                            <div
+                                                id={`fireworksContainer ${message.guid}`}
+                                                style={{
+                                                    top: "35px",
+                                                    left: "290px",
+                                                    position: "absolute",
+                                                    height: animationHeight,
+                                                    width: animationWidth
+                                                }}
+                                            />
+                                        ) : null}
+                                        <svg viewBox="0 0 74.999 74.999" height="10px" width="10px">
+                                            <path
+                                                d="M33.511,71.013c15.487,0,28.551-10.563,32.375-24.859h9.113L61.055,22L47.111,46.151h8.006
+                                            c-3.44,8.563-11.826,14.628-21.605,14.628c-12.837,0-23.28-10.443-23.28-23.28c0-12.836,10.443-23.28,23.28-23.28
+                                            c6.604,0,12.566,2.768,16.809,7.196l5.258-9.108c-5.898-5.176-13.619-8.32-22.065-8.32C15.034,3.987,0,19.019,0,37.5
+                                            C-0.002,55.981,15.03,71.013,33.511,71.013z"
+                                            />
+                                        </svg>
+                                        <p>Replay</p>
+                                    </div>
+                                </>
+                            ) : null}
                         </div>
                     </>
                 )}
