@@ -326,6 +326,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                         olderMessage={olderMessage}
                                         newerMessage={newerMessage}
                                         showStatus={message.isFromMe && myNewMessages.length === 0}
+                                        messages={messages}
                                     />
                                 </>
                             ) : (

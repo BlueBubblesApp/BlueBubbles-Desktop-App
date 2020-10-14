@@ -68,6 +68,7 @@ type Props = {
     message: Message;
     newerMessage: Message;
     showStatus: boolean;
+    messages: Message[];
 };
 
 type State = {
@@ -172,7 +173,7 @@ class MessageBubble extends React.Component<Props, State> {
             showContextMenu: false,
             currentContextMenuElement: null,
             linkTitle: null,
-            playMessageAnimation: true
+            playMessageAnimation: false
         };
     }
 
@@ -321,17 +322,182 @@ class MessageBubble extends React.Component<Props, State> {
 
         this.setState({ attachments: attachmentsCopy });
 
+        // If we have a message send style
         if (message.expressiveSendStyleId) {
-            if (this.props.message.expressiveSendStyleId.includes("CKFireworksEffect")) {
-                const container = document.getElementById(`fireworksContainer ${message.guid}`);
-                const fireworks = new FireworksCanvas(container);
-                fireworks.start();
-            }
+            const messageDiv = document.getElementById(this.props.message.guid);
+            if (this.isRecentMessage()) {
+                this.setState({ playMessageAnimation: true });
+                if (this.props.message.expressiveSendStyleId.includes("CKFireworksEffect")) {
+                    const container = document.getElementById(`fireworksContainer-${message.guid}`);
+                    const fireworks = new FireworksCanvas(container);
+                    fireworks.start();
+                }
+                if (this.props.message.expressiveSendStyleId.includes("CKHappyBirthdayEffect")) {
+                    this.createBalloons(100);
+                }
+                if (this.props.message.expressiveSendStyleId.includes("CKSpotlightEffect")) {
+                    this.handleSpotlight();
+                }
+                if (this.props.message.expressiveSendStyleId.includes("CKHeartEffect")) {
+                    this.handleHearts();
+                }
+                if (this.props.message.expressiveSendStyleId.includes("CKEchoEffect")) {
+                    this.handleEcho();
+                }
 
-            const delay = ms => new Promise(res => setTimeout(res, ms));
-            await delay(5000);
-            this.setState({ playMessageAnimation: false });
+                // Play the animation for 3 seconds
+                const delay = ms => new Promise(res => setTimeout(res, ms));
+                await delay(3000);
+                this.setState({ playMessageAnimation: false });
+            }
         }
+    }
+
+    async createBalloons(numOfBallons) {
+        const random = num => {
+            return Math.floor(Math.random() * num);
+        };
+
+        const getRandomStyles = () => {
+            const r = random(255);
+            const g = random(255);
+            const b = random(255);
+            const mt = random(200);
+            const ml = random(50);
+            const dur = random(2) + 3;
+
+            return `
+            background-color: rgba(${r},${g},${b},0.95);
+            color: rgba(${r},${g},${b},0.95); 
+            box-shadow: inset -7px -3px 10px rgba(${r - 10},${g - 10},${b - 10},0.95);
+            margin: ${mt}px 0 0 ${ml}px;
+            animation: float ${dur}s ease-in infinite
+            `;
+        };
+
+        const createBalloons = num => {
+            const balloonContainer = document.getElementById(`balloonsContainer-${this.props.message.guid}`);
+            for (let i = num; i > 0; i -= 1) {
+                const balloon = document.createElement("div");
+                balloon.className = "balloon";
+                balloon.style.cssText = getRandomStyles();
+                balloonContainer.append(balloon);
+            }
+        };
+
+        createBalloons(numOfBallons);
+    }
+
+    async handleSpotlight() {
+        const bg = document.getElementById(`spotlightContainer-${this.props.message.guid}`);
+        const messageDiv = document.getElementById(this.props.message.guid);
+
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        await delay(50);
+        const messageCords = messageDiv.getBoundingClientRect();
+
+        console.log(messageCords);
+        bg.style.background = "black";
+        await delay(200);
+        bg.style.background = `radial-gradient(circle at ${messageCords.left -
+            290 +
+            messageCords.width / 2}px ${messageCords.top - 35}px ,
+            rgba(0,0,0,0) 0px,
+            rgba(0,0,0,.5) ${messageCords.width / 1.3}px,
+            rgba(0,0,0,.95) ${messageCords.width + 30}px
+            )`;
+        await delay(100);
+        bg.style.background = "black";
+        await delay(100);
+        bg.style.background = `radial-gradient(circle at ${messageCords.left -
+            290 +
+            messageCords.width / 2}px ${messageCords.top - 35}px ,
+            rgba(0,0,0,0) 0px,
+            rgba(0,0,0,.5) ${messageCords.width / 1.3}px,
+            rgba(0,0,0,.95) ${messageCords.width + 30}px
+            )`;
+    }
+
+    async handleHearts() {
+        const container = document.getElementById(`heartContainer-${this.props.message.guid}`);
+
+        const love = setInterval(() => {
+            if (!this.state.playMessageAnimation) {
+                clearInterval(love);
+            }
+            const rNum = Math.floor(Math.random() * 40) + 1;
+            const rSize = Math.floor(Math.random() * 65) + 30;
+            const rLeft = Math.floor(Math.random() * 100) + 1;
+            const rBg = Math.floor(Math.random() * 25) + 100;
+            const rTime = Math.floor(Math.random()) + 2;
+
+            const heart = document.createElement("div");
+            heart.className = "heart";
+            heart.style.cssText = `width: ${rSize}px; height: ${rSize}px; left: ${rLeft}%; background: rgba(255, ${rBg -
+                25}, ${rBg}, 1); animation: love ${rTime}s ease`;
+            container.append(heart);
+
+            const heart2 = document.createElement("div");
+            heart.className = "heart";
+            heart.style.cssText = `width: ${rSize - 10}px; height: ${rSize - 10}px; left: ${rLeft +
+                rNum}%; background: rgba(255, ${rBg - 25}, ${rBg}, 1); animation: love ${rTime + 2}s ease`;
+            container.append(heart2);
+
+            const hearts = document.getElementsByClassName("heart");
+            for (let i = 0; i < hearts.length; i += 1) {
+                const x = hearts.item(i) as HTMLDivElement;
+                x.style.top = x.style.top.replace(/[^-\d.]/g, "");
+                x.style.width = x.style.width.replace(/[^-\d.]/g, "");
+
+                if (((x.style.top as unknown) as number) <= -100 || ((x.style.width as unknown) as number) >= 150) {
+                    x.parentElement.removeChild(x);
+                }
+            }
+        }, 75);
+    }
+
+    async handleEcho() {
+        const container = document.getElementById(`echoContainer-${this.props.message.guid}`);
+
+        const allEchos = setInterval(() => {
+            if (!this.state.playMessageAnimation) {
+                clearInterval(allEchos);
+            }
+            const rNum = Math.floor(Math.random() * 40) + 1;
+            const rSize = Math.floor(Math.random() * 65) + 30;
+            const rLeft = Math.floor(Math.random() * 100) + 1;
+            const rBg = Math.floor(Math.random() * 25) + 100;
+            const rTime = Math.floor(Math.random()) + 2;
+            const rFontSize = Math.floor(Math.random() * 12) + 8;
+            const rScale = Math.floor(Math.random() * 1.5) + 0.7;
+
+            const mesCopy = document.getElementById(this.props.message.guid).cloneNode(true) as HTMLDivElement;
+            const mesCopy2 = document.getElementById(this.props.message.guid).cloneNode(true) as HTMLDivElement;
+
+            console.log(mesCopy);
+            mesCopy.classList.add("echo");
+            mesCopy.style.cssText = `font-size: ${rFontSize}; left: ${rLeft}%; animation: echo ${rTime}s ease forwards; transform: scale(${rScale})`;
+
+            container.append(mesCopy);
+
+            const echos = document.getElementsByClassName("echo");
+            for (let i = 0; i < echos.length; i += 1) {
+                const x = echos.item(i) as HTMLDivElement;
+                x.style.top = x.style.top.replace(/[^-\d.]/g, "");
+                // x.style.width = x.style.width.replace(/[^-\d.]/g, '');
+
+                if (((x.style.top as unknown) as number) <= -100 || ((x.style.width as unknown) as number) >= 150) {
+                    x.parentElement.removeChild(x);
+                }
+            }
+        }, 50);
+    }
+
+    isRecentMessage() {
+        if (this.props.messages.indexOf(this.props.message) <= this.props.messages.length - 5) {
+            return false;
+        }
+        return true;
     }
 
     onAttachmentUpdate(_: IpcRendererEvent, args: any) {
@@ -454,7 +620,7 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         // Check if we have a special imessage send style
-        let expressiveSendStyle: string;
+        let expressiveSendStyle = "";
         if (message.expressiveSendStyleId) {
             if (message.expressiveSendStyleId.includes("invisibleink")) {
                 expressiveSendStyle = "invisibleink";
@@ -468,29 +634,29 @@ class MessageBubble extends React.Component<Props, State> {
             if (message.expressiveSendStyleId.includes("loud")) {
                 expressiveSendStyle = "loud";
             }
-            // if(message.expressiveSendStyleId.includes("CKHeartEffect")) {
-            //     expressiveSendStyle = "CKHeartEffect";
-            // }
+            if (message.expressiveSendStyleId.includes("CKHeartEffect")) {
+                expressiveSendStyle = "CKHeartEffect";
+            }
             if (message.expressiveSendStyleId.includes("CKConfettiEffect")) {
                 expressiveSendStyle = "CKConfettiEffect";
             }
-            // if(message.expressiveSendStyleId.includes("CKHappyBirthdayEffect")) {
-            //     expressiveSendStyle = "CKHappyBirthdayEffect";
-            // }
-            // if(message.expressiveSendStyleId.includes("CKSpotlightEffect")) {
-            //     expressiveSendStyle = "CKSpotlightEffect";
-            // }
-            // if(message.expressiveSendStyleId.includes("CKEchoEffect")) {
-            //     expressiveSendStyle = "CKEchoEffect";
-            // }
-            // if(message.expressiveSendStyleId.includes("CKLasersEffect")) {
-            //     expressiveSendStyle = "CKLasersEffect";
-            // }
+            if (message.expressiveSendStyleId.includes("CKHappyBirthdayEffect")) {
+                expressiveSendStyle = "CKHappyBirthdayEffect";
+            }
+            if (message.expressiveSendStyleId.includes("CKSpotlightEffect")) {
+                expressiveSendStyle = "CKSpotlightEffect";
+            }
+            if (message.expressiveSendStyleId.includes("CKEchoEffect")) {
+                expressiveSendStyle = "CKEchoEffect";
+            }
             if (message.expressiveSendStyleId.includes("CKFireworksEffect")) {
                 expressiveSendStyle = "CKFireworksEffect";
             }
-            // if(message.expressiveSendStyleId.includes("CKEchoEffect")) {
-            //     expressiveSendStyle = "CKEchoEffect";
+            // if(message.expressiveSendStyleId.includes("CKLasersEffect")) {
+            //     expressiveSendStyle = "CKLasersEffect";
+            // }
+            // if(message.expressiveSendStyleId.includes("CKCelebrationEffect")) {
+            //     expressiveSendStyle = "CKLasersEffect";
             // }
 
             // Commented out for now becasue they are not implemented in the UI
@@ -509,33 +675,66 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         const handleReplayAnimation = async e => {
-            if (
-                expressiveSendStyle.includes(
-                    "CKConfettiEffect" ||
-                        "CKEchoEffect" ||
-                        "CKLasersEffect" ||
-                        "CKHappyBirthdayEffect" ||
-                        "CKHeartEffect"
-                )
-            ) {
+            if (expressiveSendStyle.includes("CKConfettiEffect" || "CKEchoEffect" || "CKLasersEffect")) {
                 this.setState({ playMessageAnimation: true });
                 const delay = ms => new Promise(res => setTimeout(res, ms));
-                await delay(5000);
+                await delay(3000);
+                this.setState({ playMessageAnimation: false });
+                return;
+            }
+
+            if (expressiveSendStyle.includes("CKHeartEffect")) {
+                const delay = ms => new Promise(res => setTimeout(res, ms));
+                this.setState({ playMessageAnimation: true });
+                await delay(50);
+                this.handleHearts();
+                await delay(3000);
+                this.setState({ playMessageAnimation: false });
+                return;
+            }
+
+            if (expressiveSendStyle.includes("CKEchoEffect")) {
+                const delay = ms => new Promise(res => setTimeout(res, ms));
+                this.setState({ playMessageAnimation: true });
+                await delay(50);
+                this.handleEcho();
+                await delay(3000);
                 this.setState({ playMessageAnimation: false });
                 return;
             }
 
             if (expressiveSendStyle.includes("CKFireworksEffect")) {
                 const delay = ms => new Promise(res => setTimeout(res, ms));
-                await delay(100);
                 this.setState({ playMessageAnimation: true });
-                const container = document.getElementById(`fireworksContainer ${message.guid}`);
+                await delay(50);
+                const container = document.getElementById(`fireworksContainer-${message.guid}`);
                 const fireworks = new FireworksCanvas(container);
                 fireworks.start();
-                await delay(5000);
+                await delay(3000);
                 this.setState({ playMessageAnimation: false });
                 return;
             }
+
+            if (expressiveSendStyle.includes("CKHappyBirthdayEffect")) {
+                const delay = ms => new Promise(res => setTimeout(res, ms));
+                this.setState({ playMessageAnimation: true });
+                await delay(50);
+                this.createBalloons(100);
+                await delay(3000);
+                this.setState({ playMessageAnimation: false });
+                return;
+            }
+
+            if (expressiveSendStyle.includes("CKSpotlightEffect")) {
+                const delay = ms => new Promise(res => setTimeout(res, ms));
+                this.setState({ playMessageAnimation: true });
+                await delay(50);
+                this.handleSpotlight();
+                await delay(3000);
+                this.setState({ playMessageAnimation: false });
+                return;
+            }
+
             const messageDiv = document.getElementById(this.props.message.guid);
             messageDiv.classList.remove(expressiveSendStyle);
             const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -761,13 +960,71 @@ class MessageBubble extends React.Component<Props, State> {
                                                         {expressiveSendStyle === "CKFireworksEffect" &&
                                                         this.state.playMessageAnimation ? (
                                                             <div
-                                                                id={`fireworksContainer ${message.guid}`}
+                                                                id={`fireworksContainer-${message.guid}`}
                                                                 style={{
                                                                     top: "35px",
                                                                     left: "290px",
                                                                     position: "absolute",
                                                                     height: animationHeight,
                                                                     width: animationWidth
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        {expressiveSendStyle === "CKHappyBirthdayEffect" &&
+                                                        this.state.playMessageAnimation ? (
+                                                            <div
+                                                                id={`balloonsContainer-${message.guid}`}
+                                                                className="balloon-container"
+                                                                style={{
+                                                                    top: "35px",
+                                                                    left: "290px",
+                                                                    position: "absolute",
+                                                                    height: animationHeight,
+                                                                    width: animationWidth
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        {expressiveSendStyle === "CKSpotlightEffect" &&
+                                                        this.state.playMessageAnimation ? (
+                                                            <div
+                                                                id={`spotlightContainer-${message.guid}`}
+                                                                style={{
+                                                                    top: "35px",
+                                                                    left: "290px",
+                                                                    position: "absolute",
+                                                                    zIndex: 999,
+                                                                    height: animationHeight,
+                                                                    width: animationWidth
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        {expressiveSendStyle === "CKHeartEffect" &&
+                                                        this.state.playMessageAnimation ? (
+                                                            <div
+                                                                id={`heartContainer-${message.guid}`}
+                                                                style={{
+                                                                    top: "35px",
+                                                                    left: "290px",
+                                                                    position: "absolute",
+                                                                    zIndex: 999,
+                                                                    height: animationHeight,
+                                                                    width: animationWidth,
+                                                                    overflow: "hidden"
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        {expressiveSendStyle === "CKEchoEffect" &&
+                                                        this.state.playMessageAnimation ? (
+                                                            <div
+                                                                id={`echoContainer-${message.guid}`}
+                                                                style={{
+                                                                    top: "35px",
+                                                                    left: "290px",
+                                                                    position: "absolute",
+                                                                    zIndex: 999,
+                                                                    height: animationHeight,
+                                                                    width: animationWidth,
+                                                                    overflow: "hidden"
                                                                 }}
                                                             />
                                                         ) : null}
@@ -936,13 +1193,69 @@ class MessageBubble extends React.Component<Props, State> {
                                         {expressiveSendStyle === "CKFireworksEffect" &&
                                         this.state.playMessageAnimation ? (
                                             <div
-                                                id={`fireworksContainer ${message.guid}`}
+                                                id={`fireworksContainer-${message.guid}`}
                                                 style={{
                                                     top: "35px",
                                                     left: "290px",
                                                     position: "absolute",
                                                     height: animationHeight,
                                                     width: animationWidth
+                                                }}
+                                            />
+                                        ) : null}
+                                        {expressiveSendStyle === "CKHappyBirthdayEffect" &&
+                                        this.state.playMessageAnimation ? (
+                                            <div
+                                                id={`balloonsContainer-${message.guid}`}
+                                                className="balloon-container"
+                                                style={{
+                                                    top: "35px",
+                                                    left: "290px",
+                                                    position: "absolute",
+                                                    height: animationHeight,
+                                                    width: animationWidth
+                                                }}
+                                            />
+                                        ) : null}
+                                        {expressiveSendStyle === "CKSpotlightEffect" &&
+                                        this.state.playMessageAnimation ? (
+                                            <div
+                                                id={`spotlightContainer-${message.guid}`}
+                                                style={{
+                                                    top: "35px",
+                                                    left: "290px",
+                                                    position: "absolute",
+                                                    zIndex: 999,
+                                                    height: animationHeight,
+                                                    width: animationWidth
+                                                }}
+                                            />
+                                        ) : null}
+                                        {expressiveSendStyle === "CKHeartEffect" && this.state.playMessageAnimation ? (
+                                            <div
+                                                id={`heartContainer-${message.guid}`}
+                                                style={{
+                                                    top: "35px",
+                                                    left: "290px",
+                                                    position: "absolute",
+                                                    zIndex: 999,
+                                                    height: animationHeight,
+                                                    width: animationWidth,
+                                                    overflow: "hidden"
+                                                }}
+                                            />
+                                        ) : null}
+                                        {expressiveSendStyle === "CKEchoEffect" && this.state.playMessageAnimation ? (
+                                            <div
+                                                id={`echoContainer-${message.guid}`}
+                                                style={{
+                                                    top: "35px",
+                                                    left: "290px",
+                                                    position: "absolute",
+                                                    zIndex: 999,
+                                                    height: animationHeight,
+                                                    width: animationWidth,
+                                                    overflow: "hidden"
                                                 }}
                                             />
                                         ) : null}

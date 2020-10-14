@@ -48,6 +48,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    width: auto;
 }
 
 .IncomingMessage .message > p {
@@ -84,6 +85,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    width: fit-content;
 }
 
 .OutgoingMessage .message.unsent {
@@ -649,11 +651,6 @@
         font-size: 55px;
         transform: rotate(7deg);
     }
-    35% {
-    }
-    50% {
-    }
-
     70% {
         font-size: 8px;
     }
@@ -720,6 +717,14 @@
     }
 }
 
+.replayMessageEffect > p {
+    animation: fade 0.15s forwards;
+}
+
+.replayMessageEffect > svg {
+    animation: fade 0.15s forwards;
+}
+
 .replayMessageEffect > canvas {
     top: 35px !important;
     left: 290px !important;
@@ -729,4 +734,104 @@
     top: 35px !important;
     left: 290px !important;
     position: absolute;
+}
+
+.balloon-container {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
+}
+
+.balloon {
+    height: 125px;
+    width: 105px;
+    border-radius: 75% 75% 70% 70%;
+    position: relative;
+    z-index: 999;
+}
+
+.balloon:before {
+    content: "";
+    height: 75px;
+    width: 1px;
+    padding: 1px;
+    background-color: #fdfd96;
+    display: block;
+    position: absolute;
+    top: 125px;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
+.balloon:after {
+    content: "▲";
+    text-align: center;
+    display: block;
+    position: absolute;
+    color: inherit;
+    top: 120px;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
+@keyframes float {
+    from {
+        transform: translateY(100vh);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-300vh);
+        opacity: 0;
+    }
+}
+
+.heart {
+    position: absolute;
+    top: -50%;
+    transform: rotate(-45deg);
+}
+
+.heart:before {
+    position: absolute;
+    top: -50%;
+    left: 0;
+    display: block;
+    content: "";
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    border-radius: 100%;
+}
+
+.heart:after {
+    position: absolute;
+    top: 0;
+    right: -50%;
+    display: block;
+    content: "";
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    border-radius: 100%;
+}
+
+@keyframes love {
+    0% {
+        top: 110%;
+    }
+}
+
+.echo {
+    position: absolute !important;
+    top: -50%;
+    width: fit-content;
+}
+
+@keyframes echo {
+    0% {
+        top: 110%;
+    }
 }
