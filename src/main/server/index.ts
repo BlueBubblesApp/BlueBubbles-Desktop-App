@@ -1,6 +1,7 @@
+/* eslint-disable no-global-assign */
 /* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
-import { ipcMain, BrowserWindow, shell, app, dialog, remote, NativeImage, nativeImage } from "electron";
+import { ipcMain, BrowserWindow, shell, app, dialog, remote, NativeImage, nativeImage, Tray, Menu } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as fs from "fs";

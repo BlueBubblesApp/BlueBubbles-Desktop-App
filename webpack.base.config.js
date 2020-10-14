@@ -13,7 +13,7 @@ module.exports = {
         __filename: false
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js', '.json'],
+        extensions: ['.tsx', '.ts', '.js', '.json', '.ico', '.png'],
         alias: {
             "@server": path.resolve(__dirname, "src/main/server"),
             "@renderer": path.resolve(__dirname, "src/renderer")

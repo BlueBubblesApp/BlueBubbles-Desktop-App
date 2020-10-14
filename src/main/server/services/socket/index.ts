@@ -145,6 +145,8 @@ export class SocketService {
                 customPath
             };
 
+            console.log(path.join(FileSystem.resources, "logo64.png"));
+
             // Don't show a notificaiton if they have been disabled
             if (Server().configRepo.get("globalNotificationsDisabled")) return;
 

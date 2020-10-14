@@ -1,16 +1,18 @@
+/* eslint-disable no-use-before-define */
 import "reflect-metadata";
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, Tray } from "electron";
 import * as path from "path";
 import * as url from "url";
 
 import { Server } from "@server/index";
 import { FileSystem } from "@server/fileSystem";
-import * as fs from "fs";
+import favicon from "@renderer/assets/favicon.ico";
 
 // To allow CORS
 app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors");
 
 let win: BrowserWindow | null;
+let tray;
 const BlueBubbles = Server(win);
 
 const gotTheLock = app.requestSingleInstanceLock();
@@ -25,8 +27,8 @@ if (!gotTheLock) {
         }
     });
 
-    app.whenReady().then(() => {
-        BlueBubbles.start();
+    app.whenReady().then(async () => {
+        await BlueBubbles.start();
     });
 }
 
@@ -97,13 +99,63 @@ ipcMain.handle("unmaximize-event", () => {
 });
 
 ipcMain.on("force-focus", () => {
-    if (win && win.webContents) win.focus();
+    if (win && win.webContents) win.show();
+    win.focus();
 });
 
 ipcMain.handle("close-event", async () => {
-    await FileSystem.deleteTempFiles();
-    app.quit();
-    app.exit(0);
+    if (BlueBubbles.configRepo.get("closeToTray")) {
+        tray = new Tray(path.join(FileSystem.resources, favicon));
+
+        const contextMenu = Menu.buildFromTemplate([
+            {
+                label: "BlueBubbles",
+                enabled: false
+            },
+            {
+                type: "separator"
+            },
+            {
+                label: "Open",
+                type: "normal",
+                click: async () => {
+                    if (win) {
+                        win.show();
+                        tray.destroy();
+                    } else {
+                        app.emit("active");
+                    }
+                }
+            },
+            {
+                label: "Close",
+                type: "normal",
+                click: async () => {
+                    await FileSystem.deleteTempFiles();
+                    win = null;
+                    app.quit();
+                    app.exit(0);
+                }
+            }
+        ]);
+
+        tray.setToolTip("BlueBubbles");
+        tray.setContextMenu(contextMenu);
+        tray.on("click", async () => {
+            if (win) {
+                win.show();
+                tray.destroy();
+            } else {
+                app.emit("active");
+            }
+        });
+
+        win.hide();
+    } else {
+        await FileSystem.deleteTempFiles();
+        app.quit();
+        app.exit(0);
+    }
 });
 
 app.on("browser-window-focus", () => {
@@ -116,7 +168,7 @@ app.on("browser-window-blur", () => {
 
 app.on("ready", createWindow);
 
-app.on("window-all-closed", () => {
+app.on("window-all-closed", async () => {
     if (process.platform !== "darwin") {
         app.quit();
     }
@@ -126,4 +178,8 @@ app.on("activate", () => {
     if (win === null) {
         createWindow();
     }
+});
+
+ipcMain.handle("destroy-tray", () => {
+    tray.destroy();
 });

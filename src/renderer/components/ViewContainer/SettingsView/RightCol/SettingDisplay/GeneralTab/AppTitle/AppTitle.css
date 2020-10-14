@@ -1,0 +1,27 @@
+.AppTitle {
+    display: flex;
+    flex-direction: column;
+    margin: 15px 35px 0 35px;
+}
+
+.AppTitle > h2 {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 21px;
+    /* border-bottom: 1px solid gray; */
+    padding-bottom: 1px;
+    margin: 0;
+}
+
+.AppTitle > div {
+    margin-left: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.AppTitle > div > p {
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    color: var(--sub-title-color);
+}

@@ -5,6 +5,7 @@ import "./GeneralTab.css";
 import ServerInputTitle from "./ServerInputTitle/ServerInputTitle";
 import PasswordInputTitle from "./PasswordInputTitle/PasswordInputTitle";
 import NotificationsTitle from "./NotificationsTitle/NotificationsTitle";
+import AppTitle from "./AppTitle/AppTitle";
 
 interface State {}
 
@@ -18,6 +19,7 @@ class GeneralTab extends React.Component {
                 <ServerInputTitle title="Remote Server URL" />
                 <PasswordInputTitle title="Remote Server Password" />
                 <NotificationsTitle title="Notifications" />
+                <AppTitle title="App" />
             </div>
         );
     }

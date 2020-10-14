@@ -87,23 +87,31 @@ export class FileSystem {
     }
 
     static async deleteTempFiles() {
-        let dirPath = `${FileSystem.attachmentsDir}/clipboardTemp`;
-        fs.readdir(dirPath, (err, files) => {
+        let clipTempPath;
+        let audioTempPath;
+        if (process.platform === "darwin") {
+            clipTempPath = `${FileSystem.attachmentsDir}/clipboardTemp`;
+            audioTempPath = `${FileSystem.attachmentsDir}/audioTemp`;
+        } else {
+            clipTempPath = `${FileSystem.attachmentsDir}\\clipboardTemp`;
+            audioTempPath = `${FileSystem.attachmentsDir}\\audioTemp`;
+        }
+
+        fs.readdir(clipTempPath, (err, files) => {
             if (err) throw err;
 
             for (const file of files) {
-                fs.unlink(path.join(dirPath, file), err => {
+                fs.unlink(path.join(clipTempPath, file), err => {
                     if (err) throw err;
                 });
             }
         });
 
-        dirPath = `${FileSystem.attachmentsDir}/audioTemp`;
-        fs.readdir(dirPath, (err, files) => {
+        fs.readdir(audioTempPath, (err, files) => {
             if (err) throw err;
 
             for (const file of files) {
-                fs.unlink(path.join(dirPath, file), err => {
+                fs.unlink(path.join(audioTempPath, file), err => {
                     if (err) throw err;
                 });
             }
