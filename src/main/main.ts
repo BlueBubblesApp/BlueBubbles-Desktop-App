@@ -181,5 +181,7 @@ app.on("activate", () => {
 });
 
 ipcMain.handle("destroy-tray", () => {
-    tray.destroy();
+    if (tray) {
+        tray.destroy();
+    }
 });

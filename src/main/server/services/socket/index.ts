@@ -193,7 +193,7 @@ export class SocketService {
             Notifier.on("click", async (notifierObject, options, clickEvent) => {
                 // Focus the window, and set the current chat to the clicked chat
                 ipcMain.emit("force-focus");
-                Server().emitToUI("notification-clicked", savedChat);
+                Server().emitToUI("notification-clicked", chat);
             });
         };
 

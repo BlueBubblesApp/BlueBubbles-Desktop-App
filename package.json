@@ -166,6 +166,7 @@
       "@types/mime": "^2.0.3",
       "@types/node-notifier": "^6.0.1",
       "@types/react-color": "^3.0.4",
+      "auto-launch": "^5.0.5",
       "byte-base64": "^1.0.2",
       "cors": "^2.8.5",
       "emoji-regex": "^9.0.0",

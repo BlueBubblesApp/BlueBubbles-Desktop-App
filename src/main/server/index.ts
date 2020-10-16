@@ -1,3 +1,4 @@
+/* eslint-disable import/first */
 /* eslint-disable no-global-assign */
 /* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
@@ -25,6 +26,8 @@ import { AttachmentChunkParams, GetChatMessagesParams } from "./services/socket/
 import { Attachment, Chat, Handle, Message } from "./databases/chat/entity";
 import { Theme } from "./databases/config/entity";
 
+const AutoLaunch = require("auto-launch");
+
 class BackendServer {
     window: BrowserWindow;
 
@@ -45,6 +48,8 @@ class BackendServer {
     servicesStarted: boolean;
 
     syncStatus: SyncStatus;
+
+    bbAutoLauncher: any;
 
     constructor(window: BrowserWindow) {
         this.window = window;
@@ -87,6 +92,32 @@ class BackendServer {
 
         console.log("Starting Configuration IPC Listeners...");
         this.startActionListeners();
+
+        // Handle start with OS
+        this.bbAutoLauncher = new AutoLaunch({
+            name: "BlueBubbles"
+        });
+        if (this.configRepo.get("startWithOS")) {
+            this.bbAutoLauncher
+                .isEnabled()
+                .then((isEnabled: boolean) => {
+                    if (isEnabled) return;
+                    this.bbAutoLauncher.enable();
+                })
+                .catch(err => {
+                    throw err;
+                });
+        } else {
+            this.bbAutoLauncher
+                .isEnabled()
+                .then((isEnabled: boolean) => {
+                    if (!isEnabled) return;
+                    this.bbAutoLauncher.disable();
+                })
+                .catch(err => {
+                    throw err;
+                });
+        }
     }
 
     /**
@@ -1115,6 +1146,30 @@ class BackendServer {
 
         ipcMain.handle("show-file-in-folder", async (_, aPath) => {
             shell.showItemInFolder(aPath.replace(/\//g, "\\"));
+        });
+
+        ipcMain.handle("set-start-with-os", async (_, startWithOS: boolean) => {
+            if (startWithOS) {
+                this.bbAutoLauncher
+                    .isEnabled()
+                    .then((isEnabled: boolean) => {
+                        if (isEnabled) return;
+                        this.bbAutoLauncher.enable();
+                    })
+                    .catch(err => {
+                        throw err;
+                    });
+            } else {
+                this.bbAutoLauncher
+                    .isEnabled()
+                    .then((isEnabled: boolean) => {
+                        if (!isEnabled) return;
+                        this.bbAutoLauncher.disable();
+                    })
+                    .catch(err => {
+                        throw err;
+                    });
+            }
         });
     }
 

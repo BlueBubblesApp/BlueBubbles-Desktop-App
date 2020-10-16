@@ -12,6 +12,7 @@ type Props = {
 
 type State = {
     closeToTray: boolean;
+    startWithOS: boolean;
 };
 
 class AppTitle extends React.Component<Props, State> {
@@ -19,14 +20,16 @@ class AppTitle extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            closeToTray: null
+            closeToTray: null,
+            startWithOS: null
         };
     }
 
     async componentDidMount() {
         const config = await ipcRenderer.invoke("get-config");
         this.setState({
-            closeToTray: config.closeToTray
+            closeToTray: config.closeToTray,
+            startWithOS: config.startWithOS
         });
 
         console.log(config);
@@ -34,23 +37,49 @@ class AppTitle extends React.Component<Props, State> {
         const closeToTrayCheckbox: HTMLInputElement = document.getElementById(
             "closeToTrayCheckbox"
         ) as HTMLInputElement;
+        const startWithOSCheckbox: HTMLInputElement = document.getElementById(
+            "startWithOSCheckbox"
+        ) as HTMLInputElement;
 
         if (this.state.closeToTray) {
             closeToTrayCheckbox.checked = true;
         } else {
             closeToTrayCheckbox.checked = false;
         }
+
+        if (this.state.startWithOS) {
+            startWithOSCheckbox.checked = true;
+        } else {
+            startWithOSCheckbox.checked = false;
+        }
     }
 
     async handleChangeCloseToTray() {
         if (this.state.closeToTray) {
             await ipcRenderer.invoke("destroy-tray");
-            console.log("destoryed tray");
         }
 
         const newConfig = { closeToTray: !this.state.closeToTray };
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ closeToTray: !this.state.closeToTray });
+
+        const closeToTrayCheckbox: HTMLInputElement = document.getElementById(
+            "closeToTrayCheckbox"
+        ) as HTMLInputElement;
+        closeToTrayCheckbox.checked = this.state.closeToTray;
+    }
+
+    async handleChangeStartWithOS() {
+        const newConfig = { startWithOS: !this.state.startWithOS };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ startWithOS: !this.state.startWithOS });
+        await ipcRenderer.invoke("set-start-with-os", this.state.startWithOS);
+
+        const startWithOSCheckbox: HTMLInputElement = document.getElementById(
+            "startWithOSCheckbox"
+        ) as HTMLInputElement;
+        console.log(this.state.startWithOS);
+        startWithOSCheckbox.checked = this.state.startWithOS;
     }
 
     render() {
@@ -64,6 +93,17 @@ class AppTitle extends React.Component<Props, State> {
                             id="closeToTrayCheckbox"
                             type="checkbox"
                             onClick={() => this.handleChangeCloseToTray()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Start With OS</p>
+                    <label className="form-switch">
+                        <input
+                            id="startWithOSCheckbox"
+                            type="checkbox"
+                            onClick={() => this.handleChangeStartWithOS()}
                         />
                         <i />
                     </label>
