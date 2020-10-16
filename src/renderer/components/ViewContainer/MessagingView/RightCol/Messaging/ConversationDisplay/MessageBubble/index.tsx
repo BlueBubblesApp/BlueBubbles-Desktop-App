@@ -13,7 +13,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { Map, Marker, TileLayer } from "react-leaflet";
 import L from "leaflet";
-import EmojiRegex from "emoji-regex";
 import ClickNHold from "react-click-n-hold";
 import { getLinkPreview } from "link-preview-js";
 import Confetti from "react-confetti";
@@ -46,6 +45,8 @@ import NewReaction from "./NewReaction/NewReaction";
 import InChatReaction from "./InChatReaction/InChatReaction";
 import InChatAudio from "./InChatAudio/InChatAudio";
 import * as FireworksCanvas from "fireworks-canvas";
+
+const EmojiRegex = require("emoji-regex");
 
 // If we don't do this, the marker won't show
 // eslint-disable-next-line no-underscore-dangle
