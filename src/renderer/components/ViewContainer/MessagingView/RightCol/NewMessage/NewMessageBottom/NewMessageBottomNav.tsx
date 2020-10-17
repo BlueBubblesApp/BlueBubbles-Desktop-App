@@ -57,7 +57,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
 
     async componentDidMount() {
         const input = document.getElementById("messageFieldInput-NewMessage");
-        input.addEventListener("keyup", event => {
+        input.addEventListener("keydown", event => {
             // Number 13 is the "Enter" key on the keyboard
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -98,6 +98,22 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                 document.getElementsByClassName("RightBottomNav")[0].classList.add("RightBottomNavBlurred");
             } catch {
                 /* Nothing */
+            }
+        });
+
+        ipcRenderer.on("chat-drop-event", (_, args) => {
+            console.log(args);
+            console.log("here");
+            if (args.attachment) {
+                const { attachmentPaths } = this.state;
+                attachmentPaths.push(args.attachment);
+                this.setState({ attachmentPaths });
+                return;
+            }
+            if (args.text) {
+                let { enteredMessage } = this.state;
+                enteredMessage += args.text;
+                this.setState({ enteredMessage });
             }
         });
     }
@@ -477,6 +493,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                                               ) : null}
                                               {filePath.split(".").pop() === "mp4" ||
                                               filePath.split(".").pop() === "m4a" ||
+                                              filePath.split(".").pop() === "mpg" ||
                                               filePath.split(".").pop() === "avi" ||
                                               filePath.split(".").pop() === "mov" ? (
                                                   <div

@@ -61,7 +61,7 @@ class RightBottomNav extends React.Component<Props, State> {
 
     async componentDidMount() {
         const input = document.getElementById("messageFieldInput");
-        input.addEventListener("keyup", event => {
+        input.addEventListener("keydown", event => {
             // Number 13 is the "Enter" key on the keyboard
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -111,8 +111,24 @@ class RightBottomNav extends React.Component<Props, State> {
 
         const audio = document.getElementById("myAudioDiv") as HTMLAudioElement;
 
-        audio.addEventListener("loadedmetadata", () => {
-            this.setState({ audioLength: (audio.duration as unknown) as string });
+        if (audio) {
+            audio.addEventListener("loadedmetadata", () => {
+                this.setState({ audioLength: (audio.duration as unknown) as string });
+            });
+        }
+
+        ipcRenderer.on("chat-drop-event", (_, args) => {
+            if (args.attachment) {
+                const { attachmentPaths } = this.state;
+                attachmentPaths.push(args.attachment);
+                this.setState({ attachmentPaths });
+                return;
+            }
+            if (args.text) {
+                let { enteredMessage } = this.state;
+                enteredMessage += args.text;
+                this.setState({ enteredMessage });
+            }
         });
     }
 
@@ -542,6 +558,7 @@ class RightBottomNav extends React.Component<Props, State> {
                                               ) : null}
                                               {filePath.split(".").pop() === "mp4" ||
                                               filePath.split(".").pop() === "m4a" ||
+                                              filePath.split(".").pop() === "mpg" ||
                                               filePath.split(".").pop() === "avi" ||
                                               filePath.split(".").pop() === "mov" ? (
                                                   <div

@@ -2,7 +2,7 @@
 /* eslint-disable no-global-assign */
 /* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
-import { ipcMain, BrowserWindow, shell, app, dialog, remote, NativeImage, nativeImage, Tray, Menu } from "electron";
+import { ipcMain, BrowserWindow, shell, app, dialog, nativeImage, DownloadItem } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as fs from "fs";
@@ -1170,6 +1170,42 @@ class BackendServer {
                         throw err;
                     });
             }
+        });
+
+        ipcMain.handle("drop-link-event", async (_, url) => {
+            const { download } = require("electron-dl");
+            const dlProgress = dl => {
+                this.emitToUI("drop-download-progress", (dl.percent * 100) as number);
+            };
+
+            const dlStart = (dl: DownloadItem) => {
+                console.log("start");
+                if (["text/html"].includes(dl.getMimeType())) {
+                    dl.cancel();
+                    this.emitToUI("chat-drop-event", { text: url });
+                    return;
+                }
+                this.emitToUI("set-drop-download", {
+                    fileName: dl.getFilename(),
+                    fileSize: `${(dl.getTotalBytes() / (1024 * 1024)).toFixed(2)} MB`
+                });
+
+                ipcMain.handle("cancel-download", () => {
+                    dl.cancel();
+                    this.emitToUI("set-drop-download", null);
+                    ipcMain.removeHandler("cancel-download");
+                });
+            };
+
+            const options = {
+                directory: path.join(FileSystem.attachmentsDir, "temp"),
+                onProgress: dl => dlProgress(dl),
+                onStarted: x => dlStart(x)
+            };
+
+            const file: DownloadItem = await download(this.window, url, options);
+            this.emitToUI("chat-drop-event", { attachment: file.getSavePath() });
+            ipcMain.removeHandler("cancel-download");
         });
     }
 
