@@ -250,7 +250,15 @@ class RightConversationDisplay extends React.Component<Props, State> {
         for (const reaction of reactionList) {
             for (let i = 0; i < outputMessages.length; i += 1) {
                 if (reaction.associatedMessageGuid === outputMessages[i].guid) {
-                    outputMessages[i].reactions = deduplicateReactions([...outputMessages[i].reactions, reaction]);
+                    if (outputMessages[i].reactions) {
+                        outputMessages[i].reactions.push(reaction);
+                        outputMessages[i].reactions = deduplicateReactions(outputMessages[i].reactions);
+                    } else {
+                        outputMessages[i].reactions = [];
+                        outputMessages[i].reactions.push(reaction);
+                        outputMessages[i].reactions = deduplicateReactions(outputMessages[i].reactions);
+                    }
+
                     break;
                 }
             }

@@ -13,6 +13,7 @@ type Props = {
 type State = {
     closeToTray: boolean;
     startWithOS: boolean;
+    sendAudio: boolean;
 };
 
 class AppTitle extends React.Component<Props, State> {
@@ -21,7 +22,8 @@ class AppTitle extends React.Component<Props, State> {
 
         this.state = {
             closeToTray: null,
-            startWithOS: null
+            startWithOS: null,
+            sendAudio: null
         };
     }
 
@@ -29,29 +31,11 @@ class AppTitle extends React.Component<Props, State> {
         const config = await ipcRenderer.invoke("get-config");
         this.setState({
             closeToTray: config.closeToTray,
-            startWithOS: config.startWithOS
+            startWithOS: config.startWithOS,
+            sendAudio: config.sendAudio
         });
 
         console.log(config);
-
-        const closeToTrayCheckbox: HTMLInputElement = document.getElementById(
-            "closeToTrayCheckbox"
-        ) as HTMLInputElement;
-        const startWithOSCheckbox: HTMLInputElement = document.getElementById(
-            "startWithOSCheckbox"
-        ) as HTMLInputElement;
-
-        if (this.state.closeToTray) {
-            closeToTrayCheckbox.checked = true;
-        } else {
-            closeToTrayCheckbox.checked = false;
-        }
-
-        if (this.state.startWithOS) {
-            startWithOSCheckbox.checked = true;
-        } else {
-            startWithOSCheckbox.checked = false;
-        }
     }
 
     async handleChangeCloseToTray() {
@@ -62,11 +46,6 @@ class AppTitle extends React.Component<Props, State> {
         const newConfig = { closeToTray: !this.state.closeToTray };
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ closeToTray: !this.state.closeToTray });
-
-        const closeToTrayCheckbox: HTMLInputElement = document.getElementById(
-            "closeToTrayCheckbox"
-        ) as HTMLInputElement;
-        closeToTrayCheckbox.checked = this.state.closeToTray;
     }
 
     async handleChangeStartWithOS() {
@@ -74,12 +53,12 @@ class AppTitle extends React.Component<Props, State> {
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ startWithOS: !this.state.startWithOS });
         await ipcRenderer.invoke("set-start-with-os", this.state.startWithOS);
+    }
 
-        const startWithOSCheckbox: HTMLInputElement = document.getElementById(
-            "startWithOSCheckbox"
-        ) as HTMLInputElement;
-        console.log(this.state.startWithOS);
-        startWithOSCheckbox.checked = this.state.startWithOS;
+    async handleChangeSendAudio() {
+        const newConfig = { sendAudio: !this.state.sendAudio };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ sendAudio: !this.state.sendAudio });
     }
 
     render() {
@@ -92,6 +71,7 @@ class AppTitle extends React.Component<Props, State> {
                         <input
                             id="closeToTrayCheckbox"
                             type="checkbox"
+                            checked={this.state.closeToTray}
                             onClick={() => this.handleChangeCloseToTray()}
                         />
                         <i />
@@ -103,7 +83,20 @@ class AppTitle extends React.Component<Props, State> {
                         <input
                             id="startWithOSCheckbox"
                             type="checkbox"
+                            checked={this.state.startWithOS}
                             onClick={() => this.handleChangeStartWithOS()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Message Send Audio</p>
+                    <label className="form-switch">
+                        <input
+                            id="sendAudioCheckbox"
+                            type="checkbox"
+                            checked={this.state.sendAudio}
+                            onClick={() => this.handleChangeSendAudio()}
                         />
                         <i />
                     </label>

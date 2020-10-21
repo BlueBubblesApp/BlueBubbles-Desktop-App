@@ -33,21 +33,6 @@ class NotificationsTitle extends React.Component<Props, State> {
         });
 
         console.log(config);
-
-        const checkBoxMuted: HTMLInputElement = document.getElementById("globalMuteCheckbox") as HTMLInputElement;
-        const checkBoxDisabled: HTMLInputElement = document.getElementById("globalDisableCheckbox") as HTMLInputElement;
-
-        if (this.state.globalNotificationsMuted) {
-            checkBoxMuted.checked = true;
-        } else {
-            checkBoxMuted.checked = false;
-        }
-
-        if (this.state.globalNotificationsDisabled) {
-            checkBoxDisabled.checked = true;
-        } else {
-            checkBoxDisabled.checked = false;
-        }
     }
 
     async handleChangeMute() {
@@ -69,14 +54,24 @@ class NotificationsTitle extends React.Component<Props, State> {
                 <div>
                     <p>Muted</p>
                     <label className="form-switch">
-                        <input id="globalMuteCheckbox" type="checkbox" onClick={() => this.handleChangeMute()} />
+                        <input
+                            checked={this.state.globalNotificationsMuted}
+                            id="globalMuteCheckbox"
+                            type="checkbox"
+                            onClick={() => this.handleChangeMute()}
+                        />
                         <i />
                     </label>
                 </div>
                 <div>
                     <p>Disabled</p>
                     <label className="form-switch">
-                        <input id="globalDisableCheckbox" type="checkbox" onClick={() => this.handleChangeDisabled()} />
+                        <input
+                            checked={this.state.globalNotificationsDisabled}
+                            id="globalDisableCheckbox"
+                            type="checkbox"
+                            onClick={() => this.handleChangeDisabled()}
+                        />
                         <i />
                     </label>
                 </div>

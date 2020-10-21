@@ -28,10 +28,7 @@ export class FileSystem {
     static setupDirectories(): void {
         if (!fs.existsSync(FileSystem.attachmentsDir)) fs.mkdirSync(FileSystem.attachmentsDir);
         if (!fs.existsSync(FileSystem.fcmDir)) fs.mkdirSync(FileSystem.fcmDir);
-        if (!fs.existsSync(`${FileSystem.attachmentsDir}/audioTemp`))
-            fs.mkdirSync(`${FileSystem.attachmentsDir}/audioTemp`);
-        if (!fs.existsSync(`${FileSystem.attachmentsDir}/clipboardTemp`))
-            fs.mkdirSync(`${FileSystem.attachmentsDir}/clipboardTemp`);
+        if (!fs.existsSync(`${FileSystem.attachmentsDir}/temp`)) fs.mkdirSync(`${FileSystem.attachmentsDir}/temp`);
     }
 
     static saveAttachment(attachment: Attachment, data: Uint8Array) {
@@ -55,7 +52,7 @@ export class FileSystem {
     }
 
     static async saveNewAudioFile(data: Uint8Array) {
-        const dirPath = `${FileSystem.attachmentsDir}/audioTemp`;
+        const dirPath = `${FileSystem.attachmentsDir}/temp`;
         fs.mkdirSync(dirPath, { recursive: true });
         const filePath = `${dirPath}/temp-${generateUuid()}.m4a`;
         fs.writeFileSync(filePath, Buffer.from(data));
@@ -78,7 +75,7 @@ export class FileSystem {
     }
 
     static async saveImageFromClipboard(data: Uint8Array) {
-        const dirPath = `${FileSystem.attachmentsDir}/clipboardTemp`;
+        const dirPath = `${FileSystem.attachmentsDir}/temp`;
         fs.mkdirSync(dirPath, { recursive: true });
         const filePath = `${dirPath}/fromClipboard-${generateUuid()}.jpeg`;
         fs.writeFileSync(filePath, data);
@@ -87,33 +84,18 @@ export class FileSystem {
     }
 
     static async deleteTempFiles() {
-        let clipTempPath;
-        let audioTempPath;
+        let tempPath;
         if (process.platform === "darwin") {
-            clipTempPath = `${FileSystem.attachmentsDir}/clipboardTemp`;
-            audioTempPath = `${FileSystem.attachmentsDir}/audioTemp`;
+            tempPath = `${FileSystem.attachmentsDir}/temp`;
         } else {
-            clipTempPath = `${FileSystem.attachmentsDir}\\clipboardTemp`;
-            audioTempPath = `${FileSystem.attachmentsDir}\\audioTemp`;
+            tempPath = `${FileSystem.attachmentsDir}\\temp`;
         }
 
-        fs.readdir(clipTempPath, (err, files) => {
+        fs.readdir(tempPath, async (err, files) => {
             if (err) throw err;
 
             for (const file of files) {
-                fs.unlink(path.join(clipTempPath, file), err => {
-                    if (err) throw err;
-                });
-            }
-        });
-
-        fs.readdir(audioTempPath, (err, files) => {
-            if (err) throw err;
-
-            for (const file of files) {
-                fs.unlink(path.join(audioTempPath, file), err => {
-                    if (err) throw err;
-                });
+                fs.unlinkSync(path.join(tempPath, file));
             }
         });
     }
