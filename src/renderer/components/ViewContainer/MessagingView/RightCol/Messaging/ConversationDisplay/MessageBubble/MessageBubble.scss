@@ -167,7 +167,10 @@
 
 /* Incoming message tails */
 .IncomingMessage .message {
+    color: white;
+    background-attachment: fixed;
     position: relative;
+    --hide-pseudo: "1";
 }
 
 .IncomingMessage .message:active {
@@ -218,6 +221,20 @@
 
 .Attachment:focus {
     outline: none;
+}
+
+.Sticker {
+    position: sticky;
+    z-index: 10;
+    height: 30%;
+    width: 30%;
+}
+
+.Sticker:hover {
+    animation: fadeOutMessage;
+    animation-duration: 0.2s;
+    animation-delay: 0.3s;
+    animation-fill-mode: forwards;
 }
 
 .MapLeaflet {

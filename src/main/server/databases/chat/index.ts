@@ -152,8 +152,27 @@ export class ChatRepository {
     }
 
     async getMessageReactions(message: Message): Promise<Message[]> {
-        const repo = this.db.getRepository(Message);
-        return repo.find({ relations: ["handle"], where: { associatedMessageGuid: message.guid } });
+        const mesRepo = this.db.getRepository(Message);
+        // eslint-disable-next-line max-len
+        const reactions = await mesRepo.find({ relations: ["handle"], where: { associatedMessageGuid: message.guid } });
+        const attachRepo = this.db.getRepository(Attachment);
+
+        for (const reaction of reactions) {
+            if (reaction.associatedMessageType === "sticker") {
+                reaction.attachments = [];
+                const res = await mesRepo.find({ relations: ["attachments"], where: { guid: reaction.guid } });
+
+                res.forEach(x => {
+                    x.attachments.forEach(sticker => {
+                        reaction.attachments.push(sticker);
+                    });
+                });
+            }
+
+            console.log(reaction);
+        }
+
+        return reactions;
     }
 
     async getMessages({

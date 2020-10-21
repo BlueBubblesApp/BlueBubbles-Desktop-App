@@ -6,7 +6,8 @@ import * as url from "url";
 
 import { Server } from "@server/index";
 import { FileSystem } from "@server/fileSystem";
-import favicon from "@renderer/assets/favicon.ico";
+import linuxTrayIcon from "@renderer/assets/logo64.png";
+import windowsTrayIcon from "@renderer/assets/favicon.ico";
 
 // To allow CORS
 app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors");
@@ -105,7 +106,10 @@ ipcMain.on("force-focus", () => {
 
 ipcMain.handle("close-event", async () => {
     if (BlueBubbles.configRepo.get("closeToTray")) {
-        tray = new Tray(path.join(FileSystem.resources, favicon));
+        if (process.platform !== "darwin") {
+            tray = new Tray(path.join(FileSystem.resources, linuxTrayIcon));
+        }
+        tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
 
         const contextMenu = Menu.buildFromTemplate([
             {

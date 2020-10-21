@@ -207,9 +207,12 @@ class RightBottomNav extends React.Component<Props, State> {
             resourcePath = "./resources";
         }
 
-        const sendAudio = new Audio(path.join(resourcePath, "audio", "send.mp3"));
-        console.log(sendAudio);
-        sendAudio.play();
+        const config = await ipcRenderer.invoke("get-config");
+        if (config.sendAudio) {
+            const sendAudio = new Audio(path.join(resourcePath, "audio", "send.mp3"));
+            console.log(sendAudio);
+            sendAudio.play();
+        }
     }
 
     async handleAddAttachment() {

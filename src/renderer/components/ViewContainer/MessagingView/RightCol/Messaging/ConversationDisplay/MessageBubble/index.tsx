@@ -78,6 +78,7 @@ type State = {
     currentContextMenuElement: Element;
     linkTitle: string;
     playMessageAnimation: boolean;
+    stickers: AttachmentDownload[];
 };
 
 let subdir = "";
@@ -173,7 +174,8 @@ class MessageBubble extends React.Component<Props, State> {
             showContextMenu: false,
             currentContextMenuElement: null,
             linkTitle: null,
-            playMessageAnimation: false
+            playMessageAnimation: false,
+            stickers: []
         };
     }
 
@@ -185,6 +187,10 @@ class MessageBubble extends React.Component<Props, State> {
         this.setState({ currentContextMenuElement: e.target });
     }
 
+    async wait() {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
     // eslint-disable-next-line react/sort-comp
     renderAttachment(attachment: AttachmentDownload) {
         if (attachment.progress === 100) {
@@ -193,6 +199,43 @@ class MessageBubble extends React.Component<Props, State> {
             // Render based on mime type
             if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
                 const mime = attachment.mimeType ?? "image/pluginPayloadAttachment";
+
+                if (attachment.isSticker) {
+                    const messageDiv = document.getElementById(this.props.message.guid);
+
+                    const x = this.wait().then();
+
+                    const messageCords = messageDiv.getBoundingClientRect();
+                    return (
+                        <>
+                            {this.props.message.isFromMe ? (
+                                <img
+                                    key={attachment.guid}
+                                    id={attachmentPath}
+                                    className="Sticker"
+                                    src={`data:${mime};base64,${attachment.data}`}
+                                    alt={attachment.transferName}
+                                    onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                                    onContextMenu={e => this.handleImageRightClick(e)}
+                                    onError={setFallbackImage}
+                                    style={{ left: `${messageCords.left - 295 + messageCords.width / 2}px` }}
+                                />
+                            ) : (
+                                <img
+                                    key={attachment.guid}
+                                    id={attachmentPath}
+                                    className="Sticker"
+                                    src={`data:${mime};base64,${attachment.data}`}
+                                    alt={attachment.transferName}
+                                    onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                                    onContextMenu={e => this.handleImageRightClick(e)}
+                                    onError={setFallbackImage}
+                                    // style={{left: `${messageCords.left - 295 + messageCords.width/2}px`}}
+                                />
+                            )}
+                        </>
+                    );
+                }
 
                 return (
                     <img
@@ -321,6 +364,51 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         this.setState({ attachments: attachmentsCopy });
+
+        // If we have stickers
+        const stickers: AttachmentDownload[] = [];
+        if (message.reactions) {
+            for (const reaction of message.reactions) {
+                if (reaction.associatedMessageType === "sticker") {
+                    for (const attachment of reaction.attachments) {
+                        // Get the attachment path
+                        const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+
+                        // Check if the item exists
+                        const attachmentExists = fs.existsSync(attachmentPath);
+
+                        // Check if the attachment exists
+                        const item: Partial<AttachmentDownload> = attachment;
+
+                        // Add the attachment to the list
+                        item.progress = attachmentExists ? 100 : 0;
+
+                        // If the progress is 100%, load the data
+                        if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
+
+                        // Add the attachment to the UI
+                        stickers.push(item as AttachmentDownload);
+                    }
+                }
+            }
+        }
+
+        await new Promise((resolve, _) => this.setState({ stickers }, resolve));
+
+        if (this.state.stickers) {
+            const stickersCopy = this.state.stickers;
+            for (let i = 0; i < stickersCopy.length; i += 1) {
+                if (stickersCopy[i].progress === 0) {
+                    // Register listener for each attachment that we need to download
+                    ipcRenderer.on(`attachment-${stickersCopy[i].guid}-progress`, (event, args) =>
+                        this.onAttachmentUpdate(event, args)
+                    );
+                    ipcRenderer.invoke("fetch-attachment", stickersCopy[i]);
+                }
+            }
+
+            this.setState({ stickers: stickersCopy });
+        }
 
         // If we have a message send style
         if (message.expressiveSendStyleId) {
@@ -597,6 +685,7 @@ class MessageBubble extends React.Component<Props, State> {
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
         const { attachments } = this.state;
+        const { stickers } = this.state;
         const animationHeight = document.getElementById("messageView").offsetHeight;
         const animationWidth = document.getElementById("messageView").offsetWidth;
 
@@ -797,7 +886,13 @@ class MessageBubble extends React.Component<Props, State> {
                                     <>
                                         <div className="emptyDiv" />
                                         <div className={className} style={{ marginLeft: useTail ? "5px" : "40px" }}>
-                                            <div style={{ display: "flex", alignItems: "center" }}>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: message.isFromMe ? "flex-end" : "flex-start"
+                                                }}
+                                            >
                                                 {useTail && !message.isFromMe ? (
                                                     <>
                                                         {generateReactionsDisplayIconText(message.handle) === "?" ? (
@@ -1066,7 +1161,13 @@ class MessageBubble extends React.Component<Props, State> {
                                     {sender}
                                 </p>
                             ) : null}
-                            <div style={{ display: "flex", alignItems: "center" }}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: message.isFromMe ? "flex-end" : "flex-start"
+                                }}
+                            >
                                 {useTail && !message.isFromMe ? (
                                     <>
                                         {generateReactionsDisplayIconText(message.handle) === "?" ? (
@@ -1154,6 +1255,11 @@ class MessageBubble extends React.Component<Props, State> {
                                         )}
                                     </>
                                 ) : null}
+                                {stickers && message.isFromMe
+                                    ? stickers.map(sticker => {
+                                          return this.renderAttachment(sticker);
+                                      })
+                                    : null}
                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                     <div
                                         className={`${expressiveSendStyle} ${messageClass}`}
@@ -1163,19 +1269,27 @@ class MessageBubble extends React.Component<Props, State> {
                                         {message.hasReactions === true ? (
                                             <>
                                                 {message.reactions.map((reaction, i) => (
-                                                    <InChatReaction
-                                                        key={reaction.guid}
-                                                        isMessageFromMe={message.isFromMe}
-                                                        isReactionFromMe={reaction.isFromMe}
-                                                        reactionType={reaction.associatedMessageType}
-                                                        offset={i}
-                                                    />
+                                                    <>
+                                                        {reaction.associatedMessageType === "sticker" ? null : null}
+                                                        <InChatReaction
+                                                            key={reaction.guid}
+                                                            isMessageFromMe={message.isFromMe}
+                                                            isReactionFromMe={reaction.isFromMe}
+                                                            reactionType={reaction.associatedMessageType}
+                                                            offset={i}
+                                                        />
+                                                    </>
                                                 ))}
                                             </>
                                         ) : null}
                                         {text ? <p>{text}</p> : null}
                                     </div>
                                 </ClickNHold>
+                                {stickers && !message.isFromMe
+                                    ? stickers.map(sticker => {
+                                          return this.renderAttachment(sticker);
+                                      })
+                                    : null}
                             </div>
                             {expressiveSendStyle && !expressiveSendStyle.includes("invisibleink") ? (
                                 <>
