@@ -11,7 +11,8 @@ export const DEFAULT_CONFIG_ITEMS: { [key: string]: Function } = {
     importContactsFrom: () => "serverDB",
     closeToTray: () => "1",
     startWithOS: () => "1",
-    sendAudio: () => "1"
+    sendAudio: () => "1",
+    capitalizeFirstLetter: () => "1"
 };
 
 export const DEFAULT_DARK_THEME: { [key: string]: Function } = {

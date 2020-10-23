@@ -31,6 +31,7 @@ type State = {
     isAudioPlaying: boolean;
     audioLength: string;
     tempAudioFilePath: string;
+    capitalizeFirstLetter: boolean;
 };
 
 declare const MediaRecorder: any;
@@ -53,19 +54,27 @@ class RightBottomNav extends React.Component<Props, State> {
             audioData: new Uint8Array(0),
             isAudioPlaying: false,
             audioLength: null,
-            tempAudioFilePath: null
+            tempAudioFilePath: null,
+            capitalizeFirstLetter: null
         };
 
         this.tick = this.tick.bind(this);
     }
 
     async componentDidMount() {
+        const config = await ipcRenderer.invoke("get-config");
+        this.setState({ capitalizeFirstLetter: config.capitalizeFirstLetter });
+
         const input = document.getElementById("messageFieldInput");
         input.addEventListener("keydown", event => {
             // Number 13 is the "Enter" key on the keyboard
             if (event.key === "Enter") {
                 event.preventDefault();
                 this.sendMessage();
+            }
+
+            if (event.key === "Backspace" && this.state.enteredMessage.length === 1) {
+                this.setState({ capitalizeFirstLetter: false });
             }
 
             if (
@@ -146,8 +155,15 @@ class RightBottomNav extends React.Component<Props, State> {
 
     handleMessageChange = event => {
         // Capitalize the first letter of input
+        if (this.state.capitalizeFirstLetter) {
+            this.setState({
+                enteredMessage: event.target.value.charAt(0).toUpperCase() + event.target.value.slice(1)
+            });
+            return;
+        }
+
         this.setState({
-            enteredMessage: event.target.value.charAt(0).toUpperCase() + event.target.value.slice(1)
+            enteredMessage: event.target.value
         });
     };
 

@@ -14,6 +14,7 @@ type State = {
     closeToTray: boolean;
     startWithOS: boolean;
     sendAudio: boolean;
+    capitalizeFirstLetter: boolean;
 };
 
 class AppTitle extends React.Component<Props, State> {
@@ -21,9 +22,10 @@ class AppTitle extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            closeToTray: null,
-            startWithOS: null,
-            sendAudio: null
+            closeToTray: false,
+            startWithOS: false,
+            sendAudio: false,
+            capitalizeFirstLetter: false
         };
     }
 
@@ -32,7 +34,8 @@ class AppTitle extends React.Component<Props, State> {
         this.setState({
             closeToTray: config.closeToTray,
             startWithOS: config.startWithOS,
-            sendAudio: config.sendAudio
+            sendAudio: config.sendAudio,
+            capitalizeFirstLetter: config.capitalizeFirstLetter
         });
 
         console.log(config);
@@ -59,6 +62,12 @@ class AppTitle extends React.Component<Props, State> {
         const newConfig = { sendAudio: !this.state.sendAudio };
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ sendAudio: !this.state.sendAudio });
+    }
+
+    async handleChangeCapitalizeFirstLetter() {
+        const newConfig = { capitalizeFirstLetter: !this.state.capitalizeFirstLetter };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ capitalizeFirstLetter: !this.state.capitalizeFirstLetter });
     }
 
     render() {
@@ -97,6 +106,18 @@ class AppTitle extends React.Component<Props, State> {
                             type="checkbox"
                             checked={this.state.sendAudio}
                             onClick={() => this.handleChangeSendAudio()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Auto Capitalize First Letter</p>
+                    <label className="form-switch">
+                        <input
+                            id="capFirstLetterCheckbox"
+                            type="checkbox"
+                            checked={this.state.capitalizeFirstLetter}
+                            onClick={() => this.handleChangeCapitalizeFirstLetter()}
                         />
                         <i />
                     </label>

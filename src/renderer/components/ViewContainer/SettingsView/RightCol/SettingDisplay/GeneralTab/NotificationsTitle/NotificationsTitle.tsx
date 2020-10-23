@@ -20,8 +20,8 @@ class NotificationsTitle extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            globalNotificationsMuted: null,
-            globalNotificationsDisabled: null
+            globalNotificationsMuted: false,
+            globalNotificationsDisabled: false
         };
     }
 
