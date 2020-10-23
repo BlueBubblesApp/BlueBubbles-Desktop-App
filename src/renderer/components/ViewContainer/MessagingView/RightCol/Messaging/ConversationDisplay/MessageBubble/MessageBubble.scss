@@ -103,6 +103,52 @@
     font-size: 11px;
 }
 
+.inChatContactCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 200px;
+    min-width: 200px;
+    height: 50px;
+    min-height: 50px;
+    border-radius: 15px;
+    padding: 3px 10px 3px 15px;
+    margin-top: 3px;
+    overflow-x: clip;
+    white-space: nowrap;
+}
+
+.inChatContactCard:hover {
+    cursor: pointer;
+}
+
+.inChatContactCard > p {
+    font-family: "SF UI Display Bold";
+    color: white;
+    max-width: 150px;
+    overflow: scroll;
+    margin-right: 7px;
+}
+
+.inChatContactCard > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inChatContactCard > div svg:first-of-type {
+    // height: 35px;
+    // width: 35px;
+    // fill: blue;
+    margin-right: 7px;
+}
+
+.inChatContactCard > div svg:last-of-type {
+    height: 17px;
+    width: 17px;
+    fill: white;
+}
+
 @keyframes openReactions {
     0% {
         transform: scale(1, 1);
@@ -664,10 +710,12 @@
     0% {
         font-size: 2px;
     }
+
     25% {
         font-size: 55px;
         transform: rotate(7deg);
     }
+
     70% {
         font-size: 8px;
     }
@@ -683,10 +731,12 @@
         font-size: 8px;
         transform: scale(0.3);
     }
+
     70% {
         font-size: 8px;
         transform: scale(1.3);
     }
+
     100% {
         font-size: 14px;
         transform: scale(1);
@@ -697,37 +747,48 @@
     0% {
         font-size: 1px;
     }
+
     15% {
         transform: rotate(7deg);
     }
+
     20% {
         transform: rotate(-7deg);
     }
+
     25% {
         transform: rotate(7deg);
     }
+
     30% {
         transform: rotate(-7deg);
     }
+
     35% {
         transform: rotate(7deg);
     }
+
     40% {
         transform: rotate(-7deg);
     }
+
     45% {
         transform: rotate(7deg);
     }
+
     50% {
         transform: rotate(-7deg);
     }
+
     56% {
         font-size: 45px;
         transform: rotate(7deg);
     }
+
     75% {
         transform: rotate(-7deg);
     }
+
     100% {
         font-size: 14px;
         transform: rotate(0deg);
@@ -799,6 +860,7 @@
         transform: translateY(100vh);
         opacity: 1;
     }
+
     to {
         transform: translateY(-300vh);
         opacity: 0;

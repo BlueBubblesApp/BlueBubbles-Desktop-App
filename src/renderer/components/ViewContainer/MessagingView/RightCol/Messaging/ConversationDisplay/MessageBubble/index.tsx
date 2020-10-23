@@ -284,6 +284,78 @@ class MessageBubble extends React.Component<Props, State> {
                 );
             }
 
+            if (attachment.mimeType.includes("vcard")) {
+                const vCard = require("vcard");
+                // eslint-disable-next-line new-cap
+                const card = new vCard();
+
+                let vcfData;
+                card.readFile(attachmentPath, function(err, json) {
+                    vcfData = json;
+                });
+
+                const generateVCFIconText = json => {
+                    if (!json) {
+                        return "?";
+                    }
+                    if (json.FN) {
+                        if (json.FN.includes(" ")) {
+                            return json.FN.substr(0, 1) + json.FN.substr(json.FN.indexOf(" ") + 1, 1);
+                        }
+                        return json.FN.substr(0, 1);
+                    }
+                    return "?";
+                };
+
+                return (
+                    <div
+                        className="inChatContactCard"
+                        style={{
+                            backgroundColor: this.props.message.isFromMe
+                                ? "var(--outgoing-message-color)"
+                                : "var(--incoming-message-color)"
+                        }}
+                        onClick={() => openAttachment(attachmentPath)}
+                    >
+                        {vcfData && vcfData.FN ? <p>{vcfData.FN}</p> : <p>Contact</p>}
+                        <div>
+                            {generateVCFIconText(vcfData) === "?" ? (
+                                <svg height="35px" width="35px" viewBox="0 0 1000 1000">
+                                    <defs>
+                                        <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                            <stop className="stop1" offset="0%" stopColor="#686868" />
+                                            <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
+                                    <mask id="rmvProfile">
+                                        <circle cx="50%" cy="50%" r="435" fill="white" />
+                                    </mask>
+                                    <ellipse fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                                    <circle mask="url(#rmvProfile)" fill="white" cx="50%" cy="106%" r="400" />
+                                </svg>
+                            ) : (
+                                <svg height="35px" width="35px">
+                                    <defs>
+                                        <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                            <stop className="stop1" offset="0%" stopColor="#686868" />
+                                            <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle fill="url(#Gradient1)" cx="50%" cy="50%" r="50%" />
+                                    <text x="50%" y="67%" textAnchor="middle" fill="white" stroke="white">
+                                        {generateVCFIconText(vcfData)}
+                                    </text>
+                                </svg>
+                            )}
+                            <svg viewBox="0 0 574 1024">
+                                <path d="M10 9Q0 19 0 32t10 23l482 457L10 969Q0 979 0 992t10 23q10 9 24 9t24-9l506-480q10-10 10-23t-10-23L58 9Q48 0 34 0T10 9z" />
+                            </svg>
+                        </div>
+                    </div>
+                );
+            }
+
             return (
                 <UnsupportedMedia
                     key={attachment.guid}
