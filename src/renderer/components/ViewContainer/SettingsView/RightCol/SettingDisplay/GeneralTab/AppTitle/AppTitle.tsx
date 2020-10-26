@@ -76,48 +76,48 @@ class AppTitle extends React.Component<Props, State> {
                 <h2>{this.props.title}</h2>
                 <div>
                     <p>Close To Tray</p>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={() => this.handleChangeCloseToTray()}>
                         <input
                             id="closeToTrayCheckbox"
                             type="checkbox"
                             checked={this.state.closeToTray}
-                            onClick={() => this.handleChangeCloseToTray()}
+                            onChange={() => this.handleChangeCloseToTray()}
                         />
                         <i />
                     </label>
                 </div>
                 <div>
                     <p>Start With OS</p>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={() => this.handleChangeStartWithOS()}>
                         <input
                             id="startWithOSCheckbox"
                             type="checkbox"
                             checked={this.state.startWithOS}
-                            onClick={() => this.handleChangeStartWithOS()}
+                            onChange={() => this.handleChangeStartWithOS()}
                         />
                         <i />
                     </label>
                 </div>
                 <div>
                     <p>Message Send Audio</p>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={() => this.handleChangeSendAudio()}>
                         <input
                             id="sendAudioCheckbox"
                             type="checkbox"
                             checked={this.state.sendAudio}
-                            onClick={() => this.handleChangeSendAudio()}
+                            onChange={() => this.handleChangeSendAudio()}
                         />
                         <i />
                     </label>
                 </div>
                 <div>
                     <p>Auto Capitalize First Letter</p>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={() => this.handleChangeCapitalizeFirstLetter()}>
                         <input
                             id="capFirstLetterCheckbox"
                             type="checkbox"
                             checked={this.state.capitalizeFirstLetter}
-                            onClick={() => this.handleChangeCapitalizeFirstLetter()}
+                            onChange={() => this.handleChangeCapitalizeFirstLetter()}
                         />
                         <i />
                     </label>

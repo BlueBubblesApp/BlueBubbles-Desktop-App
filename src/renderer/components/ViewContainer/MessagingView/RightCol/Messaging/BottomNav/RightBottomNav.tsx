@@ -32,6 +32,12 @@ type State = {
     audioLength: string;
     tempAudioFilePath: string;
     capitalizeFirstLetter: boolean;
+    showSpellingContextMenu: boolean;
+    contextX: number;
+    selectedWord: string;
+    sug1: string;
+    sug2: string;
+    sug3: string;
 };
 
 declare const MediaRecorder: any;
@@ -55,7 +61,13 @@ class RightBottomNav extends React.Component<Props, State> {
             isAudioPlaying: false,
             audioLength: null,
             tempAudioFilePath: null,
-            capitalizeFirstLetter: null
+            capitalizeFirstLetter: null,
+            showSpellingContextMenu: false,
+            contextX: null,
+            selectedWord: null,
+            sug1: null,
+            sug2: null,
+            sug3: null
         };
 
         this.tick = this.tick.bind(this);
@@ -65,15 +77,40 @@ class RightBottomNav extends React.Component<Props, State> {
         const config = await ipcRenderer.invoke("get-config");
         this.setState({ capitalizeFirstLetter: config.capitalizeFirstLetter });
 
-        const input = document.getElementById("messageFieldInput");
+        const input = document.getElementById("messageFieldInput") as HTMLInputElement;
+
+        ipcRenderer.on("word-matches", (_, matches) => {
+            console.log(matches);
+            this.setState({
+                showSpellingContextMenu: true,
+                sug1: matches.ratings[0] ? matches.ratings[0].target : null,
+                sug2: matches.ratings[1] ? matches.ratings[1].target : null,
+                sug3: matches.ratings[2] ? matches.ratings[2].target : null
+            });
+        });
+
+        input.addEventListener("contextmenu", async event => {
+            this.setState({ showSpellingContextMenu: false, sug1: null, sug2: null, sug3: null });
+            console.log(input.value.substring(input.selectionStart, input.selectionEnd));
+
+            const selectedWord = input.value.substring(input.selectionStart, input.selectionEnd);
+            this.setState({ selectedWord });
+
+            ipcRenderer.invoke("get-spelling-suggestions", selectedWord);
+            this.setState({ contextX: event.clientX });
+        });
+
         input.addEventListener("keydown", event => {
-            // Number 13 is the "Enter" key on the keyboard
+            if (this.state.showSpellingContextMenu) {
+                this.setState({ showSpellingContextMenu: false, sug1: null, sug2: null, sug3: null });
+            }
+
             if (event.key === "Enter") {
                 event.preventDefault();
                 this.sendMessage();
             }
 
-            if (event.key === "Backspace" && this.state.enteredMessage.length === 1) {
+            if (event.key === "Backspace" && input.selectionStart === 1) {
                 this.setState({ capitalizeFirstLetter: false });
             }
 
@@ -98,6 +135,14 @@ class RightBottomNav extends React.Component<Props, State> {
             }
         });
 
+        input.addEventListener("click", async event => {
+            this.setState({ showSpellingContextMenu: false, sug1: null, sug2: null, sug3: null });
+        });
+
+        document.getElementById("messageView").addEventListener("click", async event => {
+            this.setState({ showSpellingContextMenu: false, sug1: null, sug2: null, sug3: null });
+        });
+
         ipcRenderer.on("focused", (_, args) => {
             try {
                 document.getElementsByClassName("RightBottomNav")[0].classList.remove("RightBottomNavBlurred");
@@ -116,6 +161,9 @@ class RightBottomNav extends React.Component<Props, State> {
 
         ipcRenderer.on("set-current-chat", () => {
             this.setState({ attachmentPaths: [] });
+            if (config.capitalizeFirstLetter) {
+                this.setState({ enteredMessage: "", capitalizeFirstLetter: true });
+            }
         });
 
         const audio = document.getElementById("myAudioDiv") as HTMLAudioElement;
@@ -168,6 +216,12 @@ class RightBottomNav extends React.Component<Props, State> {
     };
 
     async sendMessage() {
+        const config = await ipcRenderer.invoke("get-config");
+
+        if (config.capitalizeFirstLetter) {
+            this.setState({ capitalizeFirstLetter: true });
+        }
+
         // If we don't have any message or attachments, don't do anything
         if (this.state.enteredMessage.length === 0 && this.state.attachmentPaths.length === 0) return;
 
@@ -223,7 +277,6 @@ class RightBottomNav extends React.Component<Props, State> {
             resourcePath = "./resources";
         }
 
-        const config = await ipcRenderer.invoke("get-config");
         if (config.sendAudio) {
             const sendAudio = new Audio(path.join(resourcePath, "audio", "send.mp3"));
             console.log(sendAudio);
@@ -551,6 +604,80 @@ class RightBottomNav extends React.Component<Props, State> {
                     </>
                 ) : (
                     <>
+                        {this.state.showSpellingContextMenu ? (
+                            <div id="spellingContextMenu" style={{ left: `${this.state.contextX - 15}px` }}>
+                                <div>
+                                    {this.state.sug1 ? (
+                                        <p
+                                            onClick={() => {
+                                                this.setState({
+                                                    enteredMessage: this.state.enteredMessage.replace(
+                                                        this.state.selectedWord,
+                                                        this.state.sug1
+                                                    ),
+                                                    showSpellingContextMenu: false,
+                                                    sug1: null,
+                                                    sug2: null,
+                                                    sug3: null
+                                                });
+                                                document.getElementById("messageFieldInput").focus();
+                                            }}
+                                        >
+                                            {this.state.sug1}
+                                        </p>
+                                    ) : null}
+                                    {this.state.sug2 ? (
+                                        <p
+                                            onClick={() => {
+                                                this.setState({
+                                                    enteredMessage: this.state.enteredMessage.replace(
+                                                        this.state.selectedWord,
+                                                        this.state.sug2
+                                                    ),
+                                                    showSpellingContextMenu: false,
+                                                    sug1: null,
+                                                    sug2: null,
+                                                    sug3: null
+                                                });
+                                                document.getElementById("messageFieldInput").focus();
+                                            }}
+                                        >
+                                            {this.state.sug2}
+                                        </p>
+                                    ) : null}
+                                    {this.state.sug3 ? (
+                                        <p
+                                            onClick={() => {
+                                                this.setState({
+                                                    enteredMessage: this.state.enteredMessage.replace(
+                                                        this.state.selectedWord,
+                                                        this.state.sug3
+                                                    ),
+                                                    showSpellingContextMenu: false,
+                                                    sug1: null,
+                                                    sug2: null,
+                                                    sug3: null
+                                                });
+                                                document.getElementById("messageFieldInput").focus();
+                                            }}
+                                        >
+                                            {this.state.sug3}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                <img
+                                    src={CloseIcon}
+                                    onClick={() =>
+                                        this.setState({
+                                            showSpellingContextMenu: false,
+                                            sug1: null,
+                                            sug2: null,
+                                            sug3: null
+                                        })
+                                    }
+                                />
+                            </div>
+                        ) : null}
                         <div id="leftAttachmentButton" onClick={() => this.handleAddAttachment()}>
                             <svg id="attachIcon" viewBox="0 0 25 25">
                                 <path d="M7.46,25a7.57,7.57,0,0,1-5.19-2l-.09-.08a6.72,6.72,0,0,1,0-9.9L15,1.42a5.46,5.46,0,0,1,7.35,0A4.88,4.88,0,0,1,24,5a4.83,4.83,0,0,1-1.56,3.54L10.38,19.41A3.23,3.23,0,0,1,6,19.4a2.91,2.91,0,0,1,0-4.3L17.27,5l1.33,1.49L7.35,16.57a.91.91,0,0,0-.29.66.93.93,0,0,0,.31.68,1.23,1.23,0,0,0,1.66,0L21.09,7.11a2.81,2.81,0,0,0,0-4.16,3.45,3.45,0,0,0-4.69-.06L3.53,14.46a4.72,4.72,0,0,0,0,7l.09.08a5.65,5.65,0,0,0,7.63,0L23.33,10.69l1.34,1.49L12.62,23A7.53,7.53,0,0,1,7.46,25Z" />

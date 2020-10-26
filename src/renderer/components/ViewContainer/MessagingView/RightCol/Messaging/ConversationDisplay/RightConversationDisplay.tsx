@@ -70,6 +70,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
     componentDidMount() {
         ipcRenderer.on("message", async (_, payload: { message: Message; tempGuid?: string }) => {
             const { message } = payload;
+            console.log(message);
 
             // If the message isn't for this chat, ignore it
             if (!message.chats || message.chats[0].guid !== this.props.chat.guid) return;

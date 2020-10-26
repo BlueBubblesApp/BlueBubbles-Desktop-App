@@ -325,31 +325,33 @@
 
 .IncomingLink {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
     margin: 0 0 0 40px;
 }
 
-.IncomingLink > .Attachment {
+.IncomingLink > div > .Attachment {
     border-radius: 15px 15px 0 0;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
 }
 
 .OutgoingLink {
     display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
     margin: 0 13px 0 0;
 }
 
-.OutgoingLink > .Attachment {
+.OutgoingLink > div > .Attachment {
     border-radius: 15px 15px 0 0;
-    z-index: 2;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
 }
 
-.OutgoingLink > .linkBottomDiv {
-    z-index: 2;
+.OutgoingLink > div > .linkBottomDiv {
 }
 
 .linkBottomDiv {
@@ -358,9 +360,7 @@
     max-height: 55px;
     background-color: var(--incoming-message-color);
     border-radius: 0 0 15px 15px;
-    width: 40%;
-    max-width: 40%;
-    min-width: 40%;
+    width: 100%;
 }
 
 .linkBottomDiv:hover {
@@ -387,6 +387,16 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.linkContainer {
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 40%;
+    max-width: 40%;
+    min-width: 40%;
 }
 
 // Audio Attachment
@@ -530,7 +540,7 @@
         min-width: 36%;
     }
 
-    .linkBottomDiv {
+    .linkContainer {
         max-width: 36%;
         min-width: 36%;
     }
@@ -543,7 +553,7 @@
         min-width: 33%;
     }
 
-    .linkBottomDiv {
+    .linkContainer {
         max-width: 33%;
         min-width: 33%;
     }
@@ -556,7 +566,7 @@
         min-width: 30%;
     }
 
-    .linkBottomDiv {
+    .linkContainer {
         max-width: 30%;
         min-width: 30%;
     }

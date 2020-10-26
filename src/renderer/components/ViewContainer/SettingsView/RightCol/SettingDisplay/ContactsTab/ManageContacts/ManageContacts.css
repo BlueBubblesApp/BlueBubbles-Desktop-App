@@ -48,6 +48,10 @@
 #ManageContactsContainer {
     padding-top: 6px;
     margin-bottom: 40px;
+    max-height: 350px;
+    overflow: scroll;
+    /* border: 1px solid var(--sub-title-color);
+    border-top: none; */
 }
 
 .aContactRow {

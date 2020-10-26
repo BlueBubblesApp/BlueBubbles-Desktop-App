@@ -11,8 +11,7 @@ module.exports = merge.smart(baseConfig, {
         app: ['@babel/polyfill', './src/renderer/app.tsx']
     },
     module: {
-        rules: [
-            {
+        rules: [{
                 test: /\.tsx?$/,
                 exclude: /node_modules/,
                 loader: 'babel-loader',
@@ -20,11 +19,19 @@ module.exports = merge.smart(baseConfig, {
                     cacheDirectory: true,
                     babelrc: false,
                     presets: [
-                        ['@babel/preset-env', { targets: { browsers: 'last 2 versions ' } }],
+                        ['@babel/preset-env', {
+                            targets: {
+                                browsers: 'last 2 versions '
+                            }
+                        }],
                         '@babel/preset-typescript',
                         '@babel/preset-react'
                     ],
-                    plugins: [['@babel/plugin-proposal-class-properties', { loose: true }]]
+                    plugins: [
+                        ['@babel/plugin-proposal-class-properties', {
+                            loose: true
+                        }]
+                    ]
                 }
             },
             {
@@ -49,15 +56,13 @@ module.exports = merge.smart(baseConfig, {
             },
             {
                 test: /\.(woff(2)?|ttf|eot|svg|ico)(\?v=\d+\.\d+\.\d+)?$/,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[name].[ext]',
-                            outputPath: 'fonts/'
-                        }
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        outputPath: 'fonts/'
                     }
-                ]
+                }]
             },
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
             {

@@ -85,14 +85,14 @@ class ManageContacts extends React.Component<unknown, State> {
                                         <div className="numberCol">
                                             <input
                                                 className="aContactField"
-                                                value={this.formatAddress(contact.address)}
+                                                value={this.formatAddress(contact.address) || ""}
                                             />
                                         </div>
                                         <div className="firstNameCol">
-                                            <input className="aContactField" value={contact.firstName} />
+                                            <input className="aContactField" value={contact.firstName || ""} />
                                         </div>
                                         <div className="lastNameCol">
-                                            <input className="aContactField" value={contact.lastName} />
+                                            <input className="aContactField" value={contact.lastName || ""} />
                                         </div>
                                     </div>
                                 );

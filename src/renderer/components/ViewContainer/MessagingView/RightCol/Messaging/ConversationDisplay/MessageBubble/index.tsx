@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable import/order */
 /* eslint-disable react/no-unused-state */
 /* eslint-disable react/sort-comp */
@@ -165,6 +166,8 @@ let xPos;
 let yPos;
 
 class MessageBubble extends React.Component<Props, State> {
+    _isMounted = false;
+
     constructor(props) {
         super(props);
 
@@ -205,36 +208,38 @@ class MessageBubble extends React.Component<Props, State> {
 
                     const x = this.wait().then();
 
-                    const messageCords = messageDiv.getBoundingClientRect();
-                    return (
-                        <>
-                            {this.props.message.isFromMe ? (
-                                <img
-                                    key={attachment.guid}
-                                    id={attachmentPath}
-                                    className="Sticker"
-                                    src={`data:${mime};base64,${attachment.data}`}
-                                    alt={attachment.transferName}
-                                    onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
-                                    onContextMenu={e => this.handleImageRightClick(e)}
-                                    onError={setFallbackImage}
-                                    style={{ left: `${messageCords.left - 295 + messageCords.width / 2}px` }}
-                                />
-                            ) : (
-                                <img
-                                    key={attachment.guid}
-                                    id={attachmentPath}
-                                    className="Sticker"
-                                    src={`data:${mime};base64,${attachment.data}`}
-                                    alt={attachment.transferName}
-                                    onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
-                                    onContextMenu={e => this.handleImageRightClick(e)}
-                                    onError={setFallbackImage}
-                                    // style={{left: `${messageCords.left - 295 + messageCords.width/2}px`}}
-                                />
-                            )}
-                        </>
-                    );
+                    if (messageDiv) {
+                        const messageCords = messageDiv.getBoundingClientRect();
+                        return (
+                            <>
+                                {this.props.message.isFromMe ? (
+                                    <img
+                                        key={attachment.guid}
+                                        id={attachmentPath}
+                                        className="Sticker"
+                                        src={`data:${mime};base64,${attachment.data}`}
+                                        alt={attachment.transferName}
+                                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                                        onContextMenu={e => this.handleImageRightClick(e)}
+                                        onError={setFallbackImage}
+                                        style={{ left: `${messageCords.left - 295 + messageCords.width / 2}px` }}
+                                    />
+                                ) : (
+                                    <img
+                                        key={attachment.guid}
+                                        id={attachmentPath}
+                                        className="Sticker"
+                                        src={`data:${mime};base64,${attachment.data}`}
+                                        alt={attachment.transferName}
+                                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                                        onContextMenu={e => this.handleImageRightClick(e)}
+                                        onError={setFallbackImage}
+                                        // style={{left: `${messageCords.left - 295 + messageCords.width/2}px`}}
+                                    />
+                                )}
+                            </>
+                        );
+                    }
                 }
 
                 return (
@@ -369,148 +374,160 @@ class MessageBubble extends React.Component<Props, State> {
     }
 
     async componentDidMount() {
-        document.addEventListener("click", e => {
-            e.preventDefault();
-            this.setState({ showContextMenu: false });
-        });
-        const { message } = this.props;
+        this._isMounted = true;
 
-        if (message.text.includes("http") || message.text.includes("Https")) {
-            const linkPrev: any = await getLinkPreview(message.text);
-            if (linkPrev.title) {
-                this.setState({ linkTitle: linkPrev.title });
-            } else {
-                this.setState({ linkTitle: linkPrev.description });
+        if (this._isMounted) {
+            document.addEventListener("click", e => {
+                e.preventDefault();
+                this.setState({ showContextMenu: false });
+            });
+
+            const { message } = this.props;
+
+            if (message.text.includes("http") || message.text.includes("Https")) {
+                const linkPrev: any = await getLinkPreview(message.text);
+                if (linkPrev.title) {
+                    this.setState({ linkTitle: linkPrev.title });
+                } else {
+                    this.setState({ linkTitle: linkPrev.description });
+                }
             }
-        }
 
-        // Get the attachments
-        const attachments: AttachmentDownload[] = [];
-        let idx = 0;
-        for (const attachment of message.attachments ?? []) {
-            // If the attachment's mimeType if null and the next attachment's mimeType is null, skip
-            // This means the current attachment is just a logo
-            if (
-                idx + 1 < message.attachments.length &&
-                !attachment.mimeType &&
-                !message.attachments[idx + 1].mimeType
-            ) {
+            // Get the attachments
+            const attachments: AttachmentDownload[] = [];
+            let idx = 0;
+            for (const attachment of message.attachments ?? []) {
+                // If the attachment's mimeType if null and the next attachment's mimeType is null, skip
+                // This means the current attachment is just a logo
+                if (
+                    idx + 1 < message.attachments.length &&
+                    !attachment.mimeType &&
+                    !message.attachments[idx + 1].mimeType
+                ) {
+                    idx += 1;
+                    continue;
+                }
+
+                // Get the attachment path
+                const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+
+                // Check if the item exists
+                const attachmentExists = fs.existsSync(attachmentPath);
+
+                // Check if the attachment exists
+                const item: Partial<AttachmentDownload> = attachment;
+
+                // Add the attachment to the list
+                item.progress = attachmentExists ? 100 : 0;
+
+                // If the progress is 100%, load the data
+                if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
+
+                // Add the attachment to the UI
+                attachments.push(item as AttachmentDownload);
                 idx += 1;
-                continue;
             }
 
-            // Get the attachment path
-            const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+            // Add the attachments to the state
+            await new Promise((resolve, _) => this.setState({ attachments }, resolve));
 
-            // Check if the item exists
-            const attachmentExists = fs.existsSync(attachmentPath);
-
-            // Check if the attachment exists
-            const item: Partial<AttachmentDownload> = attachment;
-
-            // Add the attachment to the list
-            item.progress = attachmentExists ? 100 : 0;
-
-            // If the progress is 100%, load the data
-            if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
-
-            // Add the attachment to the UI
-            attachments.push(item as AttachmentDownload);
-            idx += 1;
-        }
-
-        // Add the attachments to the state
-        await new Promise((resolve, _) => this.setState({ attachments }, resolve));
-
-        // Second, determine if we need to fetch the attachments based on it's progress
-        // We do this later because we want to make sure all the attachments are in the state first
-        const attachmentsCopy = [...this.state.attachments];
-        for (let i = 0; i < attachmentsCopy.length; i += 1) {
-            if (attachmentsCopy[i].progress === 0) {
-                // Register listener for each attachment that we need to download
-                ipcRenderer.on(`attachment-${attachmentsCopy[i].guid}-progress`, (event, args) =>
-                    this.onAttachmentUpdate(event, args)
-                );
-                ipcRenderer.invoke("fetch-attachment", attachmentsCopy[i]);
+            // Second, determine if we need to fetch the attachments based on it's progress
+            // We do this later because we want to make sure all the attachments are in the state first
+            const attachmentsCopy = [...this.state.attachments];
+            for (let i = 0; i < attachmentsCopy.length; i += 1) {
+                if (attachmentsCopy[i].progress === 0) {
+                    // Register listener for each attachment that we need to download
+                    ipcRenderer.on(`attachment-${attachmentsCopy[i].guid}-progress`, (event, args) =>
+                        this.onAttachmentUpdate(event, args)
+                    );
+                    ipcRenderer.invoke("fetch-attachment", attachmentsCopy[i]);
+                }
             }
-        }
 
-        this.setState({ attachments: attachmentsCopy });
+            this.setState({ attachments: attachmentsCopy });
 
-        // If we have stickers
-        const stickers: AttachmentDownload[] = [];
-        if (message.reactions) {
-            for (const reaction of message.reactions) {
-                if (reaction.associatedMessageType === "sticker") {
-                    for (const attachment of reaction.attachments) {
-                        // Get the attachment path
-                        const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+            // If we have stickers
+            const stickers: AttachmentDownload[] = [];
+            if (message.reactions) {
+                for (const reaction of message.reactions) {
+                    if (reaction.associatedMessageType === "sticker") {
+                        for (const attachment of reaction.attachments) {
+                            // Get the attachment path
+                            const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
 
-                        // Check if the item exists
-                        const attachmentExists = fs.existsSync(attachmentPath);
+                            // Check if the item exists
+                            const attachmentExists = fs.existsSync(attachmentPath);
 
-                        // Check if the attachment exists
-                        const item: Partial<AttachmentDownload> = attachment;
+                            // Check if the attachment exists
+                            const item: Partial<AttachmentDownload> = attachment;
 
-                        // Add the attachment to the list
-                        item.progress = attachmentExists ? 100 : 0;
+                            // Add the attachment to the list
+                            item.progress = attachmentExists ? 100 : 0;
 
-                        // If the progress is 100%, load the data
-                        if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
+                            // If the progress is 100%, load the data
+                            if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
 
-                        // Add the attachment to the UI
-                        stickers.push(item as AttachmentDownload);
+                            // Add the attachment to the UI
+                            stickers.push(item as AttachmentDownload);
+                        }
                     }
                 }
             }
-        }
 
-        await new Promise((resolve, _) => this.setState({ stickers }, resolve));
+            await new Promise((resolve, _) => this.setState({ stickers }, resolve));
 
-        if (this.state.stickers) {
-            const stickersCopy = this.state.stickers;
-            for (let i = 0; i < stickersCopy.length; i += 1) {
-                if (stickersCopy[i].progress === 0) {
-                    // Register listener for each attachment that we need to download
-                    ipcRenderer.on(`attachment-${stickersCopy[i].guid}-progress`, (event, args) =>
-                        this.onAttachmentUpdate(event, args)
-                    );
-                    ipcRenderer.invoke("fetch-attachment", stickersCopy[i]);
+            if (this.state.stickers) {
+                const stickersCopy = this.state.stickers;
+                for (let i = 0; i < stickersCopy.length; i += 1) {
+                    if (stickersCopy[i].progress === 0) {
+                        // Register listener for each attachment that we need to download
+                        ipcRenderer.on(`attachment-${stickersCopy[i].guid}-progress`, (event, args) =>
+                            this.onAttachmentUpdate(event, args)
+                        );
+                        ipcRenderer.invoke("fetch-attachment", stickersCopy[i]);
+                    }
                 }
+
+                this.setState({ stickers: stickersCopy });
             }
 
-            this.setState({ stickers: stickersCopy });
-        }
+            // If we have a message send style
+            if (message.expressiveSendStyleId) {
+                const messageDiv = document.getElementById(this.props.message.guid);
+                if (this.isRecentMessage()) {
+                    this.setState({ playMessageAnimation: true });
+                    if (this.props.message.expressiveSendStyleId.includes("CKFireworksEffect")) {
+                        const container = document.getElementById(`fireworksContainer-${message.guid}`);
+                        const fireworks = new FireworksCanvas(container);
+                        fireworks.start();
+                    }
+                    if (this.props.message.expressiveSendStyleId.includes("CKHappyBirthdayEffect")) {
+                        this.createBalloons(100);
+                    }
+                    if (this.props.message.expressiveSendStyleId.includes("CKSpotlightEffect")) {
+                        this.handleSpotlight();
+                    }
+                    if (this.props.message.expressiveSendStyleId.includes("CKHeartEffect")) {
+                        this.handleHearts();
+                    }
+                    if (this.props.message.expressiveSendStyleId.includes("CKEchoEffect")) {
+                        this.handleEcho();
+                    }
 
-        // If we have a message send style
-        if (message.expressiveSendStyleId) {
-            const messageDiv = document.getElementById(this.props.message.guid);
-            if (this.isRecentMessage()) {
-                this.setState({ playMessageAnimation: true });
-                if (this.props.message.expressiveSendStyleId.includes("CKFireworksEffect")) {
-                    const container = document.getElementById(`fireworksContainer-${message.guid}`);
-                    const fireworks = new FireworksCanvas(container);
-                    fireworks.start();
+                    // Play the animation for 3 seconds
+                    const delay = ms => new Promise(res => setTimeout(res, ms));
+                    await delay(3000);
+                    this.setState({ playMessageAnimation: false });
                 }
-                if (this.props.message.expressiveSendStyleId.includes("CKHappyBirthdayEffect")) {
-                    this.createBalloons(100);
-                }
-                if (this.props.message.expressiveSendStyleId.includes("CKSpotlightEffect")) {
-                    this.handleSpotlight();
-                }
-                if (this.props.message.expressiveSendStyleId.includes("CKHeartEffect")) {
-                    this.handleHearts();
-                }
-                if (this.props.message.expressiveSendStyleId.includes("CKEchoEffect")) {
-                    this.handleEcho();
-                }
-
-                // Play the animation for 3 seconds
-                const delay = ms => new Promise(res => setTimeout(res, ms));
-                await delay(3000);
-                this.setState({ playMessageAnimation: false });
             }
         }
+    }
+
+    async componentWillUnmount() {
+        this._isMounted = false;
+        document.removeEventListener("click", e => {
+            // Nothing
+        });
     }
 
     async createBalloons(numOfBallons) {
@@ -903,6 +920,9 @@ class MessageBubble extends React.Component<Props, State> {
             messageDiv.classList.add(expressiveSendStyle);
         };
 
+        console.log(message);
+        console.log(message.handle);
+
         return (
             <>
                 {this.state.showContextMenu ? (
@@ -934,12 +954,15 @@ class MessageBubble extends React.Component<Props, State> {
                     <>
                         {/* If the attachment is a link */}
                         {links.length > 0 ? (
-                            <div className={linkClassName} onClick={() => openLink(links[0])}>
-                                {attachments.map((attachment: AttachmentDownload) => this.renderAttachment(attachment))}
-                                <div className="linkBottomDiv">
-                                    {/* Change first one Zach */}
-                                    <p>{this.state.linkTitle || "Loading ..."}</p>
-                                    <p>{new URL(links[0]).hostname}</p>
+                            <div className={linkClassName}>
+                                <div className="linkContainer" onClick={() => openLink(links[0])}>
+                                    {attachments.map((attachment: AttachmentDownload) =>
+                                        this.renderAttachment(attachment)
+                                    )}
+                                    <div className="linkBottomDiv">
+                                        <p>{this.state.linkTitle || "Loading ..."}</p>
+                                        <p>{new URL(links[0]).hostname}</p>
+                                    </div>
                                 </div>
                             </div>
                         ) : (

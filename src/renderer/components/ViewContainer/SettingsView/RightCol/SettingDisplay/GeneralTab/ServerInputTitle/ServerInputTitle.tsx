@@ -45,6 +45,14 @@ class ServerInputTitle extends React.Component<InputTitleProps, ServerInputTitle
         const config = { enteredServer: this.state.enteredServer };
         console.log(`Saved server: ${this.state.enteredServer}`);
         ipcRenderer.invoke("set-config", config);
+
+        const input = document.getElementById("serverInput") as HTMLInputElement;
+        input.type = "password";
+    };
+
+    handleFocus = () => {
+        const input = document.getElementById("serverInput") as HTMLInputElement;
+        input.type = "url";
     };
 
     render() {
@@ -53,9 +61,12 @@ class ServerInputTitle extends React.Component<InputTitleProps, ServerInputTitle
                 <h2>{this.props.title}</h2>
                 <input
                     id="serverInput"
+                    spellCheck="false"
+                    type="password"
                     value={this.state.enteredServer}
                     onChange={this.handleServerChange}
                     onBlur={this.handleSubmit}
+                    onFocus={this.handleFocus}
                     placeholder={this.state.enteredServer}
                 />
             </div>

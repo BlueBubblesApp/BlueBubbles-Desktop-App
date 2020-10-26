@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import * as React from "react";
 import "./PasswordInputTitle.css";
 import { ipcRenderer } from "electron";
@@ -18,8 +19,6 @@ class PasswordInputTitle extends React.Component<PasswordInputTitleProps, Passwo
         super(props);
 
         this.state = {
-            // title: "",
-            // subTitle: "",
             enteredPassword: ""
         };
     }
@@ -28,7 +27,7 @@ class PasswordInputTitle extends React.Component<PasswordInputTitleProps, Passwo
         const config = await ipcRenderer.invoke("get-config");
         this.setState({ enteredPassword: config.passphrase }); // change to password
 
-        const input = document.getElementById("passwordInput");
+        const input = document.getElementById("passwordInput") as HTMLInputElement;
 
         input.addEventListener("keyup", event => {
             // Number 13 is the "Enter" key on the keyboard
@@ -49,6 +48,14 @@ class PasswordInputTitle extends React.Component<PasswordInputTitleProps, Passwo
         const config = { enteredPassword: this.state.enteredPassword };
         console.log(`Saved password: ${this.state.enteredPassword}`);
         ipcRenderer.invoke("set-config", config);
+
+        const input = document.getElementById("passwordInput") as HTMLInputElement;
+        input.type = "password";
+    };
+
+    handleFocus = () => {
+        const input = document.getElementById("passwordInput") as HTMLInputElement;
+        input.type = "text";
     };
 
     render() {
@@ -57,9 +64,12 @@ class PasswordInputTitle extends React.Component<PasswordInputTitleProps, Passwo
                 <h2>{this.props.title}</h2>
                 <input
                     id="passwordInput"
+                    type="password"
+                    spellCheck="false"
                     value={this.state.enteredPassword}
                     onChange={this.handlePasswordChange}
                     onBlur={this.handleSubmit}
+                    onFocus={this.handleFocus}
                     placeholder={this.state.enteredPassword}
                 />
             </div>

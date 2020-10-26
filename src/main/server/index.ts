@@ -1207,6 +1207,26 @@ class BackendServer {
             this.emitToUI("chat-drop-event", { attachment: file.getSavePath() });
             ipcMain.removeHandler("cancel-download");
         });
+
+        ipcMain.handle("get-spelling-suggestions", async (_, selectedWord) => {
+            const dictionary = require("dictionary-en");
+            const nspell = require("nspell");
+
+            await dictionary(async (err, dict) => {
+                if (err) {
+                    throw err;
+                }
+                const spell = nspell(dict);
+                const suggs = spell.suggest(selectedWord);
+
+                const stringSimilarity = require("string-similarity");
+
+                const matches = stringSimilarity.findBestMatch(selectedWord, suggs);
+                matches.ratings.sort((string1, string2) => (string1.rating < string2.rating ? 1 : -1));
+                console.log(matches);
+                this.emitToUI("word-matches", matches);
+            });
+        });
     }
 
     setSyncStatus({ completed, message, error }: SyncStatus) {
