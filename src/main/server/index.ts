@@ -783,6 +783,11 @@ class BackendServer {
         ipcMain.handle("set-chat-last-viewed", async (_, payload) => {
             const updateData = { lastViewed: payload.lastViewed.getTime() };
             await this.chatRepo.updateChat(payload.chat, updateData);
+
+            this.socketService.server.emit("toggle-chat-read-status", {
+                chatGuid: payload.chat.guid,
+                status: false
+            });
         });
 
         // Get VCF from server

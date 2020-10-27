@@ -57,6 +57,10 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         ipcRenderer.on("remove-active-chat", (_, __) => {
             this.setCurrentChat(null);
         });
+
+        ipcRenderer.on("chat-last-viewed-update", (_, data) => {
+            this.removeNotification(data.chat.guid, data.lastViewed);
+        });
     }
 
     setCurrentChat(chat: Chat) {

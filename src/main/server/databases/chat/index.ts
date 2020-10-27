@@ -168,8 +168,6 @@ export class ChatRepository {
                     });
                 });
             }
-
-            console.log(reaction);
         }
 
         return reactions;
