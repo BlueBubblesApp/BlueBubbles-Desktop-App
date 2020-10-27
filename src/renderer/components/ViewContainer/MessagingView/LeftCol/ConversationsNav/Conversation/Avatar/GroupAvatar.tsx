@@ -26,14 +26,17 @@ export const GroupAvatar = ({ chat }: Props) => {
                 <circle cx="32%" cy="40%" r="16px" fill="white" />
                 <circle cx="68%" cy="60%" r="18px" fill="black" />
             </mask>
+            <mask id="rmv2ndProfile">
+                <circle cx="68%" cy="60%" r="16px" fill="white" />
+            </mask>
             <circle className="cls-1" mask="url(#rmvCir)" fill="url(#Gradient1)" cx="32%" cy="40%" r="16px" />
             {firstParticipant.avatar ? (
                 <image
                     mask="url(#rmvCir)"
-                    height="26px"
-                    width="26px"
-                    y="6px"
-                    x="4px"
+                    height="35px"
+                    width="35px"
+                    y="4px"
+                    x="-2px"
                     href={firstParticipant.avatar}
                     radius="52px"
                 />
@@ -81,14 +84,19 @@ export const GroupAvatar = ({ chat }: Props) => {
 
             <circle className="cls-1" fill="url(#Gradient1)" cx="68%" cy="60%" r="16px" />
             {secondParticipant.avatar ? (
-                <image height="26px" width="26px" y="15px" x="20px" href={secondParticipant.avatar} radius="52px" />
+                <image
+                    mask="url(#rmv2ndProfile)"
+                    height="35px"
+                    width="35px"
+                    y="14px"
+                    x="17px"
+                    href={secondParticipant.avatar}
+                    radius="52px"
+                />
             ) : (
                 <>
                     {chatIconText[1] === "?" ? (
                         <>
-                            <mask id="rmv2ndProfile">
-                                <circle cx="68%" cy="60%" r="14px" fill="white" />
-                            </mask>
                             <ellipse className="cls-2" fill="white" cx="68%" cy="49%" rx="6px" ry="7px" />
                             <circle
                                 className="cls-2"

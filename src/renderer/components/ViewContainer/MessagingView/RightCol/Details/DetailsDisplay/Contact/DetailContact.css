@@ -67,3 +67,9 @@
     opacity: 0.75;
     cursor: pointer;
 }
+
+.contactDetailsPhoto {
+    width: 34px;
+    height: 34px;
+    border-radius: 100px;
+}

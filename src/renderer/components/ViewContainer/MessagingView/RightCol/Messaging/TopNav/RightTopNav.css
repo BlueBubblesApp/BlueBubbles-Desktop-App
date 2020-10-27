@@ -36,7 +36,7 @@
     justify-content: flex-start;
     margin-top: 0px;
     overflow-x: auto;
-    margin-right: 1em;
+    margin-right: 15px;
     margin-bottom: 7px;
 }
 
@@ -131,11 +131,33 @@
     color: var(--main-title-color);
     background-color: var(--secondary-color);
     margin-bottom: 2px;
+    padding: 0 5px 0 3px;
+    height: calc(100% - 2px);
+    border-radius: 5px;
 }
 
 #newChatNameInput::placeholder {
     color: var(--main-title-color);
 }
 
-#newChatNameInput:focus {
+#newChatNameInput:hover {
+    background-color: var(--right-accent-title-color);
+}
+
+#newChatNameInput-Details {
+    outline: none;
+    border: none;
+    flex-grow: 1;
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    color: var(--main-title-color);
+    background-color: var(--secondary-color);
+    margin-bottom: 2px;
+}
+
+#newChatNameInput-Details::placeholder {
+    color: var(--main-title-color);
+}
+
+#newChatNameInput-Details:focus {
 }

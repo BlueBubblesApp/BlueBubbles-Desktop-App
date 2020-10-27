@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable react/no-unused-state */
 /* eslint-disable max-len */
@@ -252,9 +253,22 @@ class NewMessageTopNav extends React.Component<Props, State> {
                                             onClick={() => this.handleAddRecipToNewChat(filteredHandle)}
                                             key={filteredHandle.address}
                                         >
-                                            <p>{filteredHandle.firstName || ""}</p>
-                                            <p>{filteredHandle.lastName || ""}</p>
-                                            <p>{this.formatAddress(filteredHandle.address) || ""}</p>
+                                            {filteredHandle.avatar ? (
+                                                <img
+                                                    src={filteredHandle.avatar}
+                                                    style={{ height: "25px", width: "25px", borderRadius: "50%" }}
+                                                />
+                                            ) : null}
+                                            <p
+                                                className="matchingFirstName"
+                                                style={{ marginLeft: filteredHandle.avatar ? "5px" : "30px" }}
+                                            >
+                                                {filteredHandle.firstName || ""}
+                                            </p>
+                                            <p className="matchingLastName">{filteredHandle.lastName || ""}</p>
+                                            <p className="matchingAddress">
+                                                {this.formatAddress(filteredHandle.address) || ""}
+                                            </p>
                                         </div>
                                     ))}
                             </>

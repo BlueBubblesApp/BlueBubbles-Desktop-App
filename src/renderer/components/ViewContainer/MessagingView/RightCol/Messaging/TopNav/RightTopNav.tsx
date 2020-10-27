@@ -65,7 +65,7 @@ class RightTopNav extends React.Component<Props, State> {
                 <div id="recipDiv">
                     {this.props.isDetailsOpen && this.props.chat.displayName ? (
                         <input
-                            id="newChatNameInput"
+                            id="newChatNameInput-Details"
                             value={this.state.enteredDisplayName}
                             onChange={this.handleDisplayNameChange}
                             placeholder={this.props.chat.displayName}

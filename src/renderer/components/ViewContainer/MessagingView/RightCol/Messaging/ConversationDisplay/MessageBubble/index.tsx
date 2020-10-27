@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/order */
 /* eslint-disable react/no-unused-state */
@@ -90,7 +91,9 @@ const attachmentsDir = path.join(baseDir, "Attachments");
 
 const isSameSender = (message1: Message, message2: Message) => {
     if (!message1 || !message2) return false;
-    if (message1.isFromMe === message2.isFromMe) return true;
+    if (message1.isFromMe === true && message2.isFromMe === false) return false;
+    if (message1.isFromMe === false && message2.isFromMe === true) return false;
+    if (message1.handle?.address === message2.handle?.address) return true;
     if (message1.handleId === message2.handleId) return true;
     return false;
 };
@@ -705,6 +708,14 @@ class MessageBubble extends React.Component<Props, State> {
         return false;
     }
 
+    shouldHaveAvatar(): boolean {
+        const { message, newerMessage } = this.props;
+        if (newerMessage === null) return true;
+        if (newerMessage.dateCreated - message.dateCreated > 1000 * 60) return true;
+        if (!isSameSender(message, newerMessage)) return true;
+        return false;
+    }
+
     clickNHold(message) {
         const parent = document.getElementById(message.guid);
         if (!parent) return;
@@ -791,6 +802,9 @@ class MessageBubble extends React.Component<Props, State> {
         // Figure out if we should have a tail for the message
         const useTail = this.shouldHaveTail();
         let messageClass = useTail ? "message tail" : "message"; // Fix this to reflect having a tail
+
+        // Figure out if the message should show the handle avatar
+        const useAvatar = this.shouldHaveAvatar();
 
         // Is it sent?
         if (!message.guid || message.guid.length === 0 || message.guid.startsWith("temp")) {
@@ -920,9 +934,6 @@ class MessageBubble extends React.Component<Props, State> {
             messageDiv.classList.add(expressiveSendStyle);
         };
 
-        console.log(message);
-        console.log(message.handle);
-
         return (
             <>
                 {this.state.showContextMenu ? (
@@ -959,7 +970,7 @@ class MessageBubble extends React.Component<Props, State> {
                                     {attachments.map((attachment: AttachmentDownload) =>
                                         this.renderAttachment(attachment)
                                     )}
-                                    <div className="linkBottomDiv">
+                                    <div className={`linkBottomDiv ${useTail ? "tail" : ""}`}>
                                         <p>{this.state.linkTitle || "Loading ..."}</p>
                                         <p>{new URL(links[0]).hostname}</p>
                                     </div>
@@ -980,7 +991,7 @@ class MessageBubble extends React.Component<Props, State> {
                                 {text ? (
                                     <>
                                         <div className="emptyDiv" />
-                                        <div className={className} style={{ marginLeft: useTail ? "5px" : "40px" }}>
+                                        <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
                                             <div
                                                 style={{
                                                     display: "flex",
@@ -988,120 +999,152 @@ class MessageBubble extends React.Component<Props, State> {
                                                     justifyContent: message.isFromMe ? "flex-end" : "flex-start"
                                                 }}
                                             >
-                                                {useTail && !message.isFromMe ? (
+                                                {useAvatar && !message.isFromMe ? (
                                                     <>
-                                                        {generateReactionsDisplayIconText(message.handle) === "?" ? (
-                                                            <svg
-                                                                style={{ marginRight: "10px", minWidth: "25px" }}
+                                                        {message.handle.avatar ? (
+                                                            <img
+                                                                key={message.guid}
+                                                                src={message.handle.avatar}
+                                                                style={{
+                                                                    borderRadius: "50%",
+                                                                    marginRight: "10px",
+                                                                    minWidth: "25px"
+                                                                }}
                                                                 height="25px"
                                                                 width="25px"
-                                                                viewBox="0 0 1000 1000"
-                                                            >
-                                                                <defs>
-                                                                    <linearGradient
-                                                                        id="Gradient1"
-                                                                        x1="0"
-                                                                        x2="0"
-                                                                        y1="1"
-                                                                        y2="0"
-                                                                    >
-                                                                        <stop
-                                                                            className="stop1"
-                                                                            offset="0%"
-                                                                            stopColor="#686868"
-                                                                        />
-                                                                        <stop
-                                                                            className="stop2"
-                                                                            offset="100%"
-                                                                            stopColor="#928E8E"
-                                                                        />
-                                                                    </linearGradient>
-                                                                </defs>
-                                                                <circle
-                                                                    className="cls-1"
-                                                                    cx="50%"
-                                                                    cy="50%"
-                                                                    r="500"
-                                                                    fill="url(#Gradient1)"
-                                                                />
-                                                                <mask id="rmvProfile">
-                                                                    <circle cx="50%" cy="50%" r="435" fill="white" />
-                                                                </mask>
-                                                                <ellipse
-                                                                    className="cls-2"
-                                                                    fill="white"
-                                                                    cx="50%"
-                                                                    cy="34%"
-                                                                    rx="218"
-                                                                    ry="234"
-                                                                />
-                                                                <circle
-                                                                    className="cls-2"
-                                                                    mask="url(#rmvProfile)"
-                                                                    fill="white"
-                                                                    cx="50%"
-                                                                    cy="106%"
-                                                                    r="400"
-                                                                />
-                                                            </svg>
+                                                            />
                                                         ) : (
-                                                            <svg
-                                                                style={{ marginRight: "10px", minWidth: "25px" }}
-                                                                id="testContact"
-                                                                className="dynamicIcon"
-                                                                height="25px"
-                                                                width="25px"
-                                                                viewBox="0 0 1000 1000"
-                                                            >
-                                                                <defs>
-                                                                    <linearGradient
-                                                                        id="Gradient1"
-                                                                        x1="0"
-                                                                        x2="0"
-                                                                        y1="1"
-                                                                        y2="0"
+                                                            <>
+                                                                {generateReactionsDisplayIconText(message.handle) ===
+                                                                "?" ? (
+                                                                    <svg
+                                                                        style={{
+                                                                            marginRight: "10px",
+                                                                            minWidth: "25px"
+                                                                        }}
+                                                                        height="25px"
+                                                                        width="25px"
+                                                                        viewBox="0 0 1000 1000"
+                                                                        key={message.guid}
                                                                     >
-                                                                        <stop
-                                                                            className="stop1"
-                                                                            offset="0%"
-                                                                            stopColor="#686868"
+                                                                        <defs>
+                                                                            <linearGradient
+                                                                                id="Gradient1"
+                                                                                x1="0"
+                                                                                x2="0"
+                                                                                y1="1"
+                                                                                y2="0"
+                                                                            >
+                                                                                <stop
+                                                                                    className="stop1"
+                                                                                    offset="0%"
+                                                                                    stopColor="#686868"
+                                                                                />
+                                                                                <stop
+                                                                                    className="stop2"
+                                                                                    offset="100%"
+                                                                                    stopColor="#928E8E"
+                                                                                />
+                                                                            </linearGradient>
+                                                                        </defs>
+                                                                        <circle
+                                                                            className="cls-1"
+                                                                            cx="50%"
+                                                                            cy="50%"
+                                                                            r="500"
+                                                                            fill="url(#Gradient1)"
                                                                         />
-                                                                        <stop
-                                                                            className="stop2"
-                                                                            offset="100%"
-                                                                            stopColor="#928E8E"
+                                                                        <mask id="rmvProfile">
+                                                                            <circle
+                                                                                cx="50%"
+                                                                                cy="50%"
+                                                                                r="435"
+                                                                                fill="white"
+                                                                            />
+                                                                        </mask>
+                                                                        <ellipse
+                                                                            className="cls-2"
+                                                                            fill="white"
+                                                                            cx="50%"
+                                                                            cy="34%"
+                                                                            rx="218"
+                                                                            ry="234"
                                                                         />
-                                                                    </linearGradient>
-                                                                </defs>
-                                                                <circle
-                                                                    className="cls-1"
-                                                                    fill="url(#Gradient1)"
-                                                                    cx="50%"
-                                                                    cy="50%"
-                                                                    r="50%"
-                                                                />
-                                                                <text
-                                                                    style={{
-                                                                        fontFamily: "quicksand",
-                                                                        fontWeight: 700,
-                                                                        fontStyle: "normal",
-                                                                        fontSize:
-                                                                            generateReactionsDisplayIconText(
+                                                                        <circle
+                                                                            className="cls-2"
+                                                                            mask="url(#rmvProfile)"
+                                                                            fill="white"
+                                                                            cx="50%"
+                                                                            cy="106%"
+                                                                            r="400"
+                                                                        />
+                                                                    </svg>
+                                                                ) : (
+                                                                    <svg
+                                                                        style={{
+                                                                            marginRight: "10px",
+                                                                            minWidth: "25px"
+                                                                        }}
+                                                                        id="testContact"
+                                                                        className="dynamicIcon"
+                                                                        height="25px"
+                                                                        width="25px"
+                                                                        viewBox="0 0 1000 1000"
+                                                                        key={message.guid}
+                                                                    >
+                                                                        <defs>
+                                                                            <linearGradient
+                                                                                id="Gradient1"
+                                                                                x1="0"
+                                                                                x2="0"
+                                                                                y1="1"
+                                                                                y2="0"
+                                                                            >
+                                                                                <stop
+                                                                                    className="stop1"
+                                                                                    offset="0%"
+                                                                                    stopColor="#686868"
+                                                                                />
+                                                                                <stop
+                                                                                    className="stop2"
+                                                                                    offset="100%"
+                                                                                    stopColor="#928E8E"
+                                                                                />
+                                                                            </linearGradient>
+                                                                        </defs>
+                                                                        <circle
+                                                                            className="cls-1"
+                                                                            fill="url(#Gradient1)"
+                                                                            cx="50%"
+                                                                            cy="50%"
+                                                                            r="50%"
+                                                                        />
+                                                                        <text
+                                                                            style={{
+                                                                                fontFamily: "quicksand",
+                                                                                fontWeight: 700,
+                                                                                fontStyle: "normal",
+                                                                                fontSize:
+                                                                                    generateReactionsDisplayIconText(
+                                                                                        message.handle
+                                                                                    ).length >= 2
+                                                                                        ? "530px"
+                                                                                        : "650px"
+                                                                            }}
+                                                                            className="cls-2"
+                                                                            x="50%"
+                                                                            y="70%"
+                                                                            textAnchor="middle"
+                                                                            fill="white"
+                                                                            stroke="white"
+                                                                        >
+                                                                            {generateReactionsDisplayIconText(
                                                                                 message.handle
-                                                                            ).length >= 2
-                                                                                ? "530px"
-                                                                                : "650px"
-                                                                    }}
-                                                                    className="cls-2"
-                                                                    x="50%"
-                                                                    y="70%"
-                                                                    textAnchor="middle"
-                                                                    fill="white"
-                                                                    stroke="white"
-                                                                >
-                                                                    {generateReactionsDisplayIconText(message.handle)}
-                                                                </text>
-                                                            </svg>
+                                                                            )}
+                                                                        </text>
+                                                                    </svg>
+                                                                )}
+                                                            </>
                                                         )}
                                                     </>
                                                 ) : null}
@@ -1109,7 +1152,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                     <div
                                                         className={`${expressiveSendStyle} ${messageClass}`}
                                                         id={message.guid}
-                                                        style={{ marginBottom: useTail ? "3px" : "0" }}
+                                                        style={{ marginBottom: useAvatar ? "3px" : "0" }}
                                                     >
                                                         {message.hasReactions === true ? (
                                                             <>
@@ -1138,7 +1181,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                         onClick={e => handleReplayAnimation(e)}
                                                         style={{
                                                             marginLeft:
-                                                                useTail && className === "IncomingMessage"
+                                                                useAvatar && className === "IncomingMessage"
                                                                     ? "35px"
                                                                     : "0px"
                                                         }}
@@ -1239,7 +1282,7 @@ class MessageBubble extends React.Component<Props, State> {
                     </>
                 ) : (
                     <>
-                        <div className={className} style={{ marginLeft: useTail ? "5px" : "40px" }}>
+                        <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
                             {this.state.isReactionsOpen ? (
                                 <NewReaction
                                     message={message}
@@ -1252,7 +1295,7 @@ class MessageBubble extends React.Component<Props, State> {
                             {chat.participants.length > 1 &&
                             message.handle &&
                             (!olderMessage || olderMessage.handleId !== message.handleId) ? (
-                                <p className="MessageSender" style={{ marginLeft: useTail ? "38px" : "5px" }}>
+                                <p className="MessageSender" style={{ marginLeft: useAvatar ? "38px" : "5px" }}>
                                     {sender}
                                 </p>
                             ) : null}
@@ -1263,90 +1306,118 @@ class MessageBubble extends React.Component<Props, State> {
                                     justifyContent: message.isFromMe ? "flex-end" : "flex-start"
                                 }}
                             >
-                                {useTail && !message.isFromMe ? (
+                                {useAvatar && !message.isFromMe ? (
                                     <>
-                                        {generateReactionsDisplayIconText(message.handle) === "?" ? (
-                                            <svg
-                                                style={{ marginRight: "10px", minWidth: "25px" }}
+                                        {message.handle.avatar ? (
+                                            <img
+                                                src={message.handle.avatar}
+                                                style={{ borderRadius: "50%", marginRight: "10px", minWidth: "25px" }}
                                                 height="25px"
                                                 width="25px"
-                                                viewBox="0 0 1000 1000"
-                                            >
-                                                <defs>
-                                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                                    </linearGradient>
-                                                </defs>
-                                                <circle
-                                                    className="cls-1"
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    r="500"
-                                                    fill="url(#Gradient1)"
-                                                />
-                                                <mask id="rmvProfile">
-                                                    <circle cx="50%" cy="50%" r="435" fill="white" />
-                                                </mask>
-                                                <ellipse
-                                                    className="cls-2"
-                                                    fill="white"
-                                                    cx="50%"
-                                                    cy="34%"
-                                                    rx="218"
-                                                    ry="234"
-                                                />
-                                                <circle
-                                                    className="cls-2"
-                                                    mask="url(#rmvProfile)"
-                                                    fill="white"
-                                                    cx="50%"
-                                                    cy="106%"
-                                                    r="400"
-                                                />
-                                            </svg>
+                                            />
                                         ) : (
-                                            <svg
-                                                style={{ marginRight: "10px", minWidth: "25px" }}
-                                                id="testContact"
-                                                className="dynamicIcon"
-                                                height="25px"
-                                                width="25px"
-                                                viewBox="0 0 1000 1000"
-                                            >
-                                                <defs>
-                                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                                    </linearGradient>
-                                                </defs>
-                                                <circle
-                                                    className="cls-1"
-                                                    fill="url(#Gradient1)"
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    r="50%"
-                                                />
-                                                <text
-                                                    style={{
-                                                        fontFamily: "quicksand",
-                                                        fontWeight: 700,
-                                                        fontStyle: "normal",
-                                                        fontSize:
-                                                            generateReactionsDisplayIconText(message.handle).length >= 2
-                                                                ? "530px"
-                                                                : "650px"
-                                                    }}
-                                                    className="cls-2"
-                                                    x="50%"
-                                                    y="70%"
-                                                    textAnchor="middle"
-                                                    fill="white"
-                                                    stroke="white"
-                                                >
-                                                    {generateReactionsDisplayIconText(message.handle)}
-                                                </text>
-                                            </svg>
+                                            <>
+                                                {generateReactionsDisplayIconText(message.handle) === "?" ? (
+                                                    <svg
+                                                        style={{ marginRight: "10px", minWidth: "25px" }}
+                                                        height="25px"
+                                                        width="25px"
+                                                        viewBox="0 0 1000 1000"
+                                                    >
+                                                        <defs>
+                                                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                                                <stop
+                                                                    className="stop1"
+                                                                    offset="0%"
+                                                                    stopColor="#686868"
+                                                                />
+                                                                <stop
+                                                                    className="stop2"
+                                                                    offset="100%"
+                                                                    stopColor="#928E8E"
+                                                                />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <circle
+                                                            className="cls-1"
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            r="500"
+                                                            fill="url(#Gradient1)"
+                                                        />
+                                                        <mask id="rmvProfile">
+                                                            <circle cx="50%" cy="50%" r="435" fill="white" />
+                                                        </mask>
+                                                        <ellipse
+                                                            className="cls-2"
+                                                            fill="white"
+                                                            cx="50%"
+                                                            cy="34%"
+                                                            rx="218"
+                                                            ry="234"
+                                                        />
+                                                        <circle
+                                                            className="cls-2"
+                                                            mask="url(#rmvProfile)"
+                                                            fill="white"
+                                                            cx="50%"
+                                                            cy="106%"
+                                                            r="400"
+                                                        />
+                                                    </svg>
+                                                ) : (
+                                                    <svg
+                                                        style={{ marginRight: "10px", minWidth: "25px" }}
+                                                        id="testContact"
+                                                        className="dynamicIcon"
+                                                        height="25px"
+                                                        width="25px"
+                                                        viewBox="0 0 1000 1000"
+                                                    >
+                                                        <defs>
+                                                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                                                <stop
+                                                                    className="stop1"
+                                                                    offset="0%"
+                                                                    stopColor="#686868"
+                                                                />
+                                                                <stop
+                                                                    className="stop2"
+                                                                    offset="100%"
+                                                                    stopColor="#928E8E"
+                                                                />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <circle
+                                                            className="cls-1"
+                                                            fill="url(#Gradient1)"
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            r="50%"
+                                                        />
+                                                        <text
+                                                            style={{
+                                                                fontFamily: "quicksand",
+                                                                fontWeight: 700,
+                                                                fontStyle: "normal",
+                                                                fontSize:
+                                                                    generateReactionsDisplayIconText(message.handle)
+                                                                        .length >= 2
+                                                                        ? "530px"
+                                                                        : "650px"
+                                                            }}
+                                                            className="cls-2"
+                                                            x="50%"
+                                                            y="70%"
+                                                            textAnchor="middle"
+                                                            fill="white"
+                                                            stroke="white"
+                                                        >
+                                                            {generateReactionsDisplayIconText(message.handle)}
+                                                        </text>
+                                                    </svg>
+                                                )}
+                                            </>
                                         )}
                                     </>
                                 ) : null}
@@ -1359,7 +1430,7 @@ class MessageBubble extends React.Component<Props, State> {
                                     <div
                                         className={`${expressiveSendStyle} ${messageClass}`}
                                         id={message.guid}
-                                        style={{ marginBottom: useTail ? "3px" : "0" }}
+                                        style={{ marginBottom: useAvatar ? "3px" : "0" }}
                                     >
                                         {message.hasReactions === true ? (
                                             <>
@@ -1392,7 +1463,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         className="replayMessageEffect"
                                         onClick={e => handleReplayAnimation(e)}
                                         style={{
-                                            marginLeft: useTail && className === "IncomingMessage" ? "35px" : "0px"
+                                            marginLeft: useAvatar && className === "IncomingMessage" ? "35px" : "0px"
                                         }}
                                     >
                                         {expressiveSendStyle === "CKConfettiEffect" &&

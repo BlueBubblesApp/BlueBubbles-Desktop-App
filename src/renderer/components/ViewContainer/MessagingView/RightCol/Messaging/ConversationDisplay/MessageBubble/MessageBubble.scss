@@ -11,6 +11,7 @@
     font-size: 48px;
     padding-left: 0;
     background: none;
+    position: relative;
 }
 
 .bigEmojis > p {
@@ -254,6 +255,63 @@
     transition: ease-in-out 0.25s;
 }
 
+.IncomingLink .tail:before {
+    opacity: var(--hide-pseudo);
+    content: "";
+    position: absolute;
+    z-index: 0;
+    bottom: 0;
+    left: -7px;
+    height: 20px;
+    width: 20px;
+    background: var(--incoming-message-color);
+    border-bottom-right-radius: 15px;
+    transition: ease-in-out 0.25s;
+}
+
+.IncomingLink .tail:after {
+    opacity: var(--hide-pseudo);
+    content: "";
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    left: -10px;
+    width: 10px;
+    height: 20px;
+    background: var(--background-color);
+    border-bottom-right-radius: 10px;
+    transition: ease-in-out 0.25s;
+}
+
+.OutgoingLink .tail:before {
+    opacity: var(--hide-pseudo);
+    content: "";
+    position: absolute;
+    z-index: 0;
+    bottom: 0;
+    right: -8px;
+    height: 20px;
+    width: 20px;
+    background-color: var(--incoming-message-color);
+    background-attachment: fixed;
+    border-bottom-left-radius: 15px;
+    transition: ease-in-out 0.45s;
+}
+
+.OutgoingLink .tail:after {
+    opacity: var(--hide-pseudo);
+    content: "";
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    right: -10px;
+    width: 10px;
+    height: 20px;
+    background: var(--background-color);
+    border-bottom-left-radius: 10px;
+    transition: ease-in-out 0.45s;
+}
+
 .Attachment {
     max-height: 40%;
     max-width: 40%;
@@ -352,6 +410,7 @@
 }
 
 .OutgoingLink > div > .linkBottomDiv {
+    // background-color: var(--outgoing-message-color);
 }
 
 .linkBottomDiv {
@@ -361,6 +420,7 @@
     background-color: var(--incoming-message-color);
     border-radius: 0 0 15px 15px;
     width: 100%;
+    position: relative;
 }
 
 .linkBottomDiv:hover {
@@ -372,7 +432,7 @@
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-size: 14px;
-    margin: 5px 7px 0 7px;
+    margin: 5px 7px 0 13px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -383,7 +443,7 @@
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
     font-size: 13px;
-    margin: 0 7px 5px 7px;
+    margin: 0 7px 5px 13px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

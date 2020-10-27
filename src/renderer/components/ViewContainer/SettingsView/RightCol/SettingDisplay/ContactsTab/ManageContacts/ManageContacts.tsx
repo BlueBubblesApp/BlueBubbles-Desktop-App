@@ -77,7 +77,10 @@ class ManageContacts extends React.Component<unknown, State> {
                                     <div className="aContactRow" key={contact.address}>
                                         <div className="avatarCol">
                                             {contact.avatar ? (
-                                                <img src={contact.avatar} />
+                                                <img
+                                                    src={contact.avatar}
+                                                    style={{ height: "25px", width: "25px", borderRadius: "50%" }}
+                                                />
                                             ) : (
                                                 <p className="aContactField">None</p>
                                             )}

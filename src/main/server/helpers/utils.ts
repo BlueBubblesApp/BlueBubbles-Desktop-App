@@ -39,7 +39,7 @@ export const parseVCards = (vcf: string): Contact[] => {
         let avatar = null;
         if (photo) {
             const photoData = photo.toJSON();
-            if (photoData[2] === "text" && photoData[1].encoding.toLowerCase() === "base64") {
+            if (photoData[2] === "text" && photoData[1].encoding.toLowerCase() === "b") {
                 avatar = `data:image/${photoData[1].type};base64,${photoData[3]}`;
             }
         }
