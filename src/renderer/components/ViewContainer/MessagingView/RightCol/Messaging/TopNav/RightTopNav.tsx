@@ -73,7 +73,9 @@ class RightTopNav extends React.Component<Props, State> {
                     ) : (
                         <>
                             {this.props.chat.displayName ? (
-                                <input id="newChatNameInput" placeholder={this.props.chat.displayName} readOnly />
+                                <div>
+                                    <p>{this.props.chat.displayName}</p>
+                                </div>
                             ) : (
                                 <>
                                     {this.props.chat

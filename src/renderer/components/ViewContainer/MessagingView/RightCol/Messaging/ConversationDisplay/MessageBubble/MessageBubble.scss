@@ -409,12 +409,10 @@
     max-width: 100%;
 }
 
-.OutgoingLink > div > .linkBottomDiv {
-    // background-color: var(--outgoing-message-color);
-}
-
 .linkBottomDiv {
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     height: 45px;
     max-height: 55px;
     background-color: var(--incoming-message-color);
@@ -423,27 +421,32 @@
     position: relative;
 }
 
+.linkBottomDiv > div {
+    margin-left: 8px;
+    z-index: 2;
+}
+
 .linkBottomDiv:hover {
     cursor: pointer;
 }
 
-.linkBottomDiv > p:first-child {
+.linkBottomDiv > div > p:first-child {
     margin: 0;
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-size: 14px;
-    margin: 5px 7px 0 13px;
+    margin: 5px 0px 0px 0px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.linkBottomDiv > p {
+.linkBottomDiv > div > p {
     margin: 0;
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
     font-size: 13px;
-    margin: 0 7px 5px 13px;
+    margin: 0 7px 0px 0px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -457,6 +460,11 @@
     width: 40%;
     max-width: 40%;
     min-width: 40%;
+}
+
+.linkFavicon {
+    padding-right: 5px;
+    z-index: 2;
 }
 
 // Audio Attachment

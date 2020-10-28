@@ -81,6 +81,7 @@ type State = {
     linkTitle: string;
     playMessageAnimation: boolean;
     stickers: AttachmentDownload[];
+    linkPrev: any;
 };
 
 let subdir = "";
@@ -181,14 +182,14 @@ class MessageBubble extends React.Component<Props, State> {
             currentContextMenuElement: null,
             linkTitle: null,
             playMessageAnimation: false,
-            stickers: []
+            stickers: [],
+            linkPrev: null
         };
     }
 
     handleImageRightClick(e) {
         xPos = `${e.pageX}px`;
         yPos = `${e.pageY - 25}px`;
-        console.log(xPos + yPos);
         this.setState({ showContextMenu: true });
         this.setState({ currentContextMenuElement: e.target });
     }
@@ -204,6 +205,7 @@ class MessageBubble extends React.Component<Props, State> {
 
             // Render based on mime type
             if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
+                console.log(attachment.width);
                 const mime = attachment.mimeType ?? "image/pluginPayloadAttachment";
 
                 if (attachment.isSticker) {
@@ -376,6 +378,14 @@ class MessageBubble extends React.Component<Props, State> {
         return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
     }
 
+    isValidUrl = string => {
+        const regexp = /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
+        if (regexp.test(string)) {
+            return true;
+        }
+        return false;
+    };
+
     async componentDidMount() {
         this._isMounted = true;
 
@@ -387,8 +397,10 @@ class MessageBubble extends React.Component<Props, State> {
 
             const { message } = this.props;
 
-            if (message.text.includes("http") || message.text.includes("Https")) {
+            if (this.isValidUrl(message.text) || message.text.includes("http") || message.text.includes("Https")) {
                 const linkPrev: any = await getLinkPreview(message.text);
+                console.log(linkPrev);
+                this.setState({ linkPrev });
                 if (linkPrev.title) {
                     this.setState({ linkTitle: linkPrev.title });
                 } else {
@@ -784,7 +796,7 @@ class MessageBubble extends React.Component<Props, State> {
 
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
-        const { attachments } = this.state;
+        const { attachments, linkPrev } = this.state;
         const { stickers } = this.state;
         const animationHeight = document.getElementById("messageView").offsetHeight;
         const animationWidth = document.getElementById("messageView").offsetWidth;
@@ -862,7 +874,7 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         // Parse out any links. We can minimize parsing if we do a simple "contains" first
-        if (text.includes("http") || text.includes("Https")) {
+        if (this.isValidUrl(text) || text.includes("http") || text.includes("Https")) {
             links = parseUrls(text);
         }
 
@@ -934,6 +946,9 @@ class MessageBubble extends React.Component<Props, State> {
             messageDiv.classList.add(expressiveSendStyle);
         };
 
+        // If a url hostname is in this array, the preview will be forced to only show the favicon instead of the image
+        const forceFaviconURLS = ["bluebubbles.app"];
+
         return (
             <>
                 {this.state.showContextMenu ? (
@@ -967,12 +982,63 @@ class MessageBubble extends React.Component<Props, State> {
                         {links.length > 0 ? (
                             <div className={linkClassName}>
                                 <div className="linkContainer" onClick={() => openLink(links[0])}>
-                                    {attachments.map((attachment: AttachmentDownload) =>
+                                    {linkPrev &&
+                                    linkPrev.images.length > 0 &&
+                                    !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
+                                        <img src={linkPrev.images[0]} className="Attachment" />
+                                    ) : null}
+                                    {/* {attachments.map((attachment: AttachmentDownload) =>
                                         this.renderAttachment(attachment)
-                                    )}
-                                    <div className={`linkBottomDiv ${useTail ? "tail" : ""}`}>
-                                        <p>{this.state.linkTitle || "Loading ..."}</p>
-                                        <p>{new URL(links[0]).hostname}</p>
+                                    )} */}
+                                    <div
+                                        className={`linkBottomDiv ${useTail ? "tail" : ""}`}
+                                        style={{
+                                            borderRadius:
+                                                (linkPrev &&
+                                                    linkPrev.images.length === 0 &&
+                                                    linkPrev.favicons.length > 0) ||
+                                                (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                    ? "15px"
+                                                    : "0 0 15px 15px",
+                                            marginTop:
+                                                (linkPrev &&
+                                                    linkPrev.images.length === 0 &&
+                                                    linkPrev.favicons.length > 0) ||
+                                                (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                    ? "3px"
+                                                    : "0px"
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                width:
+                                                    linkPrev &&
+                                                    linkPrev.images.length > 0 &&
+                                                    !forceFaviconURLS.includes(new URL(links[0]).hostname)
+                                                        ? "93%"
+                                                        : "75%"
+                                            }}
+                                        >
+                                            <p
+                                                style={{
+                                                    marginTop:
+                                                        (linkPrev &&
+                                                            linkPrev.images.length === 0 &&
+                                                            linkPrev.favicons.length > 0) ||
+                                                        (linkPrev &&
+                                                            forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                            ? "2px"
+                                                            : "0px"
+                                                }}
+                                            >
+                                                {this.state.linkTitle || "Loading ..."}
+                                            </p>
+                                            <p>{new URL(links[0]).hostname}</p>
+                                        </div>
+                                        {(linkPrev && linkPrev.images.length === 0 && linkPrev.favicons.length > 0) ||
+                                        (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
+                                            <img src={linkPrev.favicons[0]} className="linkFavicon" />
+                                        ) : null}
                                     </div>
                                 </div>
                             </div>
