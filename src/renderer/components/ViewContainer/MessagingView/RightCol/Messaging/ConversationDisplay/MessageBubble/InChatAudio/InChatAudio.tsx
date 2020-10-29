@@ -111,7 +111,7 @@ class InChatAudio extends React.Component<Props, State> {
                 <div
                     key={attachment.guid}
                     className={
-                        attachment.isOutgoing ? "OutgoingAudioAttachmentControls" : "InComingAudioAttachmentControls"
+                        attachment.isOutgoing ? "OutgoingAudioAttachmentControls" : "IncomingAudioAttachmentControls"
                     }
                 >
                     <div className="toggleAudioPlayPause" onClick={() => this.toggleAudio()}>

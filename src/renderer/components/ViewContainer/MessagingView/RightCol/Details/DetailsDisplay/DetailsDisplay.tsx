@@ -258,7 +258,7 @@ class DetailsDisplay extends React.Component<Props, State> {
                     finalString += "and " + participants.initials[i];
                     return;
                 }
-                finalString += participants[i] + ", ";
+                finalString += participants.initials[i] + ", ";
             });
 
             if (participants.initials.length > 3) {

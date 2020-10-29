@@ -7,5 +7,6 @@ export const supportedAudioTypes = [
     "audio/aacp",
     "audio/ogg",
     "audio/webm",
-    "audio/flac"
+    "audio/flac",
+    "audio/x-m4a"
 ];

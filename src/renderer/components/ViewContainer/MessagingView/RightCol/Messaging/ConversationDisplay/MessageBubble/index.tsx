@@ -280,6 +280,7 @@ class MessageBubble extends React.Component<Props, State> {
             }
 
             if (attachment.mimeType.startsWith("audio") && attachment.data) {
+                console.log(attachment.mimeType);
                 return <InChatAudio attachment={attachment} />;
             }
 
@@ -976,7 +977,7 @@ class MessageBubble extends React.Component<Props, State> {
                     </div>
                 ) : null}
                 {/* If the message has an attachment */}
-                {message.attachments?.length > 0 ? (
+                {message.attachments?.length > 0 || links.length > 0 ? (
                     <>
                         {/* If the attachment is a link */}
                         {links.length > 0 ? (
