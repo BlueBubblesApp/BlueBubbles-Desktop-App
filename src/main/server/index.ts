@@ -739,8 +739,8 @@ class BackendServer {
                     };
 
                     for (let i = 0; i < numOfChunks; i += 1) {
-                        attachmentParams.attachmentChunkStart = i === 0 ? 0 : i + CHUNK_SIZE;
-                        attachmentParams.hasMore = i + CHUNK_SIZE < stats.size;
+                        attachmentParams.attachmentChunkStart = i === 0 ? 0 : i * CHUNK_SIZE;
+                        attachmentParams.hasMore = i * CHUNK_SIZE + CHUNK_SIZE < stats.size;
                         attachmentParams.attachmentName = path.basename(attachment.filepath);
 
                         // Get data as a Uint8Array and convert to base64
@@ -1211,6 +1211,27 @@ class BackendServer {
             const file: DownloadItem = await download(this.window, url, options);
             this.emitToUI("chat-drop-event", { attachment: file.getSavePath() });
             ipcMain.removeHandler("cancel-download");
+        });
+
+        ipcMain.handle("download-gif-from-giphy", async (_, url) => {
+            const { download } = require("electron-dl");
+
+            const dlProgress = dl => {
+                console.log(dl);
+            };
+
+            const dlStart = (dl: DownloadItem) => {
+                console.log("start");
+            };
+
+            const options = {
+                directory: path.join(FileSystem.attachmentsDir, "temp"),
+                onProgress: dl => dlProgress(dl),
+                onStarted: x => dlStart(x)
+            };
+
+            const file: DownloadItem = await download(this.window, url, options);
+            this.emitToUI("chat-drop-event", { attachment: file.getSavePath() });
         });
 
         ipcMain.handle("get-spelling-suggestions", async (_, selectedWord) => {

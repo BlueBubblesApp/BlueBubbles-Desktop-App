@@ -79,7 +79,8 @@ module.exports = merge.smart(baseConfig, {
         new webpack.NamedModulesPlugin(),
         new HtmlWebpackPlugin(),
         new webpack.DefinePlugin({
-            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+            "process.env.GIPHY_API_KEY": JSON.stringify(process.env.GIPHY_API_KEY)
         })
     ]
 });

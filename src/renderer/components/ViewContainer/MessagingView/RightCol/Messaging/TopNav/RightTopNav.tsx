@@ -29,6 +29,7 @@ class RightTopNav extends React.Component<Props, State> {
 
     handleOpenDetails = () => {
         ipcRenderer.invoke("send-to-ui", { event: "open-details" });
+        ipcRenderer.invoke("send-to-ui", { event: "toggle-giphy-selector", contents: false });
     };
 
     handleCloseDetails = () => {

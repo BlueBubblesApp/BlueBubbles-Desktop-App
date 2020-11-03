@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable max-len */
 import * as React from "react";
-import { ipcMain, ipcRenderer, IpcRendererEvent } from "electron";
+import { ipcRenderer, IpcRendererEvent } from "electron";
 import { Chat, Handle } from "@server/databases/chat/entity";
 import "./RightCol.css";
 
@@ -14,6 +14,7 @@ import NewMessageConversationDisplay from "./NewMessage/NewMessageConversation/N
 import NewMessageBottomNav from "./NewMessage/NewMessageBottom/NewMessageBottomNav";
 
 import DetailsDisplay from "./Details/DetailsDisplay/DetailsDisplay";
+import GIFSelection from "./GIFSelection/GIFSelection";
 
 type ServerInputTitleState = {
     currentChat: Chat;
@@ -24,6 +25,7 @@ type ServerInputTitleState = {
     dropFileName: string;
     dlProgress: number;
     dropFileSize: string;
+    isGIFSelectorOpen: boolean;
 };
 
 class RightCol extends React.Component<object, ServerInputTitleState> {
@@ -38,11 +40,16 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
             downloadingDrop: false,
             dropFileName: null,
             dlProgress: null,
-            dropFileSize: null
+            dropFileSize: null,
+            isGIFSelectorOpen: false
         };
     }
 
     async componentDidMount() {
+        ipcRenderer.on("toggle-giphy-selector", (_, show) => {
+            this.setState({ isGIFSelectorOpen: show });
+        });
+
         ipcRenderer.on("open-details", () => {
             this.setState({ isDetailsOpen: true });
         });
@@ -201,6 +208,7 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
                         )}
                         <NewMessageConversationDisplay />
                         <NewMessageBottomNav />
+                        {this.state.isGIFSelectorOpen ? <GIFSelection /> : null}
                         {this.state.isDraggingOver ? (
                             <div id="chatDropzone">
                                 {this.state.downloadingDrop ? (
@@ -230,6 +238,7 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
                                 <RightTopNav chat={this.state.currentChat} isDetailsOpen={false} />
                                 <RightConversationDisplay chat={this.state.currentChat} />
                                 <RightBottomNav chat={this.state.currentChat} />
+                                {this.state.isGIFSelectorOpen ? <GIFSelection /> : null}
                                 {this.state.isDraggingOver ? (
                                     <div id="chatDropzone">
                                         {this.state.downloadingDrop ? (

@@ -205,7 +205,6 @@ class MessageBubble extends React.Component<Props, State> {
 
             // Render based on mime type
             if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
-                console.log(attachment.width);
                 const mime = attachment.mimeType ?? "image/pluginPayloadAttachment";
 
                 if (attachment.isSticker) {
@@ -228,6 +227,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         onContextMenu={e => this.handleImageRightClick(e)}
                                         onError={setFallbackImage}
                                         style={{ left: `${messageCords.left - 295 + messageCords.width / 2}px` }}
+                                        draggable="false"
                                     />
                                 ) : (
                                     <img
@@ -239,6 +239,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
                                         onContextMenu={e => this.handleImageRightClick(e)}
                                         onError={setFallbackImage}
+                                        draggable="false"
                                         // style={{left: `${messageCords.left - 295 + messageCords.width/2}px`}}
                                     />
                                 )}
@@ -257,6 +258,7 @@ class MessageBubble extends React.Component<Props, State> {
                         onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
                         onContextMenu={e => this.handleImageRightClick(e)}
                         onError={setFallbackImage}
+                        draggable="false"
                     />
                 );
             }
@@ -273,6 +275,12 @@ class MessageBubble extends React.Component<Props, State> {
                         muted
                         loop
                         controls
+                        draggable="false"
+                        onClick={e =>
+                            (e.target as HTMLVideoElement).paused
+                                ? (e.target as HTMLVideoElement).play()
+                                : (e.target as HTMLVideoElement).pause()
+                        }
                     >
                         <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
                     </video>
@@ -280,7 +288,6 @@ class MessageBubble extends React.Component<Props, State> {
             }
 
             if (attachment.mimeType.startsWith("audio") && attachment.data) {
-                console.log(attachment.mimeType);
                 return <InChatAudio attachment={attachment} />;
             }
 
@@ -327,6 +334,7 @@ class MessageBubble extends React.Component<Props, State> {
                                 : "var(--incoming-message-color)"
                         }}
                         onClick={() => openAttachment(attachmentPath)}
+                        draggable="false"
                     >
                         {vcfData && vcfData.FN ? <p>{vcfData.FN}</p> : <p>Contact</p>}
                         <div>
@@ -950,6 +958,10 @@ class MessageBubble extends React.Component<Props, State> {
         // If a url hostname is in this array, the preview will be forced to only show the favicon instead of the image
         const forceFaviconURLS = ["bluebubbles.app"];
 
+        if (message.groupActionType !== 0) {
+            console.log(message);
+        }
+
         return (
             <>
                 {this.state.showContextMenu ? (
@@ -981,12 +993,11 @@ class MessageBubble extends React.Component<Props, State> {
                     <>
                         {/* If the attachment is a link */}
                         {links.length > 0 ? (
-                            <div className={linkClassName}>
+                            <div className={linkClassName} draggable="false">
                                 <div className="linkContainer" onClick={() => openLink(links[0])}>
-                                    {linkPrev &&
-                                    linkPrev.images.length > 0 &&
+                                    {linkPrev?.images?.length > 0 &&
                                     !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
-                                        <img src={linkPrev.images[0]} className="Attachment" />
+                                        <img src={linkPrev.images[0]} className="Attachment" draggable="false" />
                                     ) : null}
                                     {/* {attachments.map((attachment: AttachmentDownload) =>
                                         this.renderAttachment(attachment)
@@ -995,16 +1006,12 @@ class MessageBubble extends React.Component<Props, State> {
                                         className={`linkBottomDiv ${useTail ? "tail" : ""}`}
                                         style={{
                                             borderRadius:
-                                                (linkPrev &&
-                                                    linkPrev.images.length === 0 &&
-                                                    linkPrev.favicons.length > 0) ||
+                                                (linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
                                                 (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
                                                     ? "15px"
                                                     : "0 0 15px 15px",
                                             marginTop:
-                                                (linkPrev &&
-                                                    linkPrev.images.length === 0 &&
-                                                    linkPrev.favicons.length > 0) ||
+                                                (linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
                                                 (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
                                                     ? "3px"
                                                     : "0px"
@@ -1013,8 +1020,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         <div
                                             style={{
                                                 width:
-                                                    linkPrev &&
-                                                    linkPrev.images.length > 0 &&
+                                                    linkPrev?.images?.length > 0 &&
                                                     !forceFaviconURLS.includes(new URL(links[0]).hostname)
                                                         ? "93%"
                                                         : "75%"
@@ -1023,9 +1029,8 @@ class MessageBubble extends React.Component<Props, State> {
                                             <p
                                                 style={{
                                                     marginTop:
-                                                        (linkPrev &&
-                                                            linkPrev.images.length === 0 &&
-                                                            linkPrev.favicons.length > 0) ||
+                                                        (linkPrev?.images?.length === 0 &&
+                                                            linkPrev?.favicons?.length > 0) ||
                                                         (linkPrev &&
                                                             forceFaviconURLS.includes(new URL(links[0]).hostname))
                                                             ? "2px"
@@ -1036,7 +1041,7 @@ class MessageBubble extends React.Component<Props, State> {
                                             </p>
                                             <p>{new URL(links[0]).hostname}</p>
                                         </div>
-                                        {(linkPrev && linkPrev.images.length === 0 && linkPrev.favicons.length > 0) ||
+                                        {(linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
                                         (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
                                             <img src={linkPrev.favicons[0]} className="linkFavicon" />
                                         ) : null}
@@ -1618,6 +1623,7 @@ class MessageBubble extends React.Component<Props, State> {
                                     </div>
                                 </>
                             ) : null}
+                            {showStatus ? getStatusText(message) : null}
                         </div>
                     </>
                 )}

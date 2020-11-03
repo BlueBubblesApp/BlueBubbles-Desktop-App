@@ -70,7 +70,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
     componentDidMount() {
         ipcRenderer.on("message", async (_, payload: { message: Message; tempGuid?: string }) => {
             const { message } = payload;
-            console.log(message);
 
             // If the message isn't for this chat, ignore it
             if (!message.chats || message.chats[0].guid !== this.props.chat.guid) return;
@@ -312,6 +311,10 @@ class RightConversationDisplay extends React.Component<Props, State> {
                     let myNewMessages = [];
                     if (chat.participants.length <= 1 && index + 1 < messages.length) {
                         myNewMessages = messages.slice(index + 1, messages.length).filter(i => i.isFromMe);
+                    }
+
+                    if (message.groupActionType !== 0) {
+                        console.log(message);
                     }
 
                     return (

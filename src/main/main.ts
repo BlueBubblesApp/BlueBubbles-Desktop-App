@@ -6,7 +6,9 @@ import * as url from "url";
 
 import { Server } from "@server/index";
 import { FileSystem } from "@server/fileSystem";
-import trayIcon from "@renderer/assets/logo64.png";
+import trayIcon from "@renderer/assets/logo192.png";
+
+require("dotenv").config();
 
 // To allow CORS
 app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors");

@@ -34,6 +34,7 @@ interface NewMessageBottomNavState {
     sug1: string;
     sug2: string;
     sug3: string;
+    showGIFSelector: boolean;
 }
 
 declare const MediaRecorder: any;
@@ -63,7 +64,8 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
             selectedWord: null,
             sug1: null,
             sug2: null,
-            sug3: null
+            sug3: null,
+            showGIFSelector: false
         };
 
         this.tick = this.tick.bind(this);
@@ -185,6 +187,10 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
     }
 
     handleMessageChange = event => {
+        if (this.state.showGIFSelector) {
+            ipcRenderer.invoke("send-to-ui", { event: "giphy-search-term", contents: event.target.value });
+        }
+
         // Capitalize the first letter of input
         if (this.state.capitalizeFirstLetter) {
             this.setState({
@@ -320,20 +326,15 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
 
     startMic() {
         desktopCapturer.getSources({ types: ["screen"] }).then(async sources => {
-            for (const source of sources) {
-                console.log(source);
-                if (source.name === "Entire Screen") {
-                    try {
-                        const stream = await navigator.mediaDevices.getUserMedia({
-                            audio: true,
-                            video: false
-                        });
-                        this.handleStream(stream);
-                    } catch (e) {
-                        this.handleError(e);
-                    }
-                    return;
-                }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: false
+                });
+                console.log(stream);
+                this.handleStream(stream);
+            } catch (e) {
+                this.handleError(e);
             }
         });
     }
@@ -608,11 +609,29 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                                 />
                             </div>
                         ) : null}
-                        <div id="leftAttachmentButton-NewMessage" onClick={() => this.handleAddAttachment()}>
-                            <svg id="attachIcon-NewMessage" viewBox="0 0 25 25">
-                                <path d="M7.46,25a7.57,7.57,0,0,1-5.19-2l-.09-.08a6.72,6.72,0,0,1,0-9.9L15,1.42a5.46,5.46,0,0,1,7.35,0A4.88,4.88,0,0,1,24,5a4.83,4.83,0,0,1-1.56,3.54L10.38,19.41A3.23,3.23,0,0,1,6,19.4a2.91,2.91,0,0,1,0-4.3L17.27,5l1.33,1.49L7.35,16.57a.91.91,0,0,0-.29.66.93.93,0,0,0,.31.68,1.23,1.23,0,0,0,1.66,0L21.09,7.11a2.81,2.81,0,0,0,0-4.16,3.45,3.45,0,0,0-4.69-.06L3.53,14.46a4.72,4.72,0,0,0,0,7l.09.08a5.65,5.65,0,0,0,7.63,0L23.33,10.69l1.34,1.49L12.62,23A7.53,7.53,0,0,1,7.46,25Z" />
-                            </svg>
-                        </div>
+                        {this.state.showGIFSelector ? (
+                            <img id="giphyFullLogo" src={require("@renderer/assets/giphy-logo.png")} />
+                        ) : (
+                            <>
+                                <div id="leftAttachmentButton" onClick={() => this.handleAddAttachment()}>
+                                    <svg id="attachIcon" viewBox="0 0 25 25">
+                                        <path d="M7.46,25a7.57,7.57,0,0,1-5.19-2l-.09-.08a6.72,6.72,0,0,1,0-9.9L15,1.42a5.46,5.46,0,0,1,7.35,0A4.88,4.88,0,0,1,24,5a4.83,4.83,0,0,1-1.56,3.54L10.38,19.41A3.23,3.23,0,0,1,6,19.4a2.91,2.91,0,0,1,0-4.3L17.27,5l1.33,1.49L7.35,16.57a.91.91,0,0,0-.29.66.93.93,0,0,0,.31.68,1.23,1.23,0,0,0,1.66,0L21.09,7.11a2.81,2.81,0,0,0,0-4.16,3.45,3.45,0,0,0-4.69-.06L3.53,14.46a4.72,4.72,0,0,0,0,7l.09.08a5.65,5.65,0,0,0,7.63,0L23.33,10.69l1.34,1.49L12.62,23A7.53,7.53,0,0,1,7.46,25Z" />
+                                    </svg>
+                                </div>
+                                <img
+                                    id="openGIFSelector"
+                                    onClick={() => {
+                                        this.setState({ enteredMessage: "", showGIFSelector: true });
+                                        ipcRenderer.invoke("send-to-ui", {
+                                            event: "toggle-giphy-selector",
+                                            contents: true
+                                        });
+                                    }}
+                                    src={require("@renderer/assets/giphy-logo-circle.png")}
+                                    style={{ height: "26px", marginLeft: "7px" }}
+                                />
+                            </>
+                        )}
                         <div id="messageField-NewMessage">
                             {this.state.attachmentPaths.length > 0
                                 ? this.state.attachmentPaths.map(filePath => (
@@ -670,7 +689,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                                 type="text"
                                 autoCapitalize="on"
                                 spellCheck="true"
-                                placeholder="BlueBubbles"
+                                placeholder={this.state.showGIFSelector ? "Search for GIF" : "BlueBubbles"}
                                 value={this.state.enteredMessage}
                                 onChange={this.handleMessageChange}
                             />
@@ -784,46 +803,66 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                                                     />
                                                 </svg>
                                             ) : (
-                                                <svg
-                                                    id="recordVoiceMessage"
-                                                    onMouseEnter={this.handleRecordEnter}
-                                                    onMouseLeave={this.handleRecordLeave}
-                                                    onClick={() => this.startRecording()}
-                                                    viewBox="0 0 1000 1000"
-                                                    width="25"
-                                                    height="25"
-                                                >
-                                                    <path
-                                                        id="bar1"
-                                                        className="shp0"
-                                                        d="M54 374.7L114 374.7C125.06 374.7 134 383.64 134 394.7L134 606.9C134 617.96 125.06 626.9 114 626.9L54 626.9C42.94 626.9 34 617.96 34 606.9L34 394.7C34 383.64 42.94 374.7 54 374.7Z"
-                                                    />
-                                                    <path
-                                                        id="bar2"
-                                                        className="shp0"
-                                                        d="M206.5 253.1L266.5 253.1C277.56 253.1 286.5 262.04 286.5 273.1L286.5 728.4C286.5 739.46 277.56 748.4 266.5 748.4L206.5 748.4C195.44 748.4 186.5 739.46 186.5 728.4L186.5 273.1C186.5 262.04 195.44 253.1 206.5 253.1Z"
-                                                    />
-                                                    <path
-                                                        id="bar3"
-                                                        className="shp0"
-                                                        d="M368 118L428 118C439.06 118 448 126.94 448 138L448 863.5C448 874.56 439.06 883.5 428 883.5L368 883.5C356.94 883.5 348 874.56 348 863.5L348 138C348 126.94 356.94 118 368 118Z"
-                                                    />
-                                                    <path
-                                                        id="bar4"
-                                                        className="shp0"
-                                                        d="M529.5 271.1L589.5 271.1C600.56 271.1 609.5 280.04 609.5 291.1L609.5 710.4C609.5 721.46 600.56 730.4 589.5 730.4L529.5 730.4C518.44 730.4 509.5 721.46 509.5 710.4L509.5 291.1C509.5 280.04 518.44 271.1 529.5 271.1Z"
-                                                    />
-                                                    <path
-                                                        id="bar5"
-                                                        className="shp0"
-                                                        d="M699.9 208.1L759.9 208.1C770.96 208.1 779.9 217.04 779.9 228.1L779.9 773.5C779.9 784.56 770.96 793.5 759.9 793.5L699.9 793.5C688.84 793.5 679.9 784.56 679.9 773.5L679.9 228.1C679.9 217.04 688.84 208.1 699.9 208.1Z"
-                                                    />
-                                                    <path
-                                                        id="bar6"
-                                                        className="shp0"
-                                                        d="M882 388L942 388C953.06 388 962 396.94 962 408L962 593C962 604.06 953.06 613 942 613L882 613C870.94 613 862 604.06 862 593L862 408C862 396.94 870.94 388 882 388Z"
-                                                    />
-                                                </svg>
+                                                <>
+                                                    {this.state.showGIFSelector ? (
+                                                        <div
+                                                            id="closeGIFSelector"
+                                                            onClick={() => {
+                                                                this.setState({
+                                                                    enteredMessage: "",
+                                                                    showGIFSelector: false
+                                                                });
+                                                                ipcRenderer.invoke("send-to-ui", {
+                                                                    event: "toggle-giphy-selector",
+                                                                    contents: false
+                                                                });
+                                                            }}
+                                                        >
+                                                            <img src={CloseIcon} />
+                                                        </div>
+                                                    ) : (
+                                                        <svg
+                                                            id="recordVoiceMessage"
+                                                            onMouseEnter={this.handleRecordEnter}
+                                                            onMouseLeave={this.handleRecordLeave}
+                                                            onClick={() => this.startRecording()}
+                                                            viewBox="0 0 1000 1000"
+                                                            width="25"
+                                                            height="25"
+                                                        >
+                                                            <path
+                                                                id="bar1"
+                                                                className="shp0"
+                                                                d="M54 374.7L114 374.7C125.06 374.7 134 383.64 134 394.7L134 606.9C134 617.96 125.06 626.9 114 626.9L54 626.9C42.94 626.9 34 617.96 34 606.9L34 394.7C34 383.64 42.94 374.7 54 374.7Z"
+                                                            />
+                                                            <path
+                                                                id="bar2"
+                                                                className="shp0"
+                                                                d="M206.5 253.1L266.5 253.1C277.56 253.1 286.5 262.04 286.5 273.1L286.5 728.4C286.5 739.46 277.56 748.4 266.5 748.4L206.5 748.4C195.44 748.4 186.5 739.46 186.5 728.4L186.5 273.1C186.5 262.04 195.44 253.1 206.5 253.1Z"
+                                                            />
+                                                            <path
+                                                                id="bar3"
+                                                                className="shp0"
+                                                                d="M368 118L428 118C439.06 118 448 126.94 448 138L448 863.5C448 874.56 439.06 883.5 428 883.5L368 883.5C356.94 883.5 348 874.56 348 863.5L348 138C348 126.94 356.94 118 368 118Z"
+                                                            />
+                                                            <path
+                                                                id="bar4"
+                                                                className="shp0"
+                                                                d="M529.5 271.1L589.5 271.1C600.56 271.1 609.5 280.04 609.5 291.1L609.5 710.4C609.5 721.46 600.56 730.4 589.5 730.4L529.5 730.4C518.44 730.4 509.5 721.46 509.5 710.4L509.5 291.1C509.5 280.04 518.44 271.1 529.5 271.1Z"
+                                                            />
+                                                            <path
+                                                                id="bar5"
+                                                                className="shp0"
+                                                                d="M699.9 208.1L759.9 208.1C770.96 208.1 779.9 217.04 779.9 228.1L779.9 773.5C779.9 784.56 770.96 793.5 759.9 793.5L699.9 793.5C688.84 793.5 679.9 784.56 679.9 773.5L679.9 228.1C679.9 217.04 688.84 208.1 699.9 208.1Z"
+                                                            />
+                                                            <path
+                                                                id="bar6"
+                                                                className="shp0"
+                                                                d="M882 388L942 388C953.06 388 962 396.94 962 408L962 593C962 604.06 953.06 613 942 613L882 613C870.94 613 862 604.06 862 593L862 408C862 396.94 870.94 388 882 388Z"
+                                                            />
+                                                        </svg>
+                                                    )}
+                                                </>
                                             )}
                                         </>
                                     )}
@@ -831,10 +870,27 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                             )}
                         </>
                     ) : (
-                        <svg id="sendIcon" viewBox="0 0 1000 1000" onClick={() => this.sendMessage()}>
-                            <circle r="500" cx="500" cy="500" id="sendIconBackground" />
-                            <polyline id="arrow" points="240 422 500 218 500 775 500 218 760 422" />
-                        </svg>
+                        <>
+                            {!this.state.showGIFSelector || this.state.attachmentPaths.length > 0 ? (
+                                <svg id="sendIcon" viewBox="0 0 1000 1000" onClick={() => this.sendMessage()}>
+                                    <circle r="500" cx="500" cy="500" id="sendIconBackground" />
+                                    <polyline id="arrow" points="240 422 500 218 500 775 500 218 760 422" />
+                                </svg>
+                            ) : (
+                                <div
+                                    id="closeGIFSelector"
+                                    onClick={() => {
+                                        this.setState({ enteredMessage: "", showGIFSelector: false });
+                                        ipcRenderer.invoke("send-to-ui", {
+                                            event: "toggle-giphy-selector",
+                                            contents: false
+                                        });
+                                    }}
+                                >
+                                    <img src={CloseIcon} />
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>

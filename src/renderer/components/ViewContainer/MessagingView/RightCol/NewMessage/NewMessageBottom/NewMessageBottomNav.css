@@ -36,6 +36,14 @@
     height: 17px;
 }
 
+#openGIFSelector:hover {
+    -webkit-animation: swingY 1s ease;
+    animation: swingY 1s ease;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    cursor: pointer;
+}
+
 #messageField-NewMessage {
     flex-grow: 1;
     min-height: 45px;
@@ -57,7 +65,7 @@
     color: var(--right-primary-color);
     outline: none;
     border: 1px solid var(--right-secondary-color);
-    margin: 0px 2px 0px 12px;
+    margin: 0px 2px 0px 7px;
     background-color: var(--secondary-color);
 }
 

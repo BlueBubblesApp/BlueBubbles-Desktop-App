@@ -24,7 +24,6 @@ class DetailContact extends React.Component<Props, State> {
     }
 
     render() {
-        console.log(this.props.chat);
         const detailsIconText = generateDetailsIconText(this.props.chat);
         const participants = this.props.chat.participants.map(handle => getSender(handle));
 
