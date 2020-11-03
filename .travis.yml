@@ -1,24 +1,23 @@
 language: node_js
+node_js: 12.18.1
 os:
 - windows
 - linux
 env:
   global:
-    secure: DawnFFmjTETHMyAoV13X83YUupttuF8b23yWhOIMXWoh8/51MFt7OtKbUf2Em+nU0kH8YjnPnV3lLFQgrSkmu9n1x/RQGCpUueBeTPodKr5fHQSTmls53BS5M1nky6SlSWwvNyYp7OZFI/x+PlrR0eXXFkutXnTG2jp8DM2Wl2jMQJz6DC63RXAFrQaHKR5j4YKoUkyUTQTQB2tewMSdT2IsQPFu7K/NZ9weV+bCN+8quMsdAM6+Cxe8apuJWd8GLPS4pAmTnHDeyQstgLlke58RlImiMr72rS6Tcydp3hmHaylFQh6N4R4eD805V+GLAz/fbmNm8IsimVZn4kpQakJC5gwxnCBpJY1VjodZExCoHm/kt6Mar5lhwNKwJ5erFP/mm8nxRJfyFfttRGV2d8Ju+3mOEFbb4gVBj3/pUzDLTTkNGkICXd39dpgZC/Fl70XmXEjDILOAmBQBbDlANxYx7xlcAgymFdJs4lw+uzVSWaNSgfY1Y+asmE4UkCoe6VzpDv+dy2VywYu4ODi30tS9bTnxaZl+d51SWOmFGmIOx5hxrFHqE4oy2zxyfFEIb83yku+tUgJEFJogAdui7Ni23RQjJwGKDo9R4Ts9LVkSUz/qHfrIXv7i5I8wNBhoAQW6/mHopRakKMUiKskOicrNF0zxmtoSlO3upzwSQi4=
-
-
+  - secure: DawnFFmjTETHMyAoV13X83YUupttuF8b23yWhOIMXWoh8/51MFt7OtKbUf2Em+nU0kH8YjnPnV3lLFQgrSkmu9n1x/RQGCpUueBeTPodKr5fHQSTmls53BS5M1nky6SlSWwvNyYp7OZFI/x+PlrR0eXXFkutXnTG2jp8DM2Wl2jMQJz6DC63RXAFrQaHKR5j4YKoUkyUTQTQB2tewMSdT2IsQPFu7K/NZ9weV+bCN+8quMsdAM6+Cxe8apuJWd8GLPS4pAmTnHDeyQstgLlke58RlImiMr72rS6Tcydp3hmHaylFQh6N4R4eD805V+GLAz/fbmNm8IsimVZn4kpQakJC5gwxnCBpJY1VjodZExCoHm/kt6Mar5lhwNKwJ5erFP/mm8nxRJfyFfttRGV2d8Ju+3mOEFbb4gVBj3/pUzDLTTkNGkICXd39dpgZC/Fl70XmXEjDILOAmBQBbDlANxYx7xlcAgymFdJs4lw+uzVSWaNSgfY1Y+asmE4UkCoe6VzpDv+dy2VywYu4ODi30tS9bTnxaZl+d51SWOmFGmIOx5hxrFHqE4oy2zxyfFEIb83yku+tUgJEFJogAdui7Ni23RQjJwGKDo9R4Ts9LVkSUz/qHfrIXv7i5I8wNBhoAQW6/mHopRakKMUiKskOicrNF0zxmtoSlO3upzwSQi4=
+  - secure: Ur4ve8tQMvqsWMBMXSv7cTq//isIrhAlBlzwh4RRSDYBmbd8uKctBBQGP2XOPgb6Gd+BRogNdkMghvo22m+QI7HcXfgvHoP/HdZRdaQxa9NSHYAZJcscZCA2+Ay8mPJwQCbbEi0w4jE/tbVqZeLFenJsrQkn15Jp9EJ+4HLYqXnz+e9k0omfpFQbS0Yil5CkRbBEt2ItJ5G8y3qcoJlhbG4vPx6XDK4Ykbs8cowE83Nb5XYUOHOFnjqj2pNxV8FykJlnXJhkVY8+29BRcXVlooNQYLJRN50ARcHRERvIkcMLLqMimUT87olv2j0U+ETOs7y2yKKwh4kdQPld7DaHqY1xTtfHO01BNgIWSDUbimYadNRzNFR5t77iOxT4v7gZY92FpdzjGvOh454gpJYqLOrO1pzNhlvdWYLyh+lFKSNDp8f0r754VrE7h2OsY49REwCyXQbGQ3mF+f3uc2Wi0ABEOkIhPLbND2ojgZTmm+P6PLsvMXG3PFhjfOfysC65WCGvnikBdeJw5zpbkTzeB4jwivU0PKq8zmjs9s23hqfsxxZt0VoSCLzbZGt5F72B7g9LTewsEe8OF7MyK2rxJB+DJzozE37xvQsSS3/HtzrUiftgD7oRFmq++7hyAEzeScFpFgFVvp5c0sdz0sg2lTLc1f0C6iWeW18uJ71uZnI=
 script:
-  - npm run dist
-
-# jobs: 
-#   include:
-#     - stage: Deploy Windows
-#       # if: tag IS present
-#       os: windows
-#       script: 
-#         - npm run dist
-#     - stage: Deploy Linux
-#       # if: tag IS present
-#       os: linux
-#       script: 
-#         - npm run dist
+- npm run dist
+deploy:
+  provider: releases
+  api_key:
+    secure: FKO1PcQnt5bPCF8ft/X34YXD86Nz+UGO7uQBUjlOzhpfcqTZA3zRujpCCaFM/dOPfGnStvcxQVcA96J5CbVnvkB+lWeamnDPpCZwkkeJWP1MoMEPhSpQbPhiQUFjj8rttp/DtVadxQK/Rh+h81cf+uvgdj50ySPASHWXkCqNUXDC/MAdsP4sjVn6WyHRuZuWUy7/Anih57hlh7o7wsXhuRyNknqZt3/zIwLSQvLu2fw/J8SBxOoB1+7xrCOlLYJvHdCbfcRUmTuLkYrb3J4P0jCVRg1okOYcrYxL035OJCZzeNnXPYzx//dxjRGDrwu925X4C3B7azm0+gweRQMFD8Mh9Sb9yQ+ZwNFWlN+rKmaw/dZqgeWwy+MWsqBjY14D+DxGxSgyBOVDuxrtCEeI156CNPCvEdeq34TxZAdZmNwPCjwdhW5Z83IaHEIBYY2O6CxFhzE5Z2SxwJDv9Zgt4pUwLrDmTxq+K2BtZ5aFDfrr7iso8CzDBZFjYaWy0sd/4bgc5p+u+FpCUaO69kn+Q/PqLZAo84jLhjE5lZyQEKXMBe/WuHF1ttWM/nAukWOHvBBqQTlrQJZjOdnCqAWLY3xzae1k+MKqRqFd2i3P135b8+ckdsxQ23G3IQCNLarn29wqJGc6toER9GjEGpYxBiMeBGektmZv28dYR2hwJm8=
+  file:
+  - "release/bluebubbles-desktop-app_*.deb"
+  - "release\\BlueBubbles Setup *.exe"
+  on:
+    repo: BlueBubblesApp/BlueBubbles-Desktop-App
+    branch: maxwell/dev
+  skip_cleanup: 'true'
+  draft: 'true'
