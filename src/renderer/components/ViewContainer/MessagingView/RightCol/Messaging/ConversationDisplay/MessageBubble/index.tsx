@@ -958,10 +958,6 @@ class MessageBubble extends React.Component<Props, State> {
         // If a url hostname is in this array, the preview will be forced to only show the favicon instead of the image
         const forceFaviconURLS = ["bluebubbles.app"];
 
-        if (message.groupActionType !== 0) {
-            console.log(message);
-        }
-
         return (
             <>
                 {this.state.showContextMenu ? (

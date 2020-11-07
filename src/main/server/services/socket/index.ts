@@ -201,12 +201,12 @@ export class SocketService {
         this.server.on("updated-message", (message: MessageResponse) =>
             Server().queueService.add("save-message", message)
         );
-        this.server.on("group-name-change", (message: MessageResponse) =>
-            Server().queueService.add("save-message", message)
-        );
-        this.server.on("participant-removed", (message: MessageResponse) =>
-            Server().queueService.add("save-message", message)
-        );
+        this.server.on("group-name-change", (message: MessageResponse) => {
+            Server().queueService.add("save-message", message);
+        });
+        this.server.on("participant-removed", (message: MessageResponse) => {
+            Server().queueService.add("save-message", message);
+        });
         this.server.on("participant-added", (message: MessageResponse) =>
             Server().queueService.add("save-message", message)
         );
@@ -339,5 +339,9 @@ export class SocketService {
                 }
             );
         });
+    }
+
+    async renameGroup(params) {
+        this.server.emit("rename-group", params);
     }
 }

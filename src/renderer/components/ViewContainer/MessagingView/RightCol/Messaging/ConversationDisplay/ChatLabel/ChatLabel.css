@@ -6,6 +6,8 @@
     justify-content: flex-end;
     align-items: center;
     animation: fade 0.25s ease-in-out;
+    max-width: 80%;
+    margin: 5px auto;
 }
 
 .ChatLabel > p {

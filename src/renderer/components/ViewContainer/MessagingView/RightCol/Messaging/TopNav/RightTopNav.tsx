@@ -27,13 +27,21 @@ class RightTopNav extends React.Component<Props, State> {
         };
     }
 
+    componentDidMount() {
+        ipcRenderer.on("set-current-chat", () => {
+            this.setState({ isDisplayNameChanged: false, enteredDisplayName: this.props.chat.displayName });
+        });
+    }
+
     handleOpenDetails = () => {
         ipcRenderer.invoke("send-to-ui", { event: "open-details" });
         ipcRenderer.invoke("send-to-ui", { event: "toggle-giphy-selector", contents: false });
+        this.setState({ isDisplayNameChanged: false, enteredDisplayName: this.props.chat.displayName });
     };
 
     handleCloseDetails = () => {
         ipcRenderer.invoke("send-to-ui", { event: "close-details" });
+        this.setState({ isDisplayNameChanged: false, enteredDisplayName: this.props.chat.displayName });
     };
 
     handleDisplayNameChange = event => {
@@ -41,8 +49,6 @@ class RightTopNav extends React.Component<Props, State> {
             isDisplayNameChanged: true,
             enteredDisplayName: event.target.value
         });
-
-        console.log(event.target.value);
     };
 
     async saveAndCloseDetails() {
@@ -50,6 +56,8 @@ class RightTopNav extends React.Component<Props, State> {
         console.log(`Changing chat display name to :${newDisplayName}`);
 
         await this.setState({ isDisplayNameChanged: false });
+        ipcRenderer.invoke("change-display-name", { chat: this.props.chat, newName: newDisplayName });
+
         this.handleCloseDetails();
     }
 
@@ -95,8 +103,24 @@ class RightTopNav extends React.Component<Props, State> {
                     )}
                 </div>
                 <div id="convoDetailsDiv">
-                    {this.state.isDisplayNameChanged ? (
-                        <p onClick={() => this.saveAndCloseDetails()}>Save</p>
+                    {this.state.isDisplayNameChanged &&
+                    this.props.chat.displayName &&
+                    this.state.enteredDisplayName &&
+                    this.state.enteredDisplayName !== this.props.chat.displayName ? (
+                        <>
+                            <p
+                                onClick={() =>
+                                    this.setState({
+                                        isDisplayNameChanged: false,
+                                        enteredDisplayName: this.props.chat.displayName
+                                    })
+                                }
+                                style={{ marginRight: "7px", color: "red" }}
+                            >
+                                Reset
+                            </p>
+                            <p onClick={() => this.saveAndCloseDetails()}>Save</p>
+                        </>
                     ) : (
                         <p onClick={this.props.isDetailsOpen ? this.handleCloseDetails : this.handleOpenDetails}>
                             {this.props.isDetailsOpen ? "Close" : "Details"}

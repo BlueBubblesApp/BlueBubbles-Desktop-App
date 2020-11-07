@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable class-methods-use-this */
 import * as React from "react";
 import { ipcRenderer } from "electron";
@@ -22,19 +23,6 @@ type Message = DBMessage & {
     tempGuid: string;
     reactions: DBMessage[];
     reactionsChecked: boolean;
-};
-
-const getChatEvent = (message: Message) => {
-    const sender = message.isFromMe || !message.handle ? "You" : message.handle.address ?? "";
-    if (message.itemType === 2)
-        return (
-            <ChatLabel
-                text={`${sender} named the conversation "${message.groupTitle}"`}
-                date={new Date(message.dateCreated)}
-            />
-        );
-
-    return null;
 };
 
 const deduplicateReactions = (reactions: DBMessage[]) => {
@@ -138,6 +126,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
         });
     }
 
+    // eslint-disable-next-line react/sort-comp
     async fetchReactions(messages: Message[]) {
         const updatedMessages = [...messages];
         const stateMessages = [...this.state.messages];
@@ -275,6 +264,46 @@ class RightConversationDisplay extends React.Component<Props, State> {
         return true;
     }
 
+    getChatEvent(message: Message) {
+        const sender = message.isFromMe || !message.handle ? "You" : message.handle.address ?? "";
+
+        const date = message.dateCreated
+            ? `${getDateText(new Date(message.dateCreated), true)}, ${getTimeText(new Date(message.dateCreated))}`
+            : "";
+
+        if (message.itemType === 0 && message.groupActionType === 0) {
+            return <ChatLabel text={`${sender} sent a handwritten note`} date={date} />;
+        }
+
+        if (message.itemType === 1 && message.groupActionType === 1) {
+            return <ChatLabel text={`${sender} removed someone from the conversation`} date={date} />;
+        }
+        if (message.itemType === 1 && message.groupActionType === 0) {
+            return <ChatLabel text={`${sender} added someone to the conversation`} date={date} />;
+        }
+        if (message.itemType === 3) {
+            return <ChatLabel text={`${sender} left the conversation`} date={date} />;
+        }
+
+        if (message.itemType === 4 && message.groupActionType === 0) {
+            return (
+                <ChatLabel
+                    text={`${sender} started sharing ${
+                        message.isFromMe || !message.handle ? "your" : "their"
+                    } location`}
+                    date={date}
+                />
+            );
+        }
+
+        if (message.itemType === 2 && message.groupTitle !== null) {
+            return <ChatLabel text={`${sender} renamed the conversation to ${message.groupTitle}`} date={date} />;
+        }
+
+        console.log(message);
+        return <ChatLabel text={`Unknown chat event from ${sender}`} date={date} />;
+    }
+
     render() {
         const { messages, isLoading } = this.state;
         const { chat } = this.props;
@@ -291,7 +320,12 @@ class RightConversationDisplay extends React.Component<Props, State> {
             }
         }
 
-        const date = messages.length > 0 ? new Date(messages[0].dateCreated) : null;
+        const date =
+            messages.length > 0
+                ? `${getDateText(new Date(messages[0].dateCreated), true)}, ${getTimeText(
+                      new Date(messages[0].dateCreated)
+                  )}`
+                : null;
         messages.sort((a, b) => (a.dateCreated > b.dateCreated ? 1 : -1));
 
         return (
@@ -311,10 +345,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
                     let myNewMessages = [];
                     if (chat.participants.length <= 1 && index + 1 < messages.length) {
                         myNewMessages = messages.slice(index + 1, messages.length).filter(i => i.isFromMe);
-                    }
-
-                    if (message.groupActionType !== 0) {
-                        console.log(message);
                     }
 
                     return (
@@ -342,7 +372,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                     />
                                 </>
                             ) : (
-                                getChatEvent(message)
+                                this.getChatEvent(message)
                             )}
                         </div>
                     );

@@ -319,7 +319,7 @@
     border-radius: 20px;
     margin-top: 3px;
     cursor: pointer;
-    transition: ease-in 0.1s;
+    transition: ease-in 0.15s;
     display: flex;
 }
 
@@ -434,7 +434,7 @@
     margin: 0;
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: 12px;
     margin: 5px 0px 0px 0px;
     white-space: nowrap;
     overflow: hidden;
@@ -445,7 +445,7 @@
     margin: 0;
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
-    font-size: 13px;
+    font-size: 12px;
     margin: 0 7px 0px 0px;
     white-space: nowrap;
     overflow: hidden;
@@ -460,11 +460,13 @@
     width: 40%;
     max-width: 40%;
     min-width: 40%;
+    transition: ease-in-out 0.15s;
 }
 
 .linkFavicon {
     padding-right: 5px;
     z-index: 2;
+    max-height: 35px;
 }
 
 // Audio Attachment
@@ -602,44 +604,57 @@
     }
 }
 
-@media (min-width: 1000px) {
+@media (max-width: 1000px) {
     .Attachment {
-        max-height: 36%;
-        max-width: 36%;
-        min-width: 36%;
+        max-height: 45%;
+        max-width: 45%;
+        min-width: 45%;
     }
 
     .linkContainer {
-        max-width: 36%;
-        min-width: 36%;
+        max-width: 45%;
+        min-width: 45%;
     }
 }
 
-@media (min-width: 1200px) {
+@media (max-width: 900px) {
     .Attachment {
-        max-height: 33%;
-        max-width: 33%;
-        min-width: 33%;
+        max-height: 50%;
+        max-width: 50%;
+        min-width: 50%;
     }
 
     .linkContainer {
-        max-width: 33%;
-        min-width: 33%;
+        max-width: 50%;
+        min-width: 50%;
     }
 }
 
-@media (min-width: 1600px) {
-    .Attachment {
-        max-height: 30%;
-        max-width: 30%;
-        min-width: 30%;
-    }
+// @media (max-width: 1200px) {
+//     .Attachment {
+//         max-height: 33%;
+//         max-width: 33%;
+//         min-width: 33%;
+//     }
 
-    .linkContainer {
-        max-width: 30%;
-        min-width: 30%;
-    }
-}
+//     .linkContainer {
+//         max-width: 33%;
+//         min-width: 33%;
+//     }
+// }
+
+// @media (max-width: 1600px) {
+//     .Attachment {
+//         max-height: 30%;
+//         max-width: 30%;
+//         min-width: 30%;
+//     }
+
+//     .linkContainer {
+//         max-width: 30%;
+//         min-width: 30%;
+//     }
+// }
 
 // New Reactions
 #reactionOverlay {

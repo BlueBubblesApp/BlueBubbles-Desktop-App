@@ -46,6 +46,10 @@ class RightCol extends React.Component<object, ServerInputTitleState> {
     }
 
     async componentDidMount() {
+        ipcRenderer.on("display-name-update", (_, params) => {
+            this.setState({ currentChat: params.chat });
+        });
+
         ipcRenderer.on("toggle-giphy-selector", (_, show) => {
             this.setState({ isGIFSelectorOpen: show });
         });

@@ -12,10 +12,13 @@ script:
 deploy:
   provider: releases
   api_key:
-    secure: FKO1PcQnt5bPCF8ft/X34YXD86Nz+UGO7uQBUjlOzhpfcqTZA3zRujpCCaFM/dOPfGnStvcxQVcA96J5CbVnvkB+lWeamnDPpCZwkkeJWP1MoMEPhSpQbPhiQUFjj8rttp/DtVadxQK/Rh+h81cf+uvgdj50ySPASHWXkCqNUXDC/MAdsP4sjVn6WyHRuZuWUy7/Anih57hlh7o7wsXhuRyNknqZt3/zIwLSQvLu2fw/J8SBxOoB1+7xrCOlLYJvHdCbfcRUmTuLkYrb3J4P0jCVRg1okOYcrYxL035OJCZzeNnXPYzx//dxjRGDrwu925X4C3B7azm0+gweRQMFD8Mh9Sb9yQ+ZwNFWlN+rKmaw/dZqgeWwy+MWsqBjY14D+DxGxSgyBOVDuxrtCEeI156CNPCvEdeq34TxZAdZmNwPCjwdhW5Z83IaHEIBYY2O6CxFhzE5Z2SxwJDv9Zgt4pUwLrDmTxq+K2BtZ5aFDfrr7iso8CzDBZFjYaWy0sd/4bgc5p+u+FpCUaO69kn+Q/PqLZAo84jLhjE5lZyQEKXMBe/WuHF1ttWM/nAukWOHvBBqQTlrQJZjOdnCqAWLY3xzae1k+MKqRqFd2i3P135b8+ckdsxQ23G3IQCNLarn29wqJGc6toER9GjEGpYxBiMeBGektmZv28dYR2hwJm8=
+    secure: yrSnvvr/H9h6iLHuHd+Ac0gECTwyUG/DzKkVwS6OMLRs16mR/9Py0bFs7mEE0jbDhDPa5hn5QxLGNZ9skroUnxsf+PJ1xU+rrgOheWWiO36yZlRaDSqRVKG/WbqmPpH/EsnKvWNUUGsuYz4K7Amgx5Ny0Hzd5li72LOZZw1bdpkVyGkZdZNTo3ZFL2upcD68rSsFSZ31qnhQWfZSj7tgs5Eq7huX5NCa5okxgU7R6oymi/X4hgaGARitlgurlXtAAMnmtwpLsVOdpwPB4ui+vd4bAf15+sd+VOLi3XYs5g5aThjMUn/LZLA6k2+TC9Rabudcm06YktsY0K8o0DUnLsi/oSZct29HOkMEIxHJ8yFIaj4oD2Q7A5FQC5loCqSyiziV1EFUPoon72/Pg6is+3+biKMOSkIZ7hQj8rSaOyALgLRB5scMWLY8zw7fBV+CqV+9iB2cTn2HvfID5DvA5G6OEwS200Gyk4Kp/N99CtwmbIhDMJWry7OAGg6pmdQW3ohdjuhqRR4qjGLt7Dxfopm7VfEm/Sx2QuQ02MAayiR9Yb54lMCtZQTjUvwFWhhpn5df+wQxFFQDx2yIcL1Q0zS4Np6YMF/AcKkpToxsbFi+5oliml1lGSUEAcdN3gV8RkVcbQSR3YE3enhUBMra6aG0SSjX8092S/ZNKkovIZY=
+  file_glob: 'true'
   file:
-  - "release/bluebubbles-desktop-app_*.deb"
-  - "release\\BlueBubbles Setup *.exe"
+  - "/release/*.deb"
+  - "/release\\*.exe"
+  - "release/*.deb"
+  - "release\\*.exe"
   on:
     repo: BlueBubblesApp/BlueBubbles-Desktop-App
     branch: maxwell/dev

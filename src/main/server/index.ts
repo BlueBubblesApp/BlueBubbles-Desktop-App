@@ -1253,6 +1253,15 @@ class BackendServer {
                 this.emitToUI("word-matches", matches);
             });
         });
+
+        ipcMain.handle("change-display-name", async (_, params) => {
+            await this.socketService.renameGroup({ identifier: params.chat.guid, newName: params.newName });
+            await this.chatRepo.updateChat(params.chat, { displayName: params.newName });
+            const newChats = await this.chatRepo.getChats(params.chat.guid);
+            console.log(newChats[0].displayName);
+
+            this.emitToUI("display-name-update", { chat: newChats[0], newName: params.newName });
+        });
     }
 
     setSyncStatus({ completed, message, error }: SyncStatus) {

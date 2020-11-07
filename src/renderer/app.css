@@ -1,18 +1,18 @@
 @font-face {
     font-family: "SF UI Display Light";
-    src: url("./fonts/SF-UI-Display-Light.woff2") format("woff2"),
-        url("./fonts/SF-UI-Display-Light.woff") format("woff");
+    src: url("./fonts/SF-UI-Display-Light.woff") format("woff"),
+        url("./fonts/SF-UI-Display-Light.woff2") format("woff2");
 }
 
 @font-face {
     font-family: "SF UI Display Bold";
-    src: url("./fonts/SF-UI-Display-Bold.woff2") format("woff2"), url("./fonts/SF-UI-Display-Bold.woff") format("woff");
+    src: url("./fonts/SF-UI-Display-Bold.woff") format("woff"), url("./fonts/SF-UI-Display-Bold.woff2") format("woff2");
 }
 
 @font-face {
     font-family: "SF UI Display Black";
-    src: url("./fonts/SF-UI-Display-Black.woff2") format("woff2"),
-        url("./fonts/SF-UI-Display-Black.woff") format("woff");
+    src: url("./fonts/SF-UI-Display-Black.woff") format("woff"),
+        url("./fonts/SF-UI-Display-Black.woff2") format("woff2");
 }
 
 /* Rounded Font */
