@@ -1,0 +1,137 @@
+.RightTopNav {
+    height: 35px;
+    min-height: 35px;
+    display: flex;
+    width: 100%;
+    background-color: var(--secondary-color);
+    transition: ease-in-out 0.1s;
+}
+
+.RightTopNavBlurred {
+    background-color: var(--secondary-blurred-color) !important;
+}
+
+#toDiv {
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: 1em;
+    font-size: 12px;
+}
+
+#toDiv > p {
+    color: var(--sub-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+
+#recipDiv {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: 0px;
+    overflow-x: auto;
+    margin-right: 5px;
+    margin-bottom: 9px;
+}
+
+/* 
+#convoDetailsDiv:after {
+    display: flex;
+    position: absolute;
+    height: 23px;
+    width: 6%;
+    right: 65px;
+    top: 1px;
+    content: "";
+    background: linear-gradient(to left, var(--faded-div-color) 30%, rgba(255, 255, 255, 0) 80%);
+    pointer-events: none;
+    transition: ease-in-out 0.1s;
+} */
+
+#recipDiv > div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 87%;
+    padding: 0 3px 0 3px;
+    margin: 0 0px 0px 3px;
+    border-radius: 5px;
+    text-overflow: ellipsis;
+}
+
+#recipDiv > div:hover {
+    background-color: var(--right-accent-title-color);
+}
+
+#recipDiv > div > p {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-weight: 500;
+    font-size: 13px;
+    margin: 0px 0px 0px 0px;
+    white-space: nowrap;
+}
+
+#recipDiv > p {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 12px;
+    margin: 0px 0px 0px 0px;
+    white-space: nowrap;
+}
+
+#convoDetailsDiv {
+    /* min-width: 60px; */
+    display: flex;
+    /* flex-direction: column; */
+    align-items: center;
+    justify-content: flex-end;
+    margin-right: 15px;
+    margin-left: 5px;
+    transition: ease-in-out 0.1s;
+    margin-bottom: 12px;
+}
+
+#convoDetailsDiv > p {
+    color: var(--right-accent-title-color);
+    font-family: "SF UI Display Light";
+    font-size: 15px;
+    margin-bottom: 13px;
+}
+
+#convoDetailsDiv > p:hover {
+    opacity: 0.65;
+    cursor: pointer;
+}
+
+#contactModalOpen {
+    position: relative;
+    height: 10px;
+    width: 10px;
+    margin: 0px 4px 0px 2px;
+}
+
+#newChatNameInput-Details {
+    outline: none;
+    border: none;
+    flex-grow: 1;
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    color: var(--main-title-color);
+    background-color: var(--secondary-color);
+    margin-left: 3px;
+    padding: 1px 3px;
+}
+
+#newChatNameInput-Details::placeholder {
+    color: var(--main-title-color);
+}
+
+#newChatNameInput-Details:focus {
+}

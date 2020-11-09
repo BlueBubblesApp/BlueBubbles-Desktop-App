@@ -1,0 +1,19 @@
+.nothingPlaceholder {
+    color: var(--sub-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nothingPlaceholder > span {
+    font-size: 20px;
+}
+
+.nothingEmoji {
+    font-size: 30px;
+    margin: 0;
+    margin-bottom: 3px;
+}

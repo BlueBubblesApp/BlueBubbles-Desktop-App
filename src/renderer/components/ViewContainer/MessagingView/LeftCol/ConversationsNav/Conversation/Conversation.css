@@ -1,0 +1,204 @@
+.Conversation {
+    margin-left: 20px;
+    height: 65px;
+    min-height: 65px;
+    display: flex;
+    z-index: 1;
+    justify-content: flex-end;
+    border-bottom: 1px solid grey;
+}
+
+.Conversation:hover {
+    cursor: pointer;
+}
+
+.contact-card {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.convo-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    pointer-events: none;
+}
+
+#icon {
+    height: 51px;
+}
+
+.message-prev {
+    font-weight: 600;
+    width: 205px;
+    height: 100%;
+    margin-left: 7px;
+    margin-top: 3px;
+    display: flex;
+    flex-direction: column;
+}
+
+.prev-top {
+    height: 20px;
+    width: 100%;
+    display: flex;
+}
+
+.message-recip {
+    width: 250px;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    overflow-x: scroll;
+}
+
+.message-time {
+    font-weight: 600;
+    margin-top: 5px;
+    width: 40%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    text-align: right;
+    margin-right: 5px;
+}
+
+.message-time > div {
+    width: 100%;
+    height: 100%;
+}
+
+.prev-bottom {
+    height: 45px;
+    width: 100%;
+    display: flex;
+}
+
+.message-snip {
+    width: 88%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.message-del {
+    width: 12%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.message-del-conversation {
+    height: 10px;
+    width: 10px;
+    margin-top: 4px;
+    opacity: 0.5;
+}
+
+.hideDelMessage {
+    visibility: hidden;
+}
+
+.message-snip-example {
+    font-family: "SF UI Display Light";
+    color: var(--sub-title-color);
+    font-size: 12.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: auto;
+    margin-top: 2px;
+}
+
+.message-recip-example {
+    font-family: "SF UI Display Bold";
+    color: var(--main-title-color);
+    font-size: 12.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 0;
+}
+
+.message-time-example {
+    font-family: "SF UI Display Light";
+    color: var(--sub-title-color);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: auto;
+}
+
+#aContactInitials {
+    font-family: quicksand;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 23px;
+}
+
+#contactInitials {
+    font-family: quicksand, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 23px;
+    fill: white !important;
+}
+
+#groupContactInitials-1 {
+    font-family: quicksand, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 14px;
+    fill: white;
+}
+
+#groupContactInitials-2 {
+    font-family: quicksand, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 14px;
+    fill: white;
+}
+
+#ConversationContextMenu {
+    background-color: var(--background-color);
+    width: 100px;
+    height: 30px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    white-space: nowrap;
+    border: 2px solid var(--main-title-color);
+    transition: background-color ease-in-out 0.12s;
+    z-index: 999;
+}
+#ConversationContextMenu div {
+    z-index: 999;
+}
+
+#ConversationContextMenu div p {
+    color: var(--main-title-color);
+    margin: 0;
+    word-wrap: none;
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    transition: background-color ease-in-out 0.12s;
+    z-index: 999;
+}
+
+#ConversationContextMenu:hover {
+    cursor: pointer;
+    background-color: var(--main-title-color);
+}
+
+#ConversationContextMenu:hover div p {
+    color: var(--background-color);
+}

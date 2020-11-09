@@ -1,0 +1,324 @@
+.LoginView {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: var(--sidebar-color);
+    transition: ease-in-out 0.1s;
+}
+
+.LoginViewBlurred {
+    background-color: var(--sidebar-blurred-color) !important;
+}
+
+#loginContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+}
+
+#loginContainer > h1 {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+}
+
+#loadingContainer > h1 {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 2vw;
+}
+
+#loginForm > div > button {
+    background-color: #007aff;
+    outline: none;
+    border: none;
+    text-decoration: none;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    margin-top: 10px;
+    border-radius: 10px;
+    padding: 8px 13px 8px 13px;
+    color: white;
+    transition: border-radius 0.2s;
+}
+
+#loginForm > div > button:hover {
+    cursor: pointer;
+    border-radius: 15px;
+}
+
+#loginForm {
+    max-width: 250px;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#loginForm > input {
+    margin: 10px 0 10px 0;
+    outline: none;
+    border: none;
+    text-decoration: none;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    padding: 7px;
+    border-radius: 10px;
+    width: 100%;
+}
+
+#loginForm > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+#scanQrImage {
+    height: 25px;
+    position: absolute;
+    right: -8px;
+    top: 10px;
+    margin-top: 0px;
+    background-color: #007aff;
+    border-radius: 10px;
+    padding: 5px 6px;
+    fill: white;
+    transition: border-radius 0.2s;
+}
+
+#scanQrImage:hover {
+    cursor: pointer;
+    /* border-radius: 13px; */
+}
+
+#scanQRTooltip {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    background-color: #007aff;
+    width: auto;
+    max-height: 150px;
+    z-index: 1;
+    right: -132px;
+    top: -30px;
+    border-radius: 10px;
+    padding: 4px 7px;
+    border: 1px solid white;
+    animation: fade 0.2s ease-in-out forwards;
+}
+
+#scanQRTooltip > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#scanQRTooltip > div:hover {
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+#scanQRTooltip > div > p {
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    color: var(--main-title-color);
+    margin: 0;
+    margin-right: 7px;
+}
+
+#scanQRTooltip > div:first-child {
+    margin-bottom: 3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.733);
+    padding-bottom: 4px;
+}
+
+#localFileIcon {
+    height: 17px;
+    width: 17px;
+    fill: var(--main-title-color);
+    margin: 0;
+}
+
+#clipboardIcon {
+    height: 17px;
+    width: 17px;
+    fill: var(--main-title-color);
+    margin: 0;
+}
+
+#loadingContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    background-color: var(--sidebar-color);
+    animation: ease-in-out 0.1s;
+}
+
+.loadingContainerBlurred {
+    background-color: var(--sidebar-blurred-color) !important;
+}
+
+#loader {
+    font-size: 10px;
+    margin: 50px auto;
+    text-indent: -9999em;
+    width: 4em;
+    height: 4em;
+    border-radius: 50%;
+    background: #007aff;
+    background: -moz-linear-gradient(left, #007aff 10%, rgba(0, 122, 255, 0) 42%);
+    background: -webkit-linear-gradient(left, #007aff 10%, rgba(0, 122, 255, 0) 42%);
+    background: -o-linear-gradient(left, #007aff 10%, rgba(0, 122, 255, 0) 42%);
+    background: -ms-linear-gradient(left, #007aff 10%, rgba(0, 122, 255, 0) 42%);
+    background: linear-gradient(to right, #007aff 10%, rgba(0, 122, 255, 0) 42%);
+    position: relative;
+    -webkit-animation: load3 1.4s infinite linear;
+    animation: load3 1.4s infinite linear;
+    -webkit-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    transform: translateZ(0);
+}
+#loader:before {
+    width: 50%;
+    height: 50%;
+    background: #007aff;
+    border-radius: 100% 0 0 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    content: "";
+}
+#loader:after {
+    background: var(--sidebar-color);
+    width: 75%;
+    height: 75%;
+    border-radius: 50%;
+    content: "";
+    margin: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+@-webkit-keyframes load3 {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+@keyframes load3 {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+/* Progress bar */
+#progressBar {
+    height: 8px; /* Can be anything */
+    position: relative;
+    background: #555;
+    -moz-border-radius: 25px;
+    -webkit-border-radius: 25px;
+    border-radius: 25px;
+    min-width: 25%;
+    width: 25%;
+}
+
+#progressBar > span {
+    display: block;
+    height: 100%;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+    background-color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.loginTitleBarRight {
+    background-color: var(--sidebar-color) !important;
+}
+
+@media (max-width: 1200px) {
+    #loadingContainer > h1 {
+        font-size: 2.5vw;
+    }
+}
+
+@media (max-width: 800px) {
+    #progressBar {
+        width: 40%;
+    }
+    #loadingContainer > h1 {
+        font-size: 3vw;
+    }
+}
+
+@media (max-width: 500px) {
+    #progressBar {
+        width: 45%;
+    }
+    #loadingContainer > h1 {
+        font-size: 3.5vw;
+    }
+}
+
+@media (max-height: 500px) {
+    #loginContainer > h1 {
+        margin-top: 0;
+    }
+}
+
+#versionNumber {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    justify-self: flex-start;
+    position: absolute;
+    bottom: 8px;
+    margin: 0;
+}
+
+#returnToLoginButton {
+    background-color: #007aff;
+    outline: none;
+    border: none;
+    text-decoration: none;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    margin-top: 20px;
+    border-radius: 10px;
+    padding: 8px 13px 8px 13px;
+    color: white;
+    transition: border-radius 0.2s;
+}
+
+#returnToLoginButton:hover {
+    cursor: pointer;
+    border-radius: 15px;
+}

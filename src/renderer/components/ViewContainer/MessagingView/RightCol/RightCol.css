@@ -1,0 +1,82 @@
+.RightCol-Mes {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 250px;
+    border-radius: 0px 0px 5px 0px;
+}
+
+#chatDropzone {
+    position: absolute;
+    top: -25px;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    background-color: var(--background-color);
+    pointer-events: all !important;
+    opacity: 0.95;
+}
+
+#chatDropzone p {
+    font-family: "SF UI Display Bold";
+    color: var(--main-title-color);
+    font-size: 16px;
+    pointer-events: none;
+}
+
+#chatDropzone h1 {
+    font-family: "SF UI Display Bold";
+    color: var(--main-title-color);
+    font-size: 16px;
+    pointer-events: none;
+    margin: 5px;
+    max-width: 75%;
+}
+
+#chatDropzone h1:last-of-type {
+    margin-bottom: 20px;
+}
+
+#chatDropzone button {
+    background-color: #007aff;
+    outline: none;
+    border: none;
+    text-decoration: none;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    margin-top: 10px;
+    border-radius: 10px;
+    padding: 8px 13px 8px 13px;
+    color: white;
+    transition: border-radius 0.2s;
+}
+
+#chatDropzone button:hover {
+    cursor: pointer;
+    border-radius: 15px;
+}
+
+#dropDownloadProgress {
+    min-width: 50%;
+    max-width: 50%;
+    width: 50%;
+    height: 10px;
+    background-color: var(--secondary-color);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 10px;
+}
+
+#dropDownloadProgress span {
+    border-radius: 10px;
+    height: 10px;
+    background-color: var(--outgoing-message-color);
+}

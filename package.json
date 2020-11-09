@@ -1,52 +1,213 @@
 {
-  "name": "BlueBubbles",
-  "version": "0.1.0",
-  "private": true,
-  "main": "electron.js",
-  "dependencies": {
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
-    "@types/jest": "^24.0.0",
-    "@types/node": "^12.0.0",
-    "@types/react": "^16.9.0",
-    "@types/react-dom": "^16.9.0",
-    "@types/react-router-dom": "^5.1.5",
-    "@types/socket.io-client": "^1.4.33",
-    "electron-is-dev": "^1.2.0",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-router-dom": "^5.2.0",
-    "react-router-transition": "^2.0.0",
-    "react-scripts": "3.4.1",
-    "typescript": "~3.7.2"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "electron-dev": "concurrently \"yarn start BROWSER=none\" \"wait-on http://localhost:3000 && electron .\""
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "concurrently": "^5.2.0",
-    "electron": "^9.0.4",
-    "electron-builder": "^22.7.0",
-    "wait-on": "^5.0.1"
-  }
+   "name": "bluebubbles-desktop-app",
+   "version": "1.0.1",
+   "description": "iMessage for PC and Android",
+   "main": "./dist/main.js",
+   "author": {
+      "name": "Maxwell Fortney",
+      "email": "maxwellfortney@gmail.com"
+   },
+   "scripts": {
+      "build-main": "cross-env NODE_ENV=production webpack --config webpack.main.prod.config.js",
+      "build-renderer": "cross-env NODE_ENV=production webpack --config webpack.renderer.prod.config.js",
+      "build": "npm run build-main && npm run build-renderer",
+      "start-renderer-dev": "webpack-dev-server --config webpack.renderer.dev.config.js",
+      "start-main-dev": "webpack --config webpack.main.config.js && electron ./dist/main.js",
+      "start-dev": "cross-env START_HOT=1 npm run start-renderer-dev",
+      "prestart": "npm run build",
+      "start": "ts-node src/index.ts",
+      "lint": "eslint --ext=jsx,js,tsx,ts src",
+      "test": "jest '(\\/test\\/(?!e2e/)).*'",
+      "pretest:e2e": "npm run build",
+      "test:e2e": "jest '(\\/test\\/e2e/).*'",
+      "pack": "npm run build && electron-builder --dir",
+      "dist": "npm run build && electron-builder",
+      "postinstall": "electron-builder install-app-deps"
+   },
+   "husky": {
+      "hooks": {
+         "pre-commit": "lint-staged"
+      }
+   },
+   "lint-staged": {
+      "{src,test,mocks}/**/*.{json,css,scss,md}": [
+         "prettier --config ./.prettierrc --ignore-path ./.prettierignore --write"
+      ],
+      "{src,test,mocks}/**/*.{js,ts,tsx}": [
+         "prettier --config ./.prettierrc --ignore-path ./.prettierignore --write",
+         "eslint -c ./.eslintrc.json --ext=jsx,js,ts,tsx --fix src"
+      ]
+   },
+   "jest": {
+      "transform": {
+         "^.+\\.tsx?$": "ts-jest"
+      },
+      "testRegex": "(/test/.+\\.spec)\\.tsx?$",
+      "moduleFileExtensions": [
+         "ts",
+         "tsx",
+         "js",
+         "json",
+         "node"
+      ],
+      "moduleNameMapper": {
+         "\\.(ico|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/mocks/fileMock.js",
+         "\\.(s?css|sass)$": "<rootDir>/mocks/styleMock.js"
+      }
+   },
+   "build": {
+      "productName": "BlueBubbles",
+      "appId": "com.BlueBubbles.BlueBubbles-Desktop",
+      "directories": {
+         "output": "release",
+         "buildResources": "resources"
+      },
+      "files": [
+         "dist/",
+         "node_modules/",
+         "package.json",
+         "resources/",
+         ".env"
+      ],
+      "asar": true,
+      "asarUnpack": [
+         "**/node_modules/ffmpeg-static/*",
+         "**/node_modules/node-notifier/vendor/**"
+      ],
+      "extraResources": [
+         "**/resources/**"
+      ],
+      "mac": {
+         "category": "public.app-category.social-networking",
+         "icon": "./resources/icon1024.png"
+      },
+      "linux": {
+         "target": "deb",
+         "icon": "./resources/icon1024.png"
+      },
+      "win": {
+         "target": "nsis",
+         "icon": "./resources/icon1024.png"
+      }
+   },
+   "repository": {
+      "type": "git",
+      "url": "git+ssh://git@github.com:Robinfr/electron-react-typescript.git"
+   },
+   "bugs": {
+      "url": "https://github.com/Robinfr/electron-react-typescript/issues"
+   },
+   "homepage": "https://github.com/Robinfr/electron-react-typescript",
+   "devDependencies": {
+      "@babel/core": "^7.10.3",
+      "@babel/plugin-proposal-class-properties": "^7.10.1",
+      "@babel/plugin-proposal-decorators": "^7.10.3",
+      "@babel/polyfill": "^7.10.1",
+      "@babel/preset-env": "^7.10.3",
+      "@babel/preset-react": "^7.10.1",
+      "@babel/preset-typescript": "^7.10.4",
+      "@hot-loader/react-dom": "^16.13.0",
+      "@types/electron-devtools-installer": "^2.2.0",
+      "@types/google-libphonenumber": "^7.4.19",
+      "@types/jest": "^24.0.13",
+      "@types/node": "^14.0.14",
+      "@types/react": "^16.9.41",
+      "@types/react-dom": "^16.9.8",
+      "@types/react-redux": "^7.1.9",
+      "@types/react-router-dom": "^5.1.5",
+      "@types/react-test-renderer": "^16.8.1",
+      "@types/socket.io-client": "^1.4.33",
+      "@types/webdriverio": "^4.8.7",
+      "@types/webpack-env": "^1.15.2",
+      "@typescript-eslint/eslint-plugin": "^3.5.0",
+      "@typescript-eslint/parser": "^3.5.0",
+      "babel-loader": "^8.1.0",
+      "cross-env": "^5.1.3",
+      "css-loader": "^2.1.1",
+      "electron": "^9.0.5",
+      "electron-builder": "^22.7.0",
+      "electron-devtools-installer": "^3.0.0",
+      "eslint": "^7.3.1",
+      "eslint-config-airbnb": "^18.2.0",
+      "eslint-config-prettier": "^6.11.0",
+      "eslint-plugin-import": "^2.22.0",
+      "eslint-plugin-jsx-a11y": "^6.3.1",
+      "eslint-plugin-prettier": "^3.1.4",
+      "eslint-plugin-react": "^7.20.0",
+      "eslint-plugin-react-hooks": "^1.7.0",
+      "file-loader": "^3.0.1",
+      "fork-ts-checker-webpack-plugin": "^1.3.4",
+      "html-webpack-plugin": "^3.2.0",
+      "husky": "^4.2.5",
+      "image-webpack-loader": "^4.6.0",
+      "jest": "^24.8.0",
+      "lint-staged": "^10.2.11",
+      "node-pre-gyp": "^0.15.0",
+      "node-sass": "^4.14.1",
+      "prettier": "^1.18.2",
+      "react-hot-loader": "^4.12.21",
+      "react-test-renderer": "^16.13.1",
+      "redux-devtools-extension": "^2.13.5",
+      "sass-loader": "^7.1.0",
+      "source-map-loader": "^0.2.4",
+      "spectron": "^5.0.0",
+      "style-loader": "^0.23.1",
+      "ts-jest": "^24.0.2",
+      "ts-node": "3.3.0",
+      "typescript": "^3.9.5",
+      "webpack": "^4.43.0",
+      "webpack-cli": "^3.3.12",
+      "webpack-dev-server": "^3.11.0",
+      "webpack-merge": "^4.2.1",
+      "webpack-node-externals": "^1.7.2"
+   },
+   "dependencies": {
+      "@giphy/js-components": "^3.6.1",
+      "@giphy/js-fetch-api": "^1.7.0",
+      "@giphy/react-components": "^1.9.1",
+      "@types/emoji-regex": "^8.0.0",
+      "@types/fluent-ffmpeg": "^2.1.14",
+      "@types/mime": "^2.0.3",
+      "@types/node-notifier": "^6.0.1",
+      "@types/react-color": "^3.0.4",
+      "auto-launch": "^5.0.5",
+      "byte-base64": "^1.0.2",
+      "cors": "^2.8.5",
+      "dictionary-en": "^3.0.1",
+      "electron-dl": "^3.0.2",
+      "emoji-regex": "^9.0.0",
+      "express": "^4.17.1",
+      "ffmpeg-static": "^4.2.5",
+      "firebase": "^7.21.1",
+      "fireworks-canvas": "^2.5.0",
+      "fluent-ffmpeg": "^2.1.2",
+      "google-libphonenumber": "^3.2.10",
+      "googleapis": "^62.0.0",
+      "jsqr": "^1.3.1",
+      "leaflet": "^1.6.0",
+      "link-preview-js": "^2.0.4",
+      "mime": "^2.4.6",
+      "node-notifier": "^5.4.3",
+      "node-pre-gyp": "^0.15.0",
+      "nspell": "^2.1.4",
+      "react": "^16.13.1",
+      "react-click-n-hold": "^1.0.7",
+      "react-color": "^2.18.1",
+      "react-confetti": "^6.0.0",
+      "react-dom": "^16.13.1",
+      "react-leaflet": "^2.7.0",
+      "react-redux": "^7.2.0",
+      "react-router-dom": "^5.2.0",
+      "react-router-transition": "^2.0.0",
+      "react-transition-group": "^1.2.1",
+      "read-chunk": "^3.2.0",
+      "redux": "^4.0.5",
+      "reflect-metadata": "^0.1.10",
+      "socket.io-client": "^2.3.1",
+      "sqlite3": "^4.2.0",
+      "string-similarity": "^4.0.2",
+      "typeorm": "^0.2.25",
+      "vcard": "^0.1.0",
+      "vcf": "^2.0.6"
+   }
 }

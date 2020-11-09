@@ -1,0 +1,47 @@
+#ThemeConfigDisplay {
+    width: 77%;
+    margin-left: 23%;
+}
+
+.aAreaLocationTitle {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 22px;
+    margin: 5px 0 0 0;
+}
+
+.aAreaLocationSubTitle {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Light";
+    font-size: 18px;
+    margin: 2px 0;
+    margin-left: 20px;
+}
+
+@media (max-width: 1200px) {
+    #ThemeConfigDisplay {
+        width: 82%;
+        margin-left: 18%;
+    }
+}
+
+@media (max-width: 1000px) {
+    #ThemeConfigDisplay {
+        width: 85%;
+        margin-left: 15%;
+    }
+}
+
+@media (max-width: 800px) {
+    #ThemeConfigDisplay {
+        width: 87%;
+        margin-left: 13%;
+    }
+}
+
+@media (max-width: 600px) {
+    #ThemeConfigDisplay {
+        width: 100%;
+        margin-left: 0%;
+    }
+}

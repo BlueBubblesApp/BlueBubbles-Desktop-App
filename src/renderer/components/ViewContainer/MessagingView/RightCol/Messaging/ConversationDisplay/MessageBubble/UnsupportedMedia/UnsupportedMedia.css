@@ -1,0 +1,25 @@
+.UnsupportedMedia {
+    background-color: var(--incoming-message-color);
+    border-radius: 20px;
+    padding: 10px 30px 10px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 3px;
+    cursor: pointer;
+    animation: fade 0.25s ease-in-out;
+    max-width: 250px;
+}
+
+.UnsupportedMedia > p:first-child {
+    margin-top: 10px;
+}
+
+.UnsupportedMedia > p {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Light";
+    font-size: 14px;
+    margin: 0;
+    margin-bottom: 10px;
+}

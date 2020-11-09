@@ -1,0 +1,86 @@
+.ReactionParticipant {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
+    width: 50px;
+    margin: 0 25px 0 25px;
+}
+
+.ReactionParticipant > p {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    margin: 0;
+}
+
+.reactionParticipantIcon {
+    height: 35px;
+    min-height: 35px;
+}
+
+.aReactionLower {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.aReactionCounter {
+    width: 7px;
+}
+
+.aReactionCounter > p {
+    color: var(--sub-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    margin: 0;
+}
+
+.aReactionTypeIcon {
+    height: 100%;
+    margin-right: 7px;
+    flex-grow: 1;
+    /* display: flex;
+    justify-content: center;
+    align-items: center; */
+}
+
+.aDisplayedLove {
+    transform: scale(0);
+    animation-name: heartbeat;
+    animation-duration: 0.65s;
+    animation-fill-mode: forwards;
+}
+
+.aDisplayedLike {
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: rotate-scale-up 0.5s linear both;
+}
+
+.aDisplayedDislike {
+    transform: scale(0);
+    transform-origin: top;
+    animation: rotate-scale-up 0.5s linear both;
+}
+
+.aDisplayedLaugh {
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: scale-up 0.4s linear both;
+}
+
+.aDisplayedEmphasize {
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: scale-up 0.45s linear both;
+}
+
+.aDisplayedQuestion {
+    height: 30px;
+    transform: scale(0);
+    transform-origin: bottom;
+    animation: scale-up 0.45s linear both;
+}

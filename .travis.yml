@@ -1,0 +1,26 @@
+language: node_js
+node_js: 12.18.1
+os:
+- windows
+- linux
+env:
+  global:
+  - secure: DawnFFmjTETHMyAoV13X83YUupttuF8b23yWhOIMXWoh8/51MFt7OtKbUf2Em+nU0kH8YjnPnV3lLFQgrSkmu9n1x/RQGCpUueBeTPodKr5fHQSTmls53BS5M1nky6SlSWwvNyYp7OZFI/x+PlrR0eXXFkutXnTG2jp8DM2Wl2jMQJz6DC63RXAFrQaHKR5j4YKoUkyUTQTQB2tewMSdT2IsQPFu7K/NZ9weV+bCN+8quMsdAM6+Cxe8apuJWd8GLPS4pAmTnHDeyQstgLlke58RlImiMr72rS6Tcydp3hmHaylFQh6N4R4eD805V+GLAz/fbmNm8IsimVZn4kpQakJC5gwxnCBpJY1VjodZExCoHm/kt6Mar5lhwNKwJ5erFP/mm8nxRJfyFfttRGV2d8Ju+3mOEFbb4gVBj3/pUzDLTTkNGkICXd39dpgZC/Fl70XmXEjDILOAmBQBbDlANxYx7xlcAgymFdJs4lw+uzVSWaNSgfY1Y+asmE4UkCoe6VzpDv+dy2VywYu4ODi30tS9bTnxaZl+d51SWOmFGmIOx5hxrFHqE4oy2zxyfFEIb83yku+tUgJEFJogAdui7Ni23RQjJwGKDo9R4Ts9LVkSUz/qHfrIXv7i5I8wNBhoAQW6/mHopRakKMUiKskOicrNF0zxmtoSlO3upzwSQi4=
+  - secure: Ur4ve8tQMvqsWMBMXSv7cTq//isIrhAlBlzwh4RRSDYBmbd8uKctBBQGP2XOPgb6Gd+BRogNdkMghvo22m+QI7HcXfgvHoP/HdZRdaQxa9NSHYAZJcscZCA2+Ay8mPJwQCbbEi0w4jE/tbVqZeLFenJsrQkn15Jp9EJ+4HLYqXnz+e9k0omfpFQbS0Yil5CkRbBEt2ItJ5G8y3qcoJlhbG4vPx6XDK4Ykbs8cowE83Nb5XYUOHOFnjqj2pNxV8FykJlnXJhkVY8+29BRcXVlooNQYLJRN50ARcHRERvIkcMLLqMimUT87olv2j0U+ETOs7y2yKKwh4kdQPld7DaHqY1xTtfHO01BNgIWSDUbimYadNRzNFR5t77iOxT4v7gZY92FpdzjGvOh454gpJYqLOrO1pzNhlvdWYLyh+lFKSNDp8f0r754VrE7h2OsY49REwCyXQbGQ3mF+f3uc2Wi0ABEOkIhPLbND2ojgZTmm+P6PLsvMXG3PFhjfOfysC65WCGvnikBdeJw5zpbkTzeB4jwivU0PKq8zmjs9s23hqfsxxZt0VoSCLzbZGt5F72B7g9LTewsEe8OF7MyK2rxJB+DJzozE37xvQsSS3/HtzrUiftgD7oRFmq++7hyAEzeScFpFgFVvp5c0sdz0sg2lTLc1f0C6iWeW18uJ71uZnI=
+script:
+- npm run dist
+deploy:
+  provider: releases
+  api_key:
+    secure: yrSnvvr/H9h6iLHuHd+Ac0gECTwyUG/DzKkVwS6OMLRs16mR/9Py0bFs7mEE0jbDhDPa5hn5QxLGNZ9skroUnxsf+PJ1xU+rrgOheWWiO36yZlRaDSqRVKG/WbqmPpH/EsnKvWNUUGsuYz4K7Amgx5Ny0Hzd5li72LOZZw1bdpkVyGkZdZNTo3ZFL2upcD68rSsFSZ31qnhQWfZSj7tgs5Eq7huX5NCa5okxgU7R6oymi/X4hgaGARitlgurlXtAAMnmtwpLsVOdpwPB4ui+vd4bAf15+sd+VOLi3XYs5g5aThjMUn/LZLA6k2+TC9Rabudcm06YktsY0K8o0DUnLsi/oSZct29HOkMEIxHJ8yFIaj4oD2Q7A5FQC5loCqSyiziV1EFUPoon72/Pg6is+3+biKMOSkIZ7hQj8rSaOyALgLRB5scMWLY8zw7fBV+CqV+9iB2cTn2HvfID5DvA5G6OEwS200Gyk4Kp/N99CtwmbIhDMJWry7OAGg6pmdQW3ohdjuhqRR4qjGLt7Dxfopm7VfEm/Sx2QuQ02MAayiR9Yb54lMCtZQTjUvwFWhhpn5df+wQxFFQDx2yIcL1Q0zS4Np6YMF/AcKkpToxsbFi+5oliml1lGSUEAcdN3gV8RkVcbQSR3YE3enhUBMra6aG0SSjX8092S/ZNKkovIZY=
+  file_glob: 'true'
+  file:
+  - "/release/*.deb"
+  - "/release\\*.exe"
+  - "release/*.deb"
+  - "release\\*.exe"
+  on:
+    repo: BlueBubblesApp/BlueBubbles-Desktop-App
+    branch: maxwell/dev
+  skip_cleanup: 'true'
+  draft: 'true'

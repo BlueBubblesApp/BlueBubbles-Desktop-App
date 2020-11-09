@@ -1,0 +1,9 @@
+.LeftCol-Set {
+    height: 100%;
+    min-width: 290px;
+    max-width: 290px;
+    background-color: var(--sidebar-color);
+    display: flex;
+    flex-direction: column;
+    border-radius: 0px 0px 0px 5px;
+}

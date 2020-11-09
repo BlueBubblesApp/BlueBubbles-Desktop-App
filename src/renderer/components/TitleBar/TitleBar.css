@@ -1,0 +1,140 @@
+.TitleBar {
+    width: 100%;
+    min-height: 25px;
+    height: 25px;
+    display: flex;
+    border-radius: 5px 5px 0px 0px;
+}
+
+#TitleBarLeft {
+    min-width: 290px;
+    height: 100%;
+    background-color: var(--sidebar-color);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 5px 0px 0px 0px;
+    transition: ease-in-out 0.1s;
+}
+
+.TitleBarLeftBlurred {
+    background-color: var(--sidebar-blurred-color) !important;
+}
+
+#TitleButtonsDiv {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 5px 0px 0px 0px;
+}
+
+#TitleScrollableLeft {
+    -webkit-app-region: drag;
+    flex-grow: 1;
+    height: 100%;
+}
+
+#TitleBarRight {
+    -webkit-app-region: drag;
+    flex-grow: 1;
+    height: 100%;
+    background-color: var(--secondary-color);
+    border-radius: 0px 5px 0px 0px;
+    transition: ease-in-out 0.1s;
+}
+
+.TitleBarRightBlurred {
+    background-color: var(--secondary-blurred-color);
+}
+
+.title-button {
+    width: 13px;
+    height: 13px;
+    border-radius: 25px;
+}
+
+#close-button {
+    margin-left: 10px;
+    background-color: var(--title-bar-close);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: ease-in-out 0.1s;
+}
+
+#minimize-button {
+    background-color: var(--title-bar-minimize);
+    margin: 0 8px 0 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: ease-in-out 0.1s;
+}
+
+#maximize-button {
+    background-color: var(--title-bar-maximize);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: ease-in-out 0.1s;
+}
+
+#unmaximize-button {
+    background-color: var(--title-bar-maximize);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: ease-in-out 0.1s;
+}
+
+.hide {
+    display: none !important;
+}
+
+#close-button > img {
+    height: 9px;
+}
+
+#close-button .hideIcon {
+    display: none;
+}
+
+#close-button:hover .hideIcon {
+    display: block;
+}
+
+#minimize-button > img {
+    height: 11px;
+}
+
+#minimize-button .hideIcon {
+    display: none;
+}
+
+#minimize-button:hover .hideIcon {
+    display: block;
+}
+
+#maximize-button > img {
+    height: 11px;
+}
+
+#maximize-button .hideIcon {
+    display: none;
+}
+
+#maximize-button:hover .hideIcon {
+    display: block;
+}
+
+#unmaximize-button > img {
+    height: 11px;
+}
+
+#unmaximize-button .hideIcon {
+    display: none;
+}
+
+#unmaximize-button:hover .hideIcon {
+    display: block;
+}

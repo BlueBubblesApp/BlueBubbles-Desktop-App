@@ -1,0 +1,75 @@
+.DetailContact {
+    height: 42px;
+    max-height: 42px;
+    min-height: 42px;
+    /* background-color: var(--secondary-color); */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    /* border-top: 1px solid var(--sub-title-color); */
+    /* border-bottom: 1px solid grey; */
+}
+
+.ContactWrap {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 13px;
+    border-radius: 15px;
+    transition: background-color ease-in-out 0.1s;
+}
+
+.ContactWrap:hover {
+    background-color: var(--right-accent-title-color);
+}
+
+.ContactWrap:hover #detailContactsContainer {
+    background-color: var(--right-accent-title-color);
+}
+
+.ContactWrap:hover #JumpToContact {
+    fill: white !important;
+}
+
+.ContactLeft {
+    display: flex;
+    align-items: center;
+}
+
+.ContactRight {
+    display: flex;
+    align-items: center;
+}
+
+.ContactIcon {
+    height: 30px;
+}
+
+.ContactName {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    margin: 0 0 0 10px;
+}
+
+#JumpToContact {
+    fill: var(--right-accent-title-color);
+    justify-self: flex-end;
+    height: 23px;
+    width: 23px;
+    transition: fill ease-in-out 0.1s;
+}
+
+#JumpToContact:hover {
+    opacity: 0.75;
+    cursor: pointer;
+}
+
+.contactDetailsPhoto {
+    width: 34px;
+    height: 34px;
+    border-radius: 100px;
+}

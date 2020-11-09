@@ -1,0 +1,20 @@
+.ChatLabel {
+    height: 40px;
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    animation: fade 0.25s ease-in-out;
+    max-width: 80%;
+    margin: 5px auto;
+}
+
+.ChatLabel > p {
+    color: var(--chat-label-color);
+    font-family: "SF UI Display Bold";
+    font-size: 12px;
+    font-weight: 100;
+    margin-bottom: 2px;
+    margin-top: 0;
+}
