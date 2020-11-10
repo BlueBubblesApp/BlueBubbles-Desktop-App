@@ -71,6 +71,8 @@ type Props = {
     newerMessage: Message;
     showStatus: boolean;
     messages: Message[];
+    gradientMessages: boolean;
+    colorfulContacts: number;
 };
 
 type State = {
@@ -288,7 +290,7 @@ class MessageBubble extends React.Component<Props, State> {
             }
 
             if (attachment.mimeType.startsWith("audio") && attachment.data) {
-                return <InChatAudio attachment={attachment} />;
+                return <InChatAudio gradientMessages={this.props.gradientMessages} attachment={attachment} />;
             }
 
             if (attachment.mimeType === "text/x-vlocation") {
@@ -958,6 +960,35 @@ class MessageBubble extends React.Component<Props, State> {
         // If a url hostname is in this array, the preview will be forced to only show the favicon instead of the image
         const forceFaviconURLS = ["bluebubbles.app"];
 
+        // Generate message sender contact color
+        const seedrandom = require("seedrandom");
+
+        let firstGradientNumber = 8;
+        if (message.handle) {
+            const rng = seedrandom(message.handle.address);
+            const rand1 = rng();
+
+            if (rand1 <= 1 / 7) {
+                firstGradientNumber = 1;
+            } else if (rand1 > 1 / 7 && rand1 <= 2 / 7) {
+                firstGradientNumber = 2;
+            } else if (rand1 > 2 / 7 && rand1 <= 3 / 7) {
+                firstGradientNumber = 3;
+            } else if (rand1 > 3 / 7 && rand1 <= 4 / 7) {
+                firstGradientNumber = 4;
+            } else if (rand1 > 4 / 7 && rand1 <= 5 / 7) {
+                firstGradientNumber = 5;
+            } else if (rand1 > 5 / 7 && rand1 <= 6 / 7) {
+                firstGradientNumber = 6;
+            } else if (rand1 > 6 / 7 && rand1 <= 7 / 7) {
+                firstGradientNumber = 7;
+            }
+        }
+
+        if (!this.props.colorfulContacts) {
+            firstGradientNumber = 8;
+        }
+
         return (
             <>
                 {this.state.showContextMenu ? (
@@ -1120,7 +1151,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                                             cx="50%"
                                                                             cy="50%"
                                                                             r="500"
-                                                                            fill="url(#Gradient1)"
+                                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
                                                                         />
                                                                         <mask id="rmvProfile">
                                                                             <circle
@@ -1182,7 +1213,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                                         </defs>
                                                                         <circle
                                                                             className="cls-1"
-                                                                            fill="url(#Gradient1)"
+                                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
                                                                             cx="50%"
                                                                             cy="50%"
                                                                             r="50%"
@@ -1218,7 +1249,11 @@ class MessageBubble extends React.Component<Props, State> {
                                                 ) : null}
                                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                                     <div
-                                                        className={`${expressiveSendStyle} ${messageClass}`}
+                                                        className={`${expressiveSendStyle} ${messageClass} ${
+                                                            message.isFromMe && this.props.gradientMessages
+                                                                ? "gradientMessages"
+                                                                : ""
+                                                        }`}
                                                         id={message.guid}
                                                         style={{ marginBottom: useAvatar ? "3px" : "0" }}
                                                     >
@@ -1234,6 +1269,9 @@ class MessageBubble extends React.Component<Props, State> {
                                                                     />
                                                                 ))}
                                                             </>
+                                                        ) : null}
+                                                        {message.subject ? (
+                                                            <p className="messageSubject">{message.subject}</p>
                                                         ) : null}
                                                         <p>{text}</p>
                                                     </div>
@@ -1411,7 +1449,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                             cx="50%"
                                                             cy="50%"
                                                             r="500"
-                                                            fill="url(#Gradient1)"
+                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
                                                         />
                                                         <mask id="rmvProfile">
                                                             <circle cx="50%" cy="50%" r="435" fill="white" />
@@ -1458,7 +1496,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                         </defs>
                                                         <circle
                                                             className="cls-1"
-                                                            fill="url(#Gradient1)"
+                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
                                                             cx="50%"
                                                             cy="50%"
                                                             r="50%"
@@ -1496,7 +1534,9 @@ class MessageBubble extends React.Component<Props, State> {
                                     : null}
                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                     <div
-                                        className={`${expressiveSendStyle} ${messageClass}`}
+                                        className={`${expressiveSendStyle} ${messageClass} ${
+                                            message.isFromMe && this.props.gradientMessages ? "gradientMessages" : ""
+                                        }`}
                                         id={message.guid}
                                         style={{ marginBottom: useAvatar ? "3px" : "0" }}
                                     >
@@ -1516,6 +1556,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                 ))}
                                             </>
                                         ) : null}
+                                        {message.subject ? <p className="messageSubject">{message.subject}</p> : null}
                                         {text ? <p>{text}</p> : null}
                                     </div>
                                 </ClickNHold>

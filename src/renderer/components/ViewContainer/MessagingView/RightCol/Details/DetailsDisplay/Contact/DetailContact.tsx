@@ -15,9 +15,46 @@ interface Props {
     address: string;
 }
 
-interface State {}
+interface State {
+    firstGradientNumber: number;
+}
 
 class DetailContact extends React.Component<Props, State> {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            firstGradientNumber: 8
+        };
+    }
+
+    async componentDidMount() {
+        const seedrandom = require("seedrandom");
+        const rng = seedrandom(this.props.address);
+        const rand1 = rng();
+
+        if (rand1 <= 1 / 7) {
+            this.setState({ firstGradientNumber: 1 });
+        } else if (rand1 > 1 / 7 && rand1 <= 2 / 7) {
+            this.setState({ firstGradientNumber: 2 });
+        } else if (rand1 > 2 / 7 && rand1 <= 3 / 7) {
+            this.setState({ firstGradientNumber: 3 });
+        } else if (rand1 > 3 / 7 && rand1 <= 4 / 7) {
+            this.setState({ firstGradientNumber: 4 });
+        } else if (rand1 > 4 / 7 && rand1 <= 5 / 7) {
+            this.setState({ firstGradientNumber: 5 });
+        } else if (rand1 > 5 / 7 && rand1 <= 6 / 7) {
+            this.setState({ firstGradientNumber: 6 });
+        } else if (rand1 > 6 / 7 && rand1 <= 7 / 7) {
+            this.setState({ firstGradientNumber: 7 });
+        }
+
+        const config = await ipcRenderer.invoke("get-config");
+        if (!config.colorfulContacts) {
+            this.setState({ firstGradientNumber: 8 });
+        }
+    }
+
     async jumpToContactChat() {
         const payload = { newChatAddresses: this.props.address, matchingAddress: this.props.address };
         await ipcRenderer.invoke("start-new-chat", payload);
@@ -43,13 +80,13 @@ class DetailContact extends React.Component<Props, State> {
                                 {/* If no handle name */}
                                 {detailsIconText[this.props.index] === "?" ? (
                                     <svg height="34px" width="34px" viewBox="0 0 1000 1000">
-                                        <defs>
-                                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                                <stop className="stop1" offset="0%" stopColor="#686868" />
-                                                <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                            </linearGradient>
-                                        </defs>
-                                        <circle className="cls-1" cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
+                                        <circle
+                                            className="cls-1"
+                                            cx="50%"
+                                            cy="50%"
+                                            r="500"
+                                            fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                        />
                                         <mask id="rmvProfile">
                                             <circle cx="50%" cy="50%" r="435" fill="white" />
                                         </mask>
@@ -68,6 +105,7 @@ class DetailContact extends React.Component<Props, State> {
                                     <DetailContactAvatar
                                         contactInitials={detailsIconText[this.props.index]}
                                         chat={this.props.chat}
+                                        gradientNumber={this.state.firstGradientNumber}
                                     />
                                 )}
                             </>

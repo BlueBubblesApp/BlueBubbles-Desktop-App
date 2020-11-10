@@ -47,6 +47,7 @@
     margin-bottom: 0;
     min-height: 16px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     width: auto;
@@ -75,7 +76,7 @@
     font-family: "SF UI Display Light";
     font-size: 14px;
     padding: 8px 15px 8px 15px;
-    background-color: var(--outgoing-message-color);
+    background: var(--outgoing-message-color);
     border-radius: 20px;
     word-break: normal;
     overflow-wrap: break-word;
@@ -84,9 +85,22 @@
     margin-bottom: 0;
     min-height: 16px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     width: fit-content;
+}
+
+.gradientMessages {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 29, 79, 1) 0%,
+        var(--outgoing-message-color) 45%,
+        var(--outgoing-message-color) 80%
+    ) !important;
+    background-attachment: fixed !important;
+    -webkit-background-clip: border-box !important;
+    background-clip: border-box !important;
 }
 
 .OutgoingMessage .message.unsent {
@@ -96,6 +110,12 @@
 .OutgoingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
+}
+
+.messageSubject {
+    align-self: flex-start;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
 }
 
 .MessageSender {
@@ -192,8 +212,10 @@
     right: -8px;
     height: 20px;
     width: 20px;
-    background-color: var(--outgoing-message-color);
+    background: inherit;
     background-attachment: fixed;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
     border-bottom-left-radius: 15px;
     transition: ease-in-out 0.45s;
 }
@@ -478,6 +500,10 @@
     font-family: "SF UI Display Light";
     font-size: 14px;
     background-color: var(--outgoing-message-color);
+    // background: linear-gradient(180deg, rgba(255,29,79,1) 0%, rgba(0,110,228,1) 45%, rgba(0,110,228,1) 80%);
+    background-attachment: fixed;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
     border-radius: 20px;
     margin-top: 3px;
     margin-bottom: 0;

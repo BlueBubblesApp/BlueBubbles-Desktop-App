@@ -51,6 +51,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
 
 #messageFieldInput-NewMessage[type="text"] {
@@ -132,7 +133,7 @@
 
 #emojiPickerButton {
     position: absolute;
-    right: 54px;
+    right: 7px;
     fill: var(--right-secondary-color);
     transition: ease-in-out 0.1s;
 }

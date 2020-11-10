@@ -15,6 +15,8 @@ type State = {
     startWithOS: boolean;
     sendAudio: boolean;
     capitalizeFirstLetter: boolean;
+    gradientMessages: boolean;
+    colorfulContacts: boolean;
 };
 
 class AppTitle extends React.Component<Props, State> {
@@ -25,7 +27,9 @@ class AppTitle extends React.Component<Props, State> {
             closeToTray: false,
             startWithOS: false,
             sendAudio: false,
-            capitalizeFirstLetter: false
+            capitalizeFirstLetter: false,
+            gradientMessages: false,
+            colorfulContacts: false
         };
     }
 
@@ -35,7 +39,9 @@ class AppTitle extends React.Component<Props, State> {
             closeToTray: config.closeToTray,
             startWithOS: config.startWithOS,
             sendAudio: config.sendAudio,
-            capitalizeFirstLetter: config.capitalizeFirstLetter
+            capitalizeFirstLetter: config.capitalizeFirstLetter,
+            gradientMessages: config.gradientMessages,
+            colorfulContacts: config.colorfulContacts
         });
 
         console.log(config);
@@ -68,6 +74,18 @@ class AppTitle extends React.Component<Props, State> {
         const newConfig = { capitalizeFirstLetter: !this.state.capitalizeFirstLetter };
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ capitalizeFirstLetter: !this.state.capitalizeFirstLetter });
+    }
+
+    async handleGradientMessages() {
+        const newConfig = { gradientMessages: !this.state.gradientMessages };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ gradientMessages: !this.state.gradientMessages });
+    }
+
+    async handleColorfulContacts() {
+        const newConfig = { colorfulContacts: !this.state.colorfulContacts };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ colorfulContacts: !this.state.colorfulContacts });
     }
 
     render() {
@@ -114,10 +132,31 @@ class AppTitle extends React.Component<Props, State> {
                     <p>Auto Capitalize First Letter</p>
                     <label className="form-switch" onClick={() => this.handleChangeCapitalizeFirstLetter()}>
                         <input
-                            id="capFirstLetterCheckbox"
                             type="checkbox"
                             checked={this.state.capitalizeFirstLetter}
                             onChange={() => this.handleChangeCapitalizeFirstLetter()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Scrolling Gradient On Messages</p>
+                    <label className="form-switch" onClick={() => this.handleGradientMessages()}>
+                        <input
+                            type="checkbox"
+                            checked={this.state.gradientMessages}
+                            onChange={() => this.handleGradientMessages()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Colorful Contacts</p>
+                    <label className="form-switch" onClick={() => this.handleColorfulContacts()}>
+                        <input
+                            type="checkbox"
+                            checked={this.state.colorfulContacts}
+                            onChange={() => this.handleColorfulContacts()}
                         />
                         <i />
                     </label>

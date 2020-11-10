@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable prefer-template */
 /* eslint-disable no-unused-expressions */
@@ -12,31 +13,132 @@ import * as fs from "fs";
 import { Attachment, Chat, Message } from "@server/databases/chat/entity";
 import { getSender, generateDetailsIconText, parseAppleLocation } from "@renderer/helpers/utils";
 import "./BubbleChatIcons.css";
+import { ipcRenderer } from "electron";
 
 interface Props {
     participants: {
         initials: string[];
         avatars: string[];
+        addresses: string[];
     };
     bubbleIconInitials: any;
 }
 
-// interface State {
-// }
+interface State {
+    firstGradientNumber: number;
+    secondGradientNumber: number;
+    thirdGradientNumber: number;
+}
 
-class BubbleChatIcons extends React.Component<Props, unknown> {
+class BubbleChatIcons extends React.Component<Props, State> {
     constructor(props) {
         super(props);
 
-        this.state = {};
+        this.state = {
+            firstGradientNumber: 8,
+            secondGradientNumber: 8,
+            thirdGradientNumber: 8
+        };
     }
 
-    // async componentDidMount() {
-    // }
+    async componentDidMount() {
+        const seedrandom = require("seedrandom");
+        let rng1;
+        let rng2;
+        let rng3;
+
+        let rand1;
+        let rand2;
+        let rand3;
+
+        let firstGradientNumber;
+        let secondGradientNumber;
+        let thirdGradientNumber;
+
+        rng1 = seedrandom(this.props.participants.addresses[0]);
+        rand1 = rng1();
+
+        if (rand1 <= 1 / 7) {
+            this.setState({ firstGradientNumber: 1 });
+        } else if (rand1 > 1 / 7 && rand1 <= 2 / 7) {
+            this.setState({ firstGradientNumber: 2 });
+        } else if (rand1 > 2 / 7 && rand1 <= 3 / 7) {
+            this.setState({ firstGradientNumber: 3 });
+        } else if (rand1 > 3 / 7 && rand1 <= 4 / 7) {
+            this.setState({ firstGradientNumber: 4 });
+        } else if (rand1 > 4 / 7 && rand1 <= 5 / 7) {
+            this.setState({ firstGradientNumber: 5 });
+        } else if (rand1 > 5 / 7 && rand1 <= 6 / 7) {
+            this.setState({ firstGradientNumber: 6 });
+        } else if (rand1 > 6 / 7 && rand1 <= 7 / 7) {
+            this.setState({ firstGradientNumber: 7 });
+        }
+
+        if (this.props.participants.addresses.length === 2) {
+            rng2 = seedrandom(this.props.participants.addresses[1]);
+            rand2 = rng2();
+
+            if (rand2 <= 1 / 7) {
+                this.setState({ secondGradientNumber: 1 });
+            } else if (rand2 > 1 / 7 && rand2 <= 2 / 7) {
+                this.setState({ secondGradientNumber: 2 });
+            } else if (rand2 > 2 / 7 && rand2 <= 3 / 7) {
+                this.setState({ secondGradientNumber: 3 });
+            } else if (rand2 > 3 / 7 && rand2 <= 4 / 7) {
+                this.setState({ secondGradientNumber: 4 });
+            } else if (rand2 > 4 / 7 && rand2 <= 5 / 7) {
+                this.setState({ secondGradientNumber: 5 });
+            } else if (rand2 > 5 / 7 && rand2 <= 6 / 7) {
+                this.setState({ secondGradientNumber: 6 });
+            } else if (rand2 > 6 / 7 && rand2 <= 7 / 7) {
+                this.setState({ secondGradientNumber: 7 });
+            }
+        } else if (this.props.participants.addresses.length > 2) {
+            rng2 = seedrandom(this.props.participants.addresses[1]);
+            rng3 = seedrandom(this.props.participants.addresses[2]);
+            rand2 = rng2();
+            rand3 = rng3();
+
+            if (rand2 <= 1 / 7) {
+                this.setState({ secondGradientNumber: 1 });
+            } else if (rand2 > 1 / 7 && rand2 <= 2 / 7) {
+                this.setState({ secondGradientNumber: 2 });
+            } else if (rand2 > 2 / 7 && rand2 <= 3 / 7) {
+                this.setState({ secondGradientNumber: 3 });
+            } else if (rand2 > 3 / 7 && rand2 <= 4 / 7) {
+                this.setState({ secondGradientNumber: 4 });
+            } else if (rand2 > 4 / 7 && rand2 <= 5 / 7) {
+                this.setState({ secondGradientNumber: 5 });
+            } else if (rand2 > 5 / 7 && rand2 <= 6 / 7) {
+                this.setState({ secondGradientNumber: 6 });
+            } else if (rand2 > 6 / 7 && rand2 <= 7 / 7) {
+                this.setState({ secondGradientNumber: 7 });
+            }
+
+            if (rand3 <= 1 / 7) {
+                this.setState({ thirdGradientNumber: 1 });
+            } else if (rand3 > 1 / 7 && rand3 <= 2 / 7) {
+                this.setState({ thirdGradientNumber: 2 });
+            } else if (rand3 > 2 / 7 && rand3 <= 3 / 7) {
+                this.setState({ thirdGradientNumber: 3 });
+            } else if (rand3 > 3 / 7 && rand3 <= 4 / 7) {
+                this.setState({ thirdGradientNumber: 4 });
+            } else if (rand3 > 4 / 7 && rand3 <= 5 / 7) {
+                this.setState({ thirdGradientNumber: 5 });
+            } else if (rand3 > 5 / 7 && rand3 <= 6 / 7) {
+                this.setState({ thirdGradientNumber: 6 });
+            } else if (rand3 > 6 / 7 && rand3 <= 7 / 7) {
+                this.setState({ thirdGradientNumber: 7 });
+            }
+        }
+
+        const config = await ipcRenderer.invoke("get-config");
+        if (!config.colorfulContacts) {
+            this.setState({ firstGradientNumber: 8, secondGradientNumber: 8, thirdGradientNumber: 8 });
+        }
+    }
 
     render() {
-        console.log(this.props.participants.initials.length);
-
         if (this.props.participants.initials.length === 0) return null;
 
         if (this.props.participants.initials.length === 1) {
@@ -50,13 +152,12 @@ class BubbleChatIcons extends React.Component<Props, unknown> {
                         />
                     ) : (
                         <svg id="aChatHandleBubble" style={{ width: "150px", height: "150px" }}>
-                            <defs>
-                                <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                    <stop className="stop1" offset="0%" stopColor="#686868" />
-                                    <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                </linearGradient>
-                            </defs>
-                            <circle fill="url(#Gradient1)" cy="50%" cx="50%" r="50%" />
+                            <circle
+                                fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                cy="50%"
+                                cx="50%"
+                                r="50%"
+                            />
                             {this.props.bubbleIconInitials[0] === "?" ? (
                                 <>
                                     <mask id="rmvMainCircle">
@@ -80,14 +181,13 @@ class BubbleChatIcons extends React.Component<Props, unknown> {
         if (this.props.participants.initials.length === 2) {
             return (
                 <svg id="aChatHandleBubble" style={{ width: "300px", height: "170px" }}>
-                    <defs>
-                        <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                            <stop className="stop1" offset="0%" stopColor="#686868" />
-                            <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                        </linearGradient>
-                    </defs>
-                    <circle fill="url(#Gradient1)" cy="40%" cx="30%" r="26%" />
-                    <circle fill="url(#Gradient1)" cy="65%" cx="70%" r="20%" />
+                    <circle fill={`url(#ColoredGradient${this.state.firstGradientNumber})`} cy="40%" cx="30%" r="26%" />
+                    <circle
+                        fill={`url(#ColoredGradient${this.state.secondGradientNumber})`}
+                        cy="65%"
+                        cx="70%"
+                        r="20%"
+                    />
                     <mask id="rmvMainCircle">
                         <circle cy="40%" cx="30%" r="50%" fill="black" />
                         <circle cy="40%" cx="30%" r="23%" fill="white" />
@@ -165,9 +265,14 @@ class BubbleChatIcons extends React.Component<Props, unknown> {
                             <stop className="stop2" offset="100%" stopColor="#928E8E" />
                         </linearGradient>
                     </defs>
-                    <circle fill="url(#Gradient1)" cy="40%" cx="50%" r="18%" />
-                    <circle fill="url(#Gradient1)" cy="70%" cx="74%" r="14%" />
-                    <circle fill="url(#Gradient1)" cy="70%" cx="26%" r="14%" />
+                    <circle fill={`url(#ColoredGradient${this.state.firstGradientNumber})`} cy="40%" cx="50%" r="18%" />
+                    <circle
+                        fill={`url(#ColoredGradient${this.state.secondGradientNumber})`}
+                        cy="70%"
+                        cx="74%"
+                        r="14%"
+                    />
+                    <circle fill={`url(#ColoredGradient${this.state.thirdGradientNumber})`} cy="70%" cx="26%" r="14%" />
                     <mask id="rmvMainCircle">
                         <circle cy="40%" cx="50%" r="50%" fill="black" />
                         <circle cy="40%" cx="50%" r="16%" fill="white" />
