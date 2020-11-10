@@ -17,6 +17,7 @@ type State = {
     capitalizeFirstLetter: boolean;
     gradientMessages: boolean;
     colorfulContacts: boolean;
+    leftTitlebar: boolean;
 };
 
 class AppTitle extends React.Component<Props, State> {
@@ -29,7 +30,8 @@ class AppTitle extends React.Component<Props, State> {
             sendAudio: false,
             capitalizeFirstLetter: false,
             gradientMessages: false,
-            colorfulContacts: false
+            colorfulContacts: false,
+            leftTitlebar: false
         };
     }
 
@@ -41,7 +43,8 @@ class AppTitle extends React.Component<Props, State> {
             sendAudio: config.sendAudio,
             capitalizeFirstLetter: config.capitalizeFirstLetter,
             gradientMessages: config.gradientMessages,
-            colorfulContacts: config.colorfulContacts
+            colorfulContacts: config.colorfulContacts,
+            leftTitlebar: config.leftTitlebar
         });
 
         console.log(config);
@@ -86,6 +89,13 @@ class AppTitle extends React.Component<Props, State> {
         const newConfig = { colorfulContacts: !this.state.colorfulContacts };
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ colorfulContacts: !this.state.colorfulContacts });
+    }
+
+    async handleLeftTitlebar() {
+        const newConfig = { leftTitlebar: !this.state.leftTitlebar };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ leftTitlebar: !this.state.leftTitlebar });
+        ipcRenderer.emit("titlebar-update");
     }
 
     render() {
@@ -157,6 +167,17 @@ class AppTitle extends React.Component<Props, State> {
                             type="checkbox"
                             checked={this.state.colorfulContacts}
                             onChange={() => this.handleColorfulContacts()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Titlebar Buttons On Left Side</p>
+                    <label className="form-switch" onClick={() => this.handleLeftTitlebar()}>
+                        <input
+                            type="checkbox"
+                            checked={this.state.leftTitlebar}
+                            onChange={() => this.handleLeftTitlebar()}
                         />
                         <i />
                     </label>

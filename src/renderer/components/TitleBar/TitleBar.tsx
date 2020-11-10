@@ -37,9 +37,29 @@ const closeHandler = () => {
     ipcRenderer.invoke("close-event");
 };
 
-class TitleBar extends React.Component {
+interface State {
+    leftTitlebar: boolean;
+}
+
+class TitleBar extends React.Component<unknown, State> {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            leftTitlebar: true
+        };
+    }
+
     async componentDidMount() {
-        const config = await ipcRenderer.invoke("get-config");
+        let config = await ipcRenderer.invoke("get-config");
+
+        this.setState({ leftTitlebar: config.leftTitlebar });
+
+        ipcRenderer.on("titlebar-update", async () => {
+            config = await ipcRenderer.invoke("get-config");
+
+            this.setState({ leftTitlebar: config.leftTitlebar });
+        });
 
         const theme: Theme = await ipcRenderer.invoke("get-theme", config.currentTheme);
 
@@ -137,32 +157,68 @@ class TitleBar extends React.Component {
         });
     }
 
+    // async componentWillUpdate() {
+    //     const config = await ipcRenderer.invoke("get-config");
+
+    //     this.setState({leftTitleBar: config.leftTitleBar})
+    // }
+
     render() {
         return (
             <div className="TitleBar">
                 <div id="TitleBarLeft">
-                    <div id="TitleButtonsDiv">
-                        <div onClick={closeHandler} id="close-button" className="title-button">
-                            <img id="close-button-icon" className="hideIcon" src={CloseIcon} alt="close" />
+                    {this.state.leftTitlebar ? (
+                        <div id="TitleButtonsDiv">
+                            <div onClick={closeHandler} id="close-button" className="title-button">
+                                <img id="close-button-icon" className="hideIcon" src={CloseIcon} alt="close" />
+                            </div>
+                            <div onClick={minimizeHandler} id="minimize-button" className="title-button">
+                                <img id="minimize-button-icon" className="hideIcon" src={MinimizeIcon} alt="minimize" />
+                            </div>
+                            <div onClick={unmaximizeHandler} id="unmaximize-button" className="title-button hide">
+                                <img
+                                    id="unmaximize-button-icon"
+                                    className="hideIcon"
+                                    src={UnmaximizeIcon}
+                                    alt="unmaximize"
+                                />
+                            </div>
+                            <div onClick={maximizeHandler} id="maximize-button" className="title-button">
+                                <img id="maximize-button-icon" className="hideIcon" src={MaximizeIcon} alt="maximize" />
+                            </div>
                         </div>
-                        <div onClick={minimizeHandler} id="minimize-button" className="title-button">
-                            <img id="minimize-button-icon" className="hideIcon" src={MinimizeIcon} alt="minimize" />
-                        </div>
-                        <div onClick={unmaximizeHandler} id="unmaximize-button" className="title-button hide">
-                            <img
-                                id="unmaximize-button-icon"
-                                className="hideIcon"
-                                src={UnmaximizeIcon}
-                                alt="unmaximize"
-                            />
-                        </div>
-                        <div onClick={maximizeHandler} id="maximize-button" className="title-button">
-                            <img id="maximize-button-icon" className="hideIcon" src={MaximizeIcon} alt="maximize" />
-                        </div>
-                    </div>
+                    ) : null}
                     <div id="TitleScrollableLeft" />
                 </div>
-                <div id="TitleBarRight" />
+                <div id="TitleBarRight">
+                    <div id="TitleScrollableRight" />
+                    {this.state.leftTitlebar ? null : (
+                        <div id="TitleButtonsDivRight">
+                            <div
+                                onClick={closeHandler}
+                                id="close-button"
+                                className="title-button"
+                                style={{ margin: "0" }}
+                            >
+                                <img id="close-button-icon" className="hideIcon" src={CloseIcon} alt="close" />
+                            </div>
+                            <div onClick={minimizeHandler} id="minimize-button" className="title-button">
+                                <img id="minimize-button-icon" className="hideIcon" src={MinimizeIcon} alt="minimize" />
+                            </div>
+                            <div onClick={unmaximizeHandler} id="unmaximize-button" className="title-button hide">
+                                <img
+                                    id="unmaximize-button-icon"
+                                    className="hideIcon"
+                                    src={UnmaximizeIcon}
+                                    alt="unmaximize"
+                                />
+                            </div>
+                            <div onClick={maximizeHandler} id="maximize-button" className="title-button">
+                                <img id="maximize-button-icon" className="hideIcon" src={MaximizeIcon} alt="maximize" />
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }

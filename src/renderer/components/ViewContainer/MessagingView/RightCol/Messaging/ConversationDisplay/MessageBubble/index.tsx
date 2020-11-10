@@ -72,7 +72,7 @@ type Props = {
     showStatus: boolean;
     messages: Message[];
     gradientMessages: boolean;
-    colorfulContacts: number;
+    colorfulContacts: boolean;
 };
 
 type State = {

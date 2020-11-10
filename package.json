@@ -82,12 +82,10 @@
          "icon": "./resources/icon1024.png"
       },
       "linux": {
-         "target": "deb",
-         "icon": "./resources/icon1024.png"
+         "target": "deb"
       },
       "win": {
-         "target": "nsis",
-         "icon": "./resources/icon1024.png"
+         "target": "nsis"
       }
    },
    "repository": {

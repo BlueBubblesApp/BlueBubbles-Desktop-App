@@ -18,7 +18,7 @@ type State = {
     isLoading: boolean;
     messages: Message[];
     gradientMessages: boolean;
-    colorfulContacts: number;
+    colorfulContacts: boolean;
 };
 
 type Message = DBMessage & {
@@ -55,7 +55,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
             isLoading: false,
             messages: [],
             gradientMessages: false,
-            colorfulContacts: 8
+            colorfulContacts: false
         };
     }
 
