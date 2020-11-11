@@ -91,12 +91,12 @@
    },
    "repository": {
       "type": "git",
-      "url": "git+ssh://git@github.com:Robinfr/electron-react-typescript.git"
+      "url": "git+ssh://git@github.com:BlueBubblesApp/BlueBubbles-Desktop-App.git"
    },
    "bugs": {
-      "url": "https://github.com/Robinfr/electron-react-typescript/issues"
+      "url": "https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App/issues"
    },
-   "homepage": "https://github.com/Robinfr/electron-react-typescript",
+   "homepage": "https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App",
    "devDependencies": {
       "@babel/core": "^7.10.3",
       "@babel/plugin-proposal-class-properties": "^7.10.1",
