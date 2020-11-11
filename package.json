@@ -1,6 +1,6 @@
 {
    "name": "bluebubbles-desktop-app",
-   "version": "1.0.1",
+   "version": "1.0.2",
    "description": "iMessage for PC and Android",
    "main": "./dist/main.js",
    "author": {
@@ -82,7 +82,8 @@
          "icon": "./resources/icon1024.png"
       },
       "linux": {
-         "target": "deb"
+         "target": "deb",
+         "icon": "./resources/icon1024.png"
       },
       "win": {
          "target": "nsis"
