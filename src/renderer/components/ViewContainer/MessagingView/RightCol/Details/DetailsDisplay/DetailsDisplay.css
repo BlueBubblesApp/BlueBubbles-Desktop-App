@@ -365,7 +365,7 @@
 
 #aChatHandleBubble > text {
     fill: white;
-    font-family: quicksand, sans-serif;
+    font-family: "SF Pro Rounded", sans-serif;
     font-weight: 700;
     font-style: normal;
 }

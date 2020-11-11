@@ -17,6 +17,8 @@ type Props = {
 type State = {
     isLoading: boolean;
     messages: Message[];
+    gradientMessages: boolean;
+    colorfulContacts: boolean;
 };
 
 type Message = DBMessage & {
@@ -51,11 +53,13 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
         this.state = {
             isLoading: false,
-            messages: []
+            messages: [],
+            gradientMessages: false,
+            colorfulContacts: false
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         ipcRenderer.on("message", async (_, payload: { message: Message; tempGuid?: string }) => {
             const { message } = payload;
 
@@ -83,6 +87,10 @@ class RightConversationDisplay extends React.Component<Props, State> {
             view.scrollTop = view.scrollHeight;
         });
 
+        const config = await ipcRenderer.invoke("get-config");
+
+        this.setState({ gradientMessages: config.gradientMessages, colorfulContacts: config.colorfulContacts });
+        console.log(config.gradientMessages);
         this.chatChange();
     }
 
@@ -153,7 +161,11 @@ class RightConversationDisplay extends React.Component<Props, State> {
         if (hasUpdates) this.setState({ messages: stateMessages });
     }
 
-    chatChange() {
+    async chatChange() {
+        const config = await ipcRenderer.invoke("get-config");
+
+        this.setState({ gradientMessages: config.gradientMessages, colorfulContacts: config.colorfulContacts });
+
         // Reset the messages
         this.setState({ messages: [] }, () => {
             // Set the text field to active
@@ -330,6 +342,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
         return (
             <div id="messageView" onScroll={e => this.detectTop(e)} className="RightConversationDisplay">
+                {/* <div id="gradientOverlay" /> */}
                 {isLoading ? <div id="loader" /> : null}
                 <ChatLabel text={`BlueBubbles Messaging with ${chatTitle}`} date={date} />
 
@@ -369,6 +382,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                         newerMessage={newerMessage}
                                         showStatus={message.isFromMe && myNewMessages.length === 0}
                                         messages={messages}
+                                        gradientMessages={this.state.gradientMessages}
+                                        colorfulContacts={this.state.colorfulContacts}
                                     />
                                 </>
                             ) : (

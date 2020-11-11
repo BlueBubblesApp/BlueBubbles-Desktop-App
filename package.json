@@ -1,6 +1,6 @@
 {
    "name": "bluebubbles-desktop-app",
-   "version": "1.0.1",
+   "version": "1.0.2",
    "description": "iMessage for PC and Android",
    "main": "./dist/main.js",
    "author": {
@@ -86,18 +86,17 @@
          "icon": "./resources/icon1024.png"
       },
       "win": {
-         "target": "nsis",
-         "icon": "./resources/icon1024.png"
+         "target": "nsis"
       }
    },
    "repository": {
       "type": "git",
-      "url": "git+ssh://git@github.com:Robinfr/electron-react-typescript.git"
+      "url": "git+ssh://git@github.com:BlueBubblesApp/BlueBubbles-Desktop-App.git"
    },
    "bugs": {
-      "url": "https://github.com/Robinfr/electron-react-typescript/issues"
+      "url": "https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App/issues"
    },
-   "homepage": "https://github.com/Robinfr/electron-react-typescript",
+   "homepage": "https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App",
    "devDependencies": {
       "@babel/core": "^7.10.3",
       "@babel/plugin-proposal-class-properties": "^7.10.1",
@@ -203,6 +202,7 @@
       "read-chunk": "^3.2.0",
       "redux": "^4.0.5",
       "reflect-metadata": "^0.1.10",
+      "seedrandom": "^3.0.5",
       "socket.io-client": "^2.3.1",
       "sqlite3": "^4.2.0",
       "string-similarity": "^4.0.2",

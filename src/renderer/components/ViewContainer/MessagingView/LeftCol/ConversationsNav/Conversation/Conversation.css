@@ -136,32 +136,24 @@
 }
 
 #aContactInitials {
-    font-family: quicksand;
-    font-weight: 700;
-    font-style: normal;
+    font-family: "SF Pro Rounded";
     font-size: 23px;
 }
 
 #contactInitials {
-    font-family: quicksand, sans-serif;
-    font-weight: 700;
-    font-style: normal;
+    font-family: "SF Pro Rounded", sans-serif;
     font-size: 23px;
     fill: white !important;
 }
 
 #groupContactInitials-1 {
-    font-family: quicksand, sans-serif;
-    font-weight: 700;
-    font-style: normal;
+    font-family: "SF Pro Rounded", sans-serif;
     font-size: 14px;
     fill: white;
 }
 
 #groupContactInitials-2 {
-    font-family: quicksand, sans-serif;
-    font-weight: 700;
-    font-style: normal;
+    font-family: "SF Pro Rounded", sans-serif;
     font-size: 14px;
     fill: white;
 }

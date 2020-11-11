@@ -693,16 +693,16 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                                 value={this.state.enteredMessage}
                                 onChange={this.handleMessageChange}
                             />
+                            <svg
+                                id="emojiPickerButton"
+                                onClick={this.openEmojiPicker}
+                                height="21"
+                                width="21"
+                                viewBox="0 0 24 24"
+                            >
+                                <path d="m12 24c6.617 0 12-5.383 12-12s-5.383-12-12-12-12 5.383-12 12 5.383 12 12 12zm5-16.935c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-10 0c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-3.354 7.24c.142-.192.366-.305.604-.305h15.5c.238 0 .462.113.604.305.141.192.183.439.112.667-1.16 3.737-4.562 6.248-8.466 6.248s-7.307-2.511-8.466-6.248c-.071-.227-.029-.475.112-.667z" />
+                            </svg>
                         </div>
-                        <svg
-                            id="emojiPickerButton"
-                            onClick={this.openEmojiPicker}
-                            height="21"
-                            width="21"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="m12 24c6.617 0 12-5.383 12-12s-5.383-12-12-12-12 5.383-12 12 5.383 12 12 12zm5-16.935c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-10 0c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-3.354 7.24c.142-.192.366-.305.604-.305h15.5c.238 0 .462.113.604.305.141.192.183.439.112.667-1.16 3.737-4.562 6.248-8.466 6.248s-7.307-2.511-8.466-6.248c-.071-.227-.029-.475.112-.667z" />
-                        </svg>
                     </>
                 )}
                 <div id="rightBottomButton" style={{ width: this.state.audioHasData ? "85px" : "45px" }}>

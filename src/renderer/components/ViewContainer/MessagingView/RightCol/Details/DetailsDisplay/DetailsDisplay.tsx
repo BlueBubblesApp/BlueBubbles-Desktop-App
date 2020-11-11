@@ -237,7 +237,8 @@ class DetailsDisplay extends React.Component<Props, State> {
     render() {
         const participants = {
             initials: this.props.chat.participants.map(handle => getSender(handle)),
-            avatars: this.props.chat.participants.map(handle => handle.avatar)
+            avatars: this.props.chat.participants.map(handle => handle.avatar),
+            addresses: this.props.chat.participants.map(handle => handle.address)
         };
         const bubbleIconInitials = generateDetailsIconText(this.props.chat);
 

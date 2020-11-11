@@ -18,3 +18,15 @@
     background-color: var(--sub-title-color) !important;
     border-radius: 5px;
 }
+
+#gradientOverlay {
+    background: linear-gradient(to right, red, blue);
+    position: absolute;
+    top: 35px;
+    height: 300px;
+    min-height: 300px;
+    width: calc(100vw - 290px);
+    top: 35;
+    right: 0;
+    z-index: 0;
+}

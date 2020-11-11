@@ -56,7 +56,7 @@ module.exports = merge.smart(baseConfig, {
                 ]
             },
             {
-                test: /\.(woff(2)?|ttf|eot|svg|ico)(\?v=\d+\.\d+\.\d+)?$/,
+                test: /\.(woff(2)?|ttf|eot|svg|ico|otf)(\?v=\d+\.\d+\.\d+)?$/,
                 use: [{
                     loader: 'file-loader',
                     options: {
@@ -74,11 +74,13 @@ module.exports = merge.smart(baseConfig, {
         ]
     },
     plugins: [
+        new HtmlWebpackPlugin({
+            title: "BlueBubbles"
+        }),
         new ForkTsCheckerWebpackPlugin({
             reportFiles: ['src/renderer/**/*']
         }),
         new webpack.NamedModulesPlugin(),
-        new HtmlWebpackPlugin(),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
             "process.env.GIPHY_API_KEY": JSON.stringify(process.env.GIPHY_API_KEY)

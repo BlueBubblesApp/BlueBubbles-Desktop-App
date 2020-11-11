@@ -7,11 +7,10 @@ import * as React from "react";
 import { Chat, Message } from "@server/databases/chat/entity";
 import { getDateText, generateChatTitle } from "@renderer/helpers/utils";
 
-import { GroupAvatar } from "./Avatar/GroupAvatar";
-import { IndividualAvatar } from "./Avatar/IndividualAvatar";
-
 import "./Conversation.css";
 import ConversationCloseIcon from "../../../../../../assets/icons/conversation-close-icon.png";
+import IndividualAvatar from "./Avatar/IndividualAvatar";
+import GroupAvatar from "./Avatar/GroupAvatar";
 
 // LOAD IN FROM BACKEND
 type ConversationProps = {

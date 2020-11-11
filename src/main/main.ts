@@ -6,7 +6,8 @@ import * as url from "url";
 
 import { Server } from "@server/index";
 import { FileSystem } from "@server/fileSystem";
-import trayIcon from "@renderer/assets/logo192.png";
+import linuxTrayIcon from "@renderer/assets/icon128.png";
+import windowsTrayIcon from "@renderer/assets/icon.ico";
 
 require("dotenv").config();
 
@@ -107,7 +108,11 @@ ipcMain.on("force-focus", () => {
 
 ipcMain.handle("close-event", async () => {
     if (BlueBubbles.configRepo.get("closeToTray")) {
-        tray = new Tray(path.join(FileSystem.resources, trayIcon));
+        if (process.platform === "linux") {
+            tray = new Tray(path.join(FileSystem.resources, linuxTrayIcon));
+        } else {
+            tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
+        }
 
         const contextMenu = Menu.buildFromTemplate([
             {

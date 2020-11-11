@@ -28,19 +28,36 @@
     border-radius: 5px 0px 0px 0px;
 }
 
+#TitleButtonsDivRight {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px 0px 0px 0px;
+}
+
 #TitleScrollableLeft {
     -webkit-app-region: drag;
     flex-grow: 1;
     height: 100%;
 }
 
-#TitleBarRight {
+#TitleScrollableRight {
     -webkit-app-region: drag;
+    flex-grow: 1;
+    height: 100%;
+}
+
+#TitleBarRight {
     flex-grow: 1;
     height: 100%;
     background-color: var(--secondary-color);
     border-radius: 0px 5px 0px 0px;
     transition: ease-in-out 0.1s;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 10px;
 }
 
 .TitleBarRightBlurred {
