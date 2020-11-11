@@ -153,7 +153,7 @@ class IndividualAvatar extends React.Component<Props, State> {
                     cy="50%"
                     r="25px"
                 />
-                <text className="cls-2" x="50%" y="33px" textAnchor="middle" fill="white" stroke="white">
+                <text className="cls-2" x="50%" y="33px" textAnchor="middle" fill="white">
                     {generateChatIconText(chat)}
                 </text>
             </svg>

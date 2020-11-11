@@ -56,7 +56,7 @@ module.exports = merge.smart(baseConfig, {
                 ]
             },
             {
-                test: /\.(woff(2)?|ttf|eot|svg|ico)(\?v=\d+\.\d+\.\d+)?$/,
+                test: /\.(woff(2)?|ttf|eot|svg|ico|otf)(\?v=\d+\.\d+\.\d+)?$/,
                 use: [{
                     loader: 'file-loader',
                     options: {

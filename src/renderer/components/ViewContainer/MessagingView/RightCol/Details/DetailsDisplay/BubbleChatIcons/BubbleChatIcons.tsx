@@ -168,7 +168,7 @@ class BubbleChatIcons extends React.Component<Props, State> {
                                     <circle mask="url(#rmvMainCircle)" fill="white" cx="50%" cy="115%" r="75px" />
                                 </>
                             ) : (
-                                <text x="50%" y="67%" textAnchor="middle" stroke="white" fontSize="75px">
+                                <text x="50%" y="67%" textAnchor="middle" fontSize="75px">
                                     {this.props.bubbleIconInitials[0]}
                                 </text>
                             )}
@@ -222,7 +222,7 @@ class BubbleChatIcons extends React.Component<Props, State> {
                                     <circle mask="url(#rmvMainCircle)" fill="white" cx="30%" cy="87%" r="65px" />
                                 </>
                             ) : (
-                                <text x="30%" y="55%" textAnchor="middle" stroke="white" fontSize="70px">
+                                <text x="30%" y="55%" textAnchor="middle" fontSize="70px">
                                     {this.props.bubbleIconInitials[0]}
                                 </text>
                             )}
@@ -246,7 +246,7 @@ class BubbleChatIcons extends React.Component<Props, State> {
                                     <circle mask="url(#rmvMainCircle2)" fill="white" cx="70%" cy="110%" r="60px" />
                                 </>
                             ) : (
-                                <text x="70%" y="77%" textAnchor="middle" stroke="white" fontSize="55px">
+                                <text x="70%" y="77%" textAnchor="middle" fontSize="55px">
                                     {this.props.bubbleIconInitials[1]}
                                 </text>
                             )}
@@ -319,7 +319,7 @@ class BubbleChatIcons extends React.Component<Props, State> {
                                     <circle mask="url(#rmvMainCircle)" fill="white" cx="50%" cy="89%" r="69px" />
                                 </>
                             ) : (
-                                <text x="50%" y="55%" textAnchor="middle" stroke="white" fontSize="70px">
+                                <text x="50%" y="55%" textAnchor="middle" fontSize="70px">
                                     {this.props.bubbleIconInitials[0]}
                                 </text>
                             )}
@@ -343,7 +343,7 @@ class BubbleChatIcons extends React.Component<Props, State> {
                                     <circle mask="url(#rmvMainCircle2)" fill="white" cx="74%" cy="112%" r="60px" />
                                 </>
                             ) : (
-                                <text x="74%" y="81%" textAnchor="middle" stroke="white" fontSize="55px">
+                                <text x="74%" y="81%" textAnchor="middle" fontSize="55px">
                                     {this.props.bubbleIconInitials[1]}
                                 </text>
                             )}
@@ -367,7 +367,7 @@ class BubbleChatIcons extends React.Component<Props, State> {
                                     <circle mask="url(#rmvMainCircle3)" fill="white" cx="26%" cy="112%" r="60px" />
                                 </>
                             ) : (
-                                <text x="25.5%" y="81%" textAnchor="middle" stroke="white" fontSize="55px">
+                                <text x="25.5%" y="81%" textAnchor="middle" fontSize="55px">
                                     {this.props.bubbleIconInitials[2]}
                                 </text>
                             )}

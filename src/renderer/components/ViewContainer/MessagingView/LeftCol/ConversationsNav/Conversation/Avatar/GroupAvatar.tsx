@@ -140,7 +140,6 @@ class GroupAvatar extends React.Component<Props, State> {
                                 x="32%"
                                 y="25px"
                                 textAnchor="middle"
-                                stroke="white"
                             >
                                 {chatIconText[0]}
                             </text>
@@ -180,14 +179,7 @@ class GroupAvatar extends React.Component<Props, State> {
                                 />
                             </>
                         ) : (
-                            <text
-                                id="groupContactInitials-2"
-                                className="cls-2"
-                                x="68%"
-                                y="36px"
-                                textAnchor="middle"
-                                stroke="white"
-                            >
+                            <text id="groupContactInitials-2" className="cls-2" x="68%" y="36px" textAnchor="middle">
                                 {chatIconText[1]}
                             </text>
                         )}

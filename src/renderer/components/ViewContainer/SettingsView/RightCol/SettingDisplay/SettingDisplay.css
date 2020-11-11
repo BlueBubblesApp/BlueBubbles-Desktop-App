@@ -1,8 +1,9 @@
-.SettingDisplay{
+.SettingDisplay {
     flex-grow: 1;
     background-color: var(--background-color);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     margin: 0;
+    border-radius: 0 0 5px 0;
 }

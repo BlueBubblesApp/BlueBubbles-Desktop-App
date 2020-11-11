@@ -7,18 +7,6 @@
     transition: ease-in-out 0.25s;
 }
 
-.bigEmojis {
-    font-size: 48px;
-    padding-left: 0;
-    background: none;
-    position: relative;
-}
-
-.bigEmojis > p {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
 .IncomingMessage {
     display: flex;
     justify-content: center;
@@ -56,6 +44,7 @@
 .IncomingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
+    // font-weight: 200;
 }
 
 .OutgoingMessage {
@@ -103,6 +92,19 @@
     background-clip: border-box !important;
 }
 
+.bigEmojis {
+    font-size: 48px;
+    padding-left: 0;
+    background: none;
+    position: relative;
+    background: none !important;
+}
+
+.bigEmojis > p {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
 .OutgoingMessage .message.unsent {
     opacity: 0.6;
 }
@@ -110,6 +112,7 @@
 .OutgoingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
+    // font-weight: 200;
 }
 
 .messageSubject {

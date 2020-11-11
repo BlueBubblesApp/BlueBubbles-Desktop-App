@@ -1220,7 +1220,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                                         />
                                                                         <text
                                                                             style={{
-                                                                                fontFamily: "quicksand",
+                                                                                fontFamily: "SF Pro Rounded",
                                                                                 fontWeight: 700,
                                                                                 fontStyle: "normal",
                                                                                 fontSize:
@@ -1232,10 +1232,9 @@ class MessageBubble extends React.Component<Props, State> {
                                                                             }}
                                                                             className="cls-2"
                                                                             x="50%"
-                                                                            y="70%"
+                                                                            y="67%"
                                                                             textAnchor="middle"
                                                                             fill="white"
-                                                                            stroke="white"
                                                                         >
                                                                             {generateReactionsDisplayIconText(
                                                                                 message.handle
@@ -1273,7 +1272,13 @@ class MessageBubble extends React.Component<Props, State> {
                                                         {message.subject ? (
                                                             <p className="messageSubject">{message.subject}</p>
                                                         ) : null}
-                                                        <p>{text}</p>
+                                                        <p
+                                                            style={{
+                                                                fontWeight: process.platform === "linux" ? 400 : 300
+                                                            }}
+                                                        >
+                                                            {text}
+                                                        </p>
                                                     </div>
                                                 </ClickNHold>
                                             </div>
@@ -1503,7 +1508,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                         />
                                                         <text
                                                             style={{
-                                                                fontFamily: "quicksand",
+                                                                fontFamily: "SF Pro Rounded",
                                                                 fontWeight: 700,
                                                                 fontStyle: "normal",
                                                                 fontSize:
@@ -1514,10 +1519,9 @@ class MessageBubble extends React.Component<Props, State> {
                                                             }}
                                                             className="cls-2"
                                                             x="50%"
-                                                            y="70%"
+                                                            y="67%"
                                                             textAnchor="middle"
                                                             fill="white"
-                                                            stroke="white"
                                                         >
                                                             {generateReactionsDisplayIconText(message.handle)}
                                                         </text>
@@ -1557,7 +1561,11 @@ class MessageBubble extends React.Component<Props, State> {
                                             </>
                                         ) : null}
                                         {message.subject ? <p className="messageSubject">{message.subject}</p> : null}
-                                        {text ? <p>{text}</p> : null}
+                                        {text ? (
+                                            <p style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
+                                                {text}
+                                            </p>
+                                        ) : null}
                                     </div>
                                 </ClickNHold>
                                 {stickers && !message.isFromMe
