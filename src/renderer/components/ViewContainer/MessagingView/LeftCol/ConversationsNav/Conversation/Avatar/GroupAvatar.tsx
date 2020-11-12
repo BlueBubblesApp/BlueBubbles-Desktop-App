@@ -80,7 +80,7 @@ class GroupAvatar extends React.Component<Props, State> {
         const secondParticipant: Handle = chat.participants[1];
 
         return (
-            <svg className="dynamicIcon" height="50px" width="50px">
+            <svg height="50px" width="50px">
                 <mask id="rmvCir">
                     <circle cx="32%" cy="40%" r="16px" fill="white" />
                     <circle cx="68%" cy="60%" r="18px" fill="black" />

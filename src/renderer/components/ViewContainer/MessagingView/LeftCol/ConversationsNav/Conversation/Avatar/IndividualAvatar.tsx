@@ -111,7 +111,7 @@ class IndividualAvatar extends React.Component<Props, State> {
             );
 
         return (
-            <svg id="testContact" height="50px" width="50px">
+            <svg height="50px" width="50px">
                 <defs>
                     <linearGradient id="ColoredGradient1" x1="0" x2="0" y1="1" y2="0">
                         <stop className="stop1" offset="0%" stopColor="#fd678d" />

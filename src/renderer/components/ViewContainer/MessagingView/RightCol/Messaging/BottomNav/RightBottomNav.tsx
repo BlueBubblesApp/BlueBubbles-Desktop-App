@@ -259,8 +259,8 @@ class RightBottomNav extends React.Component<Props, State> {
             assocMsg.attachments.push(attachment);
 
             // Make sure that each of the associated messages gets added to the UI and saved/sent
-            // ipcRenderer.invoke("send-to-ui", { event: "add-message", contents: assocMsg });
-            // ipcRenderer.invoke("save-message", { chat: this.props.chat, message: assocMsg });
+            ipcRenderer.invoke("send-to-ui", { event: "add-message", contents: assocMsg });
+            ipcRenderer.invoke("save-message", { chat: this.props.chat, message: assocMsg });
             ipcRenderer.invoke("send-message", { chat: this.props.chat, message: assocMsg });
 
             if (!this.state.attachmentPaths.includes(aPath)) {

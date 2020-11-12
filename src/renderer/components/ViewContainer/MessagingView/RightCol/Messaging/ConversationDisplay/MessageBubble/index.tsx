@@ -310,7 +310,7 @@ class MessageBubble extends React.Component<Props, State> {
                 const card = new vCard();
 
                 let vcfData;
-                card.readFile(attachmentPath, function(err, json) {
+                card.readFile(attachmentPath, (err: any, json: any) => {
                     vcfData = json;
                 });
 
@@ -1184,8 +1184,6 @@ class MessageBubble extends React.Component<Props, State> {
                                                                             marginRight: "10px",
                                                                             minWidth: "25px"
                                                                         }}
-                                                                        id="testContact"
-                                                                        className="dynamicIcon"
                                                                         height="25px"
                                                                         width="25px"
                                                                         viewBox="0 0 1000 1000"
@@ -1479,8 +1477,6 @@ class MessageBubble extends React.Component<Props, State> {
                                                 ) : (
                                                     <svg
                                                         style={{ marginRight: "10px", minWidth: "25px" }}
-                                                        id="testContact"
-                                                        className="dynamicIcon"
                                                         height="25px"
                                                         width="25px"
                                                         viewBox="0 0 1000 1000"

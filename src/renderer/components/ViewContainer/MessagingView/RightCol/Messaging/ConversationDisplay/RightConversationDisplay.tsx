@@ -74,8 +74,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
             await this.addMessagesToState([msg]);
 
             // Scroll to new message
-            const view = document.getElementById("messageView");
-            view.scrollTop = view.scrollHeight;
+            // const view = document.getElementById("messageView");
+            // view.scrollTop = view.scrollHeight;
         });
 
         ipcRenderer.on("add-message", async (_, message) => {
@@ -91,7 +91,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
         this.setState({ gradientMessages: config.gradientMessages, colorfulContacts: config.colorfulContacts });
         console.log(config.gradientMessages);
-        this.chatChange();
+        await this.chatChange();
     }
 
     componentDidUpdate(prevProps) {
@@ -283,7 +283,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
             ? `${getDateText(new Date(message.dateCreated), true)}, ${getTimeText(new Date(message.dateCreated))}`
             : "";
 
-        if (message.itemType === 0 && message.groupActionType === 0) {
+        if (message.itemType === 0 && message.groupActionType === 0 && message.attachments.length === 0) {
             return <ChatLabel text={`${sender} sent a handwritten note`} date={date} />;
         }
 
@@ -343,7 +343,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
         return (
             <div id="messageView" onScroll={e => this.detectTop(e)} className="RightConversationDisplay">
                 {/* <div id="gradientOverlay" /> */}
-                {isLoading ? <div id="loader" /> : null}
+                {isLoading ? <div id="loader" className="inChatLoader" /> : null}
                 <ChatLabel text={`BlueBubbles Messaging with ${chatTitle}`} date={date} />
 
                 {/* Reverse the list because we want to display it bottom to top */}
