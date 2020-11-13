@@ -115,7 +115,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
             withHandle: true,
             withAttachments: true,
             withChat: false,
-            limit: 50,
+            limit: 35,
             after: 1,
             before: messageTimestamp ?? new Date().getTime(),
             where: []
@@ -373,7 +373,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                 />
                             ) : null}
                             {/* If the message text is null, it's a group event */}
-                            {message.text ? (
+                            {message.text || message.attachments.length > 0 ? (
                                 <>
                                     <MessageBubble
                                         chat={chat}

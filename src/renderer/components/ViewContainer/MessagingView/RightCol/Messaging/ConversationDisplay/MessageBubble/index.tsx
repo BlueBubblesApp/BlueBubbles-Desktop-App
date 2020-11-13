@@ -34,6 +34,7 @@ import {
 } from "@renderer/helpers/utils";
 import { supportedVideoTypes, supportedAudioTypes } from "@renderer/helpers/constants";
 import UnknownImage from "@renderer/assets/img/unknown_img.png";
+import defaultBlurhash from "@renderer/assets/default-blurhash.png";
 
 // Relative imports
 import { AttachmentDownload } from "./@types";
@@ -42,7 +43,7 @@ import UnsupportedMedia from "./UnsupportedMedia";
 import ReactionParticipant from "./ReactionsDisplay/ReactionParticipant/ReactionParticipant";
 import ReactionsDisplay from "./ReactionsDisplay/ReactionsDisplay";
 
-import "./MessageBubble.scss";
+import "./MessageBubble.css";
 import "leaflet/dist/leaflet.css";
 import NewReaction from "./NewReaction/NewReaction";
 import InChatReaction from "./InChatReaction/InChatReaction";
@@ -386,7 +387,19 @@ class MessageBubble extends React.Component<Props, State> {
             );
         }
 
-        return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
+        return (
+            <div className="attachmentDownloadContainer" style={{ maxWidth: attachment.width === 0 ? "100%" : null }}>
+                <img style={{ height: "250px", width: "100%" }} src={defaultBlurhash} />
+                <div className="blurhashDownloadInfo">
+                    <p>Rendering Full Image</p>
+                    <div>
+                        <span style={{ width: `${attachment.progress}%` }} />
+                    </div>
+                    <p>{attachment.progress <= 0 ? "0%" : `${attachment.progress}%`}</p>
+                </div>
+            </div>
+        );
+        // return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
     }
 
     isValidUrl = string => {
@@ -466,7 +479,11 @@ class MessageBubble extends React.Component<Props, State> {
                     ipcRenderer.on(`attachment-${attachmentsCopy[i].guid}-progress`, (event, args) =>
                         this.onAttachmentUpdate(event, args)
                     );
-                    ipcRenderer.invoke("fetch-attachment", attachmentsCopy[i]);
+                    try {
+                        ipcRenderer.invoke("fetch-attachment", attachmentsCopy[i]);
+                    } catch (e) {
+                        console.log(e);
+                    }
                 }
             }
 

@@ -95,8 +95,10 @@ class BackendServer {
 
         // Handle start with OS
         this.bbAutoLauncher = new AutoLaunch({
-            name: "BlueBubbles"
+            name: "BlueBubbles",
+            isHidden: true
         });
+
         if (this.configRepo.get("startWithOS")) {
             this.bbAutoLauncher
                 .isEnabled()
@@ -653,7 +655,7 @@ class BackendServer {
         });
 
         // eslint-disable-next-line no-return-await
-        ipcMain.handle("fetch-attachment", async (_, attachment: Attachment) => {
+        ipcMain.handle("fetch-attachment", async (_, attachment: any) => {
             const chunkSize = (this.configRepo.get("chunkSize") as number) * 1000;
             let start = 0;
 

@@ -16,6 +16,7 @@ app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors");
 
 let win: BrowserWindow | null;
 let tray;
+let wasAutoStarted = false;
 const BlueBubbles = Server(win);
 
 const gotTheLock = app.requestSingleInstanceLock();
@@ -173,7 +174,64 @@ app.on("browser-window-blur", () => {
     if (win && win.webContents) win.webContents.send("blurred");
 });
 
-app.on("ready", createWindow);
+app.on("ready", async () => {
+    await createWindow();
+
+    if (process.argv.includes("--hidden")) {
+        wasAutoStarted = true;
+
+        if (process.platform === "linux") {
+            tray = new Tray(path.join(FileSystem.resources, linuxTrayIcon));
+        } else {
+            tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
+        }
+
+        const contextMenu = Menu.buildFromTemplate([
+            {
+                label: "BlueBubbles",
+                enabled: false
+            },
+            {
+                type: "separator"
+            },
+            {
+                label: "Open",
+                type: "normal",
+                click: async () => {
+                    if (win) {
+                        win.show();
+                        tray.destroy();
+                    } else {
+                        app.emit("active");
+                    }
+                }
+            },
+            {
+                label: "Close",
+                type: "normal",
+                click: async () => {
+                    await FileSystem.deleteTempFiles();
+                    win = null;
+                    app.quit();
+                    app.exit(0);
+                }
+            }
+        ]);
+
+        tray.setToolTip("BlueBubbles");
+        tray.setContextMenu(contextMenu);
+        tray.on("click", async () => {
+            if (win) {
+                win.show();
+                tray.destroy();
+            } else {
+                app.emit("active");
+            }
+        });
+
+        win.hide();
+    }
+});
 
 app.on("window-all-closed", async () => {
     if (process.platform !== "darwin") {

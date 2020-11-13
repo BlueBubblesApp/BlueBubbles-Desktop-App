@@ -44,7 +44,6 @@
 .IncomingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
-    // font-weight: 200;
 }
 
 .OutgoingMessage {
@@ -112,7 +111,6 @@
 .OutgoingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
-    // font-weight: 200;
 }
 
 .messageSubject {
@@ -161,9 +159,6 @@
 }
 
 .inChatContactCard > div svg:first-of-type {
-    // height: 35px;
-    // width: 35px;
-    // fill: blue;
     margin-right: 7px;
 }
 
@@ -494,7 +489,7 @@
     max-height: 35px;
 }
 
-// Audio Attachment
+/* Audio Attachment */
 .OutgoingAudioAttachmentControls {
     max-width: 100%;
     min-width: 35%;
@@ -503,7 +498,6 @@
     font-family: "SF UI Display Light";
     font-size: 14px;
     background-color: var(--outgoing-message-color);
-    // background: linear-gradient(180deg, rgba(255,29,79,1) 0%, rgba(0,110,228,1) 45%, rgba(0,110,228,1) 80%);
     background-attachment: fixed;
     -webkit-background-clip: border-box;
     background-clip: border-box;
@@ -628,6 +622,11 @@
         max-width: 85% !important;
     }
 
+    .attachmentDownloadContainer {
+        max-width: 60% !important;
+        min-width: 60% !important;
+    }
+
     .IncomingMessage {
         max-width: 85% !important;
     }
@@ -638,6 +637,11 @@
         max-height: 45%;
         max-width: 45%;
         min-width: 45%;
+    }
+
+    .attachmentDownloadContainer {
+        max-width: 45% !important;
+        min-width: 45% !important;
     }
 
     .linkContainer {
@@ -653,39 +657,18 @@
         min-width: 50%;
     }
 
+    .attachmentDownloadContainer {
+        max-width: 50% !important;
+        min-width: 50% !important;
+    }
+
     .linkContainer {
         max-width: 50%;
         min-width: 50%;
     }
 }
 
-// @media (max-width: 1200px) {
-//     .Attachment {
-//         max-height: 33%;
-//         max-width: 33%;
-//         min-width: 33%;
-//     }
-
-//     .linkContainer {
-//         max-width: 33%;
-//         min-width: 33%;
-//     }
-// }
-
-// @media (max-width: 1600px) {
-//     .Attachment {
-//         max-height: 30%;
-//         max-width: 30%;
-//         min-width: 30%;
-//     }
-
-//     .linkContainer {
-//         max-width: 30%;
-//         min-width: 30%;
-//     }
-// }
-
-// New Reactions
+/* New Reactions */
 #reactionOverlay {
     top: 35px;
     height: 100vh;
@@ -772,10 +755,6 @@
     padding: 6px;
 }
 
-// #ImageContextMenu div:last-of-type p {
-//     padding: 0;
-// }
-
 #ImageContextMenu div:hover {
     cursor: pointer;
     background-color: var(--main-title-color);
@@ -785,7 +764,7 @@
     color: var(--background-color);
 }
 
-// Special message effect types
+/* Special message effect types */
 .replayMessageEffect {
     display: flex;
     justify-content: center;
@@ -1036,4 +1015,66 @@
     0% {
         top: 110%;
     }
+}
+
+.attachmentDownloadContainer {
+    max-width: 30%;
+    min-width: 30%;
+    max-height: 250px;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.attachmentDownloadContainer img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 20px;
+}
+
+.attachmentDownloadContainer:hover {
+    cursor: pointer;
+}
+
+.blurhashDownloadInfo {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    z-index: 2;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+.blurhashDownloadInfo p {
+    margin: 5px 0;
+    max-width: 80%;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+.blurhashDownloadInfo > div {
+    width: 60%;
+    z-index: 2;
+    background: #555;
+    border-radius: 10px;
+    height: 8px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.blurhashDownloadInfo > div > span {
+    z-index: 2;
+    background-color: white;
+    border-radius: 10px;
+    height: 100%;
 }
