@@ -475,7 +475,7 @@ class BackendServer {
                 withChats: false,
                 limit: 25,
                 offset: 0,
-                withBlurhash: true,
+                withBlurhash: false,
                 after: 1,
                 where: [
                     {

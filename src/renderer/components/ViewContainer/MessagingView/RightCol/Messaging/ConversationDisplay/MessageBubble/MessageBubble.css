@@ -44,6 +44,7 @@
 .IncomingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
+    white-space: pre-wrap;
 }
 
 .OutgoingMessage {
@@ -108,9 +109,14 @@
     opacity: 0.6;
 }
 
+.OutgoingMessage .bigEmojis.unsent > p {
+    opacity: 0.6;
+}
+
 .OutgoingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
+    white-space: pre-wrap;
 }
 
 .messageSubject {
@@ -332,10 +338,15 @@
     transition: ease-in-out 0.45s;
 }
 
-.Attachment {
+.attachmentContainer {
     max-height: 40%;
     max-width: 40%;
     min-width: 40%;
+    position: relative;
+}
+
+.Attachment {
+    width: 100%;
     border-radius: 20px;
     margin-top: 3px;
     cursor: pointer;
@@ -473,6 +484,7 @@
 }
 
 .linkContainer {
+    position: relative;
     width: fit-content;
     display: flex;
     flex-direction: column;
@@ -633,7 +645,7 @@
 }
 
 @media (max-width: 1000px) {
-    .Attachment {
+    .attachmentContainer {
         max-height: 45%;
         max-width: 45%;
         min-width: 45%;
@@ -651,7 +663,7 @@
 }
 
 @media (max-width: 900px) {
-    .Attachment {
+    .attachmentContainer {
         max-height: 50%;
         max-width: 50%;
         min-width: 50%;
@@ -1018,8 +1030,8 @@
 }
 
 .attachmentDownloadContainer {
-    max-width: 30%;
-    min-width: 30%;
+    max-width: 100%;
+    min-width: 100%;
     max-height: 250px;
     min-height: 250px;
     display: flex;
@@ -1034,10 +1046,6 @@
     top: 0;
     left: 0;
     border-radius: 20px;
-}
-
-.attachmentDownloadContainer:hover {
-    cursor: pointer;
 }
 
 .blurhashDownloadInfo {

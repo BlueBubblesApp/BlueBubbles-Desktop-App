@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { app } from "electron";
 import * as path from "path";
 import * as fs from "fs";
@@ -311,7 +312,9 @@ export class ChatRepository {
         message.groupTitle = res.groupTitle;
         message.groupActionType = res.groupActionType;
         message.isExpired = res.isExpired;
-        message.associatedMessageGuid = res.associatedMessageGuid ? res.associatedMessageGuid.split("/")[1] : null;
+        message.associatedMessageGuid = res.associatedMessageGuid
+            ? res.associatedMessageGuid.split(new RegExp("/|:", "i"))[1]
+            : null;
         message.associatedMessageType = res.associatedMessageType;
         message.expressiveSendStyleId = res.expressiveSendStyleId;
         message.timeExpressiveSendStyleId = res.timeExpressiveSendStyleId ?? 0;

@@ -261,7 +261,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                           .filter(
                               chat =>
                                   chat.hasOwnProperty("lastMessage") &&
-                                  (chat.displayName.toLowerCase().includes(chatSearchString.toLowerCase()) ||
+                                  (chat.displayName?.toLowerCase().includes(chatSearchString.toLowerCase()) ||
                                       chat.participants.some(handle => {
                                           return (
                                               handle.firstName

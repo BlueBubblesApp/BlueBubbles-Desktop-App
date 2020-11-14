@@ -137,6 +137,8 @@ const loadAttachmentData = (attachment: AttachmentDownload) => {
             console.log(ex);
             /* Do nothing */
         }
+    } else if (attachment.filepath) {
+        output = fs.readFileSync(attachment.filepath).toString(encoding);
     } else {
         output = fs.readFileSync(fPath).toString(encoding);
     }
@@ -229,7 +231,10 @@ class MessageBubble extends React.Component<Props, State> {
                                         onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
                                         onContextMenu={e => this.handleImageRightClick(e)}
                                         onError={setFallbackImage}
-                                        style={{ left: `${messageCords.left - 295 + messageCords.width / 2}px` }}
+                                        style={{
+                                            opacity: attachment.guid.includes("temp") ? 0.6 : 1,
+                                            left: `${messageCords.left - 295 + messageCords.width / 2}px`
+                                        }}
                                         draggable="false"
                                     />
                                 ) : (
@@ -261,6 +266,7 @@ class MessageBubble extends React.Component<Props, State> {
                         onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
                         onContextMenu={e => this.handleImageRightClick(e)}
                         onError={setFallbackImage}
+                        style={{ opacity: attachment.guid.includes("temp") ? 0.6 : 1 }}
                         draggable="false"
                     />
                 );
@@ -279,6 +285,7 @@ class MessageBubble extends React.Component<Props, State> {
                         loop
                         controls
                         draggable="false"
+                        style={{ opacity: attachment.guid.includes("temp") ? 0.6 : 1 }}
                         onClick={e =>
                             (e.target as HTMLVideoElement).paused
                                 ? (e.target as HTMLVideoElement).play()
@@ -389,9 +396,9 @@ class MessageBubble extends React.Component<Props, State> {
 
         return (
             <div className="attachmentDownloadContainer" style={{ maxWidth: attachment.width === 0 ? "100%" : null }}>
-                <img style={{ height: "250px", width: "100%" }} src={defaultBlurhash} />
+                <img style={{ height: "250px", width: "100%", borderRadius: "20px" }} src={defaultBlurhash} />
                 <div className="blurhashDownloadInfo">
-                    <p>Rendering Full Image</p>
+                    <p>Rendering Full Attachment</p>
                     <div>
                         <span style={{ width: `${attachment.progress}%` }} />
                     </div>
@@ -459,6 +466,11 @@ class MessageBubble extends React.Component<Props, State> {
                 // Add the attachment to the list
                 item.progress = attachmentExists ? 100 : 0;
 
+                // If the attachment was sent from local disk
+                if (item.filepath && fs.existsSync(item.filepath)) {
+                    item.progress = 100;
+                }
+
                 // If the progress is 100%, load the data
                 if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
 
@@ -476,9 +488,9 @@ class MessageBubble extends React.Component<Props, State> {
             for (let i = 0; i < attachmentsCopy.length; i += 1) {
                 if (attachmentsCopy[i].progress === 0) {
                     // Register listener for each attachment that we need to download
-                    ipcRenderer.on(`attachment-${attachmentsCopy[i].guid}-progress`, (event, args) =>
-                        this.onAttachmentUpdate(event, args)
-                    );
+                    ipcRenderer.on(`attachment-${attachmentsCopy[i].guid}-progress`, (event, args) => {
+                        this.onAttachmentUpdate(event, args);
+                    });
                     try {
                         ipcRenderer.invoke("fetch-attachment", attachmentsCopy[i]);
                     } catch (e) {
@@ -846,6 +858,13 @@ class MessageBubble extends React.Component<Props, State> {
         // Figure out if the message should show the handle avatar
         const useAvatar = this.shouldHaveAvatar();
 
+        // Figure out the "real string" and then figure out if we need to make it big emojis
+        const text = sanitizeStr(message.text);
+
+        if (text.length <= 2 * 3 && !/[a-z? _."'/,$0-9\\]/.test(text.toLowerCase()) && allEmojis(text)) {
+            messageClass = "bigEmojis";
+        }
+
         // Is it sent?
         if (!message.guid || message.guid.length === 0 || message.guid.startsWith("temp")) {
             messageClass += " unsent";
@@ -892,13 +911,6 @@ class MessageBubble extends React.Component<Props, State> {
             // }
 
             // Commented out for now becasue they are not implemented in the UI
-        }
-
-        // Figure out the "real string" and then figure out if we need to make it big emojis
-        const text = sanitizeStr(message.text);
-
-        if (text.length <= 2 * 3 && !/[a-z? _."'/,$0-9\\]/.test(text.toLowerCase()) && allEmojis(text)) {
-            messageClass = "bigEmojis";
         }
 
         // Parse out any links. We can minimize parsing if we do a simple "contains" first
@@ -1037,61 +1049,78 @@ class MessageBubble extends React.Component<Props, State> {
                     <>
                         {/* If the attachment is a link */}
                         {links.length > 0 ? (
-                            <div className={linkClassName} draggable="false">
-                                <div className="linkContainer" onClick={() => openLink(links[0])}>
-                                    {linkPrev?.images?.length > 0 &&
-                                    !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
-                                        <img src={linkPrev.images[0]} className="Attachment" draggable="false" />
-                                    ) : null}
-                                    {/* {attachments.map((attachment: AttachmentDownload) =>
+                            <>
+                                <div className={linkClassName} draggable="false">
+                                    <div className="linkContainer" onClick={() => openLink(links[0])}>
+                                        {message.hasReactions === true ? (
+                                            <>
+                                                {message.reactions.map((reaction, i) => (
+                                                    <InChatReaction
+                                                        key={reaction.guid}
+                                                        isMessageFromMe={message.isFromMe}
+                                                        isReactionFromMe={reaction.isFromMe}
+                                                        reactionType={reaction.associatedMessageType}
+                                                        offset={i}
+                                                    />
+                                                ))}
+                                            </>
+                                        ) : null}
+                                        {linkPrev?.images?.length > 0 &&
+                                        !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
+                                            <img src={linkPrev.images[0]} className="Attachment" draggable="false" />
+                                        ) : null}
+                                        {/* {attachments.map((attachment: AttachmentDownload) =>
                                         this.renderAttachment(attachment)
                                     )} */}
-                                    <div
-                                        className={`linkBottomDiv ${useTail ? "tail" : ""}`}
-                                        style={{
-                                            borderRadius:
-                                                (linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
-                                                (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
-                                                    ? "15px"
-                                                    : "0 0 15px 15px",
-                                            marginTop:
-                                                (linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
-                                                (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
-                                                    ? "3px"
-                                                    : "0px"
-                                        }}
-                                    >
                                         <div
+                                            className={`linkBottomDiv ${useTail ? "tail" : ""}`}
                                             style={{
-                                                width:
-                                                    linkPrev?.images?.length > 0 &&
-                                                    !forceFaviconURLS.includes(new URL(links[0]).hostname)
-                                                        ? "93%"
-                                                        : "75%"
+                                                borderRadius:
+                                                    (linkPrev?.images?.length === 0 &&
+                                                        linkPrev?.favicons?.length > 0) ||
+                                                    (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                        ? "15px"
+                                                        : "0 0 15px 15px",
+                                                marginTop:
+                                                    (linkPrev?.images?.length === 0 &&
+                                                        linkPrev?.favicons?.length > 0) ||
+                                                    (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                        ? "3px"
+                                                        : "0px"
                                             }}
                                         >
-                                            <p
+                                            <div
                                                 style={{
-                                                    marginTop:
-                                                        (linkPrev?.images?.length === 0 &&
-                                                            linkPrev?.favicons?.length > 0) ||
-                                                        (linkPrev &&
-                                                            forceFaviconURLS.includes(new URL(links[0]).hostname))
-                                                            ? "2px"
-                                                            : "0px"
+                                                    width:
+                                                        linkPrev?.images?.length > 0 &&
+                                                        !forceFaviconURLS.includes(new URL(links[0]).hostname)
+                                                            ? "93%"
+                                                            : "75%"
                                                 }}
                                             >
-                                                {this.state.linkTitle || "Loading ..."}
-                                            </p>
-                                            <p>{new URL(links[0]).hostname}</p>
+                                                <p
+                                                    style={{
+                                                        marginTop:
+                                                            (linkPrev?.images?.length === 0 &&
+                                                                linkPrev?.favicons?.length > 0) ||
+                                                            (linkPrev &&
+                                                                forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                                ? "2px"
+                                                                : "0px"
+                                                    }}
+                                                >
+                                                    {this.state.linkTitle || "Loading ..."}
+                                                </p>
+                                                <p>{new URL(links[0]).hostname}</p>
+                                            </div>
+                                            {(linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
+                                            (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
+                                                <img src={linkPrev.favicons[0]} className="linkFavicon" />
+                                            ) : null}
                                         </div>
-                                        {(linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
-                                        (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
-                                            <img src={linkPrev.favicons[0]} className="linkFavicon" />
-                                        ) : null}
                                     </div>
                                 </div>
-                            </div>
+                            </>
                         ) : (
                             <>
                                 <div className={attachmentClassName}>
@@ -1100,9 +1129,24 @@ class MessageBubble extends React.Component<Props, State> {
                                     (!olderMessage || olderMessage.handleId !== message.handleId) ? (
                                         <p className="MessageSender">{sender}</p>
                                     ) : null}
-                                    {attachments.map((attachment: AttachmentDownload) => {
-                                        return this.renderAttachment(attachment);
-                                    })}
+                                    <div className="attachmentContainer">
+                                        {message.hasReactions === true ? (
+                                            <>
+                                                {message.reactions.map((reaction, i) => (
+                                                    <InChatReaction
+                                                        key={reaction.guid}
+                                                        isMessageFromMe={message.isFromMe}
+                                                        isReactionFromMe={reaction.isFromMe}
+                                                        reactionType={reaction.associatedMessageType}
+                                                        offset={i}
+                                                    />
+                                                ))}
+                                            </>
+                                        ) : null}
+                                        {attachments.map((attachment: AttachmentDownload) => {
+                                            return this.renderAttachment(attachment);
+                                        })}
+                                    </div>
                                 </div>
                                 {text ? (
                                     <>

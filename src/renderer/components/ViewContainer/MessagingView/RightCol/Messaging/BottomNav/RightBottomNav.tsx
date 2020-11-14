@@ -108,7 +108,7 @@ class RightBottomNav extends React.Component<Props, State> {
                 this.setState({ showSpellingContextMenu: false, sug1: null, sug2: null, sug3: null });
             }
 
-            if (event.key === "Enter") {
+            if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
                 this.sendMessage();
             }
@@ -205,6 +205,32 @@ class RightBottomNav extends React.Component<Props, State> {
     }
 
     handleMessageChange = event => {
+        const input = document.getElementById("messageFieldInput") as HTMLTextAreaElement;
+
+        const textWidth = () => {
+            const span = document.createElement("span");
+            span.innerText = event.target.value;
+            span.style.cssText = `visibility: hidden;font-family: "SF UI Display Bold"; position: absolute; left: -10000; top: -10000;`;
+            document.body.append(span);
+            const spanWidth = span.clientWidth;
+            span.remove();
+            return spanWidth;
+        };
+
+        if (event.target.value.length === 0 || (textWidth() < input.clientWidth && !/\n/g.exec(event.target.value))) {
+            input.style.height = "19px";
+            input.style.maxHeight = "19px";
+            input.style.borderRadius = "25px";
+            (document.getElementsByClassName("RightBottomNav")[0] as HTMLElement).style.padding = "0";
+        } else {
+            input.style.height = "";
+            input.style.maxHeight = "";
+            input.style.height = `${event.target.scrollHeight}px`;
+            input.style.maxHeight = `${event.target.scrollHeight}px`;
+            input.style.borderRadius = "10px";
+            (document.getElementsByClassName("RightBottomNav")[0] as HTMLElement).style.padding = "8px 0";
+        }
+
         if (this.state.showGIFSelector) {
             ipcRenderer.invoke("send-to-ui", { event: "giphy-search-term", contents: event.target.value });
         }
@@ -260,7 +286,7 @@ class RightBottomNav extends React.Component<Props, State> {
 
             // Make sure that each of the associated messages gets added to the UI and saved/sent
             ipcRenderer.invoke("send-to-ui", { event: "add-message", contents: assocMsg });
-            ipcRenderer.invoke("save-message", { chat: this.props.chat, message: assocMsg });
+            // ipcRenderer.invoke("save-message", { chat: this.props.chat, message: assocMsg });
             ipcRenderer.invoke("send-message", { chat: this.props.chat, message: assocMsg });
 
             if (!this.state.attachmentPaths.includes(aPath)) {
@@ -279,6 +305,12 @@ class RightBottomNav extends React.Component<Props, State> {
         if (!this.state.showGIFSelector) {
             // Clear the send box
             this.setState({ enteredMessage: "" });
+            const input = document.getElementById("messageFieldInput") as HTMLTextAreaElement;
+
+            input.style.height = "19px";
+            input.style.maxHeight = "19px";
+            input.style.borderRadius = "25px";
+            (document.getElementsByClassName("RightBottomNav")[0] as HTMLElement).style.padding = "0";
         }
 
         let resourcePath = __dirname.replace("app.asar/dist", "resources");
@@ -759,11 +791,12 @@ class RightBottomNav extends React.Component<Props, State> {
                                     ))}
                                 </div>
                             ) : null}
-                            <input
+                            <textarea
                                 id="messageFieldInput"
-                                type="text"
                                 autoCapitalize="on"
                                 spellCheck="true"
+                                wrap="hard"
+                                rows={1}
                                 placeholder={this.state.showGIFSelector ? "Search for GIF" : "BlueBubbles"}
                                 value={this.state.enteredMessage}
                                 onChange={this.handleMessageChange}

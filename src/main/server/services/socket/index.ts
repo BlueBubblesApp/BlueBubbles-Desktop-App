@@ -286,7 +286,7 @@ export class SocketService {
         withChats = false,
         withHandle = true,
         withAttachments = true,
-        withBlurhash = true,
+        withBlurhash = false,
         sort = "DESC",
         where = []
     }: GetChatMessagesParams): Promise<MessageResponse[]> {

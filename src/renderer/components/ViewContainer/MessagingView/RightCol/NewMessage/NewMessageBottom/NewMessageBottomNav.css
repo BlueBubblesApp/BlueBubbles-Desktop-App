@@ -55,11 +55,12 @@
     position: relative;
 }
 
-#messageFieldInput-NewMessage[type="text"] {
-    height: 19px;
+#messageFieldInput-NewMessage {
+    resize: none;
+    max-height: 19px;
+    min-height: 19px;
     background-repeat: no-repeat;
     border-radius: 25px;
-    border: none;
     flex-grow: 1;
     padding: 3px 35px 3px 8px;
     font-family: "SF UI Display Bold";
