@@ -26,7 +26,7 @@ class StorageTab extends React.Component<object, State> {
         const { storageInfo } = this.state;
         return (
             <div id="StorageTab">
-                <div id="StorageTitle">
+                <div id="StorageTitle" className="RightTitle-Set">
                     <h1>Storage</h1>
                 </div>
                 {this.state.isLoading ? (

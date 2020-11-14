@@ -15,7 +15,8 @@ export const DEFAULT_CONFIG_ITEMS: { [key: string]: Function } = {
     capitalizeFirstLetter: () => "1",
     gradientMessages: () => "1",
     colorfulContacts: () => "1",
-    leftTitlebar: () => "1"
+    leftTitlebar: () => "1",
+    useNativeTitlebar: () => "1"
 };
 
 export const DEFAULT_DARK_THEME: { [key: string]: Function } = {

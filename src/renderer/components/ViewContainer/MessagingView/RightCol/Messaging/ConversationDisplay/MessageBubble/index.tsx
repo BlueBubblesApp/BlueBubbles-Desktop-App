@@ -861,7 +861,7 @@ class MessageBubble extends React.Component<Props, State> {
         // Figure out the "real string" and then figure out if we need to make it big emojis
         const text = sanitizeStr(message.text);
 
-        if (text.length <= 2 * 3 && !/[a-z? _."'/,$0-9\\]/.test(text.toLowerCase()) && allEmojis(text)) {
+        if (text.length <= 2 * 3 && !/[a-z?_."'/,$0-9\\]/.test(text.toLowerCase()) && allEmojis(text)) {
             messageClass = "bigEmojis";
         }
 

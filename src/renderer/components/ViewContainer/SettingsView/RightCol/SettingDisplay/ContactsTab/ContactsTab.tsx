@@ -8,7 +8,7 @@ class ContactsTab extends React.Component<unknown, unknown> {
     render() {
         return (
             <div className="ContactsTab">
-                <div id="ContactsTitle">
+                <div id="ContactsTitle" className="RightTitle-Set">
                     <h1>Contacts</h1>
                 </div>
                 <ImportsTitle title="Contacts Import Location" />

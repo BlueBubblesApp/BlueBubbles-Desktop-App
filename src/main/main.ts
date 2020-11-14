@@ -33,17 +33,133 @@ if (!gotTheLock) {
 
     app.whenReady().then(async () => {
         await BlueBubbles.start();
+        if (BlueBubbles.configRepo.get("useNativeTitlebar")) {
+            // BlueBubbles.window.close();
+            await createWindow(true);
+
+            if (process.argv.includes("--hidden")) {
+                wasAutoStarted = true;
+
+                if (process.platform === "linux") {
+                    tray = new Tray(path.join(FileSystem.resources, linuxTrayIcon));
+                } else {
+                    tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
+                }
+
+                const contextMenu = Menu.buildFromTemplate([
+                    {
+                        label: "BlueBubbles",
+                        enabled: false
+                    },
+                    {
+                        type: "separator"
+                    },
+                    {
+                        label: "Open",
+                        type: "normal",
+                        click: async () => {
+                            if (win) {
+                                win.show();
+                                tray.destroy();
+                            } else {
+                                app.emit("active");
+                            }
+                        }
+                    },
+                    {
+                        label: "Close",
+                        type: "normal",
+                        click: async () => {
+                            await FileSystem.deleteTempFiles();
+                            win = null;
+                            app.quit();
+                            app.exit(0);
+                        }
+                    }
+                ]);
+
+                tray.setToolTip("BlueBubbles");
+                tray.setContextMenu(contextMenu);
+                tray.on("click", async () => {
+                    if (win) {
+                        win.show();
+                        tray.destroy();
+                    } else {
+                        app.emit("active");
+                    }
+                });
+
+                win.hide();
+            }
+        } else {
+            await createWindow();
+
+            if (process.argv.includes("--hidden")) {
+                wasAutoStarted = true;
+
+                if (process.platform === "linux") {
+                    tray = new Tray(path.join(FileSystem.resources, linuxTrayIcon));
+                } else {
+                    tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
+                }
+
+                const contextMenu = Menu.buildFromTemplate([
+                    {
+                        label: "BlueBubbles",
+                        enabled: false
+                    },
+                    {
+                        type: "separator"
+                    },
+                    {
+                        label: "Open",
+                        type: "normal",
+                        click: async () => {
+                            if (win) {
+                                win.show();
+                                tray.destroy();
+                            } else {
+                                app.emit("active");
+                            }
+                        }
+                    },
+                    {
+                        label: "Close",
+                        type: "normal",
+                        click: async () => {
+                            await FileSystem.deleteTempFiles();
+                            win = null;
+                            app.quit();
+                            app.exit(0);
+                        }
+                    }
+                ]);
+
+                tray.setToolTip("BlueBubbles");
+                tray.setContextMenu(contextMenu);
+                tray.on("click", async () => {
+                    if (win) {
+                        win.show();
+                        tray.destroy();
+                    } else {
+                        app.emit("active");
+                    }
+                });
+
+                win.hide();
+            }
+        }
     });
 }
 
-const createWindow = async () => {
+const createWindow = async (withFrame = false) => {
     win = new BrowserWindow({
         width: 1200,
         height: 750,
         minWidth: 550,
         minHeight: 350,
         transparent: true,
-        frame: false,
+        frame: withFrame,
         webPreferences: { nodeIntegration: true, webSecurity: false }
     });
 
@@ -67,8 +183,8 @@ const createWindow = async () => {
         });
     }
 
-    win.on("closed", () => {
-        win = null;
+    win.on("closed", async () => {
+        // win = null;
     });
 
     win.on("maximize", () => {
@@ -105,6 +221,11 @@ ipcMain.handle("unmaximize-event", () => {
 ipcMain.on("force-focus", () => {
     if (win && win.webContents) win.show();
     win.focus();
+});
+
+ipcMain.handle("change-window-titlebar", async (_, args) => {
+    BlueBubbles.window.close();
+    createWindow(args.withFrame);
 });
 
 ipcMain.handle("close-event", async () => {
@@ -175,62 +296,7 @@ app.on("browser-window-blur", () => {
 });
 
 app.on("ready", async () => {
-    await createWindow();
-
-    if (process.argv.includes("--hidden")) {
-        wasAutoStarted = true;
-
-        if (process.platform === "linux") {
-            tray = new Tray(path.join(FileSystem.resources, linuxTrayIcon));
-        } else {
-            tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
-        }
-
-        const contextMenu = Menu.buildFromTemplate([
-            {
-                label: "BlueBubbles",
-                enabled: false
-            },
-            {
-                type: "separator"
-            },
-            {
-                label: "Open",
-                type: "normal",
-                click: async () => {
-                    if (win) {
-                        win.show();
-                        tray.destroy();
-                    } else {
-                        app.emit("active");
-                    }
-                }
-            },
-            {
-                label: "Close",
-                type: "normal",
-                click: async () => {
-                    await FileSystem.deleteTempFiles();
-                    win = null;
-                    app.quit();
-                    app.exit(0);
-                }
-            }
-        ]);
-
-        tray.setToolTip("BlueBubbles");
-        tray.setContextMenu(contextMenu);
-        tray.on("click", async () => {
-            if (win) {
-                win.show();
-                tray.destroy();
-            } else {
-                app.emit("active");
-            }
-        });
-
-        win.hide();
-    }
+    // await createWindow();
 });
 
 app.on("window-all-closed", async () => {
@@ -240,6 +306,12 @@ app.on("window-all-closed", async () => {
 });
 
 app.on("activate", () => {
+    console.log(BlueBubbles.configRepo.get("useNativeTitlebar"));
+    if (BlueBubbles.configRepo.get("useNativeTitlebar")) {
+        BlueBubbles.window.close();
+        createWindow(true);
+    }
+
     if (win === null) {
         createWindow();
     }

@@ -3,7 +3,7 @@
 import * as React from "react";
 import "./TitleBar.css";
 import { Theme } from "@server/databases/config/entity";
-import { ipcRenderer } from "electron";
+import { ipcRenderer, net } from "electron";
 import CloseIcon from "./close.png";
 import MinimizeIcon from "./minimize.png";
 import MaximizeIcon from "./maximize.png";
@@ -132,15 +132,18 @@ class TitleBar extends React.Component<unknown, State> {
             document.documentElement.style.setProperty("--secondary-blurred-color", newTheme.secondaryBlurredColor);
         });
 
-        ipcRenderer.on("focused", (_, args) => {
+        ipcRenderer.on("focused", async (_, args) => {
+            config = await ipcRenderer.invoke("get-config");
+            const newTheme: Theme = await ipcRenderer.invoke("get-theme", config.currentTheme);
+
             document.getElementById("TitleBarLeft").classList.remove("TitleBarLeftBlurred");
             document.getElementById("TitleBarRight").classList.remove("TitleBarRightBlurred");
-            document.getElementById("close-button").style.backgroundColor = "#fc4e50";
-            document.getElementById("minimize-button").style.backgroundColor = "#febe30";
+            document.getElementById("close-button").style.backgroundColor = newTheme.titleBarCloseColor;
+            document.getElementById("minimize-button").style.backgroundColor = newTheme.titleBarMinimizeColor;
             try {
-                document.getElementById("maximize-button").style.backgroundColor = "#38d744";
+                document.getElementById("maximize-button").style.backgroundColor = newTheme.titleBarMaximizeColor;
             } catch {
-                document.getElementById("unmaximize-button").style.backgroundColor = "#38d744";
+                document.getElementById("unmaximize-button").style.backgroundColor = newTheme.titleBarMaximizeColor;
             }
         });
 

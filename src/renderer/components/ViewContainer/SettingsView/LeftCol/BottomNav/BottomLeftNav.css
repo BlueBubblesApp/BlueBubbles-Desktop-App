@@ -6,6 +6,7 @@
     align-items: center;
     padding-left: 10px;
     border-top: 1px solid gray;
+    transition: ease-in-out 0.1s;
 }
 
 #returnIconLink {

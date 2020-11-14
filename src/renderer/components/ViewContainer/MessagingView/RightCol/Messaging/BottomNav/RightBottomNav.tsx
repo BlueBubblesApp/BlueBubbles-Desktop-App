@@ -17,6 +17,7 @@ import CloseIcon from "@renderer/components/TitleBar/close.png";
 
 import "./RightBottomNav.css";
 
+const name = require("emoji-name-map");
 const { dialog } = require("electron").remote;
 
 type Props = {
@@ -40,6 +41,11 @@ type State = {
     sug2: string;
     sug3: string;
     showGIFSelector: boolean;
+    showEmojiSearch: boolean;
+    lookingForEmoji: boolean;
+    emojiSearchString: string;
+    emojiNamesMap: any;
+    activeEmojiHoverNumber: number;
 };
 
 declare const MediaRecorder: any;
@@ -70,13 +76,20 @@ class RightBottomNav extends React.Component<Props, State> {
             sug1: null,
             sug2: null,
             sug3: null,
-            showGIFSelector: false
+            showGIFSelector: false,
+            showEmojiSearch: false,
+            lookingForEmoji: false,
+            emojiSearchString: "",
+            emojiNamesMap: null,
+            activeEmojiHoverNumber: 0
         };
 
         this.tick = this.tick.bind(this);
     }
 
     async componentDidMount() {
+        this.setState({ emojiNamesMap: name.emoji });
+
         const config = await ipcRenderer.invoke("get-config");
         this.setState({ capitalizeFirstLetter: config.capitalizeFirstLetter });
 
@@ -108,9 +121,102 @@ class RightBottomNav extends React.Component<Props, State> {
                 this.setState({ showSpellingContextMenu: false, sug1: null, sug2: null, sug3: null });
             }
 
+            if (this.state.lookingForEmoji && event.key === "Escape") {
+                this.setState({
+                    showEmojiSearch: false,
+                    emojiSearchString: "",
+                    activeEmojiHoverNumber: 0,
+                    lookingForEmoji: false
+                });
+                return;
+            }
+
+            if (event.key === ":") {
+                this.setState({ lookingForEmoji: true, emojiSearchString: "" });
+            }
+
+            if (
+                this.state.lookingForEmoji &&
+                this.state.emojiSearchString.length > 1 &&
+                !this.state.emojiSearchString.includes(" ")
+            ) {
+                this.setState({ showEmojiSearch: true });
+            }
+
+            // If they pres space hide emoji search but save search string
+            if (this.state.lookingForEmoji && event.key === " ") {
+                this.setState({ showEmojiSearch: false });
+            }
+
+            // If a new key is pressed reset the hover index
+            if (
+                this.state.lookingForEmoji &&
+                this.state.showEmojiSearch &&
+                event.key !== "ArrowUp" &&
+                event.key !== "ArrowDown" &&
+                event.key !== "Enter" &&
+                event.key !== "Tab"
+            ) {
+                this.setState({ activeEmojiHoverNumber: 0 });
+            }
+
+            // If the up arrow is pressed, increment hover index
+            if (this.state.lookingForEmoji && this.state.showEmojiSearch && event.key === "ArrowDown") {
+                event.preventDefault();
+                if (this.state.activeEmojiHoverNumber < document.getElementsByClassName("aEmojiMatch").length - 1) {
+                    if (
+                        document.getElementsByClassName("aEmojiMatch").length > 10 &&
+                        this.state.activeEmojiHoverNumber > 8
+                    ) {
+                        document.getElementById("emojiSearchContainer").scrollTop += 39;
+                    }
+                    this.setState(prevState => ({ activeEmojiHoverNumber: prevState.activeEmojiHoverNumber + 1 }));
+                }
+            }
+
+            // If the down arrow is pressed, decrement hover index
+            if (this.state.lookingForEmoji && this.state.showEmojiSearch && event.key === "ArrowUp") {
+                event.preventDefault();
+                if (this.state.activeEmojiHoverNumber > 0) {
+                    document.getElementById("emojiSearchContainer").scrollTop -= 39;
+                    this.setState(prevState => ({ activeEmojiHoverNumber: prevState.activeEmojiHoverNumber - 1 }));
+                }
+            }
+
+            if (
+                (event.key === "Enter" || event.key === "Tab") &&
+                !event.shiftKey &&
+                this.state.lookingForEmoji &&
+                this.state.showEmojiSearch
+            ) {
+                event.preventDefault();
+                const emoji = document
+                    .getElementsByClassName("aEmojiMatch")
+                    [this.state.activeEmojiHoverNumber].getAttribute("data-emoji");
+
+                this.setState({
+                    enteredMessage: `${this.state.enteredMessage.replace(
+                        this.state.emojiSearchString,
+                        emoji.split(",")[1]
+                    )} `,
+                    showEmojiSearch: false,
+                    emojiSearchString: "",
+                    lookingForEmoji: false
+                });
+                document.getElementById("messageFieldInput").focus();
+                return;
+            }
+
             if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
                 this.sendMessage();
+            }
+
+            if (event.key === "Backspace" && this.state.lookingForEmoji) {
+                if (this.state.emojiSearchString.slice(0, -1).length < 2) {
+                    this.setState({ showEmojiSearch: false });
+                }
+                this.setState({ emojiSearchString: this.state.emojiSearchString.slice(0, -1) });
             }
 
             if (event.key === "Backspace" && input.selectionStart === 1) {
@@ -151,6 +257,11 @@ class RightBottomNav extends React.Component<Props, State> {
                 document.getElementsByClassName("RightBottomNav")[0].classList.remove("RightBottomNavBlurred");
             } catch {
                 // Do nothing
+            }
+            try {
+                document.getElementById("messageFieldInput").focus();
+            } catch {
+                /* Nothing */
             }
         });
 
@@ -204,7 +315,7 @@ class RightBottomNav extends React.Component<Props, State> {
         }
     }
 
-    handleMessageChange = event => {
+    handleMessageChange = async event => {
         const input = document.getElementById("messageFieldInput") as HTMLTextAreaElement;
 
         const textWidth = () => {
@@ -234,6 +345,25 @@ class RightBottomNav extends React.Component<Props, State> {
         if (this.state.showGIFSelector) {
             ipcRenderer.invoke("send-to-ui", { event: "giphy-search-term", contents: event.target.value });
         }
+
+        if (!event.target.value.includes(":")) {
+            this.setState({
+                showEmojiSearch: false,
+                emojiSearchString: "",
+                activeEmojiHoverNumber: 0,
+                lookingForEmoji: false
+            });
+        }
+
+        if (this.state.lookingForEmoji) {
+            if (this.state.enteredMessage.length < event.target.value.length) {
+                this.setState(
+                    { emojiSearchString: this.state.emojiSearchString + event.target.value.substr(-1, 1) },
+                    () => console.log(this.state.emojiSearchString)
+                );
+            }
+        }
+
         // Capitalize the first letter of input
         if (this.state.capitalizeFirstLetter) {
             this.setState({
@@ -572,6 +702,18 @@ class RightBottomNav extends React.Component<Props, State> {
         });
     }
 
+    handleEmojiMatch = e => {
+        const data = e.target.getAttribute("data-emoji");
+
+        this.setState({
+            enteredMessage: `${this.state.enteredMessage.replace(this.state.emojiSearchString, data.split(",")[1])} `,
+            showEmojiSearch: false,
+            emojiSearchString: "",
+            lookingForEmoji: false
+        });
+        document.getElementById("messageFieldInput").focus();
+    };
+
     render() {
         let audio = document.getElementById("myAudioDiv") as HTMLAudioElement;
 
@@ -583,425 +725,474 @@ class RightBottomNav extends React.Component<Props, State> {
             ).toString()}%`;
         };
 
+        const { activeEmojiHoverNumber } = this.state;
+
         return (
-            <div className="RightBottomNav">
-                {this.state.isRecording || this.state.audioHasData ? (
-                    <>
-                        {this.state.audioHasData ? (
-                            <div id="recordMessageDiv">
-                                <div id="recordingVisWrap">
-                                    <div id="recordingVis">
-                                        <audio
-                                            id="myAudioDiv"
-                                            style={{ display: "none" }}
-                                            onTimeUpdate={() => updateAudioVisProgress()}
-                                        />
-                                        <div
-                                            className="toggleAudioPlayPause"
-                                            onClick={() => {
-                                                !this.state.isAudioPlaying ? this.togglePlay() : this.togglePause();
-                                            }}
-                                            style={{ marginLeft: "0" }}
-                                        >
-                                            {this.state.isAudioPlaying ? (
-                                                <svg height="100%" width="100%" viewBox="0 0 100 100">
-                                                    <circle cx="50" cy="50" r="45" fill="transparent" strokeWidth="5" />
-                                                    <rect x="30" y="26" width="15" height="46" rx="5" />
-                                                    <rect x="55" y="26" width="15" height="46" rx="5" />
-                                                </svg>
-                                            ) : (
-                                                <svg height="100%" width="100%" viewBox="0 0 100 100">
-                                                    <circle cx="50" cy="50" r="45" fill="transparent" strokeWidth="5" />
-                                                    <polygon points="35,25 35,75 75,50" />
-                                                </svg>
-                                            )}
-                                        </div>
-                                        <div className="audioVisPrev-Message">
-                                            <div className="audioVisProgress" id="audioVisProgress-Message" />
-                                        </div>
-                                    </div>
-                                    <div id="recordingLengthDiv">
-                                        <p id="secondsCounter">{this.state.audioLength}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div id="recordMessageDiv">
-                                <div id="recordingVisWrap">
-                                    <div id="recordingVis">
-                                        <AudioAnalyser audioData={this.state.audioData} />
-                                    </div>
-                                    <div id="recordingLengthDiv">
-                                        <p id="secondsCounter">0:00</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <>
-                        {this.state.showSpellingContextMenu ? (
-                            <div id="spellingContextMenu" style={{ left: `${this.state.contextX - 15}px` }}>
-                                <div>
-                                    {this.state.sug1 ? (
-                                        <p
-                                            onClick={() => {
-                                                this.setState({
-                                                    enteredMessage: this.state.enteredMessage.replace(
-                                                        this.state.selectedWord,
-                                                        this.state.sug1
-                                                    ),
-                                                    showSpellingContextMenu: false,
-                                                    sug1: null,
-                                                    sug2: null,
-                                                    sug3: null
-                                                });
-                                                document.getElementById("messageFieldInput").focus();
-                                            }}
-                                        >
-                                            {this.state.sug1}
-                                        </p>
-                                    ) : null}
-                                    {this.state.sug2 ? (
-                                        <p
-                                            onClick={() => {
-                                                this.setState({
-                                                    enteredMessage: this.state.enteredMessage.replace(
-                                                        this.state.selectedWord,
-                                                        this.state.sug2
-                                                    ),
-                                                    showSpellingContextMenu: false,
-                                                    sug1: null,
-                                                    sug2: null,
-                                                    sug3: null
-                                                });
-                                                document.getElementById("messageFieldInput").focus();
-                                            }}
-                                        >
-                                            {this.state.sug2}
-                                        </p>
-                                    ) : null}
-                                    {this.state.sug3 ? (
-                                        <p
-                                            onClick={() => {
-                                                this.setState({
-                                                    enteredMessage: this.state.enteredMessage.replace(
-                                                        this.state.selectedWord,
-                                                        this.state.sug3
-                                                    ),
-                                                    showSpellingContextMenu: false,
-                                                    sug1: null,
-                                                    sug2: null,
-                                                    sug3: null
-                                                });
-                                                document.getElementById("messageFieldInput").focus();
-                                            }}
-                                        >
-                                            {this.state.sug3}
-                                        </p>
-                                    ) : null}
-                                </div>
-                                <img
-                                    src={CloseIcon}
-                                    onClick={() =>
-                                        this.setState({
-                                            showSpellingContextMenu: false,
-                                            sug1: null,
-                                            sug2: null,
-                                            sug3: null
-                                        })
-                                    }
-                                />
-                            </div>
-                        ) : null}
-                        {this.state.showGIFSelector ? (
-                            <img id="giphyFullLogo" src={require("@renderer/assets/giphy-logo.png")} />
-                        ) : (
+            <>
+                {this.state.showEmojiSearch && this.state.emojiSearchString.length > 2 ? (
+                    <div id="emojiSearchContainer">
+                        {Object.entries(this.state.emojiNamesMap).filter(emoji =>
+                            emoji[0].includes(this.state.emojiSearchString.slice(1))
+                        ).length > 0 ? (
                             <>
-                                <div id="leftAttachmentButton" onClick={() => this.handleAddAttachment()}>
-                                    <svg id="attachIcon" viewBox="0 0 25 25">
-                                        <path d="M7.46,25a7.57,7.57,0,0,1-5.19-2l-.09-.08a6.72,6.72,0,0,1,0-9.9L15,1.42a5.46,5.46,0,0,1,7.35,0A4.88,4.88,0,0,1,24,5a4.83,4.83,0,0,1-1.56,3.54L10.38,19.41A3.23,3.23,0,0,1,6,19.4a2.91,2.91,0,0,1,0-4.3L17.27,5l1.33,1.49L7.35,16.57a.91.91,0,0,0-.29.66.93.93,0,0,0,.31.68,1.23,1.23,0,0,0,1.66,0L21.09,7.11a2.81,2.81,0,0,0,0-4.16,3.45,3.45,0,0,0-4.69-.06L3.53,14.46a4.72,4.72,0,0,0,0,7l.09.08a5.65,5.65,0,0,0,7.63,0L23.33,10.69l1.34,1.49L12.62,23A7.53,7.53,0,0,1,7.46,25Z" />
-                                    </svg>
-                                </div>
-                                <img
-                                    id="openGIFSelector"
-                                    onClick={() => {
-                                        this.setState({ enteredMessage: "", showGIFSelector: true });
-                                        ipcRenderer.invoke("send-to-ui", {
-                                            event: "toggle-giphy-selector",
-                                            contents: true
-                                        });
-                                    }}
-                                    src={require("@renderer/assets/giphy-logo-circle.png")}
-                                    style={{ height: "26px", marginLeft: "7px" }}
-                                />
-                            </>
-                        )}
-                        <div id="messageField">
-                            {this.state.attachmentPaths.length > 0 ? (
-                                <div id="newAttachmentsContainer">
-                                    {this.state.attachmentPaths.map(filePath => (
-                                        <div className="aNewAttachmentDiv" key={filePath}>
-                                            <div>
-                                                {filePath.split(".").pop() === "jpg" ||
-                                                filePath.split(".").pop() === "jpeg" ||
-                                                filePath.split(".").pop() === "png" ||
-                                                filePath.split(".").pop() === "svg" ||
-                                                filePath.split(".").pop() === "gif" ||
-                                                filePath.split(".").pop() === "tiff" ? (
-                                                    <img
-                                                        className="aNewAttachment"
-                                                        src={`data:image;base64,${fs
-                                                            .readFileSync(filePath)
-                                                            .toString("base64")}`}
-                                                        onClick={() => this.openAttachment(filePath)}
-                                                    />
-                                                ) : null}
-                                                {filePath.split(".").pop() === "mp4" ||
-                                                filePath.split(".").pop() === "m4a" ||
-                                                filePath.split(".").pop() === "mpg" ||
-                                                filePath.split(".").pop() === "avi" ||
-                                                filePath.split(".").pop() === "mov" ? (
-                                                    <div
-                                                        className="cantSupportPreview"
-                                                        onClick={() => this.openAttachment(filePath)}
-                                                    >
-                                                        <p>Video</p>
-                                                        <p>(Click to open)</p>
-                                                    </div>
-                                                ) : null}
-                                                {filePath.split(".").pop() === "pfd" ||
-                                                filePath.split(".").pop() === "docx" ? (
-                                                    <div
-                                                        className="cantSupportPreview"
-                                                        onClick={() => this.openAttachment(filePath)}
-                                                    >
-                                                        <p>Document</p>
-                                                        <p>(Click to open)</p>
-                                                    </div>
-                                                ) : null}
-                                                <p>{filePath.replace(/^.*[\\/]/, "")}</p>
+                                {Object.entries(this.state.emojiNamesMap)
+                                    .filter(emoji => emoji[0].includes(this.state.emojiSearchString.slice(1)))
+                                    .map((emoji, i) => {
+                                        return (
+                                            <div
+                                                key={emoji[0]}
+                                                className={`aEmojiMatch ${
+                                                    activeEmojiHoverNumber === i ? "activeEmojiMatchRow" : null
+                                                }`}
+                                                data-emoji={emoji}
+                                                onClick={e => this.handleEmojiMatch(e)}
+                                            >
+                                                <div>
+                                                    <p>{emoji[1]}</p>
+                                                </div>
+                                                <p>{emoji[0]}</p>
                                             </div>
-                                            <img
-                                                className="aNewAttachmentRemoveButton"
-                                                src={CloseIcon}
-                                                onClick={() => this.removeAttachment(filePath)}
+                                        );
+                                    })}
+                            </>
+                        ) : (
+                            <div className="aEmojiMatch">
+                                <p>No matches found</p>
+                            </div>
+                        )}
+                    </div>
+                ) : null}
+                <div className="RightBottomNav">
+                    {this.state.isRecording || this.state.audioHasData ? (
+                        <>
+                            {this.state.audioHasData ? (
+                                <div id="recordMessageDiv">
+                                    <div id="recordingVisWrap">
+                                        <div id="recordingVis">
+                                            <audio
+                                                id="myAudioDiv"
+                                                style={{ display: "none" }}
+                                                onTimeUpdate={() => updateAudioVisProgress()}
                                             />
+                                            <div
+                                                className="toggleAudioPlayPause"
+                                                onClick={() => {
+                                                    !this.state.isAudioPlaying ? this.togglePlay() : this.togglePause();
+                                                }}
+                                                style={{ marginLeft: "0" }}
+                                            >
+                                                {this.state.isAudioPlaying ? (
+                                                    <svg height="100%" width="100%" viewBox="0 0 100 100">
+                                                        <circle
+                                                            cx="50"
+                                                            cy="50"
+                                                            r="45"
+                                                            fill="transparent"
+                                                            strokeWidth="5"
+                                                        />
+                                                        <rect x="30" y="26" width="15" height="46" rx="5" />
+                                                        <rect x="55" y="26" width="15" height="46" rx="5" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg height="100%" width="100%" viewBox="0 0 100 100">
+                                                        <circle
+                                                            cx="50"
+                                                            cy="50"
+                                                            r="45"
+                                                            fill="transparent"
+                                                            strokeWidth="5"
+                                                        />
+                                                        <polygon points="35,25 35,75 75,50" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <div className="audioVisPrev-Message">
+                                                <div className="audioVisProgress" id="audioVisProgress-Message" />
+                                            </div>
                                         </div>
-                                    ))}
+                                        <div id="recordingLengthDiv">
+                                            <p id="secondsCounter">{this.state.audioLength}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div id="recordMessageDiv">
+                                    <div id="recordingVisWrap">
+                                        <div id="recordingVis">
+                                            <AudioAnalyser audioData={this.state.audioData} />
+                                        </div>
+                                        <div id="recordingLengthDiv">
+                                            <p id="secondsCounter">0:00</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            {this.state.showSpellingContextMenu ? (
+                                <div id="spellingContextMenu" style={{ left: `${this.state.contextX - 15}px` }}>
+                                    <div>
+                                        {this.state.sug1 ? (
+                                            <p
+                                                onClick={() => {
+                                                    this.setState({
+                                                        enteredMessage: this.state.enteredMessage.replace(
+                                                            this.state.selectedWord,
+                                                            this.state.sug1
+                                                        ),
+                                                        showSpellingContextMenu: false,
+                                                        sug1: null,
+                                                        sug2: null,
+                                                        sug3: null
+                                                    });
+                                                    document.getElementById("messageFieldInput").focus();
+                                                }}
+                                            >
+                                                {this.state.sug1}
+                                            </p>
+                                        ) : null}
+                                        {this.state.sug2 ? (
+                                            <p
+                                                onClick={() => {
+                                                    this.setState({
+                                                        enteredMessage: this.state.enteredMessage.replace(
+                                                            this.state.selectedWord,
+                                                            this.state.sug2
+                                                        ),
+                                                        showSpellingContextMenu: false,
+                                                        sug1: null,
+                                                        sug2: null,
+                                                        sug3: null
+                                                    });
+                                                    document.getElementById("messageFieldInput").focus();
+                                                }}
+                                            >
+                                                {this.state.sug2}
+                                            </p>
+                                        ) : null}
+                                        {this.state.sug3 ? (
+                                            <p
+                                                onClick={() => {
+                                                    this.setState({
+                                                        enteredMessage: this.state.enteredMessage.replace(
+                                                            this.state.selectedWord,
+                                                            this.state.sug3
+                                                        ),
+                                                        showSpellingContextMenu: false,
+                                                        sug1: null,
+                                                        sug2: null,
+                                                        sug3: null
+                                                    });
+                                                    document.getElementById("messageFieldInput").focus();
+                                                }}
+                                            >
+                                                {this.state.sug3}
+                                            </p>
+                                        ) : null}
+                                    </div>
+                                    <img
+                                        src={CloseIcon}
+                                        onClick={() =>
+                                            this.setState({
+                                                showSpellingContextMenu: false,
+                                                sug1: null,
+                                                sug2: null,
+                                                sug3: null
+                                            })
+                                        }
+                                    />
                                 </div>
                             ) : null}
-                            <textarea
-                                id="messageFieldInput"
-                                autoCapitalize="on"
-                                spellCheck="true"
-                                wrap="hard"
-                                rows={1}
-                                placeholder={this.state.showGIFSelector ? "Search for GIF" : "BlueBubbles"}
-                                value={this.state.enteredMessage}
-                                onChange={this.handleMessageChange}
-                            />
-                            <svg
-                                id="emojiPickerButton"
-                                onClick={this.openEmojiPicker}
-                                height="21"
-                                width="21"
-                                viewBox="0 0 24 24"
-                            >
-                                <path d="m12 24c6.617 0 12-5.383 12-12s-5.383-12-12-12-12 5.383-12 12 5.383 12 12 12zm5-16.935c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-10 0c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-3.354 7.24c.142-.192.366-.305.604-.305h15.5c.238 0 .462.113.604.305.141.192.183.439.112.667-1.16 3.737-4.562 6.248-8.466 6.248s-7.307-2.511-8.466-6.248c-.071-.227-.029-.475.112-.667z" />
-                            </svg>
-                        </div>
-                    </>
-                )}
-                <div id="rightBottomButton" style={{ width: this.state.audioHasData ? "85px" : "45px" }}>
-                    {this.state.enteredMessage === "" ? (
-                        <>
-                            {this.state.isRecording ? (
+                            {this.state.showGIFSelector ? (
+                                <img id="giphyFullLogo" src={require("@renderer/assets/giphy-logo.png")} />
+                            ) : (
+                                <>
+                                    <div id="leftAttachmentButton" onClick={() => this.handleAddAttachment()}>
+                                        <svg id="attachIcon" viewBox="0 0 25 25">
+                                            <path d="M7.46,25a7.57,7.57,0,0,1-5.19-2l-.09-.08a6.72,6.72,0,0,1,0-9.9L15,1.42a5.46,5.46,0,0,1,7.35,0A4.88,4.88,0,0,1,24,5a4.83,4.83,0,0,1-1.56,3.54L10.38,19.41A3.23,3.23,0,0,1,6,19.4a2.91,2.91,0,0,1,0-4.3L17.27,5l1.33,1.49L7.35,16.57a.91.91,0,0,0-.29.66.93.93,0,0,0,.31.68,1.23,1.23,0,0,0,1.66,0L21.09,7.11a2.81,2.81,0,0,0,0-4.16,3.45,3.45,0,0,0-4.69-.06L3.53,14.46a4.72,4.72,0,0,0,0,7l.09.08a5.65,5.65,0,0,0,7.63,0L23.33,10.69l1.34,1.49L12.62,23A7.53,7.53,0,0,1,7.46,25Z" />
+                                        </svg>
+                                    </div>
+                                    <img
+                                        id="openGIFSelector"
+                                        onClick={() => {
+                                            this.setState({ enteredMessage: "", showGIFSelector: true });
+                                            ipcRenderer.invoke("send-to-ui", {
+                                                event: "toggle-giphy-selector",
+                                                contents: true
+                                            });
+                                        }}
+                                        src={require("@renderer/assets/giphy-logo-circle.png")}
+                                        style={{ height: "26px", marginLeft: "7px" }}
+                                    />
+                                </>
+                            )}
+                            <div id="messageField">
+                                {this.state.attachmentPaths.length > 0 ? (
+                                    <div id="newAttachmentsContainer">
+                                        {this.state.attachmentPaths.map(filePath => (
+                                            <div className="aNewAttachmentDiv" key={filePath}>
+                                                <div>
+                                                    {filePath.split(".").pop() === "jpg" ||
+                                                    filePath.split(".").pop() === "jpeg" ||
+                                                    filePath.split(".").pop() === "png" ||
+                                                    filePath.split(".").pop() === "svg" ||
+                                                    filePath.split(".").pop() === "gif" ||
+                                                    filePath.split(".").pop() === "tiff" ? (
+                                                        <img
+                                                            className="aNewAttachment"
+                                                            src={`data:image;base64,${fs
+                                                                .readFileSync(filePath)
+                                                                .toString("base64")}`}
+                                                            onClick={() => this.openAttachment(filePath)}
+                                                        />
+                                                    ) : null}
+                                                    {filePath.split(".").pop() === "mp4" ||
+                                                    filePath.split(".").pop() === "m4a" ||
+                                                    filePath.split(".").pop() === "mpg" ||
+                                                    filePath.split(".").pop() === "avi" ||
+                                                    filePath.split(".").pop() === "mov" ? (
+                                                        <div
+                                                            className="cantSupportPreview"
+                                                            onClick={() => this.openAttachment(filePath)}
+                                                        >
+                                                            <p>Video</p>
+                                                            <p>(Click to open)</p>
+                                                        </div>
+                                                    ) : null}
+                                                    {filePath.split(".").pop() === "pfd" ||
+                                                    filePath.split(".").pop() === "docx" ? (
+                                                        <div
+                                                            className="cantSupportPreview"
+                                                            onClick={() => this.openAttachment(filePath)}
+                                                        >
+                                                            <p>Document</p>
+                                                            <p>(Click to open)</p>
+                                                        </div>
+                                                    ) : null}
+                                                    <p>{filePath.replace(/^.*[\\/]/, "")}</p>
+                                                </div>
+                                                <img
+                                                    className="aNewAttachmentRemoveButton"
+                                                    src={CloseIcon}
+                                                    onClick={() => this.removeAttachment(filePath)}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : null}
+                                <textarea
+                                    id="messageFieldInput"
+                                    autoCapitalize="on"
+                                    spellCheck="true"
+                                    wrap="hard"
+                                    rows={1}
+                                    placeholder={this.state.showGIFSelector ? "Search for GIF" : "BlueBubbles"}
+                                    value={this.state.enteredMessage}
+                                    onChange={e => this.handleMessageChange(e)}
+                                />
                                 <svg
-                                    id="stopVoiceMessage"
-                                    onClick={() => this.stopRecording()}
-                                    viewBox="0 0 1300 1300"
-                                    width="45"
-                                    height="45"
+                                    id="emojiPickerButton"
+                                    onClick={this.openEmojiPicker}
+                                    height="21"
+                                    width="21"
+                                    viewBox="0 0 24 24"
                                 >
-                                    <defs>
-                                        <radialGradient id="blueRadialGradient">
-                                            <stop offset="0" stopColor="white" stopOpacity="1" />
-                                            <stop offset="1" stopColor="white" stopOpacity="0" />
-                                        </radialGradient>
-                                    </defs>
-                                    <mask id="blueMask">
-                                        <circle cx="50%" cy="50%" r="800" fill="url(#blueRadialGradient)">
+                                    <path d="m12 24c6.617 0 12-5.383 12-12s-5.383-12-12-12-12 5.383-12 12 5.383 12 12 12zm5-16.935c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-10 0c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-3.354 7.24c.142-.192.366-.305.604-.305h15.5c.238 0 .462.113.604.305.141.192.183.439.112.667-1.16 3.737-4.562 6.248-8.466 6.248s-7.307-2.511-8.466-6.248c-.071-.227-.029-.475.112-.667z" />
+                                </svg>
+                            </div>
+                        </>
+                    )}
+                    <div id="rightBottomButton" style={{ width: this.state.audioHasData ? "85px" : "45px" }}>
+                        {this.state.enteredMessage === "" ? (
+                            <>
+                                {this.state.isRecording ? (
+                                    <svg
+                                        id="stopVoiceMessage"
+                                        onClick={() => this.stopRecording()}
+                                        viewBox="0 0 1300 1300"
+                                        width="45"
+                                        height="45"
+                                    >
+                                        <defs>
+                                            <radialGradient id="blueRadialGradient">
+                                                <stop offset="0" stopColor="white" stopOpacity="1" />
+                                                <stop offset="1" stopColor="white" stopOpacity="0" />
+                                            </radialGradient>
+                                        </defs>
+                                        <mask id="blueMask">
+                                            <circle cx="50%" cy="50%" r="800" fill="url(#blueRadialGradient)">
+                                                <animate
+                                                    attributeName="r"
+                                                    values="300;800;300"
+                                                    dur="1.5s"
+                                                    repeatCount="indefinite"
+                                                />
+                                            </circle>
+                                        </mask>
+                                        <mask id="whiteCircleMask">
+                                            <circle cx="50%" cy="50%" r="450" fill="white" />
+                                            <circle cx="50%" cy="50%" r="380" fill="black" />
+                                        </mask>
+
+                                        <circle mask="url(#blueMask)" fill="#00a1fd" cx="50%" cy="50%" r="800">
                                             <animate
                                                 attributeName="r"
                                                 values="300;800;300"
                                                 dur="1.5s"
                                                 repeatCount="indefinite"
                                             />
+                                            {/* <animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite" /> */}
                                         </circle>
-                                    </mask>
-                                    <mask id="whiteCircleMask">
-                                        <circle cx="50%" cy="50%" r="450" fill="white" />
-                                        <circle cx="50%" cy="50%" r="380" fill="black" />
-                                    </mask>
-
-                                    <circle mask="url(#blueMask)" fill="#00a1fd" cx="50%" cy="50%" r="800">
-                                        <animate
-                                            attributeName="r"
-                                            values="300;800;300"
-                                            dur="1.5s"
-                                            repeatCount="indefinite"
+                                        <circle
+                                            id="stopVoiceCircle"
+                                            mask="url(#whiteCircleMask)"
+                                            cx="50%"
+                                            cy="50%"
+                                            r="450"
                                         />
-                                        {/* <animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite" /> */}
-                                    </circle>
-                                    <circle
-                                        id="stopVoiceCircle"
-                                        mask="url(#whiteCircleMask)"
-                                        cx="50%"
-                                        cy="50%"
-                                        r="450"
-                                    />
-                                    <rect x="462.5" y="462.5" height="375" width="375" rx="70" fill="red" />
-                                </svg>
-                            ) : (
-                                <>
-                                    {this.state.audioHasData ? (
-                                        <>
-                                            <div id="deleteAudioIcon" onClick={() => this.deleteAudio()}>
-                                                <img src={CloseIcon} />
-                                            </div>
-                                            <svg
-                                                id="sendIcon"
-                                                viewBox="0 0 512 512"
-                                                onClick={() => this.addAudioToChat()}
-                                            >
-                                                <circle r="256" cx="256" cy="256" id="sendIconBackground" />
-                                                <line
-                                                    x1="100"
-                                                    y1="256"
-                                                    x2="412"
-                                                    y2="256"
-                                                    stroke="white"
-                                                    strokeLinecap="round"
-                                                    style={{ fill: "white", strokeWidth: "50" }}
-                                                />
-                                                <line
-                                                    x1="256"
-                                                    y1="100"
-                                                    x2="256"
-                                                    y2="412"
-                                                    stroke="white"
-                                                    strokeLinecap="round"
-                                                    style={{ fill: "white", strokeWidth: "50" }}
-                                                />
-                                            </svg>
-                                        </>
-                                    ) : (
-                                        <>
-                                            {this.state.attachmentPaths.length > 0 ? (
+                                        <rect x="462.5" y="462.5" height="375" width="375" rx="70" fill="red" />
+                                    </svg>
+                                ) : (
+                                    <>
+                                        {this.state.audioHasData ? (
+                                            <>
+                                                <div id="deleteAudioIcon" onClick={() => this.deleteAudio()}>
+                                                    <img src={CloseIcon} />
+                                                </div>
                                                 <svg
                                                     id="sendIcon"
-                                                    viewBox="0 0 1000 1000"
-                                                    onClick={() => this.sendMessage()}
+                                                    viewBox="0 0 512 512"
+                                                    onClick={() => this.addAudioToChat()}
                                                 >
-                                                    <circle r="500" cx="500" cy="500" id="sendIconBackground" />
-                                                    <polyline
-                                                        id="arrow"
-                                                        points="240 422 500 218 500 775 500 218 760 422"
+                                                    <circle r="256" cx="256" cy="256" id="sendIconBackground" />
+                                                    <line
+                                                        x1="100"
+                                                        y1="256"
+                                                        x2="412"
+                                                        y2="256"
+                                                        stroke="white"
+                                                        strokeLinecap="round"
+                                                        style={{ fill: "white", strokeWidth: "50" }}
+                                                    />
+                                                    <line
+                                                        x1="256"
+                                                        y1="100"
+                                                        x2="256"
+                                                        y2="412"
+                                                        stroke="white"
+                                                        strokeLinecap="round"
+                                                        style={{ fill: "white", strokeWidth: "50" }}
                                                     />
                                                 </svg>
-                                            ) : (
-                                                <>
-                                                    {this.state.showGIFSelector ? (
-                                                        <div
-                                                            id="closeGIFSelector"
-                                                            onClick={() => {
-                                                                this.setState({
-                                                                    enteredMessage: "",
-                                                                    showGIFSelector: false
-                                                                });
-                                                                ipcRenderer.invoke("send-to-ui", {
-                                                                    event: "toggle-giphy-selector",
-                                                                    contents: false
-                                                                });
-                                                            }}
-                                                        >
-                                                            <img src={CloseIcon} />
-                                                        </div>
-                                                    ) : (
-                                                        <svg
-                                                            id="recordVoiceMessage"
-                                                            onMouseEnter={this.handleRecordEnter}
-                                                            onMouseLeave={this.handleRecordLeave}
-                                                            onClick={() => this.startRecording()}
-                                                            viewBox="0 0 1000 1000"
-                                                            width="25"
-                                                            height="25"
-                                                        >
-                                                            <path
-                                                                id="bar1"
-                                                                className="shp0"
-                                                                d="M54 374.7L114 374.7C125.06 374.7 134 383.64 134 394.7L134 606.9C134 617.96 125.06 626.9 114 626.9L54 626.9C42.94 626.9 34 617.96 34 606.9L34 394.7C34 383.64 42.94 374.7 54 374.7Z"
-                                                            />
-                                                            <path
-                                                                id="bar2"
-                                                                className="shp0"
-                                                                d="M206.5 253.1L266.5 253.1C277.56 253.1 286.5 262.04 286.5 273.1L286.5 728.4C286.5 739.46 277.56 748.4 266.5 748.4L206.5 748.4C195.44 748.4 186.5 739.46 186.5 728.4L186.5 273.1C186.5 262.04 195.44 253.1 206.5 253.1Z"
-                                                            />
-                                                            <path
-                                                                id="bar3"
-                                                                className="shp0"
-                                                                d="M368 118L428 118C439.06 118 448 126.94 448 138L448 863.5C448 874.56 439.06 883.5 428 883.5L368 883.5C356.94 883.5 348 874.56 348 863.5L348 138C348 126.94 356.94 118 368 118Z"
-                                                            />
-                                                            <path
-                                                                id="bar4"
-                                                                className="shp0"
-                                                                d="M529.5 271.1L589.5 271.1C600.56 271.1 609.5 280.04 609.5 291.1L609.5 710.4C609.5 721.46 600.56 730.4 589.5 730.4L529.5 730.4C518.44 730.4 509.5 721.46 509.5 710.4L509.5 291.1C509.5 280.04 518.44 271.1 529.5 271.1Z"
-                                                            />
-                                                            <path
-                                                                id="bar5"
-                                                                className="shp0"
-                                                                d="M699.9 208.1L759.9 208.1C770.96 208.1 779.9 217.04 779.9 228.1L779.9 773.5C779.9 784.56 770.96 793.5 759.9 793.5L699.9 793.5C688.84 793.5 679.9 784.56 679.9 773.5L679.9 228.1C679.9 217.04 688.84 208.1 699.9 208.1Z"
-                                                            />
-                                                            <path
-                                                                id="bar6"
-                                                                className="shp0"
-                                                                d="M882 388L942 388C953.06 388 962 396.94 962 408L962 593C962 604.06 953.06 613 942 613L882 613C870.94 613 862 604.06 862 593L862 408C862 396.94 870.94 388 882 388Z"
-                                                            />
-                                                        </svg>
-                                                    )}
-                                                </>
-                                            )}
-                                        </>
-                                    )}
-                                </>
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            {!this.state.showGIFSelector || this.state.attachmentPaths.length > 0 ? (
-                                <svg id="sendIcon" viewBox="0 0 1000 1000" onClick={() => this.sendMessage()}>
-                                    <circle r="500" cx="500" cy="500" id="sendIconBackground" />
-                                    <polyline id="arrow" points="240 422 500 218 500 775 500 218 760 422" />
-                                </svg>
-                            ) : (
-                                <div
-                                    id="closeGIFSelector"
-                                    onClick={() => {
-                                        this.setState({ enteredMessage: "", showGIFSelector: false });
-                                        ipcRenderer.invoke("send-to-ui", {
-                                            event: "toggle-giphy-selector",
-                                            contents: false
-                                        });
-                                    }}
-                                >
-                                    <img src={CloseIcon} />
-                                </div>
-                            )}
-                        </>
-                    )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                {this.state.attachmentPaths.length > 0 ? (
+                                                    <svg
+                                                        id="sendIcon"
+                                                        viewBox="0 0 1000 1000"
+                                                        onClick={() => this.sendMessage()}
+                                                    >
+                                                        <circle r="500" cx="500" cy="500" id="sendIconBackground" />
+                                                        <polyline
+                                                            id="arrow"
+                                                            points="240 422 500 218 500 775 500 218 760 422"
+                                                        />
+                                                    </svg>
+                                                ) : (
+                                                    <>
+                                                        {this.state.showGIFSelector ? (
+                                                            <div
+                                                                id="closeGIFSelector"
+                                                                onClick={() => {
+                                                                    this.setState({
+                                                                        enteredMessage: "",
+                                                                        showGIFSelector: false
+                                                                    });
+                                                                    ipcRenderer.invoke("send-to-ui", {
+                                                                        event: "toggle-giphy-selector",
+                                                                        contents: false
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <img src={CloseIcon} />
+                                                            </div>
+                                                        ) : (
+                                                            <svg
+                                                                id="recordVoiceMessage"
+                                                                onMouseEnter={this.handleRecordEnter}
+                                                                onMouseLeave={this.handleRecordLeave}
+                                                                onClick={() => this.startRecording()}
+                                                                viewBox="0 0 1000 1000"
+                                                                width="25"
+                                                                height="25"
+                                                            >
+                                                                <path
+                                                                    id="bar1"
+                                                                    className="shp0"
+                                                                    d="M54 374.7L114 374.7C125.06 374.7 134 383.64 134 394.7L134 606.9C134 617.96 125.06 626.9 114 626.9L54 626.9C42.94 626.9 34 617.96 34 606.9L34 394.7C34 383.64 42.94 374.7 54 374.7Z"
+                                                                />
+                                                                <path
+                                                                    id="bar2"
+                                                                    className="shp0"
+                                                                    d="M206.5 253.1L266.5 253.1C277.56 253.1 286.5 262.04 286.5 273.1L286.5 728.4C286.5 739.46 277.56 748.4 266.5 748.4L206.5 748.4C195.44 748.4 186.5 739.46 186.5 728.4L186.5 273.1C186.5 262.04 195.44 253.1 206.5 253.1Z"
+                                                                />
+                                                                <path
+                                                                    id="bar3"
+                                                                    className="shp0"
+                                                                    d="M368 118L428 118C439.06 118 448 126.94 448 138L448 863.5C448 874.56 439.06 883.5 428 883.5L368 883.5C356.94 883.5 348 874.56 348 863.5L348 138C348 126.94 356.94 118 368 118Z"
+                                                                />
+                                                                <path
+                                                                    id="bar4"
+                                                                    className="shp0"
+                                                                    d="M529.5 271.1L589.5 271.1C600.56 271.1 609.5 280.04 609.5 291.1L609.5 710.4C609.5 721.46 600.56 730.4 589.5 730.4L529.5 730.4C518.44 730.4 509.5 721.46 509.5 710.4L509.5 291.1C509.5 280.04 518.44 271.1 529.5 271.1Z"
+                                                                />
+                                                                <path
+                                                                    id="bar5"
+                                                                    className="shp0"
+                                                                    d="M699.9 208.1L759.9 208.1C770.96 208.1 779.9 217.04 779.9 228.1L779.9 773.5C779.9 784.56 770.96 793.5 759.9 793.5L699.9 793.5C688.84 793.5 679.9 784.56 679.9 773.5L679.9 228.1C679.9 217.04 688.84 208.1 699.9 208.1Z"
+                                                                />
+                                                                <path
+                                                                    id="bar6"
+                                                                    className="shp0"
+                                                                    d="M882 388L942 388C953.06 388 962 396.94 962 408L962 593C962 604.06 953.06 613 942 613L882 613C870.94 613 862 604.06 862 593L862 408C862 396.94 870.94 388 882 388Z"
+                                                                />
+                                                            </svg>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                {!this.state.showGIFSelector || this.state.attachmentPaths.length > 0 ? (
+                                    <svg id="sendIcon" viewBox="0 0 1000 1000" onClick={() => this.sendMessage()}>
+                                        <circle r="500" cx="500" cy="500" id="sendIconBackground" />
+                                        <polyline id="arrow" points="240 422 500 218 500 775 500 218 760 422" />
+                                    </svg>
+                                ) : (
+                                    <div
+                                        id="closeGIFSelector"
+                                        onClick={() => {
+                                            this.setState({ enteredMessage: "", showGIFSelector: false });
+                                            ipcRenderer.invoke("send-to-ui", {
+                                                event: "toggle-giphy-selector",
+                                                contents: false
+                                            });
+                                        }}
+                                    >
+                                        <img src={CloseIcon} />
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
-            </div>
+            </>
         );
     }
 }
