@@ -208,14 +208,22 @@ class MessageBubble extends React.Component<Props, State> {
         if (attachment.progress === 100) {
             const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
 
+            if (attachment.uti.includes("coreaudio-format")) {
+                return (
+                    <UnsupportedMedia
+                        key={attachment.guid}
+                        attachment={attachment}
+                        onClick={() => openAttachment(attachmentPath)}
+                    />
+                );
+            }
+
             // Render based on mime type
             if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
                 const mime = attachment.mimeType ?? "image/pluginPayloadAttachment";
 
                 if (attachment.isSticker) {
                     const messageDiv = document.getElementById(this.props.message.guid);
-
-                    const x = this.wait().then();
 
                     if (messageDiv) {
                         const messageCords = messageDiv.getBoundingClientRect();
@@ -403,6 +411,7 @@ class MessageBubble extends React.Component<Props, State> {
                         <span style={{ width: `${attachment.progress}%` }} />
                     </div>
                     <p>{attachment.progress <= 0 ? "0%" : `${attachment.progress}%`}</p>
+                    <p>{attachment.transferName}</p>
                 </div>
             </div>
         );
@@ -1069,9 +1078,6 @@ class MessageBubble extends React.Component<Props, State> {
                                         !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
                                             <img src={linkPrev.images[0]} className="Attachment" draggable="false" />
                                         ) : null}
-                                        {/* {attachments.map((attachment: AttachmentDownload) =>
-                                        this.renderAttachment(attachment)
-                                    )} */}
                                         <div
                                             className={`linkBottomDiv ${useTail ? "tail" : ""}`}
                                             style={{

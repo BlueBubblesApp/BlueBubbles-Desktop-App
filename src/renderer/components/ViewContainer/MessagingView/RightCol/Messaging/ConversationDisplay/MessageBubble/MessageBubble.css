@@ -634,7 +634,7 @@
         max-width: 85% !important;
     }
 
-    .attachmentDownloadContainer {
+    .attachmentContainer {
         max-width: 60% !important;
         min-width: 60% !important;
     }
@@ -651,11 +651,6 @@
         min-width: 45%;
     }
 
-    .attachmentDownloadContainer {
-        max-width: 45% !important;
-        min-width: 45% !important;
-    }
-
     .linkContainer {
         max-width: 45%;
         min-width: 45%;
@@ -667,11 +662,6 @@
         max-height: 50%;
         max-width: 50%;
         min-width: 50%;
-    }
-
-    .attachmentDownloadContainer {
-        max-width: 50% !important;
-        min-width: 50% !important;
     }
 
     .linkContainer {
