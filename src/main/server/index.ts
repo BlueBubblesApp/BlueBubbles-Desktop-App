@@ -1264,6 +1264,10 @@ class BackendServer {
 
             this.emitToUI("display-name-update", { chat: newChats[0], newName: params.newName });
         });
+
+        ipcMain.handle("get-server-metadata", async (_, __) => {
+            return this.socketService.getServerMetadata();
+        });
     }
 
     setSyncStatus({ completed, message, error }: SyncStatus) {

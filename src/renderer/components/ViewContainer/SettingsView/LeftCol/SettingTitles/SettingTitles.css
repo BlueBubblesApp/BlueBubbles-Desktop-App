@@ -12,3 +12,7 @@
 .active {
     background-color: var(--blue-color);
 }
+
+.noDrag {
+    -webkit-user-drag: none;
+}

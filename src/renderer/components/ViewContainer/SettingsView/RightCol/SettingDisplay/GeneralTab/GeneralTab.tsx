@@ -9,8 +9,6 @@ import AppTitle from "./AppTitle/AppTitle";
 import TitlebarTitle from "./TitlebarTitle/TitlebarTitle";
 import VisualTitle from "./VisualTitle/VisualTitle";
 
-interface State {}
-
 class GeneralTab extends React.Component {
     render() {
         return (

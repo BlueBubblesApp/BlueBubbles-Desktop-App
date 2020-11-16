@@ -7,7 +7,7 @@ import SettingsIcon from "../../../../../assets/icons/return-icon.png";
 function BottomLeftNav() {
     return (
         <div className="BottomLeftNav-Set">
-            <Link id="returnIconLink" to="/messaging">
+            <Link id="returnIconLink" className="noDrag" to="/messaging">
                 {/* <img id="returnIcon" src={SettingsIcon} alt="return" /> */}
                 <svg id="returnIcon" x="0px" y="0px" viewBox="0 0 1024 1280">
                     <g>

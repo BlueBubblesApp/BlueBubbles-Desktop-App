@@ -342,4 +342,16 @@ export class SocketService {
     async renameGroup(params) {
         this.server.emit("rename-group", params);
     }
+
+    async getServerMetadata(): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            this.server.emit("get-server-metadata", null, res => {
+                if ([200, 201].includes(res.status)) {
+                    resolve(res.data as string);
+                } else {
+                    reject(res.message);
+                }
+            });
+        });
+    }
 }

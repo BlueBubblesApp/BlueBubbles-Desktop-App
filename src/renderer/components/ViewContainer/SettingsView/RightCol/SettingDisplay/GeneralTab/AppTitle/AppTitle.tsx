@@ -76,18 +76,6 @@ class AppTitle extends React.Component<Props, State> {
         this.setState({ capitalizeFirstLetter: !this.state.capitalizeFirstLetter });
     }
 
-    async handleGradientMessages() {
-        const newConfig = { gradientMessages: !this.state.gradientMessages };
-        await ipcRenderer.invoke("set-config", newConfig);
-        this.setState({ gradientMessages: !this.state.gradientMessages });
-    }
-
-    async handleColorfulContacts() {
-        const newConfig = { colorfulContacts: !this.state.colorfulContacts };
-        await ipcRenderer.invoke("set-config", newConfig);
-        this.setState({ colorfulContacts: !this.state.colorfulContacts });
-    }
-
     render() {
         return (
             <div className="AppTitle">
@@ -135,28 +123,6 @@ class AppTitle extends React.Component<Props, State> {
                             type="checkbox"
                             checked={this.state.capitalizeFirstLetter}
                             onChange={() => this.handleChangeCapitalizeFirstLetter()}
-                        />
-                        <i />
-                    </label>
-                </div>
-                <div>
-                    <p>Scrolling Gradient On Messages</p>
-                    <label className="form-switch" onClick={() => this.handleGradientMessages()}>
-                        <input
-                            type="checkbox"
-                            checked={this.state.gradientMessages}
-                            onChange={() => this.handleGradientMessages()}
-                        />
-                        <i />
-                    </label>
-                </div>
-                <div>
-                    <p>Colorful Contacts</p>
-                    <label className="form-switch" onClick={() => this.handleColorfulContacts()}>
-                        <input
-                            type="checkbox"
-                            checked={this.state.colorfulContacts}
-                            onChange={() => this.handleColorfulContacts()}
                         />
                         <i />
                     </label>
