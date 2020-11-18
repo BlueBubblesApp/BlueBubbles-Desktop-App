@@ -2,10 +2,12 @@
 /* eslint-disable react/prefer-stateless-function */
 /* eslint-disable max-len */
 /* eslint-disable no-underscore-dangle */
+import { Message } from "@server/databases/chat/entity";
 import * as React from "react";
 import "./InChatReaction.css";
 
 interface Props {
+    reaction: Message;
     isMessageFromMe: boolean;
     isReactionFromMe: boolean;
     reactionType: string;
@@ -13,6 +15,10 @@ interface Props {
 }
 
 class InChatReaction extends React.Component<Props, unknown> {
+    componentDidMount() {
+        console.log(this.props.reaction);
+    }
+
     calculateNewX(offset) {
         const initial = -28;
         return initial + offset * -5;
@@ -109,6 +115,53 @@ class InChatReaction extends React.Component<Props, unknown> {
                     };
                 }
             }
+        }
+
+        if (this.props.reaction.guid.includes("temp")) {
+            if (this.props.reaction.error > 0) {
+                return (
+                    <svg className={classname} style={backgroundStyles} height="42" width="42" viewBox="0 0 500 500">
+                        <circle cx="93%" cy="90%" r="35" strokeWidth="30" />
+                        <circle cx="71%" cy="72%" r="70" strokeWidth="30" />
+                        <circle cx="43%" cy="47%" r="200" strokeWidth="30" />
+                        <svg width="85%" height="85%" viewBox="0 0 100 100">
+                            <circle cx="50%" cy="55%" r="40" fill="red" />
+                            <circle cx="50%" cy="55%" r="35" fill="#007aff" />
+                            <text
+                                x="40%"
+                                y="75%"
+                                style={{ fontFamily: "SF UI Display Bold", fontSize: "70px", fill: "red" }}
+                            >
+                                !
+                            </text>
+                        </svg>
+                    </svg>
+                );
+            }
+
+            return (
+                <svg className={classname} style={backgroundStyles} height="42" width="42" viewBox="0 0 500 500">
+                    <circle cx="93%" cy="90%" r="35" strokeWidth="30" />
+                    <circle cx="71%" cy="72%" r="70" strokeWidth="30" />
+                    <circle cx="43%" cy="47%" r="200" strokeWidth="30" />
+                    <svg id="loader-1" x="10%" y="12%" width="70%" height="70%" viewBox="0 0 50 50">
+                        <path
+                            fill="white"
+                            stroke="none"
+                            d="M25.251,6.461c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615V6.461z"
+                        >
+                            <animateTransform
+                                attributeName="transform"
+                                type="rotate"
+                                from="0 25 25"
+                                to="360 25 25"
+                                dur="0.6s"
+                                repeatCount="indefinite"
+                            />
+                        </path>
+                    </svg>
+                </svg>
+            );
         }
 
         if (this.props.reactionType === "love") {

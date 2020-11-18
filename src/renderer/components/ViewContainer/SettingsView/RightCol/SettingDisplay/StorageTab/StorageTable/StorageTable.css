@@ -1,0 +1,228 @@
+.StorageTableContainer {
+    max-width: 100%;
+}
+
+.storageTable {
+    width: 95%;
+    margin: 0 auto;
+    /* table-layout: fixed; */
+}
+
+.tHeadTitle {
+    color: var(--sub-title-color);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+td {
+    padding: 10px;
+    text-align: left;
+    font-family: "SF UI Display Bold";
+    color: var(--main-title-color);
+    white-space: pre-wrap;
+    word-break: break-all;
+    user-select: none;
+}
+
+tr td:nth-of-type(1) {
+    width: 5%;
+    max-width: 5%;
+    text-align: center;
+}
+
+tr td:nth-of-type(1) > input {
+    outline: none;
+    transform: scale(1.5);
+}
+
+tr td:nth-of-type(2) {
+    width: 50%;
+    max-width: 50%;
+}
+
+tr td:nth-of-type(3) {
+    width: 20%;
+    max-width: 20%;
+}
+
+tr td:nth-of-type(4) {
+    width: 15%;
+    max-width: 15%;
+}
+
+tr td:last-of-type {
+    text-align: center;
+    width: 10%;
+    max-width: 10%;
+}
+
+tr td {
+    border-radius: 5px;
+}
+
+.selectedRow {
+    background-color: var(--secondary-color);
+}
+
+tbody tr:hover {
+    background-color: var(--secondary-color);
+}
+
+thead > tr > th {
+    padding: 5px;
+    border-radius: 5px;
+}
+
+thead > tr > th:hover {
+    background-color: var(--secondary-color);
+}
+
+#delContainer {
+    display: flex;
+    justify-content: flex-end;
+    width: 90%;
+    margin: 0 auto;
+    margin-bottom: 5px;
+}
+
+#clearSelected {
+    padding: 5px;
+    color: var(--sub-title-color);
+    border-radius: 10px;
+    border: 2px solid var(--sub-title-color);
+    background-color: transparent;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    margin-right: 10px;
+    outline: none;
+    transition: ease-in-out 0.15s;
+}
+
+#deleteSelected {
+    padding: 5px;
+    color: red;
+    border-radius: 10px;
+    border: 2px solid red;
+    background-color: transparent;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    outline: none;
+    transition: ease-in-out 0.15s;
+}
+
+#cancelButton {
+    padding: 5px;
+    color: var(--sub-title-color);
+    border-radius: 10px;
+    border: 2px solid var(--sub-title-color);
+    background-color: transparent;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    margin-right: 10px;
+    outline: none;
+    transition: ease-in-out 0.15s;
+}
+
+#confirmButton {
+    padding: 5px;
+    color: red;
+    border-radius: 10px;
+    border: 2px solid red;
+    background-color: transparent;
+    font-family: "SF UI Display Bold";
+    font-size: 13px;
+    outline: none;
+    transition: ease-in-out 0.15s;
+}
+
+#selectAllButton {
+    padding: 5px;
+    color: var(--sub-title-color);
+    border-radius: 10px;
+    border: 2px solid var(--sub-title-color);
+    background-color: transparent;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    margin-right: 10px;
+    outline: none;
+    transition: ease-in-out 0.15s;
+}
+
+#selectAllButton:hover,
+#clearSelected:hover,
+#deleteSelected:hover,
+#cancelButton:hover,
+#confirmButton:hover {
+    cursor: pointer;
+    border-radius: 15px;
+}
+
+#deleteConfirmDiv {
+    position: absolute;
+    width: calc(66vw - 290px);
+    min-height: 66vh;
+    max-height: 66vh;
+    top: 17vh;
+    right: 17vw;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    background-color: var(--secondary-color);
+    border-radius: 15px;
+    padding: 10px;
+}
+
+#deleteConfirmDiv p {
+    font-family: "SF UI Display Bold";
+    color: var(--main-title-color);
+}
+
+#confirmListContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    width: 80%;
+    max-height: 400px;
+    overflow-y: scroll;
+    padding: 10px;
+    border-bottom: 1px solid var(--sub-title-color);
+}
+
+.aconfirmRow {
+    width: 100%;
+    display: flex;
+    padding: 4px;
+}
+
+.aconfirmRow div p {
+    margin: 0;
+}
+
+.aconfirmRow div:first-of-type {
+    flex-grow: 1;
+    overflow-x: scroll;
+    white-space: nowrap;
+}
+
+.aconfirmRow div:last-of-type {
+    width: auto;
+    min-width: 70px !important;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+@media (max-width: 800px) {
+    .storageTable {
+        width: 100%;
+    }
+
+    #deleteConfirmDiv {
+        width: calc(86vw - 290px);
+        right: 7vw;
+    }
+}

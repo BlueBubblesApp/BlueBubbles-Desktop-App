@@ -227,8 +227,8 @@ export const sanitizeStr = (val: string) => {
 
 export const parseUrls = (text: string) => {
     // eslint-disable-next-line max-len
-    const expr = /(?:h|H)ttps?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
-    const parser = new RegExp(expr);
+    const regexp = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gim;
+    const parser = new RegExp(regexp);
     const matches = text.match(parser);
     return matches ?? [];
 };

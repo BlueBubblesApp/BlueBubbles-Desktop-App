@@ -2,8 +2,8 @@
 /* eslint-disable class-methods-use-this */
 import * as React from "react";
 import { ipcRenderer } from "electron";
-import { Chat, Message as DBMessage } from "@server/databases/chat/entity";
-import { getDateText, getTimeText } from "@renderer/helpers/utils";
+import { Chat, Handle, Message as DBMessage } from "@server/databases/chat/entity";
+import { getDateText, getSender, getTimeText } from "@renderer/helpers/utils";
 import { ValidTapback } from "@server/types";
 
 import "./RightConversationDisplay.css";
@@ -62,6 +62,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
     async componentDidMount() {
         ipcRenderer.on("message", async (_, payload: { message: Message; tempGuid?: string }) => {
             const { message } = payload;
+            console.log(message);
 
             // If the message isn't for this chat, ignore it
             if (!message.chats || message.chats[0].guid !== this.props.chat.guid) return;
@@ -78,10 +79,12 @@ class RightConversationDisplay extends React.Component<Props, State> {
             // view.scrollTop = view.scrollHeight;
         });
 
-        ipcRenderer.on("add-message", async (_, message) => {
+        ipcRenderer.on("add-message", async (_, message: Message) => {
+            console.log(message);
             // Otherwise, add the message to the state
             await this.addMessagesToState([message]);
 
+            if (message.associatedMessageGuid) return;
             // Scroll to new message
             const view = document.getElementById("messageView");
             view.scrollTop = view.scrollHeight;
@@ -125,17 +128,24 @@ class RightConversationDisplay extends React.Component<Props, State> {
         await this.addMessagesToState(messages as Message[]); // These won't have a tempGuid
 
         // Tell the state we are done loading
+        const view = document.getElementById("messageView");
+
         this.setState({ isLoading: false }, () => {
             // If this is a fresh chat, scroll to the bottom
             if (!messageTimestamp) {
-                const view = document.getElementById("messageView");
                 view.scrollTop = view.scrollHeight;
             }
         });
+
+        if (!this.isScrollable(view)) {
+            await this.getNextMessagePage();
+            view.scrollTop = view.scrollHeight;
+        }
     }
 
     // eslint-disable-next-line react/sort-comp
     async fetchReactions(messages: Message[]) {
+        console.log(messages);
         const updatedMessages = [...messages];
         const stateMessages = [...this.state.messages];
         let hasUpdates = false;
@@ -229,7 +239,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
         const messageList: Message[] = [];
         const reactionList: Message[] = [];
         for (let i = 0; i < outputMessages.length; i += 1) {
-            // console.log(outputMessages[i].text);
+            console.log(outputMessages[i]);
             // console.log(outputMessages[i].hasReactions);
             if (
                 outputMessages[i].hasReactions &&
@@ -247,19 +257,24 @@ class RightConversationDisplay extends React.Component<Props, State> {
             }
         }
 
+        console.log(reactionList);
+
         // For each reaction, find the corresponding message, and merge the reactions
         for (const reaction of reactionList) {
             for (let i = 0; i < outputMessages.length; i += 1) {
                 if (reaction.associatedMessageGuid === outputMessages[i].guid) {
+                    console.log(outputMessages[i]);
                     if (outputMessages[i].reactions) {
                         outputMessages[i].reactions.push(reaction);
                         outputMessages[i].reactions = deduplicateReactions(outputMessages[i].reactions);
                     } else {
+                        outputMessages[i].hasReactions = true;
                         outputMessages[i].reactions = [];
                         outputMessages[i].reactions.push(reaction);
                         outputMessages[i].reactions = deduplicateReactions(outputMessages[i].reactions);
                     }
 
+                    console.log(outputMessages[i]);
                     break;
                 }
             }
@@ -277,7 +292,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
     }
 
     getChatEvent(message: Message) {
-        const sender = message.isFromMe || !message.handle ? "You" : message.handle.address ?? "";
+        const sender = message.isFromMe || !message.handle ? "You" : getSender(message.handle) ?? "";
 
         const date = message.dateCreated
             ? `${getDateText(new Date(message.dateCreated), true)}, ${getTimeText(new Date(message.dateCreated))}`
@@ -308,12 +323,38 @@ class RightConversationDisplay extends React.Component<Props, State> {
             );
         }
 
+        if (message.itemType === 5 && message.groupActionType === 0) {
+            const originalMessage = this.state.messages.find(mes => mes.guid === message.subject);
+            let originalSender;
+            if (originalMessage) {
+                originalSender = originalMessage.isFromMe ? "you" : getSender(originalMessage.handle);
+            } else {
+                originalSender = "unavailable";
+            }
+
+            return <ChatLabel text={`${sender} kept Digital Touch Message from ${originalSender}`} date={date} />;
+        }
+
         if (message.itemType === 2 && message.groupTitle !== null) {
             return <ChatLabel text={`${sender} renamed the conversation to ${message.groupTitle}`} date={date} />;
         }
 
         console.log(message);
         return <ChatLabel text={`Unknown chat event from ${sender}`} date={date} />;
+    }
+
+    isScrollable(ele) {
+        // Compare the height to see if the element has scrollable content
+        const hasScrollableContent = ele.scrollHeight > ele.clientHeight;
+
+        // It's not enough because the element's `overflow-y` style can be set as
+        // * `hidden`
+        // * `hidden !important`
+        // In those cases, the scrollbar isn't shown
+        const overflowYStyle = window.getComputedStyle(ele).overflowY;
+        const isOverflowHidden = overflowYStyle.indexOf("hidden") !== -1;
+
+        return hasScrollableContent && !isOverflowHidden;
     }
 
     render() {

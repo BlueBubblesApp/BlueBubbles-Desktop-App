@@ -1,9 +1,10 @@
-.StorageInfo{
+.StorageInfo {
     display: flex;
     flex-direction: column;
     /* justify-content: center; */
     align-items: center;
     height: 200px;
+    margin-bottom: 50px;
 }
 
 .StorageInfo > h1 {
@@ -13,7 +14,7 @@
     font-family: "SF UI Display Bold";
 }
 
-#barWrapper{
+#barWrapper {
     width: 60%;
     background-color: var(--main-title-color);
     height: 30px;
@@ -21,7 +22,7 @@
     display: flex;
 }
 
-#totalBaseApp{
+#totalBaseApp {
     background-color: #3ee75a;
     height: 30px;
     border-radius: 3px 0px 0px 3px;
@@ -30,7 +31,7 @@
     align-items: center;
 }
 
-#totalTexts{
+#totalTexts {
     background-color: #227ae2;
     height: 30px;
     display: flex;
@@ -38,7 +39,7 @@
     align-items: center;
 }
 
-#totalAttachments{
+#totalAttachments {
     background-color: #dc4444;
     height: 30px;
     border-radius: 0 3px 3px 0;
@@ -47,13 +48,13 @@
     align-items: center;
 }
 
-.storage-percent{
+.storage-percent {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-size: 15px;
 }
 
-#keyWrapper{
+#keyWrapper {
     width: 60%;
     height: 20px;
     display: flex;
@@ -62,40 +63,39 @@
     margin-top: 10px;
 }
 
-.key-child:nth-child(1){
+.key-child:nth-child(1) {
     height: 13px;
     width: 13px;
     background-color: #3ee75a;
 }
 
-.key-child:nth-child(3){
+.key-child:nth-child(3) {
     height: 13px;
     width: 13px;
     background-color: #227ae2;
 }
 
-.key-child:nth-child(5){
+.key-child:nth-child(5) {
     height: 13px;
     width: 13px;
     background-color: #dc4444;
 }
 
-
-#key-label-1{
+#key-label-1 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-size: 14px;
     margin: 0 15px 0 3px;
 }
 
-#key-label-2{
+#key-label-2 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-size: 14px;
     margin: 0 15px 0 3px;
 }
 
-#key-label-3{
+#key-label-3 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-size: 14px;
@@ -103,25 +103,25 @@
 }
 
 @media only screen and (max-width: 800px) {
-    #key-label-1{
+    #key-label-1 {
         margin: 0 5px 0 3px;
         font-size: 12px;
     }
-    
-    #key-label-2{
+
+    #key-label-2 {
         margin: 0 5px 0 3px;
         font-size: 12px;
     }
-    #key-label-3{
+    #key-label-3 {
         font-size: 12px;
     }
-    #barWrapper{
+    #barWrapper {
         width: 80%;
     }
-    #keyWrapper{
+    #keyWrapper {
         width: 80%;
     }
-    .StorageInfo > h1{
+    .StorageInfo > h1 {
         font-size: 20px;
     }
 }

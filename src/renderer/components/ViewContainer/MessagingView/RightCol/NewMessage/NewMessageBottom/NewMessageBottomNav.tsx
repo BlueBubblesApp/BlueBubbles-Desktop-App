@@ -267,8 +267,6 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
         });
 
         ipcRenderer.on("chat-drop-event", (_, args) => {
-            console.log(args);
-            console.log("here");
             if (args.attachment) {
                 const { attachmentPaths } = this.state;
                 attachmentPaths.push(args.attachment);
@@ -544,7 +542,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                 ).toString()}%`;
                 audio.addEventListener(
                     "ended",
-                    function() {
+                    () => {
                         audioEnded();
                     },
                     false
@@ -652,11 +650,13 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                 {this.state.showEmojiSearch && this.state.emojiSearchString.length > 2 ? (
                     <div id="emojiSearchContainer">
                         {Object.entries(this.state.emojiNamesMap).filter(emoji =>
-                            emoji[0].includes(this.state.emojiSearchString.slice(1))
+                            emoji[0].includes(this.state.emojiSearchString.slice(1).toLowerCase())
                         ).length > 0 ? (
                             <>
                                 {Object.entries(this.state.emojiNamesMap)
-                                    .filter(emoji => emoji[0].includes(this.state.emojiSearchString.slice(1)))
+                                    .filter(emoji =>
+                                        emoji[0].includes(this.state.emojiSearchString.slice(1).toLowerCase())
+                                    )
                                     .map((emoji, i) => {
                                         return (
                                             <div

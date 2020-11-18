@@ -38,3 +38,8 @@
         opacity: 1;
     }
 }
+
+.loadingReaction {
+    height: 42px;
+    width: 42px;
+}

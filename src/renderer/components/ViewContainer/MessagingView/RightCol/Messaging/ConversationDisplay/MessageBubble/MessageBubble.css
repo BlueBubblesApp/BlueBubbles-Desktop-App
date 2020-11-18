@@ -45,6 +45,7 @@
     margin-top: 0;
     margin-bottom: 0;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .OutgoingMessage {
@@ -117,6 +118,7 @@
     margin-top: 0;
     margin-bottom: 0;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .messageSubject {
@@ -221,7 +223,7 @@
     -webkit-background-clip: border-box;
     background-clip: border-box;
     border-bottom-left-radius: 15px;
-    transition: ease-in-out 0.45s;
+    /* transition: ease-in-out 0.45s; */
 }
 
 .OutgoingMessage .message.tail:after {
@@ -235,7 +237,7 @@
     height: 20px;
     background: var(--background-color);
     border-bottom-left-radius: 10px;
-    transition: ease-in-out 0.45s;
+    /* transition: ease-in-out 0.45s; */
 }
 
 /* Incoming message tails */

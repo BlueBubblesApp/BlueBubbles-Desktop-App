@@ -216,6 +216,16 @@ export class SocketService {
             Server().setSyncStatus({ completed: false, error: false, message: `Reconnecting (${attempt})` });
         });
 
+        this.server.on("tabpack-sent", mes => {
+            console.log("SENT");
+            console.log(mes);
+        });
+
+        this.server.on("send-tapback-error", mes => {
+            // console.log("FAiled")
+            // console.log(mes)
+        });
+
         this.server.on("chat-read-status-changed", async params => {
             if (params.status === false && params.chatGuid != null) {
                 const chats = await Server().chatRepo.getChats(params.chatGuid);

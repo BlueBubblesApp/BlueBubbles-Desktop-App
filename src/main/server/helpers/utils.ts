@@ -155,3 +155,10 @@ export const getDirectorySize = directoryPath => {
 
     return totalSize;
 };
+
+export const getAllAttachmentsInfo = directoryPath => {
+    const arrayOfFiles = getAllFilesInDirectory(directoryPath, []);
+
+    console.log(arrayOfFiles);
+    return arrayOfFiles;
+};

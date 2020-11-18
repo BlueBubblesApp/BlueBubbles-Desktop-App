@@ -655,8 +655,8 @@ class BackendServer {
         });
 
         // eslint-disable-next-line no-return-await
-        ipcMain.handle("fetch-attachment", async (_, attachment: any) => {
-            const chunkSize = (this.configRepo.get("chunkSize") as number) * 1000;
+        ipcMain.handle("fetch-attachment", async (_, attachment: Attachment) => {
+            const chunkSize = (this.configRepo.get("chunkSize") as number) * 100;
             let start = 0;
 
             let output = new Uint8Array();
@@ -792,17 +792,39 @@ class BackendServer {
             });
         });
 
-        // Get VCF from server
+        // Send a tapback
         ipcMain.handle("send-tapback", async (_, payload) => {
-            this.socketService.server.emit("send-reaction", {
-                chatGuid: payload.chat.guid,
-                message: payload.message,
-                actionMessage: payload.actionMessage,
-                tapback: payload.tapback
-            });
+            try {
+                this.socketService.server.emit(
+                    "send-reaction",
+                    {
+                        chatGuid: payload.chat.guid,
+                        message: payload.message,
+                        actionMessage: payload.actionMessage,
+                        tapback: payload.tapback
+                    },
+                    res => {
+                        if (res.error) {
+                            const tapbackMes = payload.message as Message;
+                            tapbackMes.error = res.status;
+                            this.chatRepo.saveMessage(payload.chat, tapbackMes);
+                            this.emitToUI("add-message", tapbackMes);
+                        }
+                    }
+                );
+            } catch (e) {
+                console.log(e);
+                console.log("FAIIIIIl");
+                const tapbackMes = payload.message as Message;
+                tapbackMes.error = 500;
+                this.chatRepo.saveMessage(payload.chat, tapbackMes);
+                this.emitToUI("add-message", tapbackMes);
+            }
         });
 
         ipcMain.handle("get-storage-info", async (_, payload) => FileSystem.getAppSizeData());
+
+        ipcMain.handle("get-all-attachments-info", async (_, payload) => FileSystem.getAllAttachmentsData());
 
         ipcMain.handle("start-new-chat", async (_, payload) => {
             // if we have a matching address, that means we are jumping from details page to chat matching address
@@ -1267,6 +1289,12 @@ class BackendServer {
 
         ipcMain.handle("get-server-metadata", async (_, __) => {
             return this.socketService.getServerMetadata();
+        });
+
+        ipcMain.handle("delete-selected-files", async (_, selectedFiles) => {
+            for (let i = 0; i < selectedFiles.length; i += 1) {
+                await FileSystem.deleteFile(selectedFiles[i].filePath);
+            }
         });
     }
 

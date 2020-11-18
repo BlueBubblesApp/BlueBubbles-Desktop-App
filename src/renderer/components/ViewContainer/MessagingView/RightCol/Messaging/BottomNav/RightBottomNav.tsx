@@ -624,7 +624,7 @@ class RightBottomNav extends React.Component<Props, State> {
                 ).toString()}%`;
                 audio.addEventListener(
                     "ended",
-                    function() {
+                    () => {
                         audioEnded();
                     },
                     false
@@ -732,11 +732,13 @@ class RightBottomNav extends React.Component<Props, State> {
                 {this.state.showEmojiSearch && this.state.emojiSearchString.length > 2 ? (
                     <div id="emojiSearchContainer">
                         {Object.entries(this.state.emojiNamesMap).filter(emoji =>
-                            emoji[0].includes(this.state.emojiSearchString.slice(1))
+                            emoji[0].includes(this.state.emojiSearchString.slice(1).toLowerCase())
                         ).length > 0 ? (
                             <>
                                 {Object.entries(this.state.emojiNamesMap)
-                                    .filter(emoji => emoji[0].includes(this.state.emojiSearchString.slice(1)))
+                                    .filter(emoji =>
+                                        emoji[0].includes(this.state.emojiSearchString.slice(1).toLowerCase())
+                                    )
                                     .map((emoji, i) => {
                                         return (
                                             <div

@@ -1,3 +1,4 @@
+/* eslint-disable no-dupe-else-if */
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/order */
@@ -30,7 +31,8 @@ import {
     getDateText,
     getSender,
     parseAppleLocation,
-    generateReactionsDisplayIconText
+    generateReactionsDisplayIconText,
+    bytesToSize
 } from "@renderer/helpers/utils";
 import { supportedVideoTypes, supportedAudioTypes } from "@renderer/helpers/constants";
 import UnknownImage from "@renderer/assets/img/unknown_img.png";
@@ -49,6 +51,8 @@ import NewReaction from "./NewReaction/NewReaction";
 import InChatReaction from "./InChatReaction/InChatReaction";
 import InChatAudio from "./InChatAudio/InChatAudio";
 import * as FireworksCanvas from "fireworks-canvas";
+
+const validUrl = require("valid-url");
 
 // If we don't do this, the marker won't show
 // eslint-disable-next-line no-underscore-dangle
@@ -412,6 +416,7 @@ class MessageBubble extends React.Component<Props, State> {
                     </div>
                     <p>{attachment.progress <= 0 ? "0%" : `${attachment.progress}%`}</p>
                     <p>{attachment.transferName}</p>
+                    <p>{`(${bytesToSize(attachment.totalBytes)})`}</p>
                 </div>
             </div>
         );
@@ -419,7 +424,7 @@ class MessageBubble extends React.Component<Props, State> {
     }
 
     isValidUrl = string => {
-        const regexp = /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
+        const regexp = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gim;
         if (regexp.test(string)) {
             return true;
         }
@@ -437,8 +442,25 @@ class MessageBubble extends React.Component<Props, State> {
 
             const { message } = this.props;
 
-            if (this.isValidUrl(message.text) || message.text.includes("http") || message.text.includes("Https")) {
+            if (
+                (validUrl.isUri(message.text) && this.isValidUrl(message.text)) ||
+                message.text.includes("http") ||
+                message.text.includes("Https")
+            ) {
                 const linkPrev: any = await getLinkPreview(message.text);
+                console.log(linkPrev);
+                this.setState({ linkPrev });
+                if (linkPrev.title) {
+                    this.setState({ linkTitle: linkPrev.title });
+                } else {
+                    this.setState({ linkTitle: linkPrev.description });
+                }
+                // eslint-disable-next-line no-dupe-else-if
+            } else if (
+                (validUrl.isUri(`https://${message.text}`) !== undefined && this.isValidUrl(message.text)) ||
+                (validUrl.isUri(`http://${message.text}`) && this.isValidUrl(message.text))
+            ) {
+                const linkPrev: any = await getLinkPreview(`http://${message.text}`);
                 console.log(linkPrev);
                 this.setState({ linkPrev });
                 if (linkPrev.title) {
@@ -923,8 +945,24 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         // Parse out any links. We can minimize parsing if we do a simple "contains" first
-        if (this.isValidUrl(text) || text.includes("http") || text.includes("Https")) {
+        if (
+            validUrl.isUri(text) !== undefined ||
+            this.isValidUrl(text) ||
+            text.includes("http") ||
+            text.includes("Https")
+        ) {
             links = parseUrls(text);
+        } else if (
+            (validUrl.isUri(`https://${text}`) !== undefined && this.isValidUrl(text)) ||
+            (validUrl.isUri(`http://${text}`) && this.isValidUrl(text))
+        ) {
+            links = parseUrls(`https://${text}`);
+        }
+
+        if (links.length > 0) {
+            if (!links[0].toLowerCase().includes("http") || !links[0].toLowerCase().includes("https")) {
+                links[0] = `https://${links[0]}`;
+            }
         }
 
         const handleReplayAnimation = async e => {
@@ -1065,6 +1103,7 @@ class MessageBubble extends React.Component<Props, State> {
                                             <>
                                                 {message.reactions.map((reaction, i) => (
                                                     <InChatReaction
+                                                        reaction={reaction}
                                                         key={reaction.guid}
                                                         isMessageFromMe={message.isFromMe}
                                                         isReactionFromMe={reaction.isFromMe}
@@ -1140,6 +1179,7 @@ class MessageBubble extends React.Component<Props, State> {
                                             <>
                                                 {message.reactions.map((reaction, i) => (
                                                     <InChatReaction
+                                                        reaction={reaction}
                                                         key={reaction.guid}
                                                         isMessageFromMe={message.isFromMe}
                                                         isReactionFromMe={reaction.isFromMe}
@@ -1325,6 +1365,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                             <>
                                                                 {message.reactions.map((reaction, i) => (
                                                                     <InChatReaction
+                                                                        reaction={reaction}
                                                                         key={reaction.guid}
                                                                         isMessageFromMe={message.isFromMe}
                                                                         isReactionFromMe={reaction.isFromMe}
@@ -1463,7 +1504,7 @@ class MessageBubble extends React.Component<Props, State> {
                                 <NewReaction
                                     message={message}
                                     chat={chat}
-                                    onClose={() => this.setState({ isReactionsOpen: false })}
+                                    onClose={() => this.closeReactionView(message)}
                                 />
                             ) : (
                                 <div className="emptyDiv" />
@@ -1614,6 +1655,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                         {reaction.associatedMessageType === "sticker" ? null : null}
                                                         <InChatReaction
                                                             key={reaction.guid}
+                                                            reaction={reaction}
                                                             isMessageFromMe={message.isFromMe}
                                                             isReactionFromMe={reaction.isFromMe}
                                                             reactionType={reaction.associatedMessageType}

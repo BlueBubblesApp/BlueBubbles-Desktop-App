@@ -208,6 +208,7 @@
       "sqlite3": "^4.2.0",
       "string-similarity": "^4.0.2",
       "typeorm": "^0.2.25",
+      "valid-url": "^1.0.9",
       "vcard": "^0.1.0",
       "vcf": "^2.0.6"
    }

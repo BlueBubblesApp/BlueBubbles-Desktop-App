@@ -6,7 +6,7 @@ import { app } from "electron";
 import { sync } from "read-chunk";
 
 import { Attachment } from "@server/databases/chat/entity";
-import { getDirectorySize } from "@server/helpers/utils";
+import { getAllAttachmentsInfo, getAllFilesInDirectory, getDirectorySize } from "@server/helpers/utils";
 import { generateUuid } from "@renderer/helpers/utils";
 import { StorageData } from "./types";
 
@@ -116,6 +116,33 @@ export class FileSystem {
         return output as StorageData;
     }
 
+    static getAllAttachmentsData(): any {
+        // const output: Partial<StorageData> = {};
+        const allData = [];
+
+        // Get all the data
+        const fileList = getAllFilesInDirectory(FileSystem.attachmentsDir, []);
+
+        console.log(fileList);
+        // eslint-disable-next-line guard-for-in
+        for (let i = 0; i < fileList.length; i += 1) {
+            console.log(fileList[i]);
+            try {
+                const x = fs.statSync(fileList[i]);
+                allData.push({
+                    filePath: fileList[i],
+                    birthtime: x.birthtime,
+                    fileType: fileList[i].substring(fileList[i].lastIndexOf(".") + 1),
+                    size: x.size
+                });
+            } catch (e) {
+                // console.log(e)
+            }
+        }
+
+        return allData;
+    }
+
     static readFileChunk(filePath: string, start: number, chunkSize = 1024): Uint8Array {
         // Get the file size
         const stats = fs.statSync(filePath);
@@ -124,5 +151,14 @@ export class FileSystem {
         // Make sure the start are not bigger than the size
         if (fStart > stats.size) fStart = stats.size;
         return Uint8Array.from(sync(filePath, fStart, chunkSize));
+    }
+
+    static async deleteFile(filepath: string): Promise<void> {
+        try {
+            fs.unlinkSync(filepath);
+            return;
+        } catch (err) {
+            console.error(err);
+        }
     }
 }
