@@ -180,7 +180,11 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
 
             if (
                 event.key === "Enter" ||
-                (event.key === "Tab" && !event.shiftKey && this.state.lookingForEmoji && this.state.showEmojiSearch)
+                (event.key === "Tab" &&
+                    !event.shiftKey &&
+                    this.state.lookingForEmoji &&
+                    this.state.showEmojiSearch &&
+                    this.state.emojiSearchString.length > 2)
             ) {
                 event.preventDefault();
                 const emoji = document

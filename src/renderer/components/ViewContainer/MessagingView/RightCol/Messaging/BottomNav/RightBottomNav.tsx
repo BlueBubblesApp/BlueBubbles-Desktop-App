@@ -187,7 +187,8 @@ class RightBottomNav extends React.Component<Props, State> {
                 (event.key === "Enter" || event.key === "Tab") &&
                 !event.shiftKey &&
                 this.state.lookingForEmoji &&
-                this.state.showEmojiSearch
+                this.state.showEmojiSearch &&
+                this.state.emojiSearchString.length > 2
             ) {
                 event.preventDefault();
                 const emoji = document
