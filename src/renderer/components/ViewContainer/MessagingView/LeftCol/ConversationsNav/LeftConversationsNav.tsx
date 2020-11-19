@@ -19,6 +19,7 @@ interface State {
     chatGuids: string[];
     isLoading: boolean;
     chatSearchString: string;
+    config: any;
 }
 
 class LeftConversationsNav extends React.Component<unknown, State> {
@@ -30,11 +31,13 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             chats: [],
             chatGuids: [],
             isLoading: false,
-            chatSearchString: ""
+            chatSearchString: "",
+            config: null
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
+        this.setState({ config: await ipcRenderer.invoke("get-config") });
         // First, let's register a handler for new chats
         ipcRenderer.on("chat", (_, args) => this.addChatsToState([args]));
 
@@ -289,7 +292,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                                       className={activeChat?.guid === filteredChat.guid ? "activeChat" : ""}
                                   >
                                       {hasNotification ? <div className="notification" /> : null}
-                                      <Conversation chat={filteredChat} />
+                                      <Conversation config={this.state.config} chat={filteredChat} />
                                   </div>
                               );
                           })
@@ -300,7 +303,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                               chat.lastViewed < chat.lastMessage.dateCreated;
                           if (!chat.lastViewed || (hasNotification && activeChat && activeChat.guid === chat.guid))
                               hasNotification = false;
-                          if (!chat.hasOwnProperty("lastMessage")) return null;
+                          //   if (!chat.hasOwnProperty("lastMessage")) return null;
                           return (
                               <div
                                   key={chat.guid}
@@ -308,7 +311,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                                   className={activeChat?.guid === chat.guid ? "activeChat" : ""}
                               >
                                   {hasNotification ? <div className="notification" /> : null}
-                                  <Conversation chat={chat} />
+                                  <Conversation config={this.state.config} chat={chat} />
                               </div>
                           );
                       })}

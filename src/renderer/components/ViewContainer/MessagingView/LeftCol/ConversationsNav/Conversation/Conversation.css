@@ -113,6 +113,7 @@
     overflow: hidden;
     margin: auto;
     margin-top: 2px;
+    display: flex;
 }
 
 .message-recip-example {

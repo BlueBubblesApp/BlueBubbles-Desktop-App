@@ -313,7 +313,9 @@ class BackendServer {
         now = new Date().getTime();
         for (const handle of handles) {
             for (const contact of contacts) {
-                if (sanitizeAddress(handle.address) === sanitizeAddress(contact.address)) {
+                if (
+                    sanitizeAddress(handle.address, handle.country) === sanitizeAddress(contact.address, handle.country)
+                ) {
                     const updateData: DeepPartial<Handle> = {};
                     if (contact.firstName || contact.lastName) {
                         updateData.firstName = contact.firstName ?? "";
@@ -388,13 +390,13 @@ class BackendServer {
             withChats: true,
             withHandle: true,
             withAttachments: true,
-            withBlurhash: false,
-            where: [
-                {
-                    statement: "message.service = 'iMessage'",
-                    args: null
-                }
-            ]
+            withBlurhash: false
+            // where: [
+            //     {
+            //         statement: "message.service = 'iMessage'",
+            //         args: null
+            //     }
+            // ]
         };
         const messages: MessageResponse[] = await this.socketService.getMessages(args);
         emitData.loadingMessage = `Syncing ${messages.length} messages`;
@@ -476,13 +478,13 @@ class BackendServer {
                 limit: 25,
                 offset: 0,
                 withBlurhash: false,
-                after: 1,
-                where: [
-                    {
-                        statement: "message.service = 'iMessage'",
-                        args: null
-                    }
-                ]
+                after: 1
+                // where: [
+                //     {
+                //         statement: "message.service = 'iMessage'",
+                //         args: null
+                //     }
+                // ]
             };
 
             // Third, let's fetch the messages from the DB
@@ -1295,6 +1297,15 @@ class BackendServer {
             for (let i = 0; i < selectedFiles.length; i += 1) {
                 await FileSystem.deleteFile(selectedFiles[i].filePath);
             }
+        });
+
+        ipcMain.handle("reset-user-data", async () => {
+            await this.chatRepo.db.close();
+            await this.configRepo.db.close();
+            await FileSystem.deleteUserData();
+
+            app.quit();
+            app.exit(0);
         });
     }
 

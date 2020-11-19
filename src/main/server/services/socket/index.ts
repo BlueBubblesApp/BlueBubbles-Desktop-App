@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import * as io from "socket.io-client";
+import io from "socket.io-client";
 import * as os from "os";
 import * as path from "path";
 import * as Notifier from "node-notifier";

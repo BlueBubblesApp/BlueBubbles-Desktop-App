@@ -12,6 +12,7 @@ type Props = {
 type State = {
     gradientMessages: boolean;
     colorfulContacts: boolean;
+    useNativeEmojis: boolean;
 };
 
 class VisualTitle extends React.Component<Props, State> {
@@ -20,7 +21,8 @@ class VisualTitle extends React.Component<Props, State> {
 
         this.state = {
             gradientMessages: false,
-            colorfulContacts: false
+            colorfulContacts: false,
+            useNativeEmojis: false
         };
     }
 
@@ -28,7 +30,8 @@ class VisualTitle extends React.Component<Props, State> {
         const config = await ipcRenderer.invoke("get-config");
         this.setState({
             gradientMessages: config.gradientMessages,
-            colorfulContacts: config.colorfulContacts
+            colorfulContacts: config.colorfulContacts,
+            useNativeEmojis: config.useNativeEmojis
         });
 
         console.log(config);
@@ -44,6 +47,12 @@ class VisualTitle extends React.Component<Props, State> {
         const newConfig = { colorfulContacts: !this.state.colorfulContacts };
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ colorfulContacts: !this.state.colorfulContacts });
+    }
+
+    async handleUseNativeEmojis() {
+        const newConfig = { useNativeEmojis: !this.state.useNativeEmojis };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ useNativeEmojis: !this.state.useNativeEmojis });
     }
 
     render() {
@@ -68,6 +77,17 @@ class VisualTitle extends React.Component<Props, State> {
                             type="checkbox"
                             checked={this.state.colorfulContacts}
                             onChange={() => this.handleColorfulContacts()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Use Native Emojis</p>
+                    <label className="form-switch" onClick={() => this.handleUseNativeEmojis()}>
+                        <input
+                            type="checkbox"
+                            checked={this.state.useNativeEmojis}
+                            onChange={() => this.handleUseNativeEmojis()}
                         />
                         <i />
                     </label>

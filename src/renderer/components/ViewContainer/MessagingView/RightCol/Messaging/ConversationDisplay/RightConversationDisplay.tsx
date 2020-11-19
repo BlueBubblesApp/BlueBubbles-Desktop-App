@@ -19,6 +19,7 @@ type State = {
     messages: Message[];
     gradientMessages: boolean;
     colorfulContacts: boolean;
+    useNativeEmojis: boolean;
 };
 
 type Message = DBMessage & {
@@ -55,7 +56,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
             isLoading: false,
             messages: [],
             gradientMessages: false,
-            colorfulContacts: false
+            colorfulContacts: false,
+            useNativeEmojis: false
         };
     }
 
@@ -92,7 +94,11 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
         const config = await ipcRenderer.invoke("get-config");
 
-        this.setState({ gradientMessages: config.gradientMessages, colorfulContacts: config.colorfulContacts });
+        this.setState({
+            gradientMessages: config.gradientMessages,
+            colorfulContacts: config.colorfulContacts,
+            useNativeEmojis: config.useNativeEmojis
+        });
         console.log(config.gradientMessages);
         await this.chatChange();
     }
@@ -137,10 +143,10 @@ class RightConversationDisplay extends React.Component<Props, State> {
             }
         });
 
-        if (!this.isScrollable(view)) {
-            await this.getNextMessagePage();
-            view.scrollTop = view.scrollHeight;
-        }
+        // if (!this.isScrollable(view)) {
+        //     await this.getNextMessagePage();
+        //     view.scrollTop = view.scrollHeight;
+        // }
     }
 
     // eslint-disable-next-line react/sort-comp
@@ -174,7 +180,11 @@ class RightConversationDisplay extends React.Component<Props, State> {
     async chatChange() {
         const config = await ipcRenderer.invoke("get-config");
 
-        this.setState({ gradientMessages: config.gradientMessages, colorfulContacts: config.colorfulContacts });
+        this.setState({
+            gradientMessages: config.gradientMessages,
+            colorfulContacts: config.colorfulContacts,
+            useNativeEmojis: config.useNativeEmojis
+        });
 
         // Reset the messages
         this.setState({ messages: [] }, () => {
@@ -425,6 +435,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                         messages={messages}
                                         gradientMessages={this.state.gradientMessages}
                                         colorfulContacts={this.state.colorfulContacts}
+                                        useNativeEmojis={this.state.useNativeEmojis}
                                     />
                                 </>
                             ) : (

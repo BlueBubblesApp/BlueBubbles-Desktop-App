@@ -38,7 +38,7 @@ export const getDateText = (date: Date, useToday = false) => {
     return date.toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric" }).slice(0, -2);
 };
 
-export const getiMessageNumberFormat = (address: string) => {
+export const getiMessageNumberFormat = (address: string, countryCode: string) => {
     if (!address) return address;
 
     // If it's an email, just return the email
@@ -46,8 +46,8 @@ export const getiMessageNumberFormat = (address: string) => {
 
     try {
         const phoneUtil = PhoneNumberUtil.getInstance();
-        const number = phoneUtil.parseAndKeepRawInput(address, "US");
-        const formatted = phoneUtil.formatOutOfCountryCallingNumber(number, "US");
+        const number = phoneUtil.parseAndKeepRawInput(address, countryCode);
+        const formatted = phoneUtil.formatOutOfCountryCallingNumber(number, countryCode);
         return `+${formatted}`;
     } catch {
         return "ERR: >MAXLEN";
@@ -71,7 +71,7 @@ export const getFirstName = (participant: Handle) => {
 export const getSender = (participant: Handle, fullName = true) => {
     if (!participant) return "";
     if (!participant.firstName && !participant.lastName) {
-        return getiMessageNumberFormat(participant.address);
+        return getiMessageNumberFormat(participant.address, participant.country);
     }
 
     if (fullName) return getFullName(participant);
@@ -85,7 +85,7 @@ export const generateChatTitle = (chat: Chat) => {
     const members = [];
     for (const i of chat.participants) {
         if (!i.firstName && !i.lastName) {
-            members.push(getiMessageNumberFormat(i.address));
+            members.push(getiMessageNumberFormat(i.address, i.country));
         } else if (chat.participants.length === 1) {
             members.push(getFullName(i));
         } else {

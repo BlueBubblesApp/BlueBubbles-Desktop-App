@@ -161,4 +161,13 @@ export class FileSystem {
             console.error(err);
         }
     }
+
+    static async deleteUserData(): Promise<void> {
+        try {
+            fs.rmdirSync(path.join(app.getPath("userData"), subdir), { recursive: true });
+            console.log(`${path.join(app.getPath("userData"), subdir)} is deleted!`);
+        } catch (err) {
+            console.log(err);
+        }
+    }
 }

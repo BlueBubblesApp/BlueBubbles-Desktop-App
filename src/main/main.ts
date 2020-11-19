@@ -6,7 +6,6 @@ import * as url from "url";
 
 import { Server } from "@server/index";
 import { FileSystem } from "@server/fileSystem";
-import linuxTrayIcon from "@renderer/assets/icon128.png";
 import windowsTrayIcon from "@renderer/assets/icon.ico";
 
 require("dotenv").config();
@@ -41,7 +40,7 @@ if (!gotTheLock) {
                 wasAutoStarted = true;
 
                 if (process.platform === "linux") {
-                    tray = new Tray(path.join(FileSystem.resources, linuxTrayIcon));
+                    tray = new Tray(path.join(FileSystem.resources, "resources", "icons", "128x128.png"));
                 } else {
                     tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
                 }
@@ -98,7 +97,7 @@ if (!gotTheLock) {
                 wasAutoStarted = true;
 
                 if (process.platform === "linux") {
-                    tray = new Tray(path.join(FileSystem.resources, linuxTrayIcon));
+                    tray = new Tray(path.join(FileSystem.resources, "resources", "icons", "128x128.png"));
                 } else {
                     tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
                 }
@@ -231,7 +230,7 @@ ipcMain.handle("change-window-titlebar", async (_, args) => {
 ipcMain.handle("close-event", async () => {
     if (BlueBubbles.configRepo.get("closeToTray")) {
         if (process.platform === "linux") {
-            tray = new Tray(path.join(FileSystem.resources, linuxTrayIcon));
+            tray = new Tray(path.join(FileSystem.resources, "resources", "icons", "128x128.png"));
         } else {
             tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
         }

@@ -50,8 +50,11 @@ import "leaflet/dist/leaflet.css";
 import NewReaction from "./NewReaction/NewReaction";
 import InChatReaction from "./InChatReaction/InChatReaction";
 import InChatAudio from "./InChatAudio/InChatAudio";
-import * as FireworksCanvas from "fireworks-canvas";
+import FireworksCanvas from "fireworks-canvas";
+import data from "emoji-mart/data/apple.json";
+import { getEmojiDataFromNative, Emoji } from "emoji-mart";
 
+const reactStringReplace = require("react-string-replace");
 const validUrl = require("valid-url");
 
 // If we don't do this, the marker won't show
@@ -78,6 +81,7 @@ type Props = {
     messages: Message[];
     gradientMessages: boolean;
     colorfulContacts: boolean;
+    useNativeEmojis: boolean;
 };
 
 type State = {
@@ -865,6 +869,59 @@ class MessageBubble extends React.Component<Props, State> {
         await ipcRenderer.invoke("copy-image-to-clipboard", this.state.currentContextMenuElement.id);
     }
 
+    renderBigEmojis = text => {
+        if (this.props.useNativeEmojis) {
+            return <p style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>{text}</p>;
+        }
+
+        const parser = EmojiRegex();
+        const matches = text.match(parser);
+
+        const appleEmojis = [];
+
+        for (const x of matches) {
+            console.log(typeof x);
+            const emojiData = getEmojiDataFromNative(x, "apple", data);
+            appleEmojis.push(<Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={48} />);
+        }
+
+        return appleEmojis;
+    };
+
+    renderText = text => {
+        if (this.props.useNativeEmojis) {
+            return <p style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>{text}</p>;
+        }
+
+        const parser = EmojiRegex();
+        const matches = text.match(parser);
+
+        console.log(text);
+        console.log(matches);
+        let final = [];
+
+        // final.push("test")
+        if (matches?.length >= 1) {
+            for (let i = 0; i < matches.length; i += 1) {
+                final = reactStringReplace(i === 0 ? text : final, matches[i], () => {
+                    const emojiData = getEmojiDataFromNative(matches[i], "apple", data);
+
+                    return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={22} />;
+                });
+            }
+        } else {
+            final.push(text);
+        }
+
+        return (
+            <p style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
+                {final.map(item => {
+                    return item;
+                })}
+            </p>
+        );
+    };
+
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
         const { attachments, linkPrev } = this.state;
@@ -892,7 +949,7 @@ class MessageBubble extends React.Component<Props, State> {
         // Figure out the "real string" and then figure out if we need to make it big emojis
         const text = sanitizeStr(message.text);
 
-        if (text.length <= 2 * 3 && !/[a-z?_."'/,$0-9\\]/.test(text.toLowerCase()) && allEmojis(text)) {
+        if (text.length <= 8 && !/[a-z?_."'/,$0-9\\]/.test(text.toLowerCase()) && allEmojis(text)) {
             messageClass = "bigEmojis";
         }
 
@@ -1378,21 +1435,17 @@ class MessageBubble extends React.Component<Props, State> {
                                                         {message.subject ? (
                                                             <p className="messageSubject">{message.subject}</p>
                                                         ) : null}
-                                                        <p
-                                                            style={{
-                                                                fontWeight: process.platform === "linux" ? 400 : 300
-                                                            }}
-                                                        >
-                                                            {text}
-                                                        </p>
+                                                        {messageClass.includes("bigEmoji") && text ? (
+                                                            this.renderBigEmojis(text)
+                                                        ) : (
+                                                            <>{text ? this.renderText(text) : null}</>
+                                                        )}
                                                     </div>
                                                 </ClickNHold>
                                             </div>
                                             {expressiveSendStyle && !expressiveSendStyle.includes("invisibleink") ? (
                                                 <>
-                                                    {expressiveSendStyle === "CKConfettiEffect" ? (
-                                                        <Confetti height="100px" width="100px" />
-                                                    ) : null}
+                                                    {expressiveSendStyle === "CKConfettiEffect" ? <Confetti /> : null}
                                                     <div
                                                         className="replayMessageEffect"
                                                         onClick={e => handleReplayAnimation(e)}
@@ -1666,11 +1719,11 @@ class MessageBubble extends React.Component<Props, State> {
                                             </>
                                         ) : null}
                                         {message.subject ? <p className="messageSubject">{message.subject}</p> : null}
-                                        {text ? (
-                                            <p style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
-                                                {text}
-                                            </p>
-                                        ) : null}
+                                        {messageClass.includes("bigEmoji") && text ? (
+                                            this.renderBigEmojis(text)
+                                        ) : (
+                                            <>{text ? this.renderText(text) : null}</>
+                                        )}
                                     </div>
                                 </ClickNHold>
                                 {stickers && !message.isFromMe

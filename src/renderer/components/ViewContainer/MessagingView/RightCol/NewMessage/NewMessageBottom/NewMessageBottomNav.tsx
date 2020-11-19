@@ -13,8 +13,11 @@ import CloseIcon from "@renderer/components/TitleBar/close.png";
 import { FileSystem } from "@server/fileSystem";
 import { Attachment } from "@server/databases/chat/entity";
 import { generateUuid } from "@renderer/helpers/utils";
+import "emoji-mart/css/emoji-mart.css";
+import { getEmojiDataFromNative, Emoji, Picker } from "emoji-mart";
+import emojiJSONData from "emoji-mart/data/apple.json";
+import EmojiRegex from "emoji-regex";
 import AudioAnalyser from "./AudioVisualizer/AudioVisualizer";
-import SendIcon from "../../../../../../assets/icons/send-icon.png";
 
 const name = require("emoji-name-map");
 const { dialog } = require("electron").remote;
@@ -41,6 +44,8 @@ interface NewMessageBottomNavState {
     emojiSearchString: string;
     emojiNamesMap: any;
     activeEmojiHoverNumber: number;
+    showEmojiPicker: boolean;
+    config: any;
 }
 
 declare const MediaRecorder: any;
@@ -76,7 +81,9 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
             lookingForEmoji: false,
             emojiSearchString: "",
             emojiNamesMap: null,
-            activeEmojiHoverNumber: 0
+            activeEmojiHoverNumber: 0,
+            showEmojiPicker: false,
+            config: null
         };
 
         this.tick = this.tick.bind(this);
@@ -86,7 +93,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
         this.setState({ emojiNamesMap: name.emoji });
 
         const config = await ipcRenderer.invoke("get-config");
-        this.setState({ capitalizeFirstLetter: config.capitalizeFirstLetter });
+        this.setState({ config, capitalizeFirstLetter: config.capitalizeFirstLetter });
 
         const input = document.getElementById("messageFieldInput-NewMessage") as HTMLInputElement;
 
@@ -371,6 +378,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
         if (this.state.enteredMessage.length === 0 && this.state.attachmentPaths.length === 0) return;
 
         if (this.state.attachmentPaths.length > 0 || this.state.enteredMessage.length > 0) {
+            this.setState({ showEmojiPicker: false });
             const payload = { message: this.state.enteredMessage.trim(), attachmentPaths: this.state.attachmentPaths };
             ipcRenderer.invoke("send-to-ui", {
                 event: "send-message-to-new-chat",
@@ -436,9 +444,8 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
         this.setState({ attachmentPaths: x });
     }
 
-    async openEmojiPicker() {
-        await document.getElementById("messageFieldInput-NewMessage").focus();
-        ipcRenderer.invoke("open-emoji-picker");
+    toggleEmojiPicker() {
+        this.setState({ showEmojiPicker: !this.state.showEmojiPicker });
     }
 
     async startRecording() {
@@ -636,6 +643,15 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
         document.getElementById("messageFieldInput-NewMessage").focus();
     };
 
+    renderEmoji = text => {
+        const emojiData = getEmojiDataFromNative(text, "apple", emojiJSONData);
+
+        if (emojiData) {
+            return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={28} />;
+        }
+        return text;
+    };
+
     render() {
         let audio = document.getElementById("myAudioDiv") as HTMLAudioElement;
 
@@ -671,9 +687,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                                                 data-emoji={emoji}
                                                 onClick={e => this.handleEmojiMatch(e)}
                                             >
-                                                <div>
-                                                    <p>{emoji[1]}</p>
-                                                </div>
+                                                <div>{this.renderEmoji(emoji[1])}</div>
                                                 <p>{emoji[0]}</p>
                                             </div>
                                         );
@@ -685,6 +699,22 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                             </div>
                         )}
                     </div>
+                ) : null}
+                {this.state.showEmojiPicker ? (
+                    <Picker
+                        native={this.state.config.useNativeEmojis}
+                        set="apple"
+                        title="Pick your emoji…"
+                        style={{
+                            width: "calc(100vw - 320px)",
+                            height: "auto",
+                            position: "absolute",
+                            bottom: "55px",
+                            right: "15px",
+                            zIndex: "3"
+                        }}
+                        onSelect={e => this.setState({ enteredMessage: `${this.state.enteredMessage}${e.native}` })}
+                    />
                 ) : null}
                 <div className="RightBottomNav-NewMessage">
                     {this.state.isRecording || this.state.audioHasData ? (
@@ -915,7 +945,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                                 />
                                 <svg
                                     id="emojiPickerButton"
-                                    onClick={this.openEmojiPicker}
+                                    onClick={() => this.toggleEmojiPicker()}
                                     height="21"
                                     width="21"
                                     viewBox="0 0 24 24"

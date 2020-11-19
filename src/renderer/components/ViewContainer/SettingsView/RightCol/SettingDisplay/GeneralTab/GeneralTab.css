@@ -1,8 +1,8 @@
-.GeneralTab{
+.GeneralTab {
     height: 100%;
 }
 
-#GeneralTitle{
+#GeneralTitle {
     height: 35px;
     display: flex;
     justify-content: center;
@@ -16,4 +16,82 @@
     font-family: "SF UI Display Bold";
     font-size: 24px;
     margin: 0;
+}
+
+#hardResetButton {
+    padding: 5px;
+    border-radius: 10px;
+    border: 2px solid red;
+    color: red;
+    background: none;
+    text-decoration: none;
+    font-family: "SF UI Display Bold";
+    transition: ease-in-out 0.15s;
+    outline: none;
+}
+
+#hardResetButton:hover,
+#cancelResetButton:hover,
+#confirmResetButton:hover {
+    cursor: pointer;
+    border-radius: 15px;
+}
+
+#confirmResetContainer {
+    position: absolute;
+    width: calc(76vw - 290px);
+    height: 36vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    background-color: var(--secondary-color);
+    border-radius: 10px;
+    right: 12vw;
+    top: 32vh;
+    z-index: 3;
+}
+
+#confirmResetContainer p {
+    max-width: 75%;
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+}
+
+#cancelResetButton {
+    padding: 5px;
+    border-radius: 10px;
+    border: 2px solid var(--sub-title-color);
+    color: var(--sub-title-color);
+    background: none;
+    text-decoration: none;
+    font-family: "SF UI Display Bold";
+    transition: ease-in-out 0.15s;
+    outline: none;
+}
+
+#confirmResetButton {
+    padding: 5px;
+    border-radius: 10px;
+    border: 2px solid red;
+    color: red;
+    background: none;
+    text-decoration: none;
+    font-family: "SF UI Display Bold";
+    transition: ease-in-out 0.15s;
+    outline: none;
+}
+
+@media (max-width: 700px) {
+    #confirmResetContainer {
+        width: calc(90vw - 290px);
+        right: 5vw;
+    }
+}
+
+@media (max-height: 700px) {
+    #confirmResetContainer {
+        height: 46vh;
+        top: 27vh;
+    }
 }
