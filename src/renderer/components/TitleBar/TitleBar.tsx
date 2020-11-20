@@ -64,6 +64,7 @@ class TitleBar extends React.Component<unknown, State> {
         const theme: Theme = await ipcRenderer.invoke("get-theme", config.currentTheme);
 
         // Set all theme colors as css variables
+        document.documentElement.style.setProperty("--message-font-size", config.messageFontSize);
         document.documentElement.style.setProperty("--title-bar-close", theme.titleBarCloseColor);
         document.documentElement.style.setProperty("--title-bar-minimize", theme.titleBarMinimizeColor);
         document.documentElement.style.setProperty("--title-bar-maximize", theme.titleBarMaximizeColor);
@@ -93,8 +94,10 @@ class TitleBar extends React.Component<unknown, State> {
 
         ipcRenderer.on("config-update", async (_, args) => {
             const newTheme = await ipcRenderer.invoke("get-theme", args.currentTheme);
+            const newConfig = await ipcRenderer.invoke("get-config");
 
             // Set all theme colors as css variables
+            document.documentElement.style.setProperty("--message-font-size", newConfig.messageFontSize);
             document.documentElement.style.setProperty("--title-bar-close", newTheme.titleBarCloseColor);
             document.documentElement.style.setProperty("--title-bar-minimize", newTheme.titleBarMinimizeColor);
             document.documentElement.style.setProperty("--title-bar-maximize", newTheme.titleBarMaximizeColor);

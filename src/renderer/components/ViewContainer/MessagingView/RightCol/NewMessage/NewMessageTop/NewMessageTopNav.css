@@ -5,13 +5,13 @@
     align-items: center;
     justify-content: flex-end;
     margin-left: 1em;
-    font-size: 12px;
+    /* font-size: 12px; */
 }
 
 #toDiv-NewMessage > p {
     color: var(--sub-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     margin-bottom: 14px;
 }
 
@@ -84,7 +84,7 @@
     border: none;
     flex-grow: 1;
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     color: var(--main-title-color);
     background-color: var(--secondary-color);
     transition: ease-in-out 0.1s;
@@ -176,7 +176,7 @@
 .aMatchingContactRow > p {
     color: var(--sub-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
 }
 
 .matchingFirstName {

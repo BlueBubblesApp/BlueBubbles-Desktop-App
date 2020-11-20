@@ -390,13 +390,13 @@ class BackendServer {
             withChats: true,
             withHandle: true,
             withAttachments: true,
-            withBlurhash: false
-            // where: [
-            //     {
-            //         statement: "message.service = 'iMessage'",
-            //         args: null
-            //     }
-            // ]
+            withBlurhash: false,
+            where: [
+                {
+                    statement: "message.service = 'iMessage'",
+                    args: null
+                }
+            ]
         };
         const messages: MessageResponse[] = await this.socketService.getMessages(args);
         emitData.loadingMessage = `Syncing ${messages.length} messages`;
@@ -478,13 +478,13 @@ class BackendServer {
                 limit: 25,
                 offset: 0,
                 withBlurhash: false,
-                after: 1
-                // where: [
-                //     {
-                //         statement: "message.service = 'iMessage'",
-                //         args: null
-                //     }
-                // ]
+                after: 1,
+                where: [
+                    {
+                        statement: "message.service = 'iMessage'",
+                        args: null
+                    }
+                ]
             };
 
             // Third, let's fetch the messages from the DB

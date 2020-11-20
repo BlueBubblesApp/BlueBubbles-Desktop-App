@@ -92,9 +92,6 @@ class Conversation extends React.Component<ConversationProps, State> {
 
         const parser = EmojiRegex();
         const matches = text.match(parser);
-
-        console.log(text);
-        console.log(matches);
         let final = [];
 
         // final.push("test")
@@ -103,18 +100,16 @@ class Conversation extends React.Component<ConversationProps, State> {
                 final = reactStringReplace(i === 0 ? text : final, matches[i], () => {
                     const emojiData = getEmojiDataFromNative(matches[i], "apple", data);
 
-                    return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={20} />;
+                    return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={18} />;
                 });
             }
         } else {
             final.push(text);
         }
 
-        console.log(final);
         return (
             <p className="message-snip-example" style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
                 {final.map(item => {
-                    console.log(typeof item === "string");
                     return item;
                 })}
             </p>

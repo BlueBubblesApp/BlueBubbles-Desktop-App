@@ -452,7 +452,6 @@ class MessageBubble extends React.Component<Props, State> {
                 message.text.includes("Https")
             ) {
                 const linkPrev: any = await getLinkPreview(message.text);
-                console.log(linkPrev);
                 this.setState({ linkPrev });
                 if (linkPrev.title) {
                     this.setState({ linkTitle: linkPrev.title });
@@ -465,7 +464,6 @@ class MessageBubble extends React.Component<Props, State> {
                 (validUrl.isUri(`http://${message.text}`) && this.isValidUrl(message.text))
             ) {
                 const linkPrev: any = await getLinkPreview(`http://${message.text}`);
-                console.log(linkPrev);
                 this.setState({ linkPrev });
                 if (linkPrev.title) {
                     this.setState({ linkTitle: linkPrev.title });
@@ -896,8 +894,6 @@ class MessageBubble extends React.Component<Props, State> {
         const parser = EmojiRegex();
         const matches = text.match(parser);
 
-        console.log(text);
-        console.log(matches);
         let final = [];
 
         // final.push("test")
@@ -906,7 +902,7 @@ class MessageBubble extends React.Component<Props, State> {
                 final = reactStringReplace(i === 0 ? text : final, matches[i], () => {
                     const emojiData = getEmojiDataFromNative(matches[i], "apple", data);
 
-                    return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={22} />;
+                    return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={20} />;
                 });
             }
         } else {
@@ -1180,13 +1176,19 @@ class MessageBubble extends React.Component<Props, State> {
                                                 borderRadius:
                                                     (linkPrev?.images?.length === 0 &&
                                                         linkPrev?.favicons?.length > 0) ||
-                                                    (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                    (linkPrev &&
+                                                        forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
+                                                    (linkPrev?.images?.length === 0 &&
+                                                        linkPrev?.favicons?.length === 0) ||
+                                                    !linkPrev
                                                         ? "15px"
                                                         : "0 0 15px 15px",
                                                 marginTop:
                                                     (linkPrev?.images?.length === 0 &&
                                                         linkPrev?.favicons?.length > 0) ||
-                                                    (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                    (linkPrev &&
+                                                        forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
+                                                    !linkPrev
                                                         ? "3px"
                                                         : "0px"
                                             }}
@@ -1211,7 +1213,11 @@ class MessageBubble extends React.Component<Props, State> {
                                                                 : "0px"
                                                     }}
                                                 >
-                                                    {this.state.linkTitle || "Loading ..."}
+                                                    {this.state.linkTitle ? (
+                                                        <>{this.state.linkTitle}</>
+                                                    ) : (
+                                                        <>{linkPrev ? "Loading ..." : "Unavailable"}</>
+                                                    )}
                                                 </p>
                                                 <p>{new URL(links[0]).hostname}</p>
                                             </div>

@@ -7,7 +7,7 @@
 .SettingTitle > h2 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 21px;
+    font-size: calc(var(--message-font-size) + 7px);
     /* border-bottom: 1px solid gray; */
     padding-bottom: 1px;
     margin: 0;
@@ -17,7 +17,7 @@
 .SettingTitle > h3 {
     color: var(--sub-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 18px;
+    font-size: calc(var(--message-font-size) + 4px);
     margin: 0;
     margin-left: 10px;
 }

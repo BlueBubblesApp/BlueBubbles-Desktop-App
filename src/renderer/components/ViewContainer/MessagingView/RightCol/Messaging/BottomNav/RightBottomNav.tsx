@@ -788,6 +788,7 @@ class RightBottomNav extends React.Component<Props, State> {
                         native={this.state.config.useNativeEmojis}
                         set="apple"
                         title="Pick your emoji…"
+                        emoji="point_up"
                         style={{
                             width: "calc(100vw - 320px)",
                             height: "auto",

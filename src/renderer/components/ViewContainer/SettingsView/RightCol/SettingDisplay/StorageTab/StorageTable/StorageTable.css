@@ -23,6 +23,7 @@ td {
     white-space: pre-wrap;
     word-break: break-all;
     user-select: none;
+    font-size: var(--message-font-size);
 }
 
 tr td:nth-of-type(1) {
@@ -93,7 +94,7 @@ thead > tr > th:hover {
     border: 2px solid var(--sub-title-color);
     background-color: transparent;
     font-family: "SF UI Display Bold";
-    font-size: 15px;
+    font-size: calc(var(--message-font-size) + 1px);
     margin-right: 10px;
     outline: none;
     transition: ease-in-out 0.15s;
@@ -106,7 +107,7 @@ thead > tr > th:hover {
     border: 2px solid red;
     background-color: transparent;
     font-family: "SF UI Display Bold";
-    font-size: 15px;
+    font-size: calc(var(--message-font-size) + 1px);
     outline: none;
     transition: ease-in-out 0.15s;
 }
@@ -118,7 +119,7 @@ thead > tr > th:hover {
     border: 2px solid var(--sub-title-color);
     background-color: transparent;
     font-family: "SF UI Display Bold";
-    font-size: 15px;
+    font-size: calc(var(--message-font-size) + 1px);
     margin-right: 10px;
     outline: none;
     transition: ease-in-out 0.15s;
@@ -131,7 +132,7 @@ thead > tr > th:hover {
     border: 2px solid red;
     background-color: transparent;
     font-family: "SF UI Display Bold";
-    font-size: 13px;
+    font-size: calc(var(--message-font-size) + 1px);
     outline: none;
     transition: ease-in-out 0.15s;
 }
@@ -143,7 +144,7 @@ thead > tr > th:hover {
     border: 2px solid var(--sub-title-color);
     background-color: transparent;
     font-family: "SF UI Display Bold";
-    font-size: 15px;
+    font-size: calc(var(--message-font-size) + 1px);
     margin-right: 10px;
     outline: none;
     transition: ease-in-out 0.15s;
@@ -178,6 +179,7 @@ thead > tr > th:hover {
 #deleteConfirmDiv p {
     font-family: "SF UI Display Bold";
     color: var(--main-title-color);
+    font-size: calc(var(--message-font-size) + 1px);
 }
 
 #confirmListContainer {
@@ -188,7 +190,7 @@ thead > tr > th:hover {
     width: 80%;
     max-height: 400px;
     overflow-y: scroll;
-    padding: 10px;
+    padding: calc(var(--message-font-size) + 8px);
     border-bottom: 1px solid var(--sub-title-color);
 }
 
