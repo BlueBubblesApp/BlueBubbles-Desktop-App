@@ -8,6 +8,7 @@ import { Server } from "@server/index";
 import { FileSystem } from "@server/fileSystem";
 import windowsTrayIcon from "@renderer/assets/icon.ico";
 
+require("update-electron-app")();
 require("dotenv").config();
 
 // To allow CORS

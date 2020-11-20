@@ -89,7 +89,7 @@
    },
    "repository": {
       "type": "git",
-      "url": "git+ssh://git@github.com:BlueBubblesApp/BlueBubbles-Desktop-App.git"
+      "url": "https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App"
    },
    "bugs": {
       "url": "https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App/issues"
@@ -208,6 +208,7 @@
       "sqlite3": "^4.2.0",
       "string-similarity": "^4.0.2",
       "typeorm": "^0.2.25",
+      "update-electron-app": "^2.0.1",
       "valid-url": "^1.0.9",
       "vcard": "^0.1.0",
       "vcf": "^2.0.6"

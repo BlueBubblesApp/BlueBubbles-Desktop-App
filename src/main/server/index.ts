@@ -2,7 +2,7 @@
 /* eslint-disable no-global-assign */
 /* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
-import { ipcMain, BrowserWindow, shell, app, dialog, nativeImage, DownloadItem } from "electron";
+import { ipcMain, BrowserWindow, shell, app, dialog, nativeImage, DownloadItem, autoUpdater } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as fs from "fs";
@@ -1307,6 +1307,28 @@ class BackendServer {
             app.quit();
             app.exit(0);
         });
+
+        if (process.platform !== "linux") {
+            autoUpdater.on("checking-for-update", () => {
+                console.log("CHECKING FOR UPDATES");
+                this.setSyncStatus({ message: "Checking for updates..." });
+            });
+
+            autoUpdater.on("update-available", () => {
+                console.log("UPADTE AVAILABLE");
+                this.setSyncStatus({ message: "Update Available" });
+            });
+
+            autoUpdater.on("error", err => {
+                console.log(err);
+                this.setSyncStatus({ message: "Error in update..." });
+            });
+
+            autoUpdater.on("update-downloaded", e => {
+                console.log(e);
+                this.setSyncStatus({ message: `Update Downloaded` });
+            });
+        }
     }
 
     setSyncStatus({ completed, message, error }: SyncStatus) {
