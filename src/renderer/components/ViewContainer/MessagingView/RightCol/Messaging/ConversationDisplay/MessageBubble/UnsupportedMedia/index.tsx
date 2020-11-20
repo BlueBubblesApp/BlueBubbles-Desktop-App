@@ -11,7 +11,7 @@ type Props = {
 
 export default function UnsupportedMedia({ attachment, onClick }: Props) {
     return (
-        <div className="UnsupportedMedia" onClick={() => onClick()}>
+        <div className="UnsupportedMedia" onClick={() => onClick()} draggable="false">
             {/* <p>Unsupported Media</p> */}
             <p>Unsupported Media</p>
             <img key={attachment.guid} src={ComputerCheckImage} alt="open-externally" color="white" />

@@ -235,7 +235,11 @@ class DetailsDisplay extends React.Component<Props, State> {
     };
 
     render() {
-        const participants = this.props.chat.participants.map(handle => getSender(handle));
+        const participants = {
+            initials: this.props.chat.participants.map(handle => getSender(handle)),
+            avatars: this.props.chat.participants.map(handle => handle.avatar),
+            addresses: this.props.chat.participants.map(handle => handle.address)
+        };
         const bubbleIconInitials = generateDetailsIconText(this.props.chat);
 
         const generateBubbleTitle = () => {
@@ -243,22 +247,22 @@ class DetailsDisplay extends React.Component<Props, State> {
             console.log(participants);
             let finalString = "";
 
-            if (participants.length === 1) {
-                [finalString] = participants;
+            if (participants.initials.length === 1) {
+                [finalString] = participants.initials;
                 return finalString;
             }
 
-            participants.forEach((name, i) => {
+            participants.initials.forEach((name, i) => {
                 if (!name || name === "undefined") return;
                 if (i >= 3) return;
-                if (i === participants.length - 1) {
-                    finalString += "and " + participants[i];
+                if (i === participants.initials.length - 1) {
+                    finalString += "and " + participants.initials[i];
                     return;
                 }
-                finalString += participants[i] + ", ";
+                finalString += participants.initials[i] + ", ";
             });
 
-            if (participants.length > 3) {
+            if (participants.initials.length > 3) {
                 finalString += " ...";
             }
 
@@ -269,9 +273,6 @@ class DetailsDisplay extends React.Component<Props, State> {
             <div id="messageView-DetailsDisplay">
                 <div id="participantsBubblesContainer">
                     <BubbleChatIcons participants={participants} bubbleIconInitials={bubbleIconInitials} />
-                    {/* <svg id="bubbleChatTitle">
-                        <text y="70%" x="50%" textAnchor="middle"></text>
-                    </svg> */}
                     <div id="bubbleChatTitle">
                         <p>{generateBubbleTitle()}</p>
                     </div>
@@ -280,7 +281,7 @@ class DetailsDisplay extends React.Component<Props, State> {
                     {participants ? (
                         <div id="detailContactsContainer">
                             {this.state.showAllContacts
-                                ? participants.map((name, i) => (
+                                ? participants.initials.map((name, i) => (
                                       <DetailContact
                                           key={this.props.chat.participants[i].address}
                                           name={name}
@@ -289,7 +290,7 @@ class DetailsDisplay extends React.Component<Props, State> {
                                           address={this.props.chat.participants[i].address}
                                       />
                                   ))
-                                : participants
+                                : participants.initials
                                       .slice(0, 5)
                                       .map((name, i) => (
                                           <DetailContact
@@ -300,13 +301,13 @@ class DetailsDisplay extends React.Component<Props, State> {
                                               address={this.props.chat.participants[i].address}
                                           />
                                       ))}
-                            {participants.length > 5 ? (
+                            {participants.initials.length > 5 ? (
                                 <div id="showMore" onClick={() => this.toggleShowAllContacts()}>
                                     <div id="showMoreWrap">
                                         {this.state.showAllContacts ? (
                                             <p>Hide</p>
                                         ) : (
-                                            <p>Show More ({participants.length - 5})</p>
+                                            <p>Show More ({participants.initials.length - 5})</p>
                                         )}
                                     </div>
                                 </div>

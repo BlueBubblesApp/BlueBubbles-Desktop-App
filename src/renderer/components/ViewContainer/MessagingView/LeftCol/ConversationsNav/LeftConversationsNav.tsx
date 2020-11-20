@@ -57,6 +57,10 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         ipcRenderer.on("remove-active-chat", (_, __) => {
             this.setCurrentChat(null);
         });
+
+        ipcRenderer.on("chat-last-viewed-update", (_, data) => {
+            this.removeNotification(data.chat.guid, data.lastViewed);
+        });
     }
 
     setCurrentChat(chat: Chat) {
@@ -82,6 +86,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         const now = new Date();
         this.setState({ activeChat: chat });
         ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
+        ipcRenderer.invoke("send-to-ui", { event: "toggle-giphy-selector", contents: false });
         ipcRenderer.invoke("set-chat-last-viewed", { chat, lastViewed: now });
         this.removeNotification(chat.guid, now);
 

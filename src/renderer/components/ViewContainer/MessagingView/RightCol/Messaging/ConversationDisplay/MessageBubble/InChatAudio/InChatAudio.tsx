@@ -10,6 +10,7 @@ import "./InChatAudio.css";
 
 interface Props {
     attachment: AttachmentDownload;
+    gradientMessages: boolean;
 }
 
 interface State {
@@ -110,9 +111,9 @@ class InChatAudio extends React.Component<Props, State> {
                 </audio>
                 <div
                     key={attachment.guid}
-                    className={
-                        attachment.isOutgoing ? "OutgoingAudioAttachmentControls" : "InComingAudioAttachmentControls"
-                    }
+                    className={`${
+                        attachment.isOutgoing ? "OutgoingAudioAttachmentControls" : "IncomingAudioAttachmentControls"
+                    } ${this.props.gradientMessages ? "gradientMessages" : ""}`}
                 >
                     <div className="toggleAudioPlayPause" onClick={() => this.toggleAudio()}>
                         {this.state.isAudioPlaying ? (

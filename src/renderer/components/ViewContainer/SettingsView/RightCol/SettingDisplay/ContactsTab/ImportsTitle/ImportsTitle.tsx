@@ -65,52 +65,27 @@ class ImportsTitle extends React.Component<Props, State> {
         }
     }
 
-    async handleChangeImportLocation(e) {
-        const fromServerDBCheckbox: HTMLInputElement = document.getElementById(
-            "fromServerDBCheckbox"
-        ) as HTMLInputElement;
-        const fromServerVCFCheckbox: HTMLInputElement = document.getElementById(
-            "fromServerVCFCheckbox"
-        ) as HTMLInputElement;
-        const fromAndroidCheckbox: HTMLInputElement = document.getElementById(
-            "fromAndroidCheckbox"
-        ) as HTMLInputElement;
-        const fromLocalVCFCheckbox: HTMLInputElement = document.getElementById(
-            "fromLocalVCFCheckbox"
-        ) as HTMLInputElement;
-
-        if (e.target.id === "fromServerDBCheckbox") {
+    async handleChangeImportLocation(checkbox) {
+        if (checkbox === "fromServerDB") {
             const newConfig = { importContactsFrom: "serverDB" };
             this.setState({ importContactsFrom: "serverDB" });
             await ipcRenderer.invoke("set-config", newConfig);
             await ipcRenderer.invoke("import-contacts", "serverDB");
-            fromServerVCFCheckbox.checked = false;
-            fromAndroidCheckbox.checked = false;
-            fromLocalVCFCheckbox.checked = false;
-        } else if (e.target.id === "fromServerVCFCheckbox") {
+        } else if (checkbox === "fromServerVCF") {
             const newConfig = { importContactsFrom: "serverVCF" };
             this.setState({ importContactsFrom: "serverVCF" });
             await ipcRenderer.invoke("set-config", newConfig);
             await ipcRenderer.invoke("import-contacts", "serverVCF");
-            fromServerDBCheckbox.checked = false;
-            fromAndroidCheckbox.checked = false;
-            fromLocalVCFCheckbox.checked = false;
-        } else if (e.target.id === "fromAndroidCheckbox") {
+        } else if (checkbox === "fromAndroid") {
             const newConfig = { importContactsFrom: "androidClient" };
             this.setState({ importContactsFrom: "androidClient" });
             await ipcRenderer.invoke("set-config", newConfig);
             await ipcRenderer.invoke("import-contacts", "androidClient");
-            fromServerDBCheckbox.checked = false;
-            fromServerVCFCheckbox.checked = false;
-            fromLocalVCFCheckbox.checked = false;
-        } else if (e.target.id === "fromLocalVCFCheckbox") {
+        } else if (checkbox === "fromLocalVCF") {
             const newConfig = { importContactsFrom: "localVCF" };
             this.setState({ importContactsFrom: "localVCF" });
             await ipcRenderer.invoke("set-config", newConfig);
             await ipcRenderer.invoke("import-contacts", "localVCF");
-            fromServerDBCheckbox.checked = false;
-            fromServerVCFCheckbox.checked = false;
-            fromAndroidCheckbox.checked = false;
         }
     }
 
@@ -120,44 +95,48 @@ class ImportsTitle extends React.Component<Props, State> {
                 <h2>{this.props.title}</h2>
                 <div className="importsSubTitle">
                     <h3>Server DB</h3>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={e => this.handleChangeImportLocation("fromServerDB")}>
                         <input
                             id="fromServerDBCheckbox"
                             type="checkbox"
-                            onClick={e => this.handleChangeImportLocation(e)}
+                            checked={this.state.importContactsFrom === "serverDB"}
+                            onChange={e => this.handleChangeImportLocation("fromServerDB")}
                         />
                         <i />
                     </label>
                 </div>
                 <div className="importsSubTitle">
                     <h3>Server VCF</h3>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={e => this.handleChangeImportLocation("fromServerVCF")}>
                         <input
                             id="fromServerVCFCheckbox"
                             type="checkbox"
-                            onClick={e => this.handleChangeImportLocation(e)}
+                            checked={this.state.importContactsFrom === "serverVCF"}
+                            onChange={e => this.handleChangeImportLocation("fromServerVCF")}
                         />
                         <i />
                     </label>
                 </div>
                 <div className="importsSubTitle">
                     <h3>Android Client (Not yet working)</h3>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={e => this.handleChangeImportLocation("fromAndroid")}>
                         <input
                             id="fromAndroidCheckbox"
                             type="checkbox"
-                            onClick={e => this.handleChangeImportLocation(e)}
+                            checked={this.state.importContactsFrom === "androidClient"}
+                            onChange={e => this.handleChangeImportLocation("fromAndroid")}
                         />
                         <i />
                     </label>
                 </div>
                 <div className="importsSubTitle">
                     <h3>Local VCF (Not yet working)</h3>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={e => this.handleChangeImportLocation("fromLocalVCF")}>
                         <input
                             id="fromLocalVCFCheckbox"
                             type="checkbox"
-                            onClick={e => this.handleChangeImportLocation(e)}
+                            checked={this.state.importContactsFrom === "localVCF"}
+                            onChange={e => this.handleChangeImportLocation("fromLocalVCF")}
                         />
                         <i />
                     </label>

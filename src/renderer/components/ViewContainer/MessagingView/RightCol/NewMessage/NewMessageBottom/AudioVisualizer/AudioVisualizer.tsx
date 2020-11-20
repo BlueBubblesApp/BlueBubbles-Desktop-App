@@ -43,7 +43,7 @@ class AudioVisualiser extends React.Component<Props, State> {
         let x = 0;
         const sliceWidth = (width * 1.0) / audioData.length;
 
-        context.lineWidth = 4;
+        context.lineWidth = 6;
         if (this.state.theme) {
             context.strokeStyle = this.state.theme.mainTitleColor;
         } else {

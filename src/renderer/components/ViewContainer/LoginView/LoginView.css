@@ -6,6 +6,7 @@
     height: 100%;
     background-color: var(--sidebar-color);
     transition: ease-in-out 0.1s;
+    border-radius: 0 0 5px 5px;
 }
 
 .LoginViewBlurred {

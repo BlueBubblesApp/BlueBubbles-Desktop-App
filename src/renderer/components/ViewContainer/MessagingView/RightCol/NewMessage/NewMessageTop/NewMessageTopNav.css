@@ -146,6 +146,7 @@
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
@@ -163,10 +164,6 @@
     border-radius: 5px;
 }
 
-.aMatchingContactRow:last-child {
-    margin: 0;
-}
-
 .aMatchingContactRow:hover {
     cursor: pointer;
     background-color: var(--right-accent-title-color);
@@ -180,14 +177,14 @@
     color: var(--sub-title-color);
     font-family: "SF UI Display Bold";
     font-size: 14px;
-    margin: 5px 0 5px 0;
 }
 
-.aMatchingContactRow > p:nth-child(1) {
-    margin-right: 2px;
+.matchingFirstName {
+    margin: 0 2px 0 5px;
 }
 
-.aMatchingContactRow > p:nth-child(3) {
+.matchingAddress {
+    margin: 0;
     margin-left: auto;
 }
 

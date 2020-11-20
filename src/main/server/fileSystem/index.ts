@@ -85,7 +85,7 @@ export class FileSystem {
 
     static async deleteTempFiles() {
         let tempPath;
-        if (process.platform === "darwin") {
+        if (process.platform === "linux") {
             tempPath = `${FileSystem.attachmentsDir}/temp`;
         } else {
             tempPath = `${FileSystem.attachmentsDir}\\temp`;

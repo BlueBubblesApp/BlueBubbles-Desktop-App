@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable import/order */
 /* eslint-disable react/no-unused-state */
 /* eslint-disable react/sort-comp */
@@ -70,6 +72,8 @@ type Props = {
     newerMessage: Message;
     showStatus: boolean;
     messages: Message[];
+    gradientMessages: boolean;
+    colorfulContacts: boolean;
 };
 
 type State = {
@@ -80,6 +84,7 @@ type State = {
     linkTitle: string;
     playMessageAnimation: boolean;
     stickers: AttachmentDownload[];
+    linkPrev: any;
 };
 
 let subdir = "";
@@ -90,7 +95,9 @@ const attachmentsDir = path.join(baseDir, "Attachments");
 
 const isSameSender = (message1: Message, message2: Message) => {
     if (!message1 || !message2) return false;
-    if (message1.isFromMe === message2.isFromMe) return true;
+    if (message1.isFromMe === true && message2.isFromMe === false) return false;
+    if (message1.isFromMe === false && message2.isFromMe === true) return false;
+    if (message1.handle?.address === message2.handle?.address) return true;
     if (message1.handleId === message2.handleId) return true;
     return false;
 };
@@ -166,6 +173,8 @@ let xPos;
 let yPos;
 
 class MessageBubble extends React.Component<Props, State> {
+    _isMounted = false;
+
     constructor(props) {
         super(props);
 
@@ -176,14 +185,14 @@ class MessageBubble extends React.Component<Props, State> {
             currentContextMenuElement: null,
             linkTitle: null,
             playMessageAnimation: false,
-            stickers: []
+            stickers: [],
+            linkPrev: null
         };
     }
 
     handleImageRightClick(e) {
         xPos = `${e.pageX}px`;
         yPos = `${e.pageY - 25}px`;
-        console.log(xPos + yPos);
         this.setState({ showContextMenu: true });
         this.setState({ currentContextMenuElement: e.target });
     }
@@ -206,36 +215,40 @@ class MessageBubble extends React.Component<Props, State> {
 
                     const x = this.wait().then();
 
-                    const messageCords = messageDiv.getBoundingClientRect();
-                    return (
-                        <>
-                            {this.props.message.isFromMe ? (
-                                <img
-                                    key={attachment.guid}
-                                    id={attachmentPath}
-                                    className="Sticker"
-                                    src={`data:${mime};base64,${attachment.data}`}
-                                    alt={attachment.transferName}
-                                    onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
-                                    onContextMenu={e => this.handleImageRightClick(e)}
-                                    onError={setFallbackImage}
-                                    style={{ left: `${messageCords.left - 295 + messageCords.width / 2}px` }}
-                                />
-                            ) : (
-                                <img
-                                    key={attachment.guid}
-                                    id={attachmentPath}
-                                    className="Sticker"
-                                    src={`data:${mime};base64,${attachment.data}`}
-                                    alt={attachment.transferName}
-                                    onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
-                                    onContextMenu={e => this.handleImageRightClick(e)}
-                                    onError={setFallbackImage}
-                                    // style={{left: `${messageCords.left - 295 + messageCords.width/2}px`}}
-                                />
-                            )}
-                        </>
-                    );
+                    if (messageDiv) {
+                        const messageCords = messageDiv.getBoundingClientRect();
+                        return (
+                            <>
+                                {this.props.message.isFromMe ? (
+                                    <img
+                                        key={attachment.guid}
+                                        id={attachmentPath}
+                                        className="Sticker"
+                                        src={`data:${mime};base64,${attachment.data}`}
+                                        alt={attachment.transferName}
+                                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                                        onContextMenu={e => this.handleImageRightClick(e)}
+                                        onError={setFallbackImage}
+                                        style={{ left: `${messageCords.left - 295 + messageCords.width / 2}px` }}
+                                        draggable="false"
+                                    />
+                                ) : (
+                                    <img
+                                        key={attachment.guid}
+                                        id={attachmentPath}
+                                        className="Sticker"
+                                        src={`data:${mime};base64,${attachment.data}`}
+                                        alt={attachment.transferName}
+                                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                                        onContextMenu={e => this.handleImageRightClick(e)}
+                                        onError={setFallbackImage}
+                                        draggable="false"
+                                        // style={{left: `${messageCords.left - 295 + messageCords.width/2}px`}}
+                                    />
+                                )}
+                            </>
+                        );
+                    }
                 }
 
                 return (
@@ -248,6 +261,7 @@ class MessageBubble extends React.Component<Props, State> {
                         onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
                         onContextMenu={e => this.handleImageRightClick(e)}
                         onError={setFallbackImage}
+                        draggable="false"
                     />
                 );
             }
@@ -264,6 +278,12 @@ class MessageBubble extends React.Component<Props, State> {
                         muted
                         loop
                         controls
+                        draggable="false"
+                        onClick={e =>
+                            (e.target as HTMLVideoElement).paused
+                                ? (e.target as HTMLVideoElement).play()
+                                : (e.target as HTMLVideoElement).pause()
+                        }
                     >
                         <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
                     </video>
@@ -271,7 +291,7 @@ class MessageBubble extends React.Component<Props, State> {
             }
 
             if (attachment.mimeType.startsWith("audio") && attachment.data) {
-                return <InChatAudio attachment={attachment} />;
+                return <InChatAudio gradientMessages={this.props.gradientMessages} attachment={attachment} />;
             }
 
             if (attachment.mimeType === "text/x-vlocation") {
@@ -282,6 +302,79 @@ class MessageBubble extends React.Component<Props, State> {
                         <TileLayer url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}" />
                         <Marker position={position} />
                     </Map>
+                );
+            }
+
+            if (attachment.mimeType.includes("vcard")) {
+                const vCard = require("vcard");
+                // eslint-disable-next-line new-cap
+                const card = new vCard();
+
+                let vcfData;
+                card.readFile(attachmentPath, function(err, json) {
+                    vcfData = json;
+                });
+
+                const generateVCFIconText = json => {
+                    if (!json) {
+                        return "?";
+                    }
+                    if (json.FN) {
+                        if (json.FN.includes(" ")) {
+                            return json.FN.substr(0, 1) + json.FN.substr(json.FN.indexOf(" ") + 1, 1);
+                        }
+                        return json.FN.substr(0, 1);
+                    }
+                    return "?";
+                };
+
+                return (
+                    <div
+                        className="inChatContactCard"
+                        style={{
+                            backgroundColor: this.props.message.isFromMe
+                                ? "var(--outgoing-message-color)"
+                                : "var(--incoming-message-color)"
+                        }}
+                        onClick={() => openAttachment(attachmentPath)}
+                        draggable="false"
+                    >
+                        {vcfData && vcfData.FN ? <p>{vcfData.FN}</p> : <p>Contact</p>}
+                        <div>
+                            {generateVCFIconText(vcfData) === "?" ? (
+                                <svg height="35px" width="35px" viewBox="0 0 1000 1000">
+                                    <defs>
+                                        <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                            <stop className="stop1" offset="0%" stopColor="#686868" />
+                                            <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
+                                    <mask id="rmvProfile">
+                                        <circle cx="50%" cy="50%" r="435" fill="white" />
+                                    </mask>
+                                    <ellipse fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                                    <circle mask="url(#rmvProfile)" fill="white" cx="50%" cy="106%" r="400" />
+                                </svg>
+                            ) : (
+                                <svg height="35px" width="35px">
+                                    <defs>
+                                        <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                            <stop className="stop1" offset="0%" stopColor="#686868" />
+                                            <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle fill="url(#Gradient1)" cx="50%" cy="50%" r="50%" />
+                                    <text x="50%" y="67%" textAnchor="middle" fill="white" stroke="white">
+                                        {generateVCFIconText(vcfData)}
+                                    </text>
+                                </svg>
+                            )}
+                            <svg viewBox="0 0 574 1024">
+                                <path d="M10 9Q0 19 0 32t10 23l482 457L10 969Q0 979 0 992t10 23q10 9 24 9t24-9l506-480q10-10 10-23t-10-23L58 9Q48 0 34 0T10 9z" />
+                            </svg>
+                        </div>
+                    </div>
                 );
             }
 
@@ -297,149 +390,171 @@ class MessageBubble extends React.Component<Props, State> {
         return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
     }
 
+    isValidUrl = string => {
+        const regexp = /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
+        if (regexp.test(string)) {
+            return true;
+        }
+        return false;
+    };
+
     async componentDidMount() {
-        document.addEventListener("click", e => {
-            e.preventDefault();
-            this.setState({ showContextMenu: false });
-        });
-        const { message } = this.props;
+        this._isMounted = true;
 
-        if (message.text.includes("http") || message.text.includes("Https")) {
-            const linkPrev: any = await getLinkPreview(message.text);
-            if (linkPrev.title) {
-                this.setState({ linkTitle: linkPrev.title });
-            } else {
-                this.setState({ linkTitle: linkPrev.description });
+        if (this._isMounted) {
+            document.addEventListener("click", e => {
+                e.preventDefault();
+                this.setState({ showContextMenu: false });
+            });
+
+            const { message } = this.props;
+
+            if (this.isValidUrl(message.text) || message.text.includes("http") || message.text.includes("Https")) {
+                const linkPrev: any = await getLinkPreview(message.text);
+                console.log(linkPrev);
+                this.setState({ linkPrev });
+                if (linkPrev.title) {
+                    this.setState({ linkTitle: linkPrev.title });
+                } else {
+                    this.setState({ linkTitle: linkPrev.description });
+                }
             }
-        }
 
-        // Get the attachments
-        const attachments: AttachmentDownload[] = [];
-        let idx = 0;
-        for (const attachment of message.attachments ?? []) {
-            // If the attachment's mimeType if null and the next attachment's mimeType is null, skip
-            // This means the current attachment is just a logo
-            if (
-                idx + 1 < message.attachments.length &&
-                !attachment.mimeType &&
-                !message.attachments[idx + 1].mimeType
-            ) {
+            // Get the attachments
+            const attachments: AttachmentDownload[] = [];
+            let idx = 0;
+            for (const attachment of message.attachments ?? []) {
+                // If the attachment's mimeType if null and the next attachment's mimeType is null, skip
+                // This means the current attachment is just a logo
+                if (
+                    idx + 1 < message.attachments.length &&
+                    !attachment.mimeType &&
+                    !message.attachments[idx + 1].mimeType
+                ) {
+                    idx += 1;
+                    continue;
+                }
+
+                // Get the attachment path
+                const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+
+                // Check if the item exists
+                const attachmentExists = fs.existsSync(attachmentPath);
+
+                // Check if the attachment exists
+                const item: Partial<AttachmentDownload> = attachment;
+
+                // Add the attachment to the list
+                item.progress = attachmentExists ? 100 : 0;
+
+                // If the progress is 100%, load the data
+                if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
+
+                // Add the attachment to the UI
+                attachments.push(item as AttachmentDownload);
                 idx += 1;
-                continue;
             }
 
-            // Get the attachment path
-            const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+            // Add the attachments to the state
+            await new Promise((resolve, _) => this.setState({ attachments }, resolve));
 
-            // Check if the item exists
-            const attachmentExists = fs.existsSync(attachmentPath);
-
-            // Check if the attachment exists
-            const item: Partial<AttachmentDownload> = attachment;
-
-            // Add the attachment to the list
-            item.progress = attachmentExists ? 100 : 0;
-
-            // If the progress is 100%, load the data
-            if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
-
-            // Add the attachment to the UI
-            attachments.push(item as AttachmentDownload);
-            idx += 1;
-        }
-
-        // Add the attachments to the state
-        await new Promise((resolve, _) => this.setState({ attachments }, resolve));
-
-        // Second, determine if we need to fetch the attachments based on it's progress
-        // We do this later because we want to make sure all the attachments are in the state first
-        const attachmentsCopy = [...this.state.attachments];
-        for (let i = 0; i < attachmentsCopy.length; i += 1) {
-            if (attachmentsCopy[i].progress === 0) {
-                // Register listener for each attachment that we need to download
-                ipcRenderer.on(`attachment-${attachmentsCopy[i].guid}-progress`, (event, args) =>
-                    this.onAttachmentUpdate(event, args)
-                );
-                ipcRenderer.invoke("fetch-attachment", attachmentsCopy[i]);
+            // Second, determine if we need to fetch the attachments based on it's progress
+            // We do this later because we want to make sure all the attachments are in the state first
+            const attachmentsCopy = [...this.state.attachments];
+            for (let i = 0; i < attachmentsCopy.length; i += 1) {
+                if (attachmentsCopy[i].progress === 0) {
+                    // Register listener for each attachment that we need to download
+                    ipcRenderer.on(`attachment-${attachmentsCopy[i].guid}-progress`, (event, args) =>
+                        this.onAttachmentUpdate(event, args)
+                    );
+                    ipcRenderer.invoke("fetch-attachment", attachmentsCopy[i]);
+                }
             }
-        }
 
-        this.setState({ attachments: attachmentsCopy });
+            this.setState({ attachments: attachmentsCopy });
 
-        // If we have stickers
-        const stickers: AttachmentDownload[] = [];
-        if (message.reactions) {
-            for (const reaction of message.reactions) {
-                if (reaction.associatedMessageType === "sticker") {
-                    for (const attachment of reaction.attachments) {
-                        // Get the attachment path
-                        const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+            // If we have stickers
+            const stickers: AttachmentDownload[] = [];
+            if (message.reactions) {
+                for (const reaction of message.reactions) {
+                    if (reaction.associatedMessageType === "sticker") {
+                        for (const attachment of reaction.attachments) {
+                            // Get the attachment path
+                            const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
 
-                        // Check if the item exists
-                        const attachmentExists = fs.existsSync(attachmentPath);
+                            // Check if the item exists
+                            const attachmentExists = fs.existsSync(attachmentPath);
 
-                        // Check if the attachment exists
-                        const item: Partial<AttachmentDownload> = attachment;
+                            // Check if the attachment exists
+                            const item: Partial<AttachmentDownload> = attachment;
 
-                        // Add the attachment to the list
-                        item.progress = attachmentExists ? 100 : 0;
+                            // Add the attachment to the list
+                            item.progress = attachmentExists ? 100 : 0;
 
-                        // If the progress is 100%, load the data
-                        if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
+                            // If the progress is 100%, load the data
+                            if (item.progress === 100) item.data = loadAttachmentData(item as AttachmentDownload);
 
-                        // Add the attachment to the UI
-                        stickers.push(item as AttachmentDownload);
+                            // Add the attachment to the UI
+                            stickers.push(item as AttachmentDownload);
+                        }
                     }
                 }
             }
-        }
 
-        await new Promise((resolve, _) => this.setState({ stickers }, resolve));
+            await new Promise((resolve, _) => this.setState({ stickers }, resolve));
 
-        if (this.state.stickers) {
-            const stickersCopy = this.state.stickers;
-            for (let i = 0; i < stickersCopy.length; i += 1) {
-                if (stickersCopy[i].progress === 0) {
-                    // Register listener for each attachment that we need to download
-                    ipcRenderer.on(`attachment-${stickersCopy[i].guid}-progress`, (event, args) =>
-                        this.onAttachmentUpdate(event, args)
-                    );
-                    ipcRenderer.invoke("fetch-attachment", stickersCopy[i]);
+            if (this.state.stickers) {
+                const stickersCopy = this.state.stickers;
+                for (let i = 0; i < stickersCopy.length; i += 1) {
+                    if (stickersCopy[i].progress === 0) {
+                        // Register listener for each attachment that we need to download
+                        ipcRenderer.on(`attachment-${stickersCopy[i].guid}-progress`, (event, args) =>
+                            this.onAttachmentUpdate(event, args)
+                        );
+                        ipcRenderer.invoke("fetch-attachment", stickersCopy[i]);
+                    }
                 }
+
+                this.setState({ stickers: stickersCopy });
             }
 
-            this.setState({ stickers: stickersCopy });
-        }
+            // If we have a message send style
+            if (message.expressiveSendStyleId) {
+                const messageDiv = document.getElementById(this.props.message.guid);
+                if (this.isRecentMessage()) {
+                    this.setState({ playMessageAnimation: true });
+                    if (this.props.message.expressiveSendStyleId.includes("CKFireworksEffect")) {
+                        const container = document.getElementById(`fireworksContainer-${message.guid}`);
+                        const fireworks = new FireworksCanvas(container);
+                        fireworks.start();
+                    }
+                    if (this.props.message.expressiveSendStyleId.includes("CKHappyBirthdayEffect")) {
+                        this.createBalloons(100);
+                    }
+                    if (this.props.message.expressiveSendStyleId.includes("CKSpotlightEffect")) {
+                        this.handleSpotlight();
+                    }
+                    if (this.props.message.expressiveSendStyleId.includes("CKHeartEffect")) {
+                        this.handleHearts();
+                    }
+                    if (this.props.message.expressiveSendStyleId.includes("CKEchoEffect")) {
+                        this.handleEcho();
+                    }
 
-        // If we have a message send style
-        if (message.expressiveSendStyleId) {
-            const messageDiv = document.getElementById(this.props.message.guid);
-            if (this.isRecentMessage()) {
-                this.setState({ playMessageAnimation: true });
-                if (this.props.message.expressiveSendStyleId.includes("CKFireworksEffect")) {
-                    const container = document.getElementById(`fireworksContainer-${message.guid}`);
-                    const fireworks = new FireworksCanvas(container);
-                    fireworks.start();
+                    // Play the animation for 3 seconds
+                    const delay = ms => new Promise(res => setTimeout(res, ms));
+                    await delay(3000);
+                    this.setState({ playMessageAnimation: false });
                 }
-                if (this.props.message.expressiveSendStyleId.includes("CKHappyBirthdayEffect")) {
-                    this.createBalloons(100);
-                }
-                if (this.props.message.expressiveSendStyleId.includes("CKSpotlightEffect")) {
-                    this.handleSpotlight();
-                }
-                if (this.props.message.expressiveSendStyleId.includes("CKHeartEffect")) {
-                    this.handleHearts();
-                }
-                if (this.props.message.expressiveSendStyleId.includes("CKEchoEffect")) {
-                    this.handleEcho();
-                }
-
-                // Play the animation for 3 seconds
-                const delay = ms => new Promise(res => setTimeout(res, ms));
-                await delay(3000);
-                this.setState({ playMessageAnimation: false });
             }
         }
+    }
+
+    async componentWillUnmount() {
+        this._isMounted = false;
+        document.removeEventListener("click", e => {
+            // Nothing
+        });
     }
 
     async createBalloons(numOfBallons) {
@@ -617,6 +732,14 @@ class MessageBubble extends React.Component<Props, State> {
         return false;
     }
 
+    shouldHaveAvatar(): boolean {
+        const { message, newerMessage } = this.props;
+        if (newerMessage === null) return true;
+        if (newerMessage.dateCreated - message.dateCreated > 1000 * 60) return true;
+        if (!isSameSender(message, newerMessage)) return true;
+        return false;
+    }
+
     clickNHold(message) {
         const parent = document.getElementById(message.guid);
         if (!parent) return;
@@ -685,7 +808,7 @@ class MessageBubble extends React.Component<Props, State> {
 
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
-        const { attachments } = this.state;
+        const { attachments, linkPrev } = this.state;
         const { stickers } = this.state;
         const animationHeight = document.getElementById("messageView").offsetHeight;
         const animationWidth = document.getElementById("messageView").offsetWidth;
@@ -703,6 +826,9 @@ class MessageBubble extends React.Component<Props, State> {
         // Figure out if we should have a tail for the message
         const useTail = this.shouldHaveTail();
         let messageClass = useTail ? "message tail" : "message"; // Fix this to reflect having a tail
+
+        // Figure out if the message should show the handle avatar
+        const useAvatar = this.shouldHaveAvatar();
 
         // Is it sent?
         if (!message.guid || message.guid.length === 0 || message.guid.startsWith("temp")) {
@@ -760,7 +886,7 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         // Parse out any links. We can minimize parsing if we do a simple "contains" first
-        if (text.includes("http") || text.includes("Https")) {
+        if (this.isValidUrl(text) || text.includes("http") || text.includes("Https")) {
             links = parseUrls(text);
         }
 
@@ -832,6 +958,38 @@ class MessageBubble extends React.Component<Props, State> {
             messageDiv.classList.add(expressiveSendStyle);
         };
 
+        // If a url hostname is in this array, the preview will be forced to only show the favicon instead of the image
+        const forceFaviconURLS = ["bluebubbles.app"];
+
+        // Generate message sender contact color
+        const seedrandom = require("seedrandom");
+
+        let firstGradientNumber = 8;
+        if (message.handle) {
+            const rng = seedrandom(message.handle.address);
+            const rand1 = rng();
+
+            if (rand1 <= 1 / 7) {
+                firstGradientNumber = 1;
+            } else if (rand1 > 1 / 7 && rand1 <= 2 / 7) {
+                firstGradientNumber = 2;
+            } else if (rand1 > 2 / 7 && rand1 <= 3 / 7) {
+                firstGradientNumber = 3;
+            } else if (rand1 > 3 / 7 && rand1 <= 4 / 7) {
+                firstGradientNumber = 4;
+            } else if (rand1 > 4 / 7 && rand1 <= 5 / 7) {
+                firstGradientNumber = 5;
+            } else if (rand1 > 5 / 7 && rand1 <= 6 / 7) {
+                firstGradientNumber = 6;
+            } else if (rand1 > 6 / 7 && rand1 <= 7 / 7) {
+                firstGradientNumber = 7;
+            }
+        }
+
+        if (!this.props.colorfulContacts) {
+            firstGradientNumber = 8;
+        }
+
         return (
             <>
                 {this.state.showContextMenu ? (
@@ -859,16 +1017,63 @@ class MessageBubble extends React.Component<Props, State> {
                     </div>
                 ) : null}
                 {/* If the message has an attachment */}
-                {message.attachments?.length > 0 ? (
+                {message.attachments?.length > 0 || links.length > 0 ? (
                     <>
                         {/* If the attachment is a link */}
                         {links.length > 0 ? (
-                            <div className={linkClassName} onClick={() => openLink(links[0])}>
-                                {attachments.map((attachment: AttachmentDownload) => this.renderAttachment(attachment))}
-                                <div className="linkBottomDiv">
-                                    {/* Change first one Zach */}
-                                    <p>{this.state.linkTitle || "Loading ..."}</p>
-                                    <p>{new URL(links[0]).hostname}</p>
+                            <div className={linkClassName} draggable="false">
+                                <div className="linkContainer" onClick={() => openLink(links[0])}>
+                                    {linkPrev?.images?.length > 0 &&
+                                    !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
+                                        <img src={linkPrev.images[0]} className="Attachment" draggable="false" />
+                                    ) : null}
+                                    {/* {attachments.map((attachment: AttachmentDownload) =>
+                                        this.renderAttachment(attachment)
+                                    )} */}
+                                    <div
+                                        className={`linkBottomDiv ${useTail ? "tail" : ""}`}
+                                        style={{
+                                            borderRadius:
+                                                (linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
+                                                (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                    ? "15px"
+                                                    : "0 0 15px 15px",
+                                            marginTop:
+                                                (linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
+                                                (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                    ? "3px"
+                                                    : "0px"
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                width:
+                                                    linkPrev?.images?.length > 0 &&
+                                                    !forceFaviconURLS.includes(new URL(links[0]).hostname)
+                                                        ? "93%"
+                                                        : "75%"
+                                            }}
+                                        >
+                                            <p
+                                                style={{
+                                                    marginTop:
+                                                        (linkPrev?.images?.length === 0 &&
+                                                            linkPrev?.favicons?.length > 0) ||
+                                                        (linkPrev &&
+                                                            forceFaviconURLS.includes(new URL(links[0]).hostname))
+                                                            ? "2px"
+                                                            : "0px"
+                                                }}
+                                            >
+                                                {this.state.linkTitle || "Loading ..."}
+                                            </p>
+                                            <p>{new URL(links[0]).hostname}</p>
+                                        </div>
+                                        {(linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
+                                        (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
+                                            <img src={linkPrev.favicons[0]} className="linkFavicon" />
+                                        ) : null}
+                                    </div>
                                 </div>
                             </div>
                         ) : (
@@ -886,7 +1091,7 @@ class MessageBubble extends React.Component<Props, State> {
                                 {text ? (
                                     <>
                                         <div className="emptyDiv" />
-                                        <div className={className} style={{ marginLeft: useTail ? "5px" : "40px" }}>
+                                        <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
                                             <div
                                                 style={{
                                                     display: "flex",
@@ -894,128 +1099,163 @@ class MessageBubble extends React.Component<Props, State> {
                                                     justifyContent: message.isFromMe ? "flex-end" : "flex-start"
                                                 }}
                                             >
-                                                {useTail && !message.isFromMe ? (
+                                                {useAvatar && !message.isFromMe ? (
                                                     <>
-                                                        {generateReactionsDisplayIconText(message.handle) === "?" ? (
-                                                            <svg
-                                                                style={{ marginRight: "10px", minWidth: "25px" }}
+                                                        {message.handle.avatar ? (
+                                                            <img
+                                                                key={message.guid}
+                                                                src={message.handle.avatar}
+                                                                style={{
+                                                                    borderRadius: "50%",
+                                                                    marginRight: "10px",
+                                                                    minWidth: "25px"
+                                                                }}
                                                                 height="25px"
                                                                 width="25px"
-                                                                viewBox="0 0 1000 1000"
-                                                            >
-                                                                <defs>
-                                                                    <linearGradient
-                                                                        id="Gradient1"
-                                                                        x1="0"
-                                                                        x2="0"
-                                                                        y1="1"
-                                                                        y2="0"
-                                                                    >
-                                                                        <stop
-                                                                            className="stop1"
-                                                                            offset="0%"
-                                                                            stopColor="#686868"
-                                                                        />
-                                                                        <stop
-                                                                            className="stop2"
-                                                                            offset="100%"
-                                                                            stopColor="#928E8E"
-                                                                        />
-                                                                    </linearGradient>
-                                                                </defs>
-                                                                <circle
-                                                                    className="cls-1"
-                                                                    cx="50%"
-                                                                    cy="50%"
-                                                                    r="500"
-                                                                    fill="url(#Gradient1)"
-                                                                />
-                                                                <mask id="rmvProfile">
-                                                                    <circle cx="50%" cy="50%" r="435" fill="white" />
-                                                                </mask>
-                                                                <ellipse
-                                                                    className="cls-2"
-                                                                    fill="white"
-                                                                    cx="50%"
-                                                                    cy="34%"
-                                                                    rx="218"
-                                                                    ry="234"
-                                                                />
-                                                                <circle
-                                                                    className="cls-2"
-                                                                    mask="url(#rmvProfile)"
-                                                                    fill="white"
-                                                                    cx="50%"
-                                                                    cy="106%"
-                                                                    r="400"
-                                                                />
-                                                            </svg>
+                                                            />
                                                         ) : (
-                                                            <svg
-                                                                style={{ marginRight: "10px", minWidth: "25px" }}
-                                                                id="testContact"
-                                                                className="dynamicIcon"
-                                                                height="25px"
-                                                                width="25px"
-                                                                viewBox="0 0 1000 1000"
-                                                            >
-                                                                <defs>
-                                                                    <linearGradient
-                                                                        id="Gradient1"
-                                                                        x1="0"
-                                                                        x2="0"
-                                                                        y1="1"
-                                                                        y2="0"
+                                                            <>
+                                                                {generateReactionsDisplayIconText(message.handle) ===
+                                                                "?" ? (
+                                                                    <svg
+                                                                        style={{
+                                                                            marginRight: "10px",
+                                                                            minWidth: "25px"
+                                                                        }}
+                                                                        height="25px"
+                                                                        width="25px"
+                                                                        viewBox="0 0 1000 1000"
+                                                                        key={message.guid}
                                                                     >
-                                                                        <stop
-                                                                            className="stop1"
-                                                                            offset="0%"
-                                                                            stopColor="#686868"
+                                                                        <defs>
+                                                                            <linearGradient
+                                                                                id="Gradient1"
+                                                                                x1="0"
+                                                                                x2="0"
+                                                                                y1="1"
+                                                                                y2="0"
+                                                                            >
+                                                                                <stop
+                                                                                    className="stop1"
+                                                                                    offset="0%"
+                                                                                    stopColor="#686868"
+                                                                                />
+                                                                                <stop
+                                                                                    className="stop2"
+                                                                                    offset="100%"
+                                                                                    stopColor="#928E8E"
+                                                                                />
+                                                                            </linearGradient>
+                                                                        </defs>
+                                                                        <circle
+                                                                            className="cls-1"
+                                                                            cx="50%"
+                                                                            cy="50%"
+                                                                            r="500"
+                                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
                                                                         />
-                                                                        <stop
-                                                                            className="stop2"
-                                                                            offset="100%"
-                                                                            stopColor="#928E8E"
+                                                                        <mask id="rmvProfile">
+                                                                            <circle
+                                                                                cx="50%"
+                                                                                cy="50%"
+                                                                                r="435"
+                                                                                fill="white"
+                                                                            />
+                                                                        </mask>
+                                                                        <ellipse
+                                                                            className="cls-2"
+                                                                            fill="white"
+                                                                            cx="50%"
+                                                                            cy="34%"
+                                                                            rx="218"
+                                                                            ry="234"
                                                                         />
-                                                                    </linearGradient>
-                                                                </defs>
-                                                                <circle
-                                                                    className="cls-1"
-                                                                    fill="url(#Gradient1)"
-                                                                    cx="50%"
-                                                                    cy="50%"
-                                                                    r="50%"
-                                                                />
-                                                                <text
-                                                                    style={{
-                                                                        fontFamily: "quicksand",
-                                                                        fontWeight: 700,
-                                                                        fontStyle: "normal",
-                                                                        fontSize:
-                                                                            generateReactionsDisplayIconText(
+                                                                        <circle
+                                                                            className="cls-2"
+                                                                            mask="url(#rmvProfile)"
+                                                                            fill="white"
+                                                                            cx="50%"
+                                                                            cy="106%"
+                                                                            r="400"
+                                                                        />
+                                                                    </svg>
+                                                                ) : (
+                                                                    <svg
+                                                                        style={{
+                                                                            marginRight: "10px",
+                                                                            minWidth: "25px"
+                                                                        }}
+                                                                        id="testContact"
+                                                                        className="dynamicIcon"
+                                                                        height="25px"
+                                                                        width="25px"
+                                                                        viewBox="0 0 1000 1000"
+                                                                        key={message.guid}
+                                                                    >
+                                                                        <defs>
+                                                                            <linearGradient
+                                                                                id="Gradient1"
+                                                                                x1="0"
+                                                                                x2="0"
+                                                                                y1="1"
+                                                                                y2="0"
+                                                                            >
+                                                                                <stop
+                                                                                    className="stop1"
+                                                                                    offset="0%"
+                                                                                    stopColor="#686868"
+                                                                                />
+                                                                                <stop
+                                                                                    className="stop2"
+                                                                                    offset="100%"
+                                                                                    stopColor="#928E8E"
+                                                                                />
+                                                                            </linearGradient>
+                                                                        </defs>
+                                                                        <circle
+                                                                            className="cls-1"
+                                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
+                                                                            cx="50%"
+                                                                            cy="50%"
+                                                                            r="50%"
+                                                                        />
+                                                                        <text
+                                                                            style={{
+                                                                                fontFamily: "SF Pro Rounded",
+                                                                                fontWeight: 700,
+                                                                                fontStyle: "normal",
+                                                                                fontSize:
+                                                                                    generateReactionsDisplayIconText(
+                                                                                        message.handle
+                                                                                    ).length >= 2
+                                                                                        ? "530px"
+                                                                                        : "650px"
+                                                                            }}
+                                                                            className="cls-2"
+                                                                            x="50%"
+                                                                            y="67%"
+                                                                            textAnchor="middle"
+                                                                            fill="white"
+                                                                        >
+                                                                            {generateReactionsDisplayIconText(
                                                                                 message.handle
-                                                                            ).length >= 2
-                                                                                ? "530px"
-                                                                                : "650px"
-                                                                    }}
-                                                                    className="cls-2"
-                                                                    x="50%"
-                                                                    y="70%"
-                                                                    textAnchor="middle"
-                                                                    fill="white"
-                                                                    stroke="white"
-                                                                >
-                                                                    {generateReactionsDisplayIconText(message.handle)}
-                                                                </text>
-                                                            </svg>
+                                                                            )}
+                                                                        </text>
+                                                                    </svg>
+                                                                )}
+                                                            </>
                                                         )}
                                                     </>
                                                 ) : null}
                                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                                     <div
-                                                        className={`${expressiveSendStyle} ${messageClass}`}
+                                                        className={`${expressiveSendStyle} ${messageClass} ${
+                                                            message.isFromMe && this.props.gradientMessages
+                                                                ? "gradientMessages"
+                                                                : ""
+                                                        }`}
                                                         id={message.guid}
-                                                        style={{ marginBottom: useTail ? "3px" : "0" }}
+                                                        style={{ marginBottom: useAvatar ? "3px" : "0" }}
                                                     >
                                                         {message.hasReactions === true ? (
                                                             <>
@@ -1030,7 +1270,16 @@ class MessageBubble extends React.Component<Props, State> {
                                                                 ))}
                                                             </>
                                                         ) : null}
-                                                        <p>{text}</p>
+                                                        {message.subject ? (
+                                                            <p className="messageSubject">{message.subject}</p>
+                                                        ) : null}
+                                                        <p
+                                                            style={{
+                                                                fontWeight: process.platform === "linux" ? 400 : 300
+                                                            }}
+                                                        >
+                                                            {text}
+                                                        </p>
                                                     </div>
                                                 </ClickNHold>
                                             </div>
@@ -1044,7 +1293,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                         onClick={e => handleReplayAnimation(e)}
                                                         style={{
                                                             marginLeft:
-                                                                useTail && className === "IncomingMessage"
+                                                                useAvatar && className === "IncomingMessage"
                                                                     ? "35px"
                                                                     : "0px"
                                                         }}
@@ -1145,7 +1394,7 @@ class MessageBubble extends React.Component<Props, State> {
                     </>
                 ) : (
                     <>
-                        <div className={className} style={{ marginLeft: useTail ? "5px" : "40px" }}>
+                        <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
                             {this.state.isReactionsOpen ? (
                                 <NewReaction
                                     message={message}
@@ -1158,7 +1407,7 @@ class MessageBubble extends React.Component<Props, State> {
                             {chat.participants.length > 1 &&
                             message.handle &&
                             (!olderMessage || olderMessage.handleId !== message.handleId) ? (
-                                <p className="MessageSender" style={{ marginLeft: useTail ? "38px" : "5px" }}>
+                                <p className="MessageSender" style={{ marginLeft: useAvatar ? "38px" : "5px" }}>
                                     {sender}
                                 </p>
                             ) : null}
@@ -1169,90 +1418,117 @@ class MessageBubble extends React.Component<Props, State> {
                                     justifyContent: message.isFromMe ? "flex-end" : "flex-start"
                                 }}
                             >
-                                {useTail && !message.isFromMe ? (
+                                {useAvatar && !message.isFromMe ? (
                                     <>
-                                        {generateReactionsDisplayIconText(message.handle) === "?" ? (
-                                            <svg
-                                                style={{ marginRight: "10px", minWidth: "25px" }}
+                                        {message.handle.avatar ? (
+                                            <img
+                                                src={message.handle.avatar}
+                                                style={{ borderRadius: "50%", marginRight: "10px", minWidth: "25px" }}
                                                 height="25px"
                                                 width="25px"
-                                                viewBox="0 0 1000 1000"
-                                            >
-                                                <defs>
-                                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                                    </linearGradient>
-                                                </defs>
-                                                <circle
-                                                    className="cls-1"
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    r="500"
-                                                    fill="url(#Gradient1)"
-                                                />
-                                                <mask id="rmvProfile">
-                                                    <circle cx="50%" cy="50%" r="435" fill="white" />
-                                                </mask>
-                                                <ellipse
-                                                    className="cls-2"
-                                                    fill="white"
-                                                    cx="50%"
-                                                    cy="34%"
-                                                    rx="218"
-                                                    ry="234"
-                                                />
-                                                <circle
-                                                    className="cls-2"
-                                                    mask="url(#rmvProfile)"
-                                                    fill="white"
-                                                    cx="50%"
-                                                    cy="106%"
-                                                    r="400"
-                                                />
-                                            </svg>
+                                            />
                                         ) : (
-                                            <svg
-                                                style={{ marginRight: "10px", minWidth: "25px" }}
-                                                id="testContact"
-                                                className="dynamicIcon"
-                                                height="25px"
-                                                width="25px"
-                                                viewBox="0 0 1000 1000"
-                                            >
-                                                <defs>
-                                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                                    </linearGradient>
-                                                </defs>
-                                                <circle
-                                                    className="cls-1"
-                                                    fill="url(#Gradient1)"
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    r="50%"
-                                                />
-                                                <text
-                                                    style={{
-                                                        fontFamily: "quicksand",
-                                                        fontWeight: 700,
-                                                        fontStyle: "normal",
-                                                        fontSize:
-                                                            generateReactionsDisplayIconText(message.handle).length >= 2
-                                                                ? "530px"
-                                                                : "650px"
-                                                    }}
-                                                    className="cls-2"
-                                                    x="50%"
-                                                    y="70%"
-                                                    textAnchor="middle"
-                                                    fill="white"
-                                                    stroke="white"
-                                                >
-                                                    {generateReactionsDisplayIconText(message.handle)}
-                                                </text>
-                                            </svg>
+                                            <>
+                                                {generateReactionsDisplayIconText(message.handle) === "?" ? (
+                                                    <svg
+                                                        style={{ marginRight: "10px", minWidth: "25px" }}
+                                                        height="25px"
+                                                        width="25px"
+                                                        viewBox="0 0 1000 1000"
+                                                    >
+                                                        <defs>
+                                                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                                                <stop
+                                                                    className="stop1"
+                                                                    offset="0%"
+                                                                    stopColor="#686868"
+                                                                />
+                                                                <stop
+                                                                    className="stop2"
+                                                                    offset="100%"
+                                                                    stopColor="#928E8E"
+                                                                />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <circle
+                                                            className="cls-1"
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            r="500"
+                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
+                                                        />
+                                                        <mask id="rmvProfile">
+                                                            <circle cx="50%" cy="50%" r="435" fill="white" />
+                                                        </mask>
+                                                        <ellipse
+                                                            className="cls-2"
+                                                            fill="white"
+                                                            cx="50%"
+                                                            cy="34%"
+                                                            rx="218"
+                                                            ry="234"
+                                                        />
+                                                        <circle
+                                                            className="cls-2"
+                                                            mask="url(#rmvProfile)"
+                                                            fill="white"
+                                                            cx="50%"
+                                                            cy="106%"
+                                                            r="400"
+                                                        />
+                                                    </svg>
+                                                ) : (
+                                                    <svg
+                                                        style={{ marginRight: "10px", minWidth: "25px" }}
+                                                        id="testContact"
+                                                        className="dynamicIcon"
+                                                        height="25px"
+                                                        width="25px"
+                                                        viewBox="0 0 1000 1000"
+                                                    >
+                                                        <defs>
+                                                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                                                <stop
+                                                                    className="stop1"
+                                                                    offset="0%"
+                                                                    stopColor="#686868"
+                                                                />
+                                                                <stop
+                                                                    className="stop2"
+                                                                    offset="100%"
+                                                                    stopColor="#928E8E"
+                                                                />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <circle
+                                                            className="cls-1"
+                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
+                                                            cx="50%"
+                                                            cy="50%"
+                                                            r="50%"
+                                                        />
+                                                        <text
+                                                            style={{
+                                                                fontFamily: "SF Pro Rounded",
+                                                                fontWeight: 700,
+                                                                fontStyle: "normal",
+                                                                fontSize:
+                                                                    generateReactionsDisplayIconText(message.handle)
+                                                                        .length >= 2
+                                                                        ? "530px"
+                                                                        : "650px"
+                                                            }}
+                                                            className="cls-2"
+                                                            x="50%"
+                                                            y="67%"
+                                                            textAnchor="middle"
+                                                            fill="white"
+                                                        >
+                                                            {generateReactionsDisplayIconText(message.handle)}
+                                                        </text>
+                                                    </svg>
+                                                )}
+                                            </>
                                         )}
                                     </>
                                 ) : null}
@@ -1263,9 +1539,11 @@ class MessageBubble extends React.Component<Props, State> {
                                     : null}
                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                     <div
-                                        className={`${expressiveSendStyle} ${messageClass}`}
+                                        className={`${expressiveSendStyle} ${messageClass} ${
+                                            message.isFromMe && this.props.gradientMessages ? "gradientMessages" : ""
+                                        }`}
                                         id={message.guid}
-                                        style={{ marginBottom: useTail ? "3px" : "0" }}
+                                        style={{ marginBottom: useAvatar ? "3px" : "0" }}
                                     >
                                         {message.hasReactions === true ? (
                                             <>
@@ -1283,7 +1561,12 @@ class MessageBubble extends React.Component<Props, State> {
                                                 ))}
                                             </>
                                         ) : null}
-                                        {text ? <p>{text}</p> : null}
+                                        {message.subject ? <p className="messageSubject">{message.subject}</p> : null}
+                                        {text ? (
+                                            <p style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
+                                                {text}
+                                            </p>
+                                        ) : null}
                                     </div>
                                 </ClickNHold>
                                 {stickers && !message.isFromMe
@@ -1298,7 +1581,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         className="replayMessageEffect"
                                         onClick={e => handleReplayAnimation(e)}
                                         style={{
-                                            marginLeft: useTail && className === "IncomingMessage" ? "35px" : "0px"
+                                            marginLeft: useAvatar && className === "IncomingMessage" ? "35px" : "0px"
                                         }}
                                     >
                                         {expressiveSendStyle === "CKConfettiEffect" &&
@@ -1386,6 +1669,7 @@ class MessageBubble extends React.Component<Props, State> {
                                     </div>
                                 </>
                             ) : null}
+                            {showStatus ? getStatusText(message) : null}
                         </div>
                     </>
                 )}

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable class-methods-use-this */
 import * as React from "react";
 import { ipcRenderer } from "electron";
@@ -16,25 +17,14 @@ type Props = {
 type State = {
     isLoading: boolean;
     messages: Message[];
+    gradientMessages: boolean;
+    colorfulContacts: boolean;
 };
 
 type Message = DBMessage & {
     tempGuid: string;
     reactions: DBMessage[];
     reactionsChecked: boolean;
-};
-
-const getChatEvent = (message: Message) => {
-    const sender = message.isFromMe || !message.handle ? "You" : message.handle.address ?? "";
-    if (message.itemType === 2)
-        return (
-            <ChatLabel
-                text={`${sender} named the conversation "${message.groupTitle}"`}
-                date={new Date(message.dateCreated)}
-            />
-        );
-
-    return null;
 };
 
 const deduplicateReactions = (reactions: DBMessage[]) => {
@@ -63,11 +53,13 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
         this.state = {
             isLoading: false,
-            messages: []
+            messages: [],
+            gradientMessages: false,
+            colorfulContacts: false
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         ipcRenderer.on("message", async (_, payload: { message: Message; tempGuid?: string }) => {
             const { message } = payload;
 
@@ -95,6 +87,10 @@ class RightConversationDisplay extends React.Component<Props, State> {
             view.scrollTop = view.scrollHeight;
         });
 
+        const config = await ipcRenderer.invoke("get-config");
+
+        this.setState({ gradientMessages: config.gradientMessages, colorfulContacts: config.colorfulContacts });
+        console.log(config.gradientMessages);
         this.chatChange();
     }
 
@@ -138,6 +134,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
         });
     }
 
+    // eslint-disable-next-line react/sort-comp
     async fetchReactions(messages: Message[]) {
         const updatedMessages = [...messages];
         const stateMessages = [...this.state.messages];
@@ -164,7 +161,11 @@ class RightConversationDisplay extends React.Component<Props, State> {
         if (hasUpdates) this.setState({ messages: stateMessages });
     }
 
-    chatChange() {
+    async chatChange() {
+        const config = await ipcRenderer.invoke("get-config");
+
+        this.setState({ gradientMessages: config.gradientMessages, colorfulContacts: config.colorfulContacts });
+
         // Reset the messages
         this.setState({ messages: [] }, () => {
             // Set the text field to active
@@ -275,6 +276,46 @@ class RightConversationDisplay extends React.Component<Props, State> {
         return true;
     }
 
+    getChatEvent(message: Message) {
+        const sender = message.isFromMe || !message.handle ? "You" : message.handle.address ?? "";
+
+        const date = message.dateCreated
+            ? `${getDateText(new Date(message.dateCreated), true)}, ${getTimeText(new Date(message.dateCreated))}`
+            : "";
+
+        if (message.itemType === 0 && message.groupActionType === 0) {
+            return <ChatLabel text={`${sender} sent a handwritten note`} date={date} />;
+        }
+
+        if (message.itemType === 1 && message.groupActionType === 1) {
+            return <ChatLabel text={`${sender} removed someone from the conversation`} date={date} />;
+        }
+        if (message.itemType === 1 && message.groupActionType === 0) {
+            return <ChatLabel text={`${sender} added someone to the conversation`} date={date} />;
+        }
+        if (message.itemType === 3) {
+            return <ChatLabel text={`${sender} left the conversation`} date={date} />;
+        }
+
+        if (message.itemType === 4 && message.groupActionType === 0) {
+            return (
+                <ChatLabel
+                    text={`${sender} started sharing ${
+                        message.isFromMe || !message.handle ? "your" : "their"
+                    } location`}
+                    date={date}
+                />
+            );
+        }
+
+        if (message.itemType === 2 && message.groupTitle !== null) {
+            return <ChatLabel text={`${sender} renamed the conversation to ${message.groupTitle}`} date={date} />;
+        }
+
+        console.log(message);
+        return <ChatLabel text={`Unknown chat event from ${sender}`} date={date} />;
+    }
+
     render() {
         const { messages, isLoading } = this.state;
         const { chat } = this.props;
@@ -291,11 +332,17 @@ class RightConversationDisplay extends React.Component<Props, State> {
             }
         }
 
-        const date = messages.length > 0 ? new Date(messages[0].dateCreated) : null;
+        const date =
+            messages.length > 0
+                ? `${getDateText(new Date(messages[0].dateCreated), true)}, ${getTimeText(
+                      new Date(messages[0].dateCreated)
+                  )}`
+                : null;
         messages.sort((a, b) => (a.dateCreated > b.dateCreated ? 1 : -1));
 
         return (
             <div id="messageView" onScroll={e => this.detectTop(e)} className="RightConversationDisplay">
+                {/* <div id="gradientOverlay" /> */}
                 {isLoading ? <div id="loader" /> : null}
                 <ChatLabel text={`BlueBubbles Messaging with ${chatTitle}`} date={date} />
 
@@ -335,10 +382,12 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                         newerMessage={newerMessage}
                                         showStatus={message.isFromMe && myNewMessages.length === 0}
                                         messages={messages}
+                                        gradientMessages={this.state.gradientMessages}
+                                        colorfulContacts={this.state.colorfulContacts}
                                     />
                                 </>
                             ) : (
-                                getChatEvent(message)
+                                this.getChatEvent(message)
                             )}
                         </div>
                     );

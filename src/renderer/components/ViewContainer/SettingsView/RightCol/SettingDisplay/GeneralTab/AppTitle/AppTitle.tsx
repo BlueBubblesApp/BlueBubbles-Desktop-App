@@ -14,6 +14,10 @@ type State = {
     closeToTray: boolean;
     startWithOS: boolean;
     sendAudio: boolean;
+    capitalizeFirstLetter: boolean;
+    gradientMessages: boolean;
+    colorfulContacts: boolean;
+    leftTitlebar: boolean;
 };
 
 class AppTitle extends React.Component<Props, State> {
@@ -21,9 +25,13 @@ class AppTitle extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            closeToTray: null,
-            startWithOS: null,
-            sendAudio: null
+            closeToTray: false,
+            startWithOS: false,
+            sendAudio: false,
+            capitalizeFirstLetter: false,
+            gradientMessages: false,
+            colorfulContacts: false,
+            leftTitlebar: false
         };
     }
 
@@ -32,7 +40,11 @@ class AppTitle extends React.Component<Props, State> {
         this.setState({
             closeToTray: config.closeToTray,
             startWithOS: config.startWithOS,
-            sendAudio: config.sendAudio
+            sendAudio: config.sendAudio,
+            capitalizeFirstLetter: config.capitalizeFirstLetter,
+            gradientMessages: config.gradientMessages,
+            colorfulContacts: config.colorfulContacts,
+            leftTitlebar: config.leftTitlebar
         });
 
         console.log(config);
@@ -61,42 +73,111 @@ class AppTitle extends React.Component<Props, State> {
         this.setState({ sendAudio: !this.state.sendAudio });
     }
 
+    async handleChangeCapitalizeFirstLetter() {
+        const newConfig = { capitalizeFirstLetter: !this.state.capitalizeFirstLetter };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ capitalizeFirstLetter: !this.state.capitalizeFirstLetter });
+    }
+
+    async handleGradientMessages() {
+        const newConfig = { gradientMessages: !this.state.gradientMessages };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ gradientMessages: !this.state.gradientMessages });
+    }
+
+    async handleColorfulContacts() {
+        const newConfig = { colorfulContacts: !this.state.colorfulContacts };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ colorfulContacts: !this.state.colorfulContacts });
+    }
+
+    async handleLeftTitlebar() {
+        const newConfig = { leftTitlebar: !this.state.leftTitlebar };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ leftTitlebar: !this.state.leftTitlebar });
+        ipcRenderer.emit("titlebar-update");
+    }
+
     render() {
         return (
             <div className="AppTitle">
                 <h2>{this.props.title}</h2>
                 <div>
                     <p>Close To Tray</p>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={() => this.handleChangeCloseToTray()}>
                         <input
                             id="closeToTrayCheckbox"
                             type="checkbox"
                             checked={this.state.closeToTray}
-                            onClick={() => this.handleChangeCloseToTray()}
+                            onChange={() => this.handleChangeCloseToTray()}
                         />
                         <i />
                     </label>
                 </div>
                 <div>
                     <p>Start With OS</p>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={() => this.handleChangeStartWithOS()}>
                         <input
                             id="startWithOSCheckbox"
                             type="checkbox"
                             checked={this.state.startWithOS}
-                            onClick={() => this.handleChangeStartWithOS()}
+                            onChange={() => this.handleChangeStartWithOS()}
                         />
                         <i />
                     </label>
                 </div>
                 <div>
                     <p>Message Send Audio</p>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={() => this.handleChangeSendAudio()}>
                         <input
                             id="sendAudioCheckbox"
                             type="checkbox"
                             checked={this.state.sendAudio}
-                            onClick={() => this.handleChangeSendAudio()}
+                            onChange={() => this.handleChangeSendAudio()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Auto Capitalize First Letter</p>
+                    <label className="form-switch" onClick={() => this.handleChangeCapitalizeFirstLetter()}>
+                        <input
+                            type="checkbox"
+                            checked={this.state.capitalizeFirstLetter}
+                            onChange={() => this.handleChangeCapitalizeFirstLetter()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Scrolling Gradient On Messages</p>
+                    <label className="form-switch" onClick={() => this.handleGradientMessages()}>
+                        <input
+                            type="checkbox"
+                            checked={this.state.gradientMessages}
+                            onChange={() => this.handleGradientMessages()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Colorful Contacts</p>
+                    <label className="form-switch" onClick={() => this.handleColorfulContacts()}>
+                        <input
+                            type="checkbox"
+                            checked={this.state.colorfulContacts}
+                            onChange={() => this.handleColorfulContacts()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Titlebar Buttons On Left Side</p>
+                    <label className="form-switch" onClick={() => this.handleLeftTitlebar()}>
+                        <input
+                            type="checkbox"
+                            checked={this.state.leftTitlebar}
+                            onChange={() => this.handleLeftTitlebar()}
                         />
                         <i />
                     </label>

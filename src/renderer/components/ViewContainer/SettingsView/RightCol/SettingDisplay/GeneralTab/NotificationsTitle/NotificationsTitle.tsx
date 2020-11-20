@@ -20,8 +20,8 @@ class NotificationsTitle extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            globalNotificationsMuted: null,
-            globalNotificationsDisabled: null
+            globalNotificationsMuted: false,
+            globalNotificationsDisabled: false
         };
     }
 
@@ -39,6 +39,8 @@ class NotificationsTitle extends React.Component<Props, State> {
         const newConfig = { globalNotificationsMuted: !this.state.globalNotificationsMuted };
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ globalNotificationsMuted: !this.state.globalNotificationsMuted });
+        console.log(newConfig);
+        console.log("Mute Changed");
     }
 
     async handleChangeDisabled() {
@@ -53,24 +55,24 @@ class NotificationsTitle extends React.Component<Props, State> {
                 <h2>{this.props.title}</h2>
                 <div>
                     <p>Muted</p>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={() => this.handleChangeMute()}>
                         <input
                             checked={this.state.globalNotificationsMuted}
                             id="globalMuteCheckbox"
                             type="checkbox"
-                            onClick={() => this.handleChangeMute()}
+                            onChange={() => this.handleChangeMute()}
                         />
                         <i />
                     </label>
                 </div>
                 <div>
                     <p>Disabled</p>
-                    <label className="form-switch">
+                    <label className="form-switch" onClick={() => this.handleChangeDisabled()}>
                         <input
                             checked={this.state.globalNotificationsDisabled}
                             id="globalDisableCheckbox"
                             type="checkbox"
-                            onClick={() => this.handleChangeDisabled()}
+                            onChange={() => this.handleChangeDisabled()}
                         />
                         <i />
                     </label>

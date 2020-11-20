@@ -201,12 +201,12 @@ export class SocketService {
         this.server.on("updated-message", (message: MessageResponse) =>
             Server().queueService.add("save-message", message)
         );
-        this.server.on("group-name-change", (message: MessageResponse) =>
-            Server().queueService.add("save-message", message)
-        );
-        this.server.on("participant-removed", (message: MessageResponse) =>
-            Server().queueService.add("save-message", message)
-        );
+        this.server.on("group-name-change", (message: MessageResponse) => {
+            Server().queueService.add("save-message", message);
+        });
+        this.server.on("participant-removed", (message: MessageResponse) => {
+            Server().queueService.add("save-message", message);
+        });
         this.server.on("participant-added", (message: MessageResponse) =>
             Server().queueService.add("save-message", message)
         );
@@ -216,6 +216,17 @@ export class SocketService {
 
         this.server.on("reconnect_attempt", attempt => {
             Server().setSyncStatus({ completed: false, error: false, message: `Reconnecting (${attempt})` });
+        });
+
+        this.server.on("chat-read-status-changed", async params => {
+            if (params.status === false && params.chatGuid != null) {
+                const chats = await Server().chatRepo.getChats(params.chatGuid);
+                const lastViewed = new Date();
+                await Server().chatRepo.updateChat(chats[0], { lastViewed: lastViewed.getTime() });
+
+                const data = { chat: chats[0], lastViewed };
+                Server().emitToUI("chat-last-viewed-update", data);
+            }
         });
     }
 
@@ -328,5 +339,9 @@ export class SocketService {
                 }
             );
         });
+    }
+
+    async renameGroup(params) {
+        this.server.emit("rename-group", params);
     }
 }

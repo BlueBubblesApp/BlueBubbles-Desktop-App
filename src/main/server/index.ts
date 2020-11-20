@@ -751,8 +751,8 @@ class BackendServer {
                     };
 
                     for (let i = 0; i < numOfChunks; i += 1) {
-                        attachmentParams.attachmentChunkStart = i === 0 ? 0 : i + CHUNK_SIZE;
-                        attachmentParams.hasMore = i + CHUNK_SIZE < stats.size;
+                        attachmentParams.attachmentChunkStart = i === 0 ? 0 : i * CHUNK_SIZE;
+                        attachmentParams.hasMore = i * CHUNK_SIZE + CHUNK_SIZE < stats.size;
                         attachmentParams.attachmentName = path.basename(attachment.filepath);
 
                         // Get data as a Uint8Array and convert to base64
@@ -795,6 +795,11 @@ class BackendServer {
         ipcMain.handle("set-chat-last-viewed", async (_, payload) => {
             const updateData = { lastViewed: payload.lastViewed.getTime() };
             await this.chatRepo.updateChat(payload.chat, updateData);
+
+            this.socketService.server.emit("toggle-chat-read-status", {
+                chatGuid: payload.chat.guid,
+                status: false
+            });
         });
 
         // Get VCF from server
@@ -1218,6 +1223,56 @@ class BackendServer {
             const file: DownloadItem = await download(this.window, url, options);
             this.emitToUI("chat-drop-event", { attachment: file.getSavePath() });
             ipcMain.removeHandler("cancel-download");
+        });
+
+        ipcMain.handle("download-gif-from-giphy", async (_, url) => {
+            const { download } = require("electron-dl");
+
+            const dlProgress = dl => {
+                console.log(dl);
+            };
+
+            const dlStart = (dl: DownloadItem) => {
+                console.log("start");
+            };
+
+            const options = {
+                directory: path.join(FileSystem.attachmentsDir, "temp"),
+                onProgress: dl => dlProgress(dl),
+                onStarted: x => dlStart(x)
+            };
+
+            const file: DownloadItem = await download(this.window, url, options);
+            this.emitToUI("chat-drop-event", { attachment: file.getSavePath() });
+        });
+
+        ipcMain.handle("get-spelling-suggestions", async (_, selectedWord) => {
+            const dictionary = require("dictionary-en");
+            const nspell = require("nspell");
+
+            await dictionary(async (err, dict) => {
+                if (err) {
+                    throw err;
+                }
+                const spell = nspell(dict);
+                const suggs = spell.suggest(selectedWord);
+
+                const stringSimilarity = require("string-similarity");
+
+                const matches = stringSimilarity.findBestMatch(selectedWord, suggs);
+                matches.ratings.sort((string1, string2) => (string1.rating < string2.rating ? 1 : -1));
+                console.log(matches);
+                this.emitToUI("word-matches", matches);
+            });
+        });
+
+        ipcMain.handle("change-display-name", async (_, params) => {
+            await this.socketService.renameGroup({ identifier: params.chat.guid, newName: params.newName });
+            await this.chatRepo.updateChat(params.chat, { displayName: params.newName });
+            const newChats = await this.chatRepo.getChats(params.chat.guid);
+            console.log(newChats[0].displayName);
+
+            this.emitToUI("display-name-update", { chat: newChats[0], newName: params.newName });
         });
     }
 

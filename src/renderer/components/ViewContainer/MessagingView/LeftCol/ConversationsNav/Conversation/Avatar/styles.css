@@ -1,5 +1,5 @@
 .dynamicIcon {
-    background-color: linear-gradient(to top, #686868, #707070, #777777, #7f7f7f, #878787) !important;
+    background-color: linear-gradient(to top, red, #707070, #777777, green, #878787) !important;
 }
 
 .avatar {

@@ -8,10 +8,14 @@ export const DEFAULT_CONFIG_ITEMS: { [key: string]: Function } = {
     chunkSize: () => 1024,
     globalNotificationsMuted: () => "0",
     globalNotificationsDisabled: () => "0",
-    importContactsFrom: () => "serverDB",
+    importContactsFrom: () => "serverVCF",
     closeToTray: () => "1",
     startWithOS: () => "1",
-    sendAudio: () => "1"
+    sendAudio: () => "1",
+    capitalizeFirstLetter: () => "1",
+    gradientMessages: () => "1",
+    colorfulContacts: () => "1",
+    leftTitlebar: () => "1"
 };
 
 export const DEFAULT_DARK_THEME: { [key: string]: Function } = {

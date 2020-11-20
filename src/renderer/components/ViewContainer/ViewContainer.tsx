@@ -18,15 +18,9 @@ class ViewContainer extends React.Component {
                         atActive={{ opacity: 1 }}
                         className="switch-wrapper"
                     >
-                        <Route exact path="/" component={LoginView}>
-                            <LoginView />
-                        </Route>
-                        <Route exact path="/messaging" component={MessagingView}>
-                            <MessagingView />
-                        </Route>
-                        <Route path="/settings" component={SettingsView}>
-                            <SettingsView />
-                        </Route>
+                        <Route exact path="/" component={LoginView} />
+                        <Route exact path="/messaging" component={MessagingView} />
+                        <Route path="/settings" component={SettingsView} />
                     </AnimatedSwitch>
                 </HashRouter>
             </div>

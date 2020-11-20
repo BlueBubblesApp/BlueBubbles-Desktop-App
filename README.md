@@ -1,76 +1,88 @@
-# electron-react-typescript
+# [BlueBubbles Desktop App](https://bluebubbles.app)
 
-### A Boilerplate for an Easy Start with TypeScript, React, and Electron.
+##### Windows and Linux Client for the [BlueBubbles Server](https://github.com/BlueBubblesApp/BlueBubbles-Server).
+##### Android Client can be found [here](https://github.com/BlueBubblesApp/BlueBubbles-Android-App).
 
-[![React](docs/img/react.png)](https://reactjs.org/)
-[![Webpack](docs/img/webpack.png)](https://webpack.js.org/)
-[![TypeScript](docs/img/ts.png)](https://www.typescriptlang.org/)
-[![Electron](docs/img/electron.png)](https://electronjs.org/)
-[![Redux](docs/img/redux.png)](https://redux.js.org/)
-[![Jest](docs/img/jest.png)](https://facebook.github.io/jest/)
-
-[Electron](https://electronjs.org/) application boilerplate based on [React](https://reactjs.org/), [Redux](https://redux.js.org/), and [Webpack](https://webpack.js.org/) for rapid application development using [TypeScript](https://www.typescriptlang.org/).
 
 ## Install
-Clone the repository with Git:
+### From our prebuilt binaries
+Download the latest release from [our releases](https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App/releases).
 
+### From Arch User Repository (AUR)
+1.) Install using yay or your choice of AUR helper:
 ```bash
-git clone --depth=1 git@github.com:Robinfr/electron-react-typescript.git <your-project-name>
+yay -S bluebubbles
 ```
 
-And then install the dependencies:
+### From Source
+1.) Clone the repository with Git:
 
 ```bash
-cd <your-project-name>
+git clone https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App.git
+```
+
+2.) Install the dependencies:
+
+```bash
+cd BlueBubbles-Desktop-App
 npm install
 ```
 
-## Usage
-Both processes have to be started **simultaneously** in different console tabs:
+##### Optional: In-App GIF keyboard (pre-completed using our API key in our [releases](https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App/releases))
 
-```bash
-npm run start-renderer-dev
-npm run start-main-dev
-```
+1.) Create a developer account on [GIPHY](https://developers.giphy.com/docs/sdk/).
 
-This will start the application with hot-reload so you can instantly start developing your application.
+2.) Create a new SDK app and copy the API key
 
-You can also run do the following to start both in a single process:
+3.) Using a text editor open the `package.json` file
 
-```bash
-npm run start-dev
-```
+4.) Under the `scripts` section edit the `build-renderer` line to: 
+`cross-env GIPHY_API_KEY=<Copy GIPHY API Key Here> NODE_ENV=production webpack --config webpack.renderer.prod.config.js`
 
-## Packaging
-We use [Electron builder](https://www.electron.build/) to build and package the application. By default you can run the following to package for your current platform:
+5.) Continue to the compile binary step below
+
+
+3.) Compile the binary
 
 ```bash
 npm run dist
 ```
 
-This will create a installer for your platform in the `releases` folder.
-
-You can make builds for specific platforms (or multiple platforms) by using the options found [here](https://www.electron.build/cli). E.g. building for all platforms (Windows, Mac, Linux):
+4.) Your compiled binaries will be located in the release folder
 
 ```bash
-npm run dist -- -mwl
+cd release
 ```
 
-## Husky and Prettier
-This project comes with both Husky and Prettier setup to ensure a consistent code style. 
 
-To change the code style, you can change the configuration in `.prettierrc`. 
+## Development environment
+1.) Clone the repository with Git:
 
-In case you want to get rid of this, you can removing the following from `package.json`:
+```bash
+git clone https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App.git
+```
 
-1. Remove `precommit` from the `scripts` section
-1. Remove the `lint-staged` section
-1. Remove `lint-staged`, `prettier`, `eslint-config-prettier`, and `husky` from the `devDependencies`
+2.) Install the dependencies:
 
-Also remove all mentions of Prettier from the `extends` section in `.eslintrc.json`.
+```bash
+cd BlueBubbles-Desktop-App
+npm install
+```
 
-## About this project
-This project was set up from scratch but is heavily influenced by the [Electron React Boilerplate project](https://github.com/chentsulin/electron-react-boilerplate) and [React Redux TypeScript guide](https://github.com/piotrwitek/react-redux-typescript-guide).
+##### Optional: In-App GIF keyboard (Dev only, will not work in build unless you follow the build instructions as well)
+1.) Create a developer account on [GIPHY](https://developers.giphy.com/docs/sdk/).
 
-## License
-MIT © [R. Franken](https://github.com/Robinfr)
+2.) Create a new SDK app and copy the API key
+
+3.) In the base project directory create a new file called `.env`
+
+4.) Add this line to your `.env` file
+`GIPHY_API_KEY=<Copy GIPHY API Key Here>`
+
+5.) Continue
+
+
+3.) Run the project in dev mode
+```bash
+npm run start-dev
+```
