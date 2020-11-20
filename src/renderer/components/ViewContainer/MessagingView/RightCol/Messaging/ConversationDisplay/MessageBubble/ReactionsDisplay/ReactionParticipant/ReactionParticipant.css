@@ -84,3 +84,9 @@
     transform-origin: bottom;
     animation: scale-up 0.45s linear both;
 }
+
+.reactionAvatar {
+    height: 40px;
+    width: 40px;
+    border-radius: 80px;
+}

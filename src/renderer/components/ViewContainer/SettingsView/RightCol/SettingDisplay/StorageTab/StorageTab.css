@@ -1,11 +1,13 @@
-.StorageTab{
+#StorageTab {
     height: 100%;
+    max-width: 100%;
     display: flex;
     flex-direction: column;
 }
 
-#StorageTitle{
+#StorageTitle {
     height: 35px;
+    min-height: 35px;
     display: flex;
     justify-content: center;
     align-items: flex-start;

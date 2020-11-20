@@ -6,7 +6,6 @@ import * as url from "url";
 
 import { Server } from "@server/index";
 import { FileSystem } from "@server/fileSystem";
-import linuxTrayIcon from "@renderer/assets/icon128.png";
 import windowsTrayIcon from "@renderer/assets/icon.ico";
 
 require("dotenv").config();
@@ -16,6 +15,7 @@ app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors");
 
 let win: BrowserWindow | null;
 let tray;
+let wasAutoStarted = false;
 const BlueBubbles = Server(win);
 
 const gotTheLock = app.requestSingleInstanceLock();
@@ -32,17 +32,133 @@ if (!gotTheLock) {
 
     app.whenReady().then(async () => {
         await BlueBubbles.start();
+        if (BlueBubbles.configRepo.get("useNativeTitlebar")) {
+            // BlueBubbles.window.close();
+            await createWindow(true);
+
+            if (process.argv.includes("--hidden")) {
+                wasAutoStarted = true;
+
+                if (process.platform === "linux") {
+                    tray = new Tray(path.join(FileSystem.resources, "resources", "icons", "128x128.png"));
+                } else {
+                    tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
+                }
+
+                const contextMenu = Menu.buildFromTemplate([
+                    {
+                        label: "BlueBubbles",
+                        enabled: false
+                    },
+                    {
+                        type: "separator"
+                    },
+                    {
+                        label: "Open",
+                        type: "normal",
+                        click: async () => {
+                            if (win) {
+                                win.show();
+                                tray.destroy();
+                            } else {
+                                app.emit("active");
+                            }
+                        }
+                    },
+                    {
+                        label: "Close",
+                        type: "normal",
+                        click: async () => {
+                            await FileSystem.deleteTempFiles();
+                            win = null;
+                            app.quit();
+                            app.exit(0);
+                        }
+                    }
+                ]);
+
+                tray.setToolTip("BlueBubbles");
+                tray.setContextMenu(contextMenu);
+                tray.on("click", async () => {
+                    if (win) {
+                        win.show();
+                        tray.destroy();
+                    } else {
+                        app.emit("active");
+                    }
+                });
+
+                win.hide();
+            }
+        } else {
+            await createWindow();
+
+            if (process.argv.includes("--hidden")) {
+                wasAutoStarted = true;
+
+                if (process.platform === "linux") {
+                    tray = new Tray(path.join(FileSystem.resources, "resources", "icons", "128x128.png"));
+                } else {
+                    tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
+                }
+
+                const contextMenu = Menu.buildFromTemplate([
+                    {
+                        label: "BlueBubbles",
+                        enabled: false
+                    },
+                    {
+                        type: "separator"
+                    },
+                    {
+                        label: "Open",
+                        type: "normal",
+                        click: async () => {
+                            if (win) {
+                                win.show();
+                                tray.destroy();
+                            } else {
+                                app.emit("active");
+                            }
+                        }
+                    },
+                    {
+                        label: "Close",
+                        type: "normal",
+                        click: async () => {
+                            await FileSystem.deleteTempFiles();
+                            win = null;
+                            app.quit();
+                            app.exit(0);
+                        }
+                    }
+                ]);
+
+                tray.setToolTip("BlueBubbles");
+                tray.setContextMenu(contextMenu);
+                tray.on("click", async () => {
+                    if (win) {
+                        win.show();
+                        tray.destroy();
+                    } else {
+                        app.emit("active");
+                    }
+                });
+
+                win.hide();
+            }
+        }
     });
 }
 
-const createWindow = async () => {
+const createWindow = async (withFrame = false) => {
     win = new BrowserWindow({
         width: 1200,
         height: 750,
         minWidth: 550,
         minHeight: 350,
         transparent: true,
-        frame: false,
+        frame: withFrame,
         webPreferences: { nodeIntegration: true, webSecurity: false }
     });
 
@@ -66,8 +182,8 @@ const createWindow = async () => {
         });
     }
 
-    win.on("closed", () => {
-        win = null;
+    win.on("closed", async () => {
+        // win = null;
     });
 
     win.on("maximize", () => {
@@ -106,10 +222,15 @@ ipcMain.on("force-focus", () => {
     win.focus();
 });
 
+ipcMain.handle("change-window-titlebar", async (_, args) => {
+    BlueBubbles.window.close();
+    createWindow(args.withFrame);
+});
+
 ipcMain.handle("close-event", async () => {
     if (BlueBubbles.configRepo.get("closeToTray")) {
         if (process.platform === "linux") {
-            tray = new Tray(path.join(FileSystem.resources, linuxTrayIcon));
+            tray = new Tray(path.join(FileSystem.resources, "resources", "icons", "128x128.png"));
         } else {
             tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
         }
@@ -173,7 +294,9 @@ app.on("browser-window-blur", () => {
     if (win && win.webContents) win.webContents.send("blurred");
 });
 
-app.on("ready", createWindow);
+app.on("ready", async () => {
+    // await createWindow();
+});
 
 app.on("window-all-closed", async () => {
     if (process.platform !== "darwin") {
@@ -182,6 +305,12 @@ app.on("window-all-closed", async () => {
 });
 
 app.on("activate", () => {
+    console.log(BlueBubbles.configRepo.get("useNativeTitlebar"));
+    if (BlueBubbles.configRepo.get("useNativeTitlebar")) {
+        BlueBubbles.window.close();
+        createWindow(true);
+    }
+
     if (win === null) {
         createWindow();
     }

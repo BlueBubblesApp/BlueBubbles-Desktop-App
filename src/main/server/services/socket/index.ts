@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import * as io from "socket.io-client";
+import io from "socket.io-client";
 import * as os from "os";
 import * as path from "path";
 import * as Notifier from "node-notifier";
@@ -145,8 +145,6 @@ export class SocketService {
                 customPath
             };
 
-            console.log(path.join(FileSystem.resources, "logo64.png"));
-
             // Don't show a notificaiton if they have been disabled
             if (Server().configRepo.get("globalNotificationsDisabled")) return;
 
@@ -218,6 +216,16 @@ export class SocketService {
             Server().setSyncStatus({ completed: false, error: false, message: `Reconnecting (${attempt})` });
         });
 
+        this.server.on("tabpack-sent", mes => {
+            console.log("SENT");
+            console.log(mes);
+        });
+
+        this.server.on("send-tapback-error", mes => {
+            // console.log("FAiled")
+            // console.log(mes)
+        });
+
         this.server.on("chat-read-status-changed", async params => {
             if (params.status === false && params.chatGuid != null) {
                 const chats = await Server().chatRepo.getChats(params.chatGuid);
@@ -286,7 +294,7 @@ export class SocketService {
         withChats = false,
         withHandle = true,
         withAttachments = true,
-        withBlurhash = true,
+        withBlurhash = false,
         sort = "DESC",
         where = []
     }: GetChatMessagesParams): Promise<MessageResponse[]> {
@@ -343,5 +351,17 @@ export class SocketService {
 
     async renameGroup(params) {
         this.server.emit("rename-group", params);
+    }
+
+    async getServerMetadata(): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            this.server.emit("get-server-metadata", null, res => {
+                if ([200, 201].includes(res.status)) {
+                    resolve(res.data as string);
+                } else {
+                    reject(res.message);
+                }
+            });
+        });
     }
 }

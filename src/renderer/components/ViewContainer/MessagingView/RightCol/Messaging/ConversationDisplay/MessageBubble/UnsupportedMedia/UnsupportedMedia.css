@@ -9,7 +9,6 @@
     margin-top: 3px;
     cursor: pointer;
     animation: fade 0.25s ease-in-out;
-    max-width: 250px;
 }
 
 .UnsupportedMedia > p:first-child {
@@ -22,4 +21,5 @@
     font-size: 14px;
     margin: 0;
     margin-bottom: 10px;
+    text-align: center;
 }

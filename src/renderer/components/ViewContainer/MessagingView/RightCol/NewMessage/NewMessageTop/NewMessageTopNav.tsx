@@ -191,14 +191,14 @@ class NewMessageTopNav extends React.Component<Props, State> {
             x = "";
         }
 
-        const participants = (chat?.participants ?? []).map(handle => {
+        const participants = (chat?.participants ?? []).map((handle: Handle) => {
             const hasContact = false;
             if (hasContact) {
                 // TODO: get the contact
                 return handle.address;
             }
 
-            return getiMessageNumberFormat(handle.address);
+            return getiMessageNumberFormat(handle.address, handle.country);
         });
 
         return (

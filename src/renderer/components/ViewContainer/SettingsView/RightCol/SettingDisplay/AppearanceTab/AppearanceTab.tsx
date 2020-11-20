@@ -46,7 +46,7 @@ class AppearanceTab extends React.Component<object, AppearanceTabState> {
     render() {
         return (
             <>
-                <div id="AppearanceTitle">
+                <div id="AppearanceTitle" className="RightTitle-Set">
                     <h1>Appearance</h1>
                 </div>
                 <div className="AppearanceTab">

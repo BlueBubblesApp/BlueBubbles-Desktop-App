@@ -66,8 +66,7 @@
          "dist/",
          "node_modules/",
          "package.json",
-         "resources/",
-         ".env"
+         "resources/"
       ],
       "asar": true,
       "asarUnpack": [
@@ -79,11 +78,10 @@
       ],
       "mac": {
          "category": "public.app-category.social-networking",
-         "icon": "./resources/icon1024.png"
+         "icon": "./resources/linux.icns"
       },
       "linux": {
-         "target": "deb",
-         "icon": "./resources/icon1024.png"
+         "target": "deb"
       },
       "win": {
          "target": "nsis"
@@ -174,6 +172,8 @@
       "cors": "^2.8.5",
       "dictionary-en": "^3.0.1",
       "electron-dl": "^3.0.2",
+      "emoji-mart": "^3.0.0",
+      "emoji-name-map": "^1.2.9",
       "emoji-regex": "^9.0.0",
       "express": "^4.17.1",
       "ffmpeg-static": "^4.2.5",
@@ -198,6 +198,7 @@
       "react-redux": "^7.2.0",
       "react-router-dom": "^5.2.0",
       "react-router-transition": "^2.0.0",
+      "react-string-replace": "^0.4.4",
       "react-transition-group": "^1.2.1",
       "read-chunk": "^3.2.0",
       "redux": "^4.0.5",
@@ -207,6 +208,7 @@
       "sqlite3": "^4.2.0",
       "string-similarity": "^4.0.2",
       "typeorm": "^0.2.25",
+      "valid-url": "^1.0.9",
       "vcard": "^0.1.0",
       "vcf": "^2.0.6"
    }

@@ -55,11 +55,12 @@
     position: relative;
 }
 
-#messageFieldInput-NewMessage[type="text"] {
-    height: 19px;
+#messageFieldInput-NewMessage {
+    resize: none;
+    max-height: 19px;
+    min-height: 19px;
     background-repeat: no-repeat;
     border-radius: 25px;
-    border: none;
     flex-grow: 1;
     padding: 3px 35px 3px 8px;
     font-family: "SF UI Display Bold";
@@ -456,4 +457,62 @@
 #spellingContextMenu img:hover {
     cursor: pointer;
     opacity: 0.55;
+}
+
+#emojiSearchContainer {
+    width: calc(100vw - 330px);
+    height: auto;
+    position: absolute;
+    bottom: 55px;
+    right: 15px;
+    background-color: var(--sidebar-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: 10px;
+    padding: 5px;
+    overflow-y: scroll;
+    max-height: 400px;
+    z-index: 1;
+}
+
+.aEmojiMatch {
+    width: calc(100% - 16px);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 15px;
+    padding: 12px 8px 12px 2px;
+    border-radius: 8px;
+    z-index: 1;
+}
+
+.aEmojiMatch:hover {
+    background-color: var(--secondary-color);
+}
+
+.aEmojiMatch p {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: 14px;
+    margin: 0;
+    z-index: 1;
+}
+
+.aEmojiMatch > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 33px;
+    max-width: 33px;
+    min-height: 100%;
+}
+
+.aEmojiMatch > div > p {
+    font-size: 24px;
+}
+
+.activeEmojiMatchRow {
+    background-color: var(--secondary-color) !important;
 }

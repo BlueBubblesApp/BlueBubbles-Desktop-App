@@ -26,14 +26,14 @@
     font-family: "SF UI Display Light";
     font-size: 14px;
     background-color: var(--incoming-message-color);
-    padding: 8px 15px 8px 15px;
+    padding: 6px 15px 6px 15px;
     border-radius: 20px;
     word-break: normal;
     overflow-wrap: break-word;
     word-wrap: break-word;
     margin-top: 3px;
     margin-bottom: 0;
-    min-height: 16px;
+    min-height: 22px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -44,7 +44,10 @@
 .IncomingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
-    // font-weight: 200;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    display: flex;
+    align-items: center;
 }
 
 .OutgoingMessage {
@@ -64,27 +67,26 @@
     color: white;
     font-family: "SF UI Display Light";
     font-size: 14px;
-    padding: 8px 15px 8px 15px;
-    background: var(--outgoing-message-color);
+    padding: 6px 15px 6px 15px;
+    background-color: var(--outgoing-message-color);
     border-radius: 20px;
     word-break: normal;
     overflow-wrap: break-word;
     word-wrap: break-word;
     margin-top: 3px;
     margin-bottom: 0;
-    min-height: 16px;
+    min-height: 22px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     width: fit-content;
 }
-
 .gradientMessages {
     background: linear-gradient(
         180deg,
-        rgba(255, 29, 79, 1) 0%,
-        var(--outgoing-message-color) 45%,
+        rgba(168, 15, 255, 1) 0%,
+        var(--outgoing-message-color) 50%,
         var(--outgoing-message-color) 80%
     ) !important;
     background-attachment: fixed !important;
@@ -109,10 +111,17 @@
     opacity: 0.6;
 }
 
+.OutgoingMessage .bigEmojis.unsent > p {
+    opacity: 0.6;
+}
+
 .OutgoingMessage .message > p {
     margin-top: 0;
     margin-bottom: 0;
-    // font-weight: 200;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    display: flex;
+    align-items: center;
 }
 
 .messageSubject {
@@ -161,9 +170,6 @@
 }
 
 .inChatContactCard > div svg:first-of-type {
-    // height: 35px;
-    // width: 35px;
-    // fill: blue;
     margin-right: 7px;
 }
 
@@ -220,21 +226,21 @@
     -webkit-background-clip: border-box;
     background-clip: border-box;
     border-bottom-left-radius: 15px;
-    transition: ease-in-out 0.45s;
+    /* transition: ease-in-out 0.45s; */
 }
 
 .OutgoingMessage .message.tail:after {
     opacity: var(--hide-pseudo);
     content: "";
     position: absolute;
-    z-index: 1;
+    z-index: 0;
     bottom: 0;
     right: -10px;
     width: 10px;
     height: 20px;
     background: var(--background-color);
     border-bottom-left-radius: 10px;
-    transition: ease-in-out 0.45s;
+    /* transition: ease-in-out 0.45s; */
 }
 
 /* Incoming message tails */
@@ -270,7 +276,7 @@
     opacity: var(--hide-pseudo);
     content: "";
     position: absolute;
-    z-index: 1;
+    z-index: 0;
     bottom: 0;
     left: -10px;
     width: 10px;
@@ -298,7 +304,7 @@
     opacity: var(--hide-pseudo);
     content: "";
     position: absolute;
-    z-index: 1;
+    z-index: 0;
     bottom: 0;
     left: -10px;
     width: 10px;
@@ -327,7 +333,7 @@
     opacity: var(--hide-pseudo);
     content: "";
     position: absolute;
-    z-index: 1;
+    z-index: 0;
     bottom: 0;
     right: -10px;
     width: 10px;
@@ -337,10 +343,15 @@
     transition: ease-in-out 0.45s;
 }
 
-.Attachment {
+.attachmentContainer {
     max-height: 40%;
     max-width: 40%;
     min-width: 40%;
+    position: relative;
+}
+
+.Attachment {
+    width: 100%;
     border-radius: 20px;
     margin-top: 3px;
     cursor: pointer;
@@ -448,7 +459,7 @@
 
 .linkBottomDiv > div {
     margin-left: 8px;
-    z-index: 2;
+    z-index: 1;
 }
 
 .linkBottomDiv:hover {
@@ -478,6 +489,7 @@
 }
 
 .linkContainer {
+    position: relative;
     width: fit-content;
     display: flex;
     flex-direction: column;
@@ -494,7 +506,7 @@
     max-height: 35px;
 }
 
-// Audio Attachment
+/* Audio Attachment */
 .OutgoingAudioAttachmentControls {
     max-width: 100%;
     min-width: 35%;
@@ -503,7 +515,6 @@
     font-family: "SF UI Display Light";
     font-size: 14px;
     background-color: var(--outgoing-message-color);
-    // background: linear-gradient(180deg, rgba(255,29,79,1) 0%, rgba(0,110,228,1) 45%, rgba(0,110,228,1) 80%);
     background-attachment: fixed;
     -webkit-background-clip: border-box;
     background-clip: border-box;
@@ -628,13 +639,18 @@
         max-width: 85% !important;
     }
 
+    .attachmentContainer {
+        max-width: 60% !important;
+        min-width: 60% !important;
+    }
+
     .IncomingMessage {
         max-width: 85% !important;
     }
 }
 
 @media (max-width: 1000px) {
-    .Attachment {
+    .attachmentContainer {
         max-height: 45%;
         max-width: 45%;
         min-width: 45%;
@@ -647,7 +663,7 @@
 }
 
 @media (max-width: 900px) {
-    .Attachment {
+    .attachmentContainer {
         max-height: 50%;
         max-width: 50%;
         min-width: 50%;
@@ -659,33 +675,7 @@
     }
 }
 
-// @media (max-width: 1200px) {
-//     .Attachment {
-//         max-height: 33%;
-//         max-width: 33%;
-//         min-width: 33%;
-//     }
-
-//     .linkContainer {
-//         max-width: 33%;
-//         min-width: 33%;
-//     }
-// }
-
-// @media (max-width: 1600px) {
-//     .Attachment {
-//         max-height: 30%;
-//         max-width: 30%;
-//         min-width: 30%;
-//     }
-
-//     .linkContainer {
-//         max-width: 30%;
-//         min-width: 30%;
-//     }
-// }
-
-// New Reactions
+/* New Reactions */
 #reactionOverlay {
     top: 35px;
     height: 100vh;
@@ -772,10 +762,6 @@
     padding: 6px;
 }
 
-// #ImageContextMenu div:last-of-type p {
-//     padding: 0;
-// }
-
 #ImageContextMenu div:hover {
     cursor: pointer;
     background-color: var(--main-title-color);
@@ -785,7 +771,7 @@
     color: var(--background-color);
 }
 
-// Special message effect types
+/* Special message effect types */
 .replayMessageEffect {
     display: flex;
     justify-content: center;
@@ -1036,4 +1022,62 @@
     0% {
         top: 110%;
     }
+}
+
+.attachmentDownloadContainer {
+    max-width: 100%;
+    min-width: 100%;
+    max-height: 250px;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.attachmentDownloadContainer img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 20px;
+}
+
+.blurhashDownloadInfo {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    z-index: 2;
+    font-family: "SF UI Display Bold";
+    font-size: 15px;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+.blurhashDownloadInfo p {
+    margin: 5px 0;
+    max-width: 80%;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+.blurhashDownloadInfo > div {
+    width: 60%;
+    z-index: 2;
+    background: #555;
+    border-radius: 10px;
+    height: 8px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.blurhashDownloadInfo > div > span {
+    z-index: 2;
+    background-color: white;
+    border-radius: 10px;
+    height: 100%;
 }

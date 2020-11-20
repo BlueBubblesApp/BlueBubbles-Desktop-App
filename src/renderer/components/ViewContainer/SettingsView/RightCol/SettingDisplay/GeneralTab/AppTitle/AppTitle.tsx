@@ -17,7 +17,6 @@ type State = {
     capitalizeFirstLetter: boolean;
     gradientMessages: boolean;
     colorfulContacts: boolean;
-    leftTitlebar: boolean;
 };
 
 class AppTitle extends React.Component<Props, State> {
@@ -30,8 +29,7 @@ class AppTitle extends React.Component<Props, State> {
             sendAudio: false,
             capitalizeFirstLetter: false,
             gradientMessages: false,
-            colorfulContacts: false,
-            leftTitlebar: false
+            colorfulContacts: false
         };
     }
 
@@ -43,8 +41,7 @@ class AppTitle extends React.Component<Props, State> {
             sendAudio: config.sendAudio,
             capitalizeFirstLetter: config.capitalizeFirstLetter,
             gradientMessages: config.gradientMessages,
-            colorfulContacts: config.colorfulContacts,
-            leftTitlebar: config.leftTitlebar
+            colorfulContacts: config.colorfulContacts
         });
 
         console.log(config);
@@ -77,25 +74,6 @@ class AppTitle extends React.Component<Props, State> {
         const newConfig = { capitalizeFirstLetter: !this.state.capitalizeFirstLetter };
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ capitalizeFirstLetter: !this.state.capitalizeFirstLetter });
-    }
-
-    async handleGradientMessages() {
-        const newConfig = { gradientMessages: !this.state.gradientMessages };
-        await ipcRenderer.invoke("set-config", newConfig);
-        this.setState({ gradientMessages: !this.state.gradientMessages });
-    }
-
-    async handleColorfulContacts() {
-        const newConfig = { colorfulContacts: !this.state.colorfulContacts };
-        await ipcRenderer.invoke("set-config", newConfig);
-        this.setState({ colorfulContacts: !this.state.colorfulContacts });
-    }
-
-    async handleLeftTitlebar() {
-        const newConfig = { leftTitlebar: !this.state.leftTitlebar };
-        await ipcRenderer.invoke("set-config", newConfig);
-        this.setState({ leftTitlebar: !this.state.leftTitlebar });
-        ipcRenderer.emit("titlebar-update");
     }
 
     render() {
@@ -145,39 +123,6 @@ class AppTitle extends React.Component<Props, State> {
                             type="checkbox"
                             checked={this.state.capitalizeFirstLetter}
                             onChange={() => this.handleChangeCapitalizeFirstLetter()}
-                        />
-                        <i />
-                    </label>
-                </div>
-                <div>
-                    <p>Scrolling Gradient On Messages</p>
-                    <label className="form-switch" onClick={() => this.handleGradientMessages()}>
-                        <input
-                            type="checkbox"
-                            checked={this.state.gradientMessages}
-                            onChange={() => this.handleGradientMessages()}
-                        />
-                        <i />
-                    </label>
-                </div>
-                <div>
-                    <p>Colorful Contacts</p>
-                    <label className="form-switch" onClick={() => this.handleColorfulContacts()}>
-                        <input
-                            type="checkbox"
-                            checked={this.state.colorfulContacts}
-                            onChange={() => this.handleColorfulContacts()}
-                        />
-                        <i />
-                    </label>
-                </div>
-                <div>
-                    <p>Titlebar Buttons On Left Side</p>
-                    <label className="form-switch" onClick={() => this.handleLeftTitlebar()}>
-                        <input
-                            type="checkbox"
-                            checked={this.state.leftTitlebar}
-                            onChange={() => this.handleLeftTitlebar()}
                         />
                         <i />
                     </label>

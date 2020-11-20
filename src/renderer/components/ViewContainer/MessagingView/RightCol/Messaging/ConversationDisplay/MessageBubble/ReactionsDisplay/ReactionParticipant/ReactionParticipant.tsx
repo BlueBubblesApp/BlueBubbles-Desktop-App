@@ -1,63 +1,107 @@
 /* eslint-disable max-len */
+import { generateReactionsDisplayIconText } from "@renderer/helpers/utils";
+import { Handle, Message } from "@server/databases/chat/entity";
+import { ipcRenderer } from "electron";
 import * as React from "react";
 import "./ReactionParticipant.css";
 
 type ReactionParticipantProps = {
-    reactionSender: string;
+    reactionSender: Handle;
     reactionType: string;
 };
 
-type ReactionParticipantState = {};
+type ReactionParticipantState = {
+    firstGradientNumber: number;
+};
 
 class ReactionParticipant extends React.Component<ReactionParticipantProps, ReactionParticipantState> {
     constructor(props) {
         super(props);
 
-        this.state = {};
+        this.state = {
+            firstGradientNumber: 8
+        };
+    }
+
+    async componentDidMount() {
+        console.log(this.props.reactionType);
+        const config = await ipcRenderer.invoke("get-config");
+
+        const seedrandom = require("seedrandom");
+        const rng = seedrandom(this.props.reactionSender.address);
+        const rand1 = rng();
+
+        if (rand1 <= 1 / 7) {
+            this.setState({ firstGradientNumber: 1 });
+        } else if (rand1 > 1 / 7 && rand1 <= 2 / 7) {
+            this.setState({ firstGradientNumber: 2 });
+        } else if (rand1 > 2 / 7 && rand1 <= 3 / 7) {
+            this.setState({ firstGradientNumber: 3 });
+        } else if (rand1 > 3 / 7 && rand1 <= 4 / 7) {
+            this.setState({ firstGradientNumber: 4 });
+        } else if (rand1 > 4 / 7 && rand1 <= 5 / 7) {
+            this.setState({ firstGradientNumber: 5 });
+        } else if (rand1 > 5 / 7 && rand1 <= 6 / 7) {
+            this.setState({ firstGradientNumber: 6 });
+        } else if (rand1 > 6 / 7 && rand1 <= 7 / 7) {
+            this.setState({ firstGradientNumber: 7 });
+        }
+
+        if (!config.colorfulContacts) {
+            this.setState({ firstGradientNumber: 8 });
+        }
     }
 
     render() {
         if (this.props.reactionType === "love") {
             return (
                 <div className="ReactionParticipant">
-                    <>
-                        {this.props.reactionSender === "?" ? (
-                            <svg height="40px" width="40px" viewBox="0 0 1000 1000">
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
-                                <mask id="rmvProfile">
-                                    <circle cx="50%" cy="50%" r="435" fill="white" />
-                                </mask>
-                                <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
-                                <circle
-                                    className="cls-2"
-                                    mask="url(#rmvProfile)"
-                                    fill="white"
-                                    cx="50%"
-                                    cy="106%"
-                                    r="400"
-                                />
-                            </svg>
-                        ) : (
-                            <svg height="40px" width="40px" viewBox="0 0 100 100">
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" fill="url(#Gradient1)" cx="50%" cy="50%" r="50" />
-                                <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
-                                    {this.props.reactionSender}
-                                </text>
-                            </svg>
-                        )}
-                    </>
+                    {this.props.reactionSender && this.props.reactionSender.avatar ? (
+                        <img
+                            className="reactionAvatar"
+                            src={this.props.reactionSender.avatar}
+                            alt={this.props.reactionSender.address}
+                        />
+                    ) : (
+                        <>
+                            {generateReactionsDisplayIconText(this.props.reactionSender) === "?" ? (
+                                <svg height="40px" width="40px" viewBox="0 0 1000 1000">
+                                    <circle
+                                        className="cls-1"
+                                        cx="50%"
+                                        cy="50%"
+                                        r="500"
+                                        fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                    />
+                                    <mask id="rmvProfile">
+                                        <circle cx="50%" cy="50%" r="435" fill="white" />
+                                    </mask>
+                                    <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                                    <circle
+                                        className="cls-2"
+                                        mask="url(#rmvProfile)"
+                                        fill="white"
+                                        cx="50%"
+                                        cy="106%"
+                                        r="400"
+                                    />
+                                </svg>
+                            ) : (
+                                <svg height="40px" width="40px" viewBox="0 0 100 100">
+                                    <circle
+                                        className="cls-1"
+                                        fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                        cx="50%"
+                                        cy="50%"
+                                        r="50"
+                                    />
+                                    <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
+                                        {generateReactionsDisplayIconText(this.props.reactionSender)}
+                                    </text>
+                                </svg>
+                            )}
+                        </>
+                    )}
                     <div className="aReactionLower">
                         <div className="aReactionCounter">
                             <p>1</p>
@@ -82,47 +126,57 @@ class ReactionParticipant extends React.Component<ReactionParticipantProps, Reac
             return (
                 <div className="ReactionParticipant">
                     <>
-                        {this.props.reactionSender === "?" ? (
-                            <svg height="40px" width="40px" viewBox="0 0 1000 1000">
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
-                                <mask id="rmvProfile">
-                                    <circle cx="50%" cy="50%" r="435" fill="white" />
-                                </mask>
-                                <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
-                                <circle
-                                    className="cls-2"
-                                    mask="url(#rmvProfile)"
-                                    fill="white"
-                                    cx="50%"
-                                    cy="106%"
-                                    r="400"
-                                />
-                            </svg>
+                        {this.props.reactionSender && this.props.reactionSender.avatar ? (
+                            <img
+                                className="reactionAvatar"
+                                src={this.props.reactionSender.avatar}
+                                alt={this.props.reactionSender.address}
+                            />
                         ) : (
-                            <svg
-                                id="testContact"
-                                className="dynamicIcon"
-                                height="34px"
-                                width="34px"
-                                viewBox="0 0 100 100"
-                            >
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" fill="url(#Gradient1)" cx="50%" cy="50%" r="50" />
-                                <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
-                                    {this.props.reactionSender}
-                                </text>
-                            </svg>
+                            <>
+                                {generateReactionsDisplayIconText(this.props.reactionSender) === "?" ? (
+                                    <svg height="40px" width="40px" viewBox="0 0 1000 1000">
+                                        <circle
+                                            className="cls-1"
+                                            cx="50%"
+                                            cy="50%"
+                                            r="500"
+                                            fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                        />
+                                        <mask id="rmvProfile">
+                                            <circle cx="50%" cy="50%" r="435" fill="white" />
+                                        </mask>
+                                        <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                                        <circle
+                                            className="cls-2"
+                                            mask="url(#rmvProfile)"
+                                            fill="white"
+                                            cx="50%"
+                                            cy="106%"
+                                            r="400"
+                                        />
+                                    </svg>
+                                ) : (
+                                    <svg height="40px" width="40px" viewBox="0 0 100 100">
+                                        <circle
+                                            className="cls-1"
+                                            fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                            cx="50%"
+                                            cy="50%"
+                                            r="50"
+                                        />
+                                        <text
+                                            id="contactAvatarInitials"
+                                            x="50"
+                                            y="66"
+                                            stroke="none"
+                                            textAnchor="middle"
+                                        >
+                                            {generateReactionsDisplayIconText(this.props.reactionSender)}
+                                        </text>
+                                    </svg>
+                                )}
+                            </>
                         )}
                     </>
                     <div className="aReactionLower">
@@ -200,50 +254,52 @@ C654.1641,1099.2389,655.7422,897.9987,654.1641,898.2689z"
         if (this.props.reactionType === "dislike") {
             return (
                 <div className="ReactionParticipant">
-                    <>
-                        {this.props.reactionSender === "?" ? (
-                            <svg height="40px" width="40px" viewBox="0 0 1000 1000">
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
-                                <mask id="rmvProfile">
-                                    <circle cx="50%" cy="50%" r="435" fill="white" />
-                                </mask>
-                                <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
-                                <circle
-                                    className="cls-2"
-                                    mask="url(#rmvProfile)"
-                                    fill="white"
-                                    cx="50%"
-                                    cy="106%"
-                                    r="400"
-                                />
-                            </svg>
-                        ) : (
-                            <svg
-                                id="testContact"
-                                className="dynamicIcon"
-                                height="34px"
-                                width="34px"
-                                viewBox="0 0 100 100"
-                            >
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" fill="url(#Gradient1)" cx="50%" cy="50%" r="50" />
-                                <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
-                                    {this.props.reactionSender}
-                                </text>
-                            </svg>
-                        )}
-                    </>
+                    {this.props.reactionSender && this.props.reactionSender.avatar ? (
+                        <img
+                            className="reactionAvatar"
+                            src={this.props.reactionSender.avatar}
+                            alt={this.props.reactionSender.address}
+                        />
+                    ) : (
+                        <>
+                            {generateReactionsDisplayIconText(this.props.reactionSender) === "?" ? (
+                                <svg height="40px" width="40px" viewBox="0 0 1000 1000">
+                                    <circle
+                                        className="cls-1"
+                                        cx="50%"
+                                        cy="50%"
+                                        r="500"
+                                        fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                    />
+                                    <mask id="rmvProfile">
+                                        <circle cx="50%" cy="50%" r="435" fill="white" />
+                                    </mask>
+                                    <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                                    <circle
+                                        className="cls-2"
+                                        mask="url(#rmvProfile)"
+                                        fill="white"
+                                        cx="50%"
+                                        cy="106%"
+                                        r="400"
+                                    />
+                                </svg>
+                            ) : (
+                                <svg height="40px" width="40px" viewBox="0 0 100 100">
+                                    <circle
+                                        className="cls-1"
+                                        fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                        cx="50%"
+                                        cy="50%"
+                                        r="50"
+                                    />
+                                    <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
+                                        {generateReactionsDisplayIconText(this.props.reactionSender)}
+                                    </text>
+                                </svg>
+                            )}
+                        </>
+                    )}
                     <div className="aReactionLower">
                         <div className="aReactionCounter">
                             <p>1</p>
@@ -268,50 +324,52 @@ C654.1641,1099.2389,655.7422,897.9987,654.1641,898.2689z"
         if (this.props.reactionType === "laugh") {
             return (
                 <div className="ReactionParticipant">
-                    <>
-                        {this.props.reactionSender === "?" ? (
-                            <svg height="40px" width="40px" viewBox="0 0 1000 1000">
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
-                                <mask id="rmvProfile">
-                                    <circle cx="50%" cy="50%" r="435" fill="white" />
-                                </mask>
-                                <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
-                                <circle
-                                    className="cls-2"
-                                    mask="url(#rmvProfile)"
-                                    fill="white"
-                                    cx="50%"
-                                    cy="106%"
-                                    r="400"
-                                />
-                            </svg>
-                        ) : (
-                            <svg
-                                id="testContact"
-                                className="dynamicIcon"
-                                height="34px"
-                                width="34px"
-                                viewBox="0 0 100 100"
-                            >
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" fill="url(#Gradient1)" cx="50%" cy="50%" r="50" />
-                                <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
-                                    {this.props.reactionSender}
-                                </text>
-                            </svg>
-                        )}
-                    </>
+                    {this.props.reactionSender && this.props.reactionSender.avatar ? (
+                        <img
+                            className="reactionAvatar"
+                            src={this.props.reactionSender.avatar}
+                            alt={this.props.reactionSender.address}
+                        />
+                    ) : (
+                        <>
+                            {generateReactionsDisplayIconText(this.props.reactionSender) === "?" ? (
+                                <svg height="40px" width="40px" viewBox="0 0 1000 1000">
+                                    <circle
+                                        className="cls-1"
+                                        cx="50%"
+                                        cy="50%"
+                                        r="500"
+                                        fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                    />
+                                    <mask id="rmvProfile">
+                                        <circle cx="50%" cy="50%" r="435" fill="white" />
+                                    </mask>
+                                    <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                                    <circle
+                                        className="cls-2"
+                                        mask="url(#rmvProfile)"
+                                        fill="white"
+                                        cx="50%"
+                                        cy="106%"
+                                        r="400"
+                                    />
+                                </svg>
+                            ) : (
+                                <svg height="40px" width="40px" viewBox="0 0 100 100">
+                                    <circle
+                                        className="cls-1"
+                                        fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                        cx="50%"
+                                        cy="50%"
+                                        r="50"
+                                    />
+                                    <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
+                                        {generateReactionsDisplayIconText(this.props.reactionSender)}
+                                    </text>
+                                </svg>
+                            )}
+                        </>
+                    )}
                     <div className="aReactionLower">
                         <div className="aReactionCounter">
                             <p>1</p>
@@ -336,50 +394,52 @@ C654.1641,1099.2389,655.7422,897.9987,654.1641,898.2689z"
         if (this.props.reactionType === "emphasize") {
             return (
                 <div className="ReactionParticipant">
-                    <>
-                        {this.props.reactionSender === "?" ? (
-                            <svg height="40px" width="40px" viewBox="0 0 1000 1000">
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
-                                <mask id="rmvProfile">
-                                    <circle cx="50%" cy="50%" r="435" fill="white" />
-                                </mask>
-                                <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
-                                <circle
-                                    className="cls-2"
-                                    mask="url(#rmvProfile)"
-                                    fill="white"
-                                    cx="50%"
-                                    cy="106%"
-                                    r="400"
-                                />
-                            </svg>
-                        ) : (
-                            <svg
-                                id="testContact"
-                                className="dynamicIcon"
-                                height="34px"
-                                width="34px"
-                                viewBox="0 0 100 100"
-                            >
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" fill="url(#Gradient1)" cx="50%" cy="50%" r="50" />
-                                <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
-                                    {this.props.reactionSender}
-                                </text>
-                            </svg>
-                        )}
-                    </>
+                    {this.props.reactionSender && this.props.reactionSender.avatar ? (
+                        <img
+                            className="reactionAvatar"
+                            src={this.props.reactionSender.avatar}
+                            alt={this.props.reactionSender.address}
+                        />
+                    ) : (
+                        <>
+                            {generateReactionsDisplayIconText(this.props.reactionSender) === "?" ? (
+                                <svg height="40px" width="40px" viewBox="0 0 1000 1000">
+                                    <circle
+                                        className="cls-1"
+                                        cx="50%"
+                                        cy="50%"
+                                        r="500"
+                                        fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                    />
+                                    <mask id="rmvProfile">
+                                        <circle cx="50%" cy="50%" r="435" fill="white" />
+                                    </mask>
+                                    <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                                    <circle
+                                        className="cls-2"
+                                        mask="url(#rmvProfile)"
+                                        fill="white"
+                                        cx="50%"
+                                        cy="106%"
+                                        r="400"
+                                    />
+                                </svg>
+                            ) : (
+                                <svg height="40px" width="40px" viewBox="0 0 100 100">
+                                    <circle
+                                        className="cls-1"
+                                        fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                        cx="50%"
+                                        cy="50%"
+                                        r="50"
+                                    />
+                                    <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
+                                        {generateReactionsDisplayIconText(this.props.reactionSender)}
+                                    </text>
+                                </svg>
+                            )}
+                        </>
+                    )}
                     <div className="aReactionLower">
                         <div className="aReactionCounter">
                             <p>1</p>
@@ -404,50 +464,52 @@ C654.1641,1099.2389,655.7422,897.9987,654.1641,898.2689z"
         if (this.props.reactionType === "question") {
             return (
                 <div className="ReactionParticipant">
-                    <>
-                        {this.props.reactionSender === "?" ? (
-                            <svg height="40px" width="40px" viewBox="0 0 1000 1000">
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
-                                <mask id="rmvProfile">
-                                    <circle cx="50%" cy="50%" r="435" fill="white" />
-                                </mask>
-                                <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
-                                <circle
-                                    className="cls-2"
-                                    mask="url(#rmvProfile)"
-                                    fill="white"
-                                    cx="50%"
-                                    cy="106%"
-                                    r="400"
-                                />
-                            </svg>
-                        ) : (
-                            <svg
-                                id="testContact"
-                                className="dynamicIcon"
-                                height="34px"
-                                width="34px"
-                                viewBox="0 0 100 100"
-                            >
-                                <defs>
-                                    <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                        <stop className="stop1" offset="0%" stopColor="#686868" />
-                                        <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle className="cls-1" fill="url(#Gradient1)" cx="50%" cy="50%" r="50" />
-                                <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
-                                    {this.props.reactionSender}
-                                </text>
-                            </svg>
-                        )}
-                    </>
+                    {this.props.reactionSender && this.props.reactionSender && this.props.reactionSender.avatar ? (
+                        <img
+                            className="reactionAvatar"
+                            src={this.props.reactionSender.avatar}
+                            alt={this.props.reactionSender.address}
+                        />
+                    ) : (
+                        <>
+                            {generateReactionsDisplayIconText(this.props.reactionSender) === "?" ? (
+                                <svg height="40px" width="40px" viewBox="0 0 1000 1000">
+                                    <circle
+                                        className="cls-1"
+                                        cx="50%"
+                                        cy="50%"
+                                        r="500"
+                                        fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                    />
+                                    <mask id="rmvProfile">
+                                        <circle cx="50%" cy="50%" r="435" fill="white" />
+                                    </mask>
+                                    <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                                    <circle
+                                        className="cls-2"
+                                        mask="url(#rmvProfile)"
+                                        fill="white"
+                                        cx="50%"
+                                        cy="106%"
+                                        r="400"
+                                    />
+                                </svg>
+                            ) : (
+                                <svg height="40px" width="40px" viewBox="0 0 100 100">
+                                    <circle
+                                        className="cls-1"
+                                        fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                                        cx="50%"
+                                        cy="50%"
+                                        r="50"
+                                    />
+                                    <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
+                                        {generateReactionsDisplayIconText(this.props.reactionSender)}
+                                    </text>
+                                </svg>
+                            )}
+                        </>
+                    )}
                     <div className="aReactionLower">
                         <div className="aReactionCounter">
                             <p>1</p>

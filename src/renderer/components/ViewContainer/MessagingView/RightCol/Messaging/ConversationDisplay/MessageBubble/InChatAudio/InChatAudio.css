@@ -1,0 +1,35 @@
+input[type="range"] {
+    -webkit-appearance: none;
+    background: transparent;
+    --webkitProgressPercent: 0%;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+}
+
+input[type="range"]:focus {
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border-radius: 2.5px;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 5px;
+    cursor: pointer;
+    background-image: linear-gradient(
+        90deg,
+        var(--main-title-color) var(--webkitProgressPercent),
+        var(--secondary-color) var(--webkitProgressPercent)
+    );
+    border-radius: 2.5px;
+}
+
+.audioVisPrev::-webkit-slider-thumb {
+    width: 0px;
+    height: 0px;
+}
