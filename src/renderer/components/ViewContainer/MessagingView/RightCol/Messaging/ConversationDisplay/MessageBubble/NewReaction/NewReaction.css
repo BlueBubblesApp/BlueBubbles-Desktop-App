@@ -20,8 +20,10 @@
 .reactionIcon {
     height: 25px;
     fill: var(--sub-title-color);
-    margin-right: 20px;
+    margin-right: 7px;
     transition: ease-in-out 0.08s;
+    padding: 7px;
+    border-radius: 50%;
 }
 
 .reactionIcon:hover {

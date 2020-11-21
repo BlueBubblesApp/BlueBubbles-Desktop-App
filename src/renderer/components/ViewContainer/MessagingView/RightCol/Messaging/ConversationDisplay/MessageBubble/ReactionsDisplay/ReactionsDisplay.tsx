@@ -36,14 +36,15 @@ class ReactionsDisplay extends React.Component<Props, State> {
     }
 
     componentDidMount() {
-        // 0=avatar, 1=sender, 2=reactionType
+        // 0=avatar, 1=sender Handle, 2=reactionType
         const displayedReactions = [[], [], []];
         const reactionTypes = {};
 
         // Get all the reaction types
         if (this.props.message.reactions) {
             for (let i = 0; i < this.props.message.reactions.length; i += 1) {
-                displayedReactions[1].push(generateReactionsDisplayIconText(this.props.message.reactions[i].handle));
+                displayedReactions[0].push(this.props.message.reactions[i].handle?.avatar);
+                displayedReactions[1].push(this.props.message.reactions[i].handle);
                 displayedReactions[2].push(this.props.message.reactions[i].associatedMessageType);
             }
 

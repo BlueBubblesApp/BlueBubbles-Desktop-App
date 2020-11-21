@@ -21,7 +21,7 @@
 .aColorHex {
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
-    font-size: 13px;
+    font-size: calc(var(--message-font-size) - 1px);
     outline: none;
     border: none;
     background-color: var(--background-color);

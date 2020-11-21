@@ -18,7 +18,7 @@ class DetailContactAvatar extends React.Component<Props, State> {
     render() {
         return (
             // eslint-disable-next-line react/self-closing-comp
-            <svg id="testContact" className="dynamicIcon" height="34px" width="34px" viewBox="0 0 100 100">
+            <svg height="34px" width="34px" viewBox="0 0 100 100">
                 <circle
                     className="cls-1"
                     fill={`url(#ColoredGradient${this.props.gradientNumber})`}

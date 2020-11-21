@@ -6,6 +6,7 @@ import { ipcRenderer, App } from "electron";
 import "./AppearanceTab.css";
 import ThemeCarousel from "./ThemeCarousel/ThemeCarousel";
 import ThemeConfigDisplay from "./ThemeConfigDisplay/ThemeConfigDisplay";
+import FontSizeSlider from "./FontSizeSlider/FontSizeSlider";
 
 interface AppearanceTabState {
     currentTheme: string;
@@ -46,12 +47,13 @@ class AppearanceTab extends React.Component<object, AppearanceTabState> {
     render() {
         return (
             <>
-                <div id="AppearanceTitle">
+                <div id="AppearanceTitle" className="RightTitle-Set">
                     <h1>Appearance</h1>
                 </div>
                 <div className="AppearanceTab">
                     <div id="AppearanceContainer">
                         <ThemeCarousel isEditingBlurred={this.state.isEditingBlurred} />
+                        <FontSizeSlider />
                         <div id="windowFocusedDiv">
                             <div>
                                 <h1 id="windowFocusedSetting">

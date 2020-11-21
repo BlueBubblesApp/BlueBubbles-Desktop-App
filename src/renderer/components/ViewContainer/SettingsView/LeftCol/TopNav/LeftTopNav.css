@@ -1,10 +1,11 @@
-.LeftTopNav-Set {
+#LeftTopNav-Set {
     height: 35px;
     min-height: 35px;
     width: 100%;
     background-color: var(--sidebar-color);
     display: flex;
     justify-content: center;
+    transition: ease-in-out 0.1s;
 }
 
 #leftTopSearch {

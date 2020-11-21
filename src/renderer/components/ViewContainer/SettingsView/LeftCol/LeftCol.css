@@ -7,3 +7,15 @@
     flex-direction: column;
     border-radius: 0px 0px 0px 5px;
 }
+
+.LeftCol-Blurred {
+    background-color: var(--sidebar-blurred-color) !important;
+}
+
+.RightTopNavBlurred {
+    background-color: var(--secondary-blurred-color) !important;
+}
+
+.RightTitle-Set {
+    transition: ease-in-out 0.1s;
+}

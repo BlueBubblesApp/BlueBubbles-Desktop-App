@@ -26,6 +26,10 @@ import { AttachmentChunkParams, GetChatMessagesParams } from "./services/socket/
 import { Attachment, Chat, Handle, Message } from "./databases/chat/entity";
 import { Theme } from "./databases/config/entity";
 
+const { autoUpdater } = require("electron-updater");
+
+autoUpdater.autoDownload = false;
+
 const AutoLaunch = require("auto-launch");
 
 class BackendServer {
@@ -95,8 +99,10 @@ class BackendServer {
 
         // Handle start with OS
         this.bbAutoLauncher = new AutoLaunch({
-            name: "BlueBubbles"
+            name: "BlueBubbles",
+            isHidden: true
         });
+
         if (this.configRepo.get("startWithOS")) {
             this.bbAutoLauncher
                 .isEnabled()
@@ -311,7 +317,9 @@ class BackendServer {
         now = new Date().getTime();
         for (const handle of handles) {
             for (const contact of contacts) {
-                if (sanitizeAddress(handle.address) === sanitizeAddress(contact.address)) {
+                if (
+                    sanitizeAddress(handle.address, handle.country) === sanitizeAddress(contact.address, handle.country)
+                ) {
                     const updateData: DeepPartial<Handle> = {};
                     if (contact.firstName || contact.lastName) {
                         updateData.firstName = contact.firstName ?? "";
@@ -473,7 +481,7 @@ class BackendServer {
                 withChats: false,
                 limit: 25,
                 offset: 0,
-                withBlurhash: true,
+                withBlurhash: false,
                 after: 1,
                 where: [
                     {
@@ -654,7 +662,7 @@ class BackendServer {
 
         // eslint-disable-next-line no-return-await
         ipcMain.handle("fetch-attachment", async (_, attachment: Attachment) => {
-            const chunkSize = (this.configRepo.get("chunkSize") as number) * 1000;
+            const chunkSize = (this.configRepo.get("chunkSize") as number) * 100;
             let start = 0;
 
             let output = new Uint8Array();
@@ -790,17 +798,39 @@ class BackendServer {
             });
         });
 
-        // Get VCF from server
+        // Send a tapback
         ipcMain.handle("send-tapback", async (_, payload) => {
-            this.socketService.server.emit("send-reaction", {
-                chatGuid: payload.chat.guid,
-                message: payload.message,
-                actionMessage: payload.actionMessage,
-                tapback: payload.tapback
-            });
+            try {
+                this.socketService.server.emit(
+                    "send-reaction",
+                    {
+                        chatGuid: payload.chat.guid,
+                        message: payload.message,
+                        actionMessage: payload.actionMessage,
+                        tapback: payload.tapback
+                    },
+                    res => {
+                        if (res.error) {
+                            const tapbackMes = payload.message as Message;
+                            tapbackMes.error = res.status;
+                            this.chatRepo.saveMessage(payload.chat, tapbackMes);
+                            this.emitToUI("add-message", tapbackMes);
+                        }
+                    }
+                );
+            } catch (e) {
+                console.log(e);
+                console.log("FAIIIIIl");
+                const tapbackMes = payload.message as Message;
+                tapbackMes.error = 500;
+                this.chatRepo.saveMessage(payload.chat, tapbackMes);
+                this.emitToUI("add-message", tapbackMes);
+            }
         });
 
         ipcMain.handle("get-storage-info", async (_, payload) => FileSystem.getAppSizeData());
+
+        ipcMain.handle("get-all-attachments-info", async (_, payload) => FileSystem.getAllAttachmentsData());
 
         ipcMain.handle("start-new-chat", async (_, payload) => {
             // if we have a matching address, that means we are jumping from details page to chat matching address
@@ -1262,6 +1292,63 @@ class BackendServer {
 
             this.emitToUI("display-name-update", { chat: newChats[0], newName: params.newName });
         });
+
+        ipcMain.handle("get-server-metadata", async (_, __) => {
+            return this.socketService.getServerMetadata();
+        });
+
+        ipcMain.handle("delete-selected-files", async (_, selectedFiles) => {
+            for (let i = 0; i < selectedFiles.length; i += 1) {
+                await FileSystem.deleteFile(selectedFiles[i].filePath);
+            }
+        });
+
+        ipcMain.handle("reset-user-data", async () => {
+            await this.chatRepo.db.close();
+            await this.configRepo.db.close();
+            await FileSystem.deleteUserData();
+
+            app.quit();
+            app.exit(0);
+        });
+
+        if (process.platform !== "linux") {
+            autoUpdater.on("checking-for-update", info => {
+                this.emitToUI("ckecking-for-update", info);
+            });
+
+            autoUpdater.on("error", err => {
+                this.emitToUI("update-err", err);
+            });
+
+            autoUpdater.on("update-available", info => {
+                this.emitToUI("update-available", info);
+            });
+
+            autoUpdater.on("update-not-available", info => {
+                this.emitToUI("update-not-available", info);
+            });
+
+            autoUpdater.on("update-downloaded", info => {
+                this.emitToUI("update-downloaded", info);
+            });
+
+            autoUpdater.on("download-progress", progressObj => {
+                this.emitToUI("update-download-progress", progressObj);
+            });
+
+            ipcMain.handle("check-for-updates", async () => {
+                return autoUpdater.checkForUpdates();
+            });
+
+            ipcMain.handle("download-update", async cancellationToken => {
+                return autoUpdater.downloadUpdate();
+            });
+
+            ipcMain.handle("quit-and-install", async () => {
+                autoUpdater.quitAndInstall(false, true);
+            });
+        }
     }
 
     setSyncStatus({ completed, message, error }: SyncStatus) {

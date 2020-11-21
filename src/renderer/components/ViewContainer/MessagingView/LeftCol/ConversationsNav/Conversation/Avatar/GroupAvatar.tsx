@@ -80,12 +80,15 @@ class GroupAvatar extends React.Component<Props, State> {
         const secondParticipant: Handle = chat.participants[1];
 
         return (
-            <svg className="dynamicIcon" height="50px" width="50px">
+            <svg height="50px" width="50px">
                 <mask id="rmvCir">
                     <circle cx="32%" cy="40%" r="16px" fill="white" />
                     <circle cx="68%" cy="60%" r="18px" fill="black" />
                 </mask>
                 <mask id="rmv2ndProfile">
+                    <circle cx="68%" cy="60%" r="13px" fill="white" />
+                </mask>
+                <mask id="rmv2ndProfileAvatar">
                     <circle cx="68%" cy="60%" r="16px" fill="white" />
                 </mask>
                 <circle
@@ -111,7 +114,7 @@ class GroupAvatar extends React.Component<Props, State> {
                         {chatIconText[0] === "?" ? (
                             <>
                                 <mask id="rmv1stProfile">
-                                    <circle cx="32%" cy="40%" r="14px" fill="white" />
+                                    <circle cx="32%" cy="40%" r="13px" fill="white" />
                                     <circle cx="68%" cy="60%" r="18px" fill="black" />
                                 </mask>
                                 <ellipse
@@ -156,7 +159,7 @@ class GroupAvatar extends React.Component<Props, State> {
                 />
                 {secondParticipant.avatar ? (
                     <image
-                        mask="url(#rmv2ndProfile)"
+                        mask="url(#rmv2ndProfileAvatar)"
                         height="35px"
                         width="35px"
                         y="14px"

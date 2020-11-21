@@ -1,3 +1,5 @@
+/* eslint-disable prefer-destructuring */
+/* eslint-disable max-len */
 import { app } from "electron";
 import * as path from "path";
 import * as fs from "fs";
@@ -311,7 +313,16 @@ export class ChatRepository {
         message.groupTitle = res.groupTitle;
         message.groupActionType = res.groupActionType;
         message.isExpired = res.isExpired;
-        message.associatedMessageGuid = res.associatedMessageGuid ? res.associatedMessageGuid.split("/")[1] : null;
+        if (res.associatedMessageGuid) console.log(res.associatedMessageGuid);
+        if (res.associatedMessageGuid) {
+            if (res.associatedMessageGuid.includes(":") && res.associatedMessageGuid.includes("/")) {
+                message.associatedMessageGuid = res.associatedMessageGuid.split("/")[1];
+            } else if (res.associatedMessageGuid.includes("/") && !res.associatedMessageGuid.includes(":")) {
+                message.associatedMessageGuid = res.associatedMessageGuid.split("/")[1];
+            } else if (res.associatedMessageGuid.includes(":")) {
+                message.associatedMessageGuid = res.associatedMessageGuid.split(":")[1];
+            }
+        }
         message.associatedMessageType = res.associatedMessageType;
         message.expressiveSendStyleId = res.expressiveSendStyleId;
         message.timeExpressiveSendStyleId = res.timeExpressiveSendStyleId ?? 0;

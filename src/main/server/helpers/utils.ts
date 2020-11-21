@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import * as ffmpeg from "fluent-ffmpeg";
+import ffmpeg from "fluent-ffmpeg";
 import * as ffmpegPath from "ffmpeg-static";
 import * as vCard from "vcf";
 import * as path from "path";
@@ -7,6 +7,11 @@ import { Attachment } from "@server/databases/chat/entity";
 import { FileSystem } from "@server/fileSystem";
 
 import { supportedVideoTypes, supportedAudioTypes } from "@renderer/helpers/constants";
+
+const PNF = require("google-libphonenumber").PhoneNumberFormat;
+
+// Get an instance of `PhoneNumberUtil`.
+const phoneUtil = require("google-libphonenumber").PhoneNumberUtil.getInstance();
 
 // Set the ffmpeg path for dev & production
 ffmpeg.setFfmpegPath(ffmpegPath.replace("app.asar", "app.asar.unpacked"));
@@ -70,15 +75,15 @@ export const parseVCards = (vcf: string): Contact[] => {
     return contacts;
 };
 
-export const sanitizeAddress = (text: string) => {
-    if (text.includes("@")) return text;
-    let output = text;
-    output = output.replace(/\+1/g, ""); // Replace +1
-    output = output.replace(/-/g, ""); // Replace dashes
-    output = output.replace(/\(/g, ""); // Replace open parenthesis
-    output = output.replace(/(\()|(\))/g, ""); // Replace open/close parenthesis
-    output = output.replace(/ /g, ""); // Replace spaces
-    return output.trim();
+export const sanitizeAddress = (address: string, countryCode: string) => {
+    if (address.includes("@")) return address;
+
+    try {
+        const number = phoneUtil.parseAndKeepRawInput(address, countryCode);
+        return number.getNationalNumber();
+    } catch (e) {
+        return null;
+    }
 };
 
 export const convertToSupportedType = async (attachment: Attachment) => {
@@ -154,4 +159,11 @@ export const getDirectorySize = directoryPath => {
     });
 
     return totalSize;
+};
+
+export const getAllAttachmentsInfo = directoryPath => {
+    const arrayOfFiles = getAllFilesInDirectory(directoryPath, []);
+
+    console.log(arrayOfFiles);
+    return arrayOfFiles;
 };

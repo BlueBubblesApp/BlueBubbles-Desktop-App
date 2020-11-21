@@ -1,4 +1,4 @@
-.ServerInputTitle{
+.ServerInputTitle {
     display: flex;
     flex-direction: column;
     margin: 15px 35px 0 35px;
@@ -7,7 +7,7 @@
 .ServerInputTitle > h2 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 21px;
+    font-size: calc(var(--message-font-size) + 7px);
     /* border-bottom: 1px solid gray; */
     padding-bottom: 1px;
     margin: 0;
@@ -16,25 +16,25 @@
 .ServerInputTitle > h3 {
     color: #b5b5b5;
     font-family: "SF UI Display Bold";
-    font-size: 18px;
+    font-size: calc(var(--message-font-size) + 4px);
     margin: 0;
     margin-left: 10px;
 }
 
-.ServerInputTitle > input{
+.ServerInputTitle > input {
     height: 25px;
     background-color: var(--background-color);
     border: none;
     outline: none;
     font-family: "SF UI Display Bold";
-    font-size: 15px;
+    font-size: calc(var(--message-font-size) + 1px);
     color: var(--sub-title-color);
     border-radius: 20px;
     padding: 3px 12px 3px 12px;
-    transition: ease-in .12s;
+    transition: ease-in 0.12s;
 }
 
-.ServerInputTitle > input:focus{
+.ServerInputTitle > input:focus {
     outline: none;
     background-color: var(--sub-title-color);
     color: var(--secondary-color);

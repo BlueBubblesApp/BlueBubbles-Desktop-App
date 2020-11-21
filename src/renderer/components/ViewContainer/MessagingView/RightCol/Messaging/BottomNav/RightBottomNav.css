@@ -84,15 +84,16 @@
     position: relative;
 }
 
-#messageFieldInput[type="text"] {
-    height: 19px;
+#messageFieldInput {
+    resize: none;
+    max-height: 19px;
+    min-height: 19px !important;
     background-repeat: no-repeat;
     border-radius: 25px;
-    border: none;
     flex-grow: 1;
     padding: 3px 35px 3px 8px;
     font-family: "SF UI Display Bold";
-    font-size: 15px;
+    font-size: calc(var(--message-font-size) + 1px);
     color: var(--right-primary-color);
     outline: none;
     border: 1px solid var(--right-secondary-color);
@@ -126,6 +127,45 @@
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 80px;
+}
+
+.emoji-mart {
+    background: var(--sidebar-color) !important;
+}
+
+.emoji-mart-search input {
+    background: var(--sidebar-color) !important;
+    color: var(--main-title-color) !important;
+}
+
+.emoji-mart-preview-name {
+    color: var(--main-title-color) !important;
+}
+
+.emoji-mart-preview-shortnames {
+    color: var(--sub-title-color) !important;
+}
+
+.emoji-mart-category .emoji-mart-emoji:hover:before {
+    background-color: var(--main-title-color);
+}
+
+.emoji-mart-skin-swatches {
+    background-color: var(--secondary-color) !important;
+}
+
+.emoji-mart svg {
+    fill: var(--main-title-color) !important;
+    transition: opacity ease-in-out 0.15s;
+}
+
+.emoji-mart svg:hover {
+    opacity: 0.45;
+}
+
+.emoji-mart-category-label span {
+    background: var(--sidebar-color) !important;
+    color: var(--main-title-color) !important;
 }
 
 #emojiPickerButton {

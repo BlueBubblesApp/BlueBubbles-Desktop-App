@@ -7,7 +7,7 @@
 #ManageContacts > h1 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 21px;
+    font-size: calc(var(--message-font-size) + 7px);
     /* border-bottom: 1px solid gray; */
     margin: 0;
     margin-bottom: 10px;
@@ -28,7 +28,7 @@
 #ManageContactsHeader > div > h2 {
     color: var(--sub-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 16px;
+    font-size: calc(var(--message-font-size) + 2px);
     margin: 0;
     margin-left: 10px;
 }
@@ -48,10 +48,11 @@
 #ManageContactsContainer {
     padding-top: 6px;
     margin-bottom: 40px;
-    max-height: 350px;
+    max-height: 55vh;
     overflow: scroll;
     /* border: 1px solid var(--sub-title-color);
     border-top: none; */
+    min-height: 300px;
 }
 
 .aContactRow {
@@ -68,7 +69,7 @@
     border: none;
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 16px;
+    font-size: calc(var(--message-font-size) + 2px);
     margin: 0;
     width: 100%;
     display: flex;

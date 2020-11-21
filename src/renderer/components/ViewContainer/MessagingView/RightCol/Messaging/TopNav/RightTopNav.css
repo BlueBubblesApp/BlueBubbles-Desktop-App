@@ -18,13 +18,12 @@
     align-items: center;
     justify-content: flex-end;
     margin-left: 1em;
-    font-size: 12px;
 }
 
 #toDiv > p {
     color: var(--sub-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     margin-bottom: 14px;
 }
 
@@ -73,7 +72,7 @@
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
     font-weight: 500;
-    font-size: 13px;
+    font-size: calc(var(--message-font-size) - 1px);
     margin: 0px 0px 0px 0px;
     white-space: nowrap;
 }
@@ -81,7 +80,7 @@
 #recipDiv > p {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 12px;
+    font-size: calc(var(--message-font-size) - 2px);
     margin: 0px 0px 0px 0px;
     white-space: nowrap;
 }
@@ -101,7 +100,7 @@
 #convoDetailsDiv > p {
     color: var(--right-accent-title-color);
     font-family: "SF UI Display Light";
-    font-size: 15px;
+    font-size: calc(var(--message-font-size) + 1px);
     margin-bottom: 13px;
 }
 

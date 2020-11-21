@@ -61,7 +61,7 @@
 
 #showMoreWrap > p {
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     color: var(--right-accent-title-color);
     transition: color ease-in-out 0.1s;
 }
@@ -101,7 +101,7 @@
 
 #addContactWrap > p {
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     color: var(--right-accent-title-color);
     transition: color ease-in-out 0.1s;
 }
@@ -148,7 +148,7 @@
 #muteChatLeft > p {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
 }
 
 #muteChatRight {
@@ -288,7 +288,7 @@
 .aChatAttachment > div > p {
     margin: 6px 0 3px 0;
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     color: var(--main-title-color);
     word-wrap: break-word;
     white-space: normal;
@@ -344,7 +344,7 @@
     }
 
     .aChatAttachment > p {
-        font-size: 12px;
+        font-size: calc(var(--message-font-size) - 2px);
     }
 
     #bubbleChatTitle > p {

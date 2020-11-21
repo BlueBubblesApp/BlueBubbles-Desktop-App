@@ -16,7 +16,7 @@ export default function UnsupportedMedia({ attachment, onClick }: Props) {
             <p>Unsupported Media</p>
             <img key={attachment.guid} src={ComputerCheckImage} alt="open-externally" color="white" />
             <p>Open File</p>
-            <p>{attachment.mimeType}</p>
+            <p>{attachment.mimeType || attachment.transferName}</p>
         </div>
     );
 }

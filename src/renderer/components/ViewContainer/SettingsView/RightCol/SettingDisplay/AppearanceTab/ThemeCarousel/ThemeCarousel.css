@@ -52,7 +52,7 @@
     outline: none;
     text-align: center;
     font-family: "SF UI Display Bold";
-    font-size: 26px;
+    font-size: calc(var(--message-font-size) + 12px);
     /* margin: 0 auto; */
     /* padding-right: 7%; */
 }
@@ -64,7 +64,7 @@
     border: 2px solid red;
     color: red;
     font-family: "SF UI Display Bold";
-    font-size: 13px;
+    font-size: calc(var(--message-font-size) - 1px);
     padding: 0 8px;
     height: 35px;
     margin-right: auto;
@@ -82,7 +82,7 @@
     border: 2px solid var(--main-title-color);
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 13px;
+    font-size: calc(var(--message-font-size) - 1px);
     padding: 0 8px;
     height: 35px;
     margin-left: auto;

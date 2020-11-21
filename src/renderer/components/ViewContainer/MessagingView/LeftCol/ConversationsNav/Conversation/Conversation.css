@@ -107,18 +107,19 @@
 .message-snip-example {
     font-family: "SF UI Display Light";
     color: var(--sub-title-color);
-    font-size: 12.5px;
+    font-size: calc(var(--message-font-size) - 1px);
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     margin: auto;
     margin-top: 2px;
+    display: flex;
 }
 
 .message-recip-example {
     font-family: "SF UI Display Bold";
     color: var(--main-title-color);
-    font-size: 12.5px;
+    font-size: calc(var(--message-font-size) - 1.5px);
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -128,7 +129,7 @@
 .message-time-example {
     font-family: "SF UI Display Light";
     color: var(--sub-title-color);
-    font-size: 13px;
+    font-size: calc(var(--message-font-size) - 1px);
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;

@@ -8,15 +8,21 @@ import { Chat, Message } from "@server/databases/chat/entity";
 import { getDateText, generateChatTitle } from "@renderer/helpers/utils";
 
 import "./Conversation.css";
+import EmojiRegex from "emoji-regex";
+import data from "emoji-mart/data/apple.json";
+import { getEmojiDataFromNative, Emoji } from "emoji-mart";
 import ConversationCloseIcon from "../../../../../../assets/icons/conversation-close-icon.png";
 import IndividualAvatar from "./Avatar/IndividualAvatar";
 import GroupAvatar from "./Avatar/GroupAvatar";
+
+const reactStringReplace = require("react-string-replace");
 
 // LOAD IN FROM BACKEND
 type ConversationProps = {
     chat: Chat & {
         lastMessage: Message;
     };
+    config: any;
 };
 
 type State = {
@@ -75,6 +81,41 @@ class Conversation extends React.Component<ConversationProps, State> {
         // });
     }
 
+    renderText = text => {
+        if (this.props.config.useNativeEmojis) {
+            return (
+                <p className="message-snip-example" style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
+                    {text}
+                </p>
+            );
+        }
+
+        const parser = EmojiRegex();
+        const matches = text.match(parser);
+        let final = [];
+
+        // final.push("test")
+        if (matches?.length >= 1) {
+            for (let i = 0; i < matches.length; i += 1) {
+                final = reactStringReplace(i === 0 ? text : final, matches[i], () => {
+                    const emojiData = getEmojiDataFromNative(matches[i], "apple", data);
+
+                    return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={18} />;
+                });
+            }
+        } else {
+            final.push(text);
+        }
+
+        return (
+            <p className="message-snip-example" style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
+                {final.map(item => {
+                    return item;
+                })}
+            </p>
+        );
+    };
+
     render() {
         const chatDate = this.props.chat.lastMessage?.dateCreated
             ? getDateText(new Date(this.props.chat.lastMessage.dateCreated))
@@ -122,9 +163,7 @@ class Conversation extends React.Component<ConversationProps, State> {
                             </div>
                             <div className="prev-bottom">
                                 <div className="message-snip">
-                                    <div>
-                                        <p className="message-snip-example">{lastText}</p>
-                                    </div>
+                                    <div>{this.renderText(lastText)}</div>
                                 </div>
                                 <div className="message-del">
                                     <img

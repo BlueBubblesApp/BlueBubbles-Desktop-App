@@ -1,11 +1,13 @@
-.StorageTab{
+#StorageTab {
     height: 100%;
+    max-width: 100%;
     display: flex;
     flex-direction: column;
 }
 
-#StorageTitle{
+#StorageTitle {
     height: 35px;
+    min-height: 35px;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -16,6 +18,6 @@
 #StorageTitle > h1 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 24px;
+    font-size: calc(var(--message-font-size) + 10px);
     margin: 0;
 }
