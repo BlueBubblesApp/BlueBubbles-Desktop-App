@@ -1,6 +1,6 @@
 {
    "name": "bluebubbles-desktop-app",
-   "version": "1.0.2",
+   "version": "1.0.3",
    "description": "iMessage for PC and Android",
    "main": "./dist/main.js",
    "author": {
@@ -172,6 +172,7 @@
       "cors": "^2.8.5",
       "dictionary-en": "^3.0.1",
       "electron-dl": "^3.0.2",
+      "electron-updater": "^4.3.5",
       "emoji-mart": "^3.0.0",
       "emoji-name-map": "^1.2.9",
       "emoji-regex": "^9.0.0",
@@ -208,7 +209,6 @@
       "sqlite3": "^4.2.0",
       "string-similarity": "^4.0.2",
       "typeorm": "^0.2.25",
-      "update-electron-app": "^2.0.1",
       "valid-url": "^1.0.9",
       "vcard": "^0.1.0",
       "vcf": "^2.0.6"

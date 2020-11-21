@@ -163,9 +163,46 @@ export class FileSystem {
     }
 
     static async deleteUserData(): Promise<void> {
+        if (process.env.NODE_ENV === "production") {
+            // Remove attachments dir
+            try {
+                fs.rmdir(FileSystem.attachmentsDir, { recursive: true }, err => {
+                    if (err) {
+                        throw err;
+                    }
+
+                    console.log(`${FileSystem.attachmentsDir} is deleted!`);
+                });
+            } catch (err) {
+                console.log(err);
+            }
+            // Remove fcm dir
+            try {
+                fs.rmdir(FileSystem.fcmDir, { recursive: true }, err => {
+                    if (err) {
+                        throw err;
+                    }
+
+                    console.log(`${FileSystem.fcmDir} is deleted!`);
+                });
+            } catch (err) {
+                console.log(err);
+            }
+            // Remove db files
+            await this.deleteFile(path.join(FileSystem.baseDir, "chat.db"));
+            await this.deleteFile(path.join(FileSystem.baseDir, "config.db"));
+
+            return;
+        }
+
         try {
-            fs.rmdirSync(path.join(app.getPath("userData"), subdir), { recursive: true });
-            console.log(`${path.join(app.getPath("userData"), subdir)} is deleted!`);
+            fs.rmdir(FileSystem.baseDir, { recursive: true }, err => {
+                if (err) {
+                    throw err;
+                }
+
+                console.log(`${FileSystem.baseDir} is deleted!`);
+            });
         } catch (err) {
             console.log(err);
         }

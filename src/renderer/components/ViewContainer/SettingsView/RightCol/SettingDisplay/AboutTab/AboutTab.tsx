@@ -4,6 +4,7 @@ import * as React from "react";
 import "./AboutTab.css";
 import ClientTitle from "./ClientTitle/ClientTitle";
 import ServerTitle from "./ServerTitle/ServerTitle";
+import Updates from "./Updates/Updates";
 
 function AboutTab() {
     return (
@@ -13,6 +14,7 @@ function AboutTab() {
             </div>
             <ClientTitle title="Client Version" subTitle={window.require("electron").remote.app.getVersion()} />
             <ServerTitle title="Server Information" />
+            {process.platform !== "linux" ? <Updates title="Updates" /> : null}
             <div className="SettingTitle">
                 <h2 id="supportLink" onClick={() => ipcRenderer.invoke("open-link", "https://discord.gg/6nrGRHT")}>
                     Join our discord

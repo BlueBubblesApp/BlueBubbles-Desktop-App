@@ -2,7 +2,7 @@
 /* eslint-disable no-global-assign */
 /* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
-import { ipcMain, BrowserWindow, shell, app, dialog, nativeImage, DownloadItem, autoUpdater } from "electron";
+import { ipcMain, BrowserWindow, shell, app, dialog, nativeImage, DownloadItem } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as fs from "fs";
@@ -25,6 +25,10 @@ import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, SyncStat
 import { AttachmentChunkParams, GetChatMessagesParams } from "./services/socket/types";
 import { Attachment, Chat, Handle, Message } from "./databases/chat/entity";
 import { Theme } from "./databases/config/entity";
+
+const { autoUpdater } = require("electron-updater");
+
+autoUpdater.autoDownload = false;
 
 const AutoLaunch = require("auto-launch");
 
@@ -1309,24 +1313,40 @@ class BackendServer {
         });
 
         if (process.platform !== "linux") {
-            autoUpdater.on("checking-for-update", () => {
-                console.log("CHECKING FOR UPDATES");
-                this.setSyncStatus({ message: "Checking for updates..." });
-            });
-
-            autoUpdater.on("update-available", () => {
-                console.log("UPADTE AVAILABLE");
-                this.setSyncStatus({ message: "Update Available" });
+            autoUpdater.on("checking-for-update", info => {
+                this.emitToUI("ckecking-for-update", info);
             });
 
             autoUpdater.on("error", err => {
-                console.log(err);
-                this.setSyncStatus({ message: "Error in update..." });
+                this.emitToUI("update-err", err);
             });
 
-            autoUpdater.on("update-downloaded", e => {
-                console.log(e);
-                this.setSyncStatus({ message: `Update Downloaded` });
+            autoUpdater.on("update-available", info => {
+                this.emitToUI("update-available", info);
+            });
+
+            autoUpdater.on("update-not-available", info => {
+                this.emitToUI("update-not-available", info);
+            });
+
+            autoUpdater.on("update-downloaded", info => {
+                this.emitToUI("update-downloaded", info);
+            });
+
+            autoUpdater.on("download-progress", progressObj => {
+                this.emitToUI("update-download-progress", progressObj);
+            });
+
+            ipcMain.handle("check-for-updates", async () => {
+                return autoUpdater.checkForUpdates();
+            });
+
+            ipcMain.handle("download-update", async cancellationToken => {
+                return autoUpdater.downloadUpdate();
+            });
+
+            ipcMain.handle("quit-and-install", async () => {
+                autoUpdater.quitAndInstall(false, true);
             });
         }
     }

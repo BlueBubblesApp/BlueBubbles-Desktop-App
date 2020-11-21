@@ -1,0 +1,51 @@
+.ServerSettingTitle {
+    display: flex;
+    flex-direction: column;
+    margin: 15px 0 0 35px;
+}
+
+.ServerSettingTitle > h2 {
+    color: var(--main-title-color);
+    font-family: "SF UI Display Bold";
+    font-size: calc(var(--message-font-size) + 7px);
+    /* border-bottom: 1px solid gray; */
+    padding-bottom: 1px;
+    margin: 0;
+    margin-bottom: 7px;
+}
+
+#updateContainer {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-family: "SF UI Display Bold";
+    margin-left: 10px;
+    color: var(--main-title-color);
+}
+
+#updateContainer h3 {
+    margin: 0;
+}
+
+#updateContainer button {
+    margin-left: 10px;
+    padding: 5px;
+    background: none;
+    color: var(--outgoing-message-color);
+    border: 2px solid var(--outgoing-message-color);
+    border-radius: 10px;
+    font-family: "SF UI Display Bold";
+    outline: none;
+    transition: ease-in-out 0.15s;
+}
+
+#updateContainer button:hover {
+    cursor: pointer;
+    border-radius: 15px;
+}
+
+#updateContainer span {
+    color: var(--sub-title-color);
+    font-size: calc(var(--message-font-size) + 2px);
+    margin-left: 10px;
+}
