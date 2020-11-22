@@ -4,6 +4,8 @@ import { ipcRenderer } from "electron";
 import * as React from "react";
 import "./Updates.css";
 
+const semver = require("semver");
+
 interface UpdatesProps {
     title: string;
 }
@@ -37,61 +39,33 @@ class Updates extends React.Component<UpdatesProps, State> {
 
             console.log(data);
             if (data) {
-                this.setState({ checkingForUpdates: false, hasUpdates: true, updateData: data });
+                if (semver.gt(data.updateInfo.version, window.require("electron").remote.app.getVersion())) {
+                    this.setState({ checkingForUpdates: false, hasUpdates: true, updateData: data });
+                } else {
+                    this.setState({ checkingForUpdates: false, hasUpdates: false, updateData: data });
+                }
             }
-            // this.setState({hasUpdates: data.hasUpdates, checkingForUpdates: false})
         });
 
         ipcRenderer.on("update-download-progress", (_, progressObj) => {
-            console.log(progressObj);
             this.setState({ progressObj, isDownloadingUpdate: true });
         });
 
         ipcRenderer.on("update-err", (_, err) => {
-            console.log(err);
-
             this.setState({ hasUpdates: false, isDownloadingUpdate: false, checkingForUpdates: false });
         });
 
         ipcRenderer.on("update-available", (_, info) => {
-            console.log(info);
             this.setState({ hasUpdates: true, isDownloadingUpdate: false, checkingForUpdates: false });
         });
 
-        ipcRenderer.on("update-downloaded", (_, info) => {
-            console.log(info);
-            this.setState({ isDownloadingUpdate: false, downloadFinished: true });
+        ipcRenderer.on("update-not-available", (_, info) => {
+            this.setState({ hasUpdates: false, isDownloadingUpdate: false, checkingForUpdates: false });
         });
 
-        // autoUpdater.on("checking-for-update", () => {
-        //     this.setState({checkingForUpdates: true, hasUpdates: true})
-        // });
-
-        // autoUpdater.on("error", err => {
-        //     this.setState({checkingForUpdates: false, hasUpdates: false, hasError: true})
-        // });
-
-        // autoUpdater.on("update-available", info => {
-        //     this.setState({checkingForUpdates: false, hasUpdates: true})
-        //     console.info(info);
-        // });
-
-        // autoUpdater.on("update-not-available", info => {
-        //     this.setState({checkingForUpdates: false, hasUpdates: false})
-        //     console.info(info);
-        // });
-
-        // autoUpdater.on("update-downloaded", info => {
-        //     console.info(info);
-        // });
-
-        // autoUpdater.on('download-progress', (progressObj) => {
-        //     // let log_message = `Download speed: ${  progressObj.bytesPerSecond}`;
-        //     // log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-        //     // log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-        //     // sendStatusToWindow(log_message);
-        //     console.log(progressObj)
-        // })
+        ipcRenderer.on("update-downloaded", (_, info) => {
+            this.setState({ isDownloadingUpdate: false, downloadFinished: true });
+        });
     }
 
     async downloadUpdate() {
@@ -103,9 +77,6 @@ class Updates extends React.Component<UpdatesProps, State> {
     }
 
     render() {
-        console.log("PROG");
-        console.log(this.state.progressObj);
-
         return (
             <div className="ServerSettingTitle">
                 <h2>{this.props.title}</h2>
