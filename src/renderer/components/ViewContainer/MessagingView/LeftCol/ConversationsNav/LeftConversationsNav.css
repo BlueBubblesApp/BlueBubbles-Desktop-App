@@ -6,6 +6,7 @@
     overflow-y: auto;
     justify-content: flex-start;
     align-items: center;
+    max-width: 289px;
 }
 
 .LeftConversationsNav::-webkit-scrollbar {
@@ -25,16 +26,18 @@
 }
 
 .notification {
-    position: sticky;
+    position: relatve;
     left: 0;
     float: left;
     margin-top: 28px;
     margin-left: 5px;
+    margin-right: 5px;
     z-index: 2;
     width: 10px;
+    min-width: 10px;
     height: 10px;
     border-radius: 5px;
-    background-color: var(--outgoing-message-color);
+    background-color: var(--blue-color);
 }
 
 .activeColor {
@@ -63,4 +66,136 @@
     font-style: normal;
     font-size: 23px;
     fill: white;
+}
+
+.conversationSlide {
+    display: flex;
+    overflow-x: auto;
+    /* -webkit-overflow-scrolling: touch;    
+    scroll-snap-type: x mandatory; 
+    touch-action: cross-slide-x; */
+    scroll-snap-type: x mandatory;
+    cursor: grab;
+    z-index: 3;
+    -webkit-user-drag: none;
+    scroll-behavior: smooth;
+    overflow-y: hidden;
+}
+
+.conversationSlide > div {
+    scroll-behavior: smooth;
+}
+
+.Conversation {
+    scroll-behavior: smooth;
+    user-select: none;
+}
+
+.afterSlide {
+    width: 66px;
+    min-width: 66px;
+    /* height: 100%; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: "SF UI Display Bold";
+}
+
+.afterSlide:hover {
+    cursor: pointer;
+    opacity: 0.85;
+}
+
+.muteSlide {
+    background-color: #5959d3;
+}
+
+.muteSlide img {
+    width: 28px;
+}
+
+.pinSlide {
+    background-color: #fed408;
+}
+
+.pinSlide svg {
+    fill: white;
+    width: 25px;
+    height: auto;
+    transform: rotate(-90deg);
+}
+
+#pinnedChatsContainer {
+    max-width: 290px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    /* padding-bottom: 5px; */
+    /* margin-top: 5px; */
+    padding: 5px;
+    /* border-bottom: 1px solid gray; */
+}
+
+.aPinnedChatContainer {
+    min-width: 135px;
+    max-width: 135px;
+    min-height: 135px;
+    max-height: 135px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    position: relative;
+}
+
+.aPinnedChatContainer:hover {
+    cursor: pointer;
+}
+
+.pinnedBottomDiv {
+    display: flex;
+    height: 15px;
+    max-height: 15px;
+    width: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.aPinnedChatContainer p {
+    margin: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    color: white;
+    font-family: "SF UI Display Bold";
+    font-size: calc(var(--message-font-size) - 1.5px);
+}
+
+.pinnedNotification {
+    width: 10px;
+    min-width: 10px;
+    height: 10px;
+    min-height: 10px;
+    border-radius: 5px;
+    margin-right: 5px;
+    margin-top: 1px;
+    background-color: var(--blue-color);
+}
+
+.removePinnedChatIcon {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 10px;
+    height: auto;
+    fill: gray;
+    opacity: 0.92;
+    z-index: 2;
+    visibility: hidden;
 }

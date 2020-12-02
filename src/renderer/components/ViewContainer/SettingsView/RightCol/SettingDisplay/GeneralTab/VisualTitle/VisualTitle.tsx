@@ -12,6 +12,7 @@ type Props = {
 type State = {
     gradientMessages: boolean;
     colorfulContacts: boolean;
+    colorfulChatBubbles: boolean;
     useNativeEmojis: boolean;
 };
 
@@ -22,6 +23,7 @@ class VisualTitle extends React.Component<Props, State> {
         this.state = {
             gradientMessages: false,
             colorfulContacts: false,
+            colorfulChatBubbles: false,
             useNativeEmojis: false
         };
     }
@@ -31,6 +33,7 @@ class VisualTitle extends React.Component<Props, State> {
         this.setState({
             gradientMessages: config.gradientMessages,
             colorfulContacts: config.colorfulContacts,
+            colorfulChatBubbles: config.colorfulChatBubbles,
             useNativeEmojis: config.useNativeEmojis
         });
 
@@ -47,6 +50,12 @@ class VisualTitle extends React.Component<Props, State> {
         const newConfig = { colorfulContacts: !this.state.colorfulContacts };
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ colorfulContacts: !this.state.colorfulContacts });
+    }
+
+    async handleColorfulChatBubbles() {
+        const newConfig = { colorfulChatBubbles: !this.state.colorfulChatBubbles };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ colorfulChatBubbles: !this.state.colorfulChatBubbles });
     }
 
     async handleUseNativeEmojis() {
@@ -77,6 +86,17 @@ class VisualTitle extends React.Component<Props, State> {
                             type="checkbox"
                             checked={this.state.colorfulContacts}
                             onChange={() => this.handleColorfulContacts()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Colorful Chat Bubbles</p>
+                    <label className="form-switch" onClick={() => this.handleColorfulChatBubbles()}>
+                        <input
+                            type="checkbox"
+                            checked={this.state.colorfulChatBubbles}
+                            onChange={() => this.handleColorfulChatBubbles()}
                         />
                         <i />
                     </label>

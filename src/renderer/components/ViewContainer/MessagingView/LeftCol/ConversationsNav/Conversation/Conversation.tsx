@@ -11,6 +11,7 @@ import "./Conversation.css";
 import EmojiRegex from "emoji-regex";
 import data from "emoji-mart/data/apple.json";
 import { getEmojiDataFromNative, Emoji } from "emoji-mart";
+import { ipcRenderer } from "electron";
 import ConversationCloseIcon from "../../../../../../assets/icons/conversation-close-icon.png";
 import IndividualAvatar from "./Avatar/IndividualAvatar";
 import GroupAvatar from "./Avatar/GroupAvatar";
@@ -21,8 +22,10 @@ const reactStringReplace = require("react-string-replace");
 type ConversationProps = {
     chat: Chat & {
         lastMessage: Message;
+        isTyping?: boolean;
     };
     config: any;
+    onChatSelect: any;
 };
 
 type State = {
@@ -99,8 +102,10 @@ class Conversation extends React.Component<ConversationProps, State> {
             for (let i = 0; i < matches.length; i += 1) {
                 final = reactStringReplace(i === 0 ? text : final, matches[i], () => {
                     const emojiData = getEmojiDataFromNative(matches[i], "apple", data);
-
-                    return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={18} />;
+                    if (emojiData) {
+                        return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={18} />;
+                    }
+                    return matches[i];
                 });
             }
         } else {
@@ -141,6 +146,7 @@ class Conversation extends React.Component<ConversationProps, State> {
                     id={this.props.chat.guid}
                     onMouseOver={showDelMessage}
                     onMouseOut={hideDelMessage}
+                    onClick={() => this.props.onChatSelect()}
                 >
                     <div className="convo-wrap">
                         <div className="contact-card">
@@ -162,16 +168,82 @@ class Conversation extends React.Component<ConversationProps, State> {
                                 </div>
                             </div>
                             <div className="prev-bottom">
-                                <div className="message-snip">
-                                    <div>{this.renderText(lastText)}</div>
-                                </div>
-                                <div className="message-del">
-                                    <img
-                                        className="message-del-conversation hideDelMessage"
-                                        src={ConversationCloseIcon}
-                                        alt="delete"
-                                    />
-                                </div>
+                                {this.props.chat.isTyping ? (
+                                    <svg height="35px" width="100px">
+                                        <circle
+                                            cx="10px"
+                                            cy="29px"
+                                            r="2px"
+                                            className="backgroundTypingIndicator smallerCircle"
+                                        />
+                                        <circle
+                                            cx="17px"
+                                            cy="24px"
+                                            r="4px"
+                                            className="backgroundTypingIndicator smallerCircler"
+                                        />
+                                        <rect
+                                            x="14px"
+                                            y="2px"
+                                            width="45px"
+                                            height="27px"
+                                            rx="15"
+                                            className="mainTypingCircle backgroundTypingIndicator"
+                                        />
+
+                                        <circle cx="28px" cy="16px" r="3px" className="foregroundTypingIndicator">
+                                            <animate
+                                                attributeName="opacity"
+                                                values="0;1;0"
+                                                dur="1.4s"
+                                                repeatCount="indefinite"
+                                            />
+                                        </circle>
+                                        <circle
+                                            cx="36px"
+                                            cy="16px"
+                                            r="3px"
+                                            opacity="0.3"
+                                            className="foregroundTypingIndicator"
+                                        >
+                                            <animate
+                                                begin=".3s"
+                                                attributeName="opacity"
+                                                values="0;1;0"
+                                                dur="1.4s"
+                                                repeatCount="indefinite"
+                                            />
+                                        </circle>
+                                        <circle
+                                            cx="44px"
+                                            cy="16px"
+                                            r="3px"
+                                            opacity="0.6"
+                                            className="foregroundTypingIndicator"
+                                        >
+                                            <animate
+                                                begin=".6s"
+                                                attributeName="opacity"
+                                                values="0;1;0"
+                                                dur="1.4s"
+                                                repeatCount="indefinite"
+                                            />
+                                        </circle>
+                                    </svg>
+                                ) : (
+                                    <>
+                                        <div className="message-snip">
+                                            <div>{this.renderText(lastText)}</div>
+                                        </div>
+                                        <div className="message-del">
+                                            <img
+                                                className="message-del-conversation hideDelMessage"
+                                                src={ConversationCloseIcon}
+                                                alt="delete"
+                                            />
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

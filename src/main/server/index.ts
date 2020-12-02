@@ -2,7 +2,7 @@
 /* eslint-disable no-global-assign */
 /* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
-import { ipcMain, BrowserWindow, shell, app, dialog, nativeImage, DownloadItem } from "electron";
+import { ipcMain, BrowserWindow, shell, app, dialog, nativeImage, DownloadItem, ipcRenderer } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as fs from "fs";
@@ -395,12 +395,7 @@ class BackendServer {
             withHandle: true,
             withAttachments: true,
             withBlurhash: false,
-            where: [
-                {
-                    statement: "message.service = 'iMessage'",
-                    args: null
-                }
-            ]
+            withSMS: true
         };
         const messages: MessageResponse[] = await this.socketService.getMessages(args);
         emitData.loadingMessage = `Syncing ${messages.length} messages`;
@@ -452,7 +447,7 @@ class BackendServer {
         };
 
         const now = new Date();
-        const chats: ChatResponse[] = await this.socketService.getChats({});
+        const chats: ChatResponse[] = await this.socketService.getChats({ withSMS: true });
 
         emitData.syncProgress = 1;
         emitData.loadingMessage = `Got ${chats.length} chats from the server`;
@@ -482,13 +477,8 @@ class BackendServer {
                 limit: 25,
                 offset: 0,
                 withBlurhash: false,
-                after: 1,
-                where: [
-                    {
-                        statement: "message.service = 'iMessage'",
-                        args: null
-                    }
-                ]
+                withSMS: true,
+                after: 1
             };
 
             // Third, let's fetch the messages from the DB
@@ -1349,6 +1339,15 @@ class BackendServer {
                 autoUpdater.quitAndInstall(false, true);
             });
         }
+
+        ipcMain.handle("send-typing-indicator", (_, params) => {
+            const { isTyping, guid } = params;
+            if (guid !== null && isTyping !== null) {
+                console.log(guid);
+                console.log(isTyping);
+                this.socketService.sendTypingIndicator(isTyping, guid);
+            }
+        });
     }
 
     setSyncStatus({ completed, message, error }: SyncStatus) {
