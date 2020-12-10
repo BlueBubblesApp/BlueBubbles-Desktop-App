@@ -1214,122 +1214,159 @@ class MessageBubble extends React.Component<Props, State> {
                         </div>
                     </div>
                 ) : null}
+
                 {/* If the message has an attachment */}
                 {message.attachments?.length > 0 || links.length > 0 ? (
                     <>
                         {/* If the attachment is a link */}
                         {links.length > 0 ? (
                             <>
-                                <div className={linkClassName} draggable="false">
-                                    <div className="linkContainer" onClick={() => openLink(links[0])}>
-                                        {message.hasReactions === true ? (
-                                            <>
-                                                {message.reactions.map((reaction, i) => (
-                                                    <InChatReaction
-                                                        reaction={reaction}
-                                                        key={reaction.guid}
-                                                        isMessageFromMe={message.isFromMe}
-                                                        isReactionFromMe={reaction.isFromMe}
-                                                        reactionType={reaction.associatedMessageType}
-                                                        offset={i}
-                                                    />
-                                                ))}
-                                            </>
-                                        ) : null}
-                                        {linkPrev?.images?.length > 0 &&
-                                        !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
-                                            <img src={linkPrev.images[0]} className="Attachment" draggable="false" />
-                                        ) : null}
+                                {this.state.isReactionsOpen ? (
+                                    <NewReaction
+                                        message={message}
+                                        chat={chat}
+                                        onClose={() => this.closeReactionView(message)}
+                                    />
+                                ) : null}
+                                <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
+                                    <div className={linkClassName} draggable="false">
                                         <div
-                                            className={`linkBottomDiv ${useTail ? "tail" : ""}`}
-                                            style={{
-                                                borderRadius:
-                                                    (linkPrev?.images?.length === 0 &&
-                                                        linkPrev?.favicons?.length > 0) ||
-                                                    (linkPrev &&
-                                                        forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
-                                                    (linkPrev?.images?.length === 0 &&
-                                                        linkPrev?.favicons?.length === 0) ||
-                                                    !linkPrev
-                                                        ? "15px"
-                                                        : "0 0 15px 15px",
-                                                marginTop:
-                                                    (linkPrev?.images?.length === 0 &&
-                                                        linkPrev?.favicons?.length > 0) ||
-                                                    (linkPrev &&
-                                                        forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
-                                                    !linkPrev
-                                                        ? "3px"
-                                                        : "0px"
-                                            }}
+                                            className="linkContainer"
+                                            id={message.guid}
+                                            onClick={() => openLink(links[0])}
                                         >
+                                            {message.hasReactions === true ? (
+                                                <>
+                                                    {message.reactions.map((reaction, i) => (
+                                                        <InChatReaction
+                                                            reaction={reaction}
+                                                            key={reaction.guid}
+                                                            isMessageFromMe={message.isFromMe}
+                                                            isReactionFromMe={reaction.isFromMe}
+                                                            reactionType={reaction.associatedMessageType}
+                                                            offset={i}
+                                                        />
+                                                    ))}
+                                                </>
+                                            ) : null}
+                                            {linkPrev?.images?.length > 0 &&
+                                            !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
+                                                <img
+                                                    src={linkPrev.images[0]}
+                                                    className="Attachment"
+                                                    draggable="false"
+                                                />
+                                            ) : null}
                                             <div
+                                                className={`linkBottomDiv ${useTail ? "tail" : ""}`}
                                                 style={{
-                                                    width:
-                                                        linkPrev?.images?.length > 0 &&
-                                                        !forceFaviconURLS.includes(new URL(links[0]).hostname)
-                                                            ? "93%"
-                                                            : "75%"
+                                                    borderRadius:
+                                                        (linkPrev?.images?.length === 0 &&
+                                                            linkPrev?.favicons?.length > 0) ||
+                                                        (linkPrev &&
+                                                            forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
+                                                        (linkPrev?.images?.length === 0 &&
+                                                            linkPrev?.favicons?.length === 0) ||
+                                                        !linkPrev
+                                                            ? "15px"
+                                                            : "0 0 15px 15px",
+                                                    marginTop:
+                                                        (linkPrev?.images?.length === 0 &&
+                                                            linkPrev?.favicons?.length > 0) ||
+                                                        (linkPrev &&
+                                                            forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
+                                                        !linkPrev
+                                                            ? "3px"
+                                                            : "0px"
                                                 }}
                                             >
-                                                <p
+                                                <div
                                                     style={{
-                                                        marginTop:
-                                                            (linkPrev?.images?.length === 0 &&
-                                                                linkPrev?.favicons?.length > 0) ||
-                                                            (linkPrev &&
-                                                                forceFaviconURLS.includes(new URL(links[0]).hostname))
-                                                                ? "2px"
-                                                                : "0px"
+                                                        width:
+                                                            linkPrev?.images?.length > 0 &&
+                                                            !forceFaviconURLS.includes(new URL(links[0]).hostname)
+                                                                ? "93%"
+                                                                : "75%"
                                                     }}
                                                 >
-                                                    {this.state.linkTitle ? (
-                                                        <>{this.state.linkTitle}</>
-                                                    ) : (
-                                                        <>{linkPrev ? "Loading ..." : "Unavailable"}</>
-                                                    )}
-                                                </p>
-                                                <p>{new URL(links[0]).hostname}</p>
+                                                    <p
+                                                        style={{
+                                                            marginTop:
+                                                                (linkPrev?.images?.length === 0 &&
+                                                                    linkPrev?.favicons?.length > 0) ||
+                                                                (linkPrev &&
+                                                                    forceFaviconURLS.includes(
+                                                                        new URL(links[0]).hostname
+                                                                    ))
+                                                                    ? "2px"
+                                                                    : "0px"
+                                                        }}
+                                                    >
+                                                        {this.state.linkTitle ? (
+                                                            <>{this.state.linkTitle}</>
+                                                        ) : (
+                                                            <>{linkPrev ? "Loading ..." : "Unavailable"}</>
+                                                        )}
+                                                    </p>
+                                                    <p>{new URL(links[0]).hostname}</p>
+                                                </div>
+                                                {(linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
+                                                (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
+                                                    <img src={linkPrev.favicons[0]} className="linkFavicon" />
+                                                ) : null}
                                             </div>
-                                            {(linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
-                                            (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
-                                                <img src={linkPrev.favicons[0]} className="linkFavicon" />
-                                            ) : null}
                                         </div>
                                     </div>
-                                </div>
+                                </ClickNHold>
                             </>
                         ) : (
                             <>
-                                <div className={attachmentClassName}>
-                                    {chat.participants.length > 1 &&
-                                    message.handle &&
-                                    (!olderMessage || olderMessage.handleId !== message.handleId) ? (
-                                        <p className="MessageSender">{sender}</p>
-                                    ) : null}
-                                    <div className="attachmentContainer">
-                                        {message.hasReactions === true ? (
-                                            <>
-                                                {message.reactions.map((reaction, i) => (
-                                                    <InChatReaction
-                                                        reaction={reaction}
-                                                        key={reaction.guid}
-                                                        isMessageFromMe={message.isFromMe}
-                                                        isReactionFromMe={reaction.isFromMe}
-                                                        reactionType={reaction.associatedMessageType}
-                                                        offset={i}
-                                                    />
-                                                ))}
-                                            </>
+                                {this.state.isReactionsOpen ? (
+                                    <NewReaction
+                                        message={message}
+                                        chat={chat}
+                                        onClose={() => this.closeReactionView(message)}
+                                    />
+                                ) : null}
+                                <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
+                                    <div className={attachmentClassName}>
+                                        {chat.participants.length > 1 &&
+                                        message.handle &&
+                                        (!olderMessage || olderMessage.handleId !== message.handleId) ? (
+                                            <p className="MessageSender">{sender}</p>
                                         ) : null}
-                                        {attachments.map((attachment: AttachmentDownload) => {
-                                            return this.renderAttachment(attachment);
-                                        })}
+                                        <div className="attachmentContainer" id={message.guid}>
+                                            {message.hasReactions === true ? (
+                                                <>
+                                                    {message.reactions.map((reaction, i) => (
+                                                        <InChatReaction
+                                                            reaction={reaction}
+                                                            key={reaction.guid}
+                                                            isMessageFromMe={message.isFromMe}
+                                                            isReactionFromMe={reaction.isFromMe}
+                                                            reactionType={reaction.associatedMessageType}
+                                                            offset={i}
+                                                        />
+                                                    ))}
+                                                </>
+                                            ) : null}
+                                            {attachments.map((attachment: AttachmentDownload) => {
+                                                return this.renderAttachment(attachment);
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
+                                </ClickNHold>
                                 {text ? (
                                     <>
-                                        <div className="emptyDiv" />
+                                        {this.state.isReactionsOpen ? (
+                                            <NewReaction
+                                                message={message}
+                                                chat={chat}
+                                                onClose={() => this.closeReactionView(message)}
+                                            />
+                                        ) : (
+                                            <div className="emptyDiv" />
+                                        )}
                                         <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
                                             <div
                                                 style={{

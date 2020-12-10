@@ -794,27 +794,30 @@ class BackendServer {
                 this.socketService.server.emit(
                     "send-reaction",
                     {
-                        chatGuid: payload.chat.guid,
-                        message: payload.message,
-                        actionMessage: payload.actionMessage,
+                        chatGuid: payload.chatGuid,
+                        messageGuid: payload.messageGuid,
+                        messageText: payload.messageText,
+                        actionMessageGuid: payload.actionMessageGuid,
+                        actionMessageText: payload.actionMessageText,
                         tapback: payload.tapback
                     },
                     res => {
                         if (res.error) {
                             const tapbackMes = payload.message as Message;
-                            tapbackMes.error = res.status;
-                            this.chatRepo.saveMessage(payload.chat, tapbackMes);
+                            // tapbackMes.error = res.status;
+                            // this.chatRepo.saveMessage(payload.chat, tapbackMes);
                             this.emitToUI("add-message", tapbackMes);
                         }
+                        this.emitToUI("add-message", payload.message);
                     }
                 );
             } catch (e) {
                 console.log(e);
                 console.log("FAIIIIIl");
-                const tapbackMes = payload.message as Message;
-                tapbackMes.error = 500;
-                this.chatRepo.saveMessage(payload.chat, tapbackMes);
-                this.emitToUI("add-message", tapbackMes);
+                // const tapbackMes = payload.message as Message;
+                // tapbackMes.error = 500;
+                // this.chatRepo.saveMessage(payload.chat, tapbackMes);
+                // this.emitToUI("add-message", tapbackMes);
             }
         });
 

@@ -9,7 +9,7 @@
    },
    "scripts": {
       "build-main": "cross-env NODE_ENV=production webpack --config webpack.main.prod.config.js",
-      "build-renderer": "cross-env GIPHY_API_KEY=7L7N68aSjCJT7G80983BTbazvnwS3jN8 NODE_ENV=production webpack --config webpack.renderer.prod.config.js",
+      "build-renderer": "cross-env NODE_ENV=production webpack --config webpack.renderer.prod.config.js",
       "build": "npm run build-main && npm run build-renderer",
       "start-renderer-dev": "webpack-dev-server --config webpack.renderer.dev.config.js",
       "start-main-dev": "webpack --config webpack.main.config.js && electron ./dist/main.js",
