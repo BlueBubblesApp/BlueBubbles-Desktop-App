@@ -1087,3 +1087,21 @@
     border-radius: 10px;
     height: 100%;
 }
+
+.contactCardText > span {
+    color: var(--sub-title-color);
+    font-size: 12px;
+    margin: 0;
+}
+
+.contactCardText > p {
+    margin: 0;
+    color: var(--main-title-color);
+}
+
+.contactCardText {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}

@@ -367,7 +367,10 @@ class MessageBubble extends React.Component<Props, State> {
                         onClick={() => openAttachment(attachmentPath)}
                         draggable="false"
                     >
-                        {vcfData && vcfData.FN ? <p>{vcfData.FN}</p> : <p>Contact</p>}
+                        <span className="contactCardText">
+                            <span>Contact Card</span>
+                            {vcfData && vcfData.FN ? <p>{vcfData.FN}</p> : <p>Contact</p>}
+                        </span>
                         <div>
                             {generateVCFIconText(vcfData) === "?" ? (
                                 <svg height="35px" width="35px" viewBox="0 0 1000 1000">
