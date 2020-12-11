@@ -7,7 +7,7 @@
 .AppTitle > h2 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 21px;
+    font-size: calc(var(--message-font-size) + 7px);
     /* border-bottom: 1px solid gray; */
     padding-bottom: 1px;
     margin: 0;
@@ -22,6 +22,6 @@
 
 .AppTitle > div > p {
     font-family: "SF UI Display Bold";
-    font-size: 15px;
+    font-size: calc(var(--message-font-size) + 1px);
     color: var(--sub-title-color);
 }

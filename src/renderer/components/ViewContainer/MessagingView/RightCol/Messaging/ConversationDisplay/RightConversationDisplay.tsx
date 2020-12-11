@@ -2,13 +2,18 @@
 /* eslint-disable class-methods-use-this */
 import * as React from "react";
 import { ipcRenderer } from "electron";
-import { Chat, Handle, Message as DBMessage } from "@server/databases/chat/entity";
+import { Chat as DBChat, Handle, Message as DBMessage } from "@server/databases/chat/entity";
 import { getDateText, getSender, getTimeText } from "@renderer/helpers/utils";
 import { ValidTapback } from "@server/types";
 
 import "./RightConversationDisplay.css";
+import { Theme } from "@server/databases/config/entity";
 import ChatLabel from "./ChatLabel";
 import MessageBubble from "./MessageBubble";
+
+type Chat = DBChat & {
+    isTyping?: boolean;
+};
 
 type Props = {
     chat: Chat;
@@ -19,7 +24,10 @@ type State = {
     messages: Message[];
     gradientMessages: boolean;
     colorfulContacts: boolean;
+    colorfulChatBubbles: boolean;
     useNativeEmojis: boolean;
+    theme: any;
+    chat: Chat;
 };
 
 type Message = DBMessage & {
@@ -57,7 +65,10 @@ class RightConversationDisplay extends React.Component<Props, State> {
             messages: [],
             gradientMessages: false,
             colorfulContacts: false,
-            useNativeEmojis: false
+            colorfulChatBubbles: false,
+            useNativeEmojis: false,
+            chat: this.props.chat,
+            theme: ""
         };
     }
 
@@ -76,9 +87,13 @@ class RightConversationDisplay extends React.Component<Props, State> {
             // Otherwise, add the message to the state
             await this.addMessagesToState([msg]);
 
-            // Scroll to new message
-            // const view = document.getElementById("messageView");
-            // view.scrollTop = view.scrollHeight;
+            const view = document.getElementById("messageView");
+
+            // If scroll is within 300px from bottom of chat, scroll to bottom
+            if (view.scrollHeight - view.offsetHeight - view.scrollTop <= 300) {
+                console.log("NEAR BOTTOM");
+                view.scrollTop = view.scrollHeight;
+            }
         });
 
         ipcRenderer.on("add-message", async (_, message: Message) => {
@@ -92,11 +107,34 @@ class RightConversationDisplay extends React.Component<Props, State> {
             view.scrollTop = view.scrollHeight;
         });
 
+        ipcRenderer.on("typing-indicator", (_, res) => {
+            console.log(res);
+            const { chat } = this.state;
+
+            if (res.guid.includes(chat.guid)) {
+                chat.isTyping = res.display;
+                this.setState({ chat });
+
+                if (res.display) {
+                    const view = document.getElementById("messageView");
+
+                    // If scroll is within 300px from bottom of chat, scroll to bottom
+                    if (view.scrollHeight - view.offsetHeight - view.scrollTop <= 300) {
+                        console.log("NEAR BOTTOM");
+                        view.scrollTop = view.scrollHeight;
+                    }
+                }
+            }
+        });
+
         const config = await ipcRenderer.invoke("get-config");
+        const theme: Theme = await ipcRenderer.invoke("get-theme", config.currentTheme);
 
         this.setState({
+            theme,
             gradientMessages: config.gradientMessages,
             colorfulContacts: config.colorfulContacts,
+            colorfulChatBubbles: config.colorfulChatBubbles,
             useNativeEmojis: config.useNativeEmojis
         });
         console.log(config.gradientMessages);
@@ -179,10 +217,13 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
     async chatChange() {
         const config = await ipcRenderer.invoke("get-config");
+        const theme: Theme = await ipcRenderer.invoke("get-theme", config.currentTheme);
 
         this.setState({
+            theme,
             gradientMessages: config.gradientMessages,
             colorfulContacts: config.colorfulContacts,
+            colorfulChatBubbles: config.colorfulChatBubbles,
             useNativeEmojis: config.useNativeEmojis
         });
 
@@ -212,6 +253,10 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
             // Set the scroll position
             view.scrollTo(0, newSize - currentSize);
+        }
+
+        if (e.currentTarget.scrollTop === e.currentTarget.scrollHeight - e.currentTarget.offsetHeight) {
+            console.log("AT BOTTOM");
         }
     }
 
@@ -249,8 +294,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
         const messageList: Message[] = [];
         const reactionList: Message[] = [];
         for (let i = 0; i < outputMessages.length; i += 1) {
-            console.log(outputMessages[i]);
-            // console.log(outputMessages[i].hasReactions);
             if (
                 outputMessages[i].hasReactions &&
                 !outputMessages[i].reactionsChecked &&
@@ -369,7 +412,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
     render() {
         const { messages, isLoading } = this.state;
-        const { chat } = this.props;
+        const { chat } = this.state;
 
         if (!chat) return <div className="RightConversationDisplay" />;
 
@@ -435,6 +478,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                         messages={messages}
                                         gradientMessages={this.state.gradientMessages}
                                         colorfulContacts={this.state.colorfulContacts}
+                                        colorfulChatBubbles={this.state.colorfulChatBubbles}
+                                        theme={this.state.theme}
                                         useNativeEmojis={this.state.useNativeEmojis}
                                     />
                                 </>
@@ -444,6 +489,44 @@ class RightConversationDisplay extends React.Component<Props, State> {
                         </div>
                     );
                 })}
+                {chat.isTyping ? (
+                    <div id="inChatTypingIndicator" style={{ marginLeft: "27px" }}>
+                        <svg height="37px" width="100px">
+                            <circle cx="10px" cy="31px" r="2px" className="backgroundTypingIndicator smallerCircle" />
+                            <circle cx="17px" cy="25px" r="4px" className="backgroundTypingIndicator smallerCircle" />
+                            <rect
+                                x="14px"
+                                y="2px"
+                                width="45px"
+                                height="28px"
+                                rx="15"
+                                className="mainTypingCircle backgroundTypingIndicator"
+                            />
+
+                            <circle cx="28px" cy="16px" r="3px" className="foregroundTypingIndicator">
+                                <animate attributeName="opacity" values="0;1;0" dur="1.4s" repeatCount="indefinite" />
+                            </circle>
+                            <circle cx="36px" cy="16px" r="3px" opacity="0.3" className="foregroundTypingIndicator">
+                                <animate
+                                    begin=".3s"
+                                    attributeName="opacity"
+                                    values="0;1;0"
+                                    dur="1.4s"
+                                    repeatCount="indefinite"
+                                />
+                            </circle>
+                            <circle cx="44px" cy="16px" r="3px" opacity="0.6" className="foregroundTypingIndicator">
+                                <animate
+                                    begin=".6s"
+                                    attributeName="opacity"
+                                    values="0;1;0"
+                                    dur="1.4s"
+                                    repeatCount="indefinite"
+                                />
+                            </circle>
+                        </svg>
+                    </div>
+                ) : null}
             </div>
         );
     }

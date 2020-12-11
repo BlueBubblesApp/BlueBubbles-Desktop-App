@@ -167,6 +167,7 @@
     width: 100%;
     background-color: var(--sidebar-color);
     animation: ease-in-out 0.1s;
+    border-radius: 15px;
 }
 
 .loadingContainerBlurred {

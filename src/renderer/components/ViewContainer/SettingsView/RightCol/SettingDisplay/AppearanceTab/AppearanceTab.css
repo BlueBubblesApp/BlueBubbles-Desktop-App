@@ -18,7 +18,7 @@
 #AppearanceTitle > h1 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 24px;
+    font-size: calc(var(--message-font-size) + 10px);
     margin: 0;
 }
 
@@ -44,7 +44,7 @@
 
 #windowFocusedDiv > div > h1 {
     margin: 0;
-    font-size: 26px;
+    font-size: calc(var(--message-font-size) + 12px);
     font-family: "SF UI Display Bold";
     color: var(--main-title-color);
 }

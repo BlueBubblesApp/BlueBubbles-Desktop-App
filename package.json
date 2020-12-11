@@ -1,6 +1,6 @@
 {
    "name": "bluebubbles-desktop-app",
-   "version": "1.0.2",
+   "version": "1.0.4",
    "description": "iMessage for PC and Android",
    "main": "./dist/main.js",
    "author": {
@@ -9,7 +9,7 @@
    },
    "scripts": {
       "build-main": "cross-env NODE_ENV=production webpack --config webpack.main.prod.config.js",
-      "build-renderer": "cross-env NODE_ENV=production webpack --config webpack.renderer.prod.config.js",
+      "build-renderer": "cross-env GIPHY_API_KEY=7L7N68aSjCJT7G80983BTbazvnwS3jN8 NODE_ENV=production webpack --config webpack.renderer.prod.config.js",
       "build": "npm run build-main && npm run build-renderer",
       "start-renderer-dev": "webpack-dev-server --config webpack.renderer.dev.config.js",
       "start-main-dev": "webpack --config webpack.main.config.js && electron ./dist/main.js",
@@ -89,7 +89,7 @@
    },
    "repository": {
       "type": "git",
-      "url": "git+ssh://git@github.com:BlueBubblesApp/BlueBubbles-Desktop-App.git"
+      "url": "https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App"
    },
    "bugs": {
       "url": "https://github.com/BlueBubblesApp/BlueBubbles-Desktop-App/issues"
@@ -104,6 +104,7 @@
       "@babel/preset-react": "^7.10.1",
       "@babel/preset-typescript": "^7.10.4",
       "@hot-loader/react-dom": "^16.13.0",
+      "@types/crypto-js": "^4.0.1",
       "@types/electron-devtools-installer": "^2.2.0",
       "@types/google-libphonenumber": "^7.4.19",
       "@types/jest": "^24.0.13",
@@ -170,8 +171,10 @@
       "auto-launch": "^5.0.5",
       "byte-base64": "^1.0.2",
       "cors": "^2.8.5",
+      "crypto-js": "^4.0.0",
       "dictionary-en": "^3.0.1",
       "electron-dl": "^3.0.2",
+      "electron-updater": "^4.3.5",
       "emoji-mart": "^3.0.0",
       "emoji-name-map": "^1.2.9",
       "emoji-regex": "^9.0.0",

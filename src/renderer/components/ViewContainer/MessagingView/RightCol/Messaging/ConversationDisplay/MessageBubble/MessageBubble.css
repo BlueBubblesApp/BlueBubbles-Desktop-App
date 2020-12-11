@@ -24,7 +24,7 @@
     max-width: 100%;
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     background-color: var(--incoming-message-color);
     padding: 6px 15px 6px 15px;
     border-radius: 20px;
@@ -46,8 +46,7 @@
     margin-bottom: 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    display: flex;
-    align-items: center;
+    display: block;
 }
 
 .OutgoingMessage {
@@ -66,7 +65,7 @@
     max-width: 100%;
     color: white;
     font-family: "SF UI Display Light";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     padding: 6px 15px 6px 15px;
     background-color: var(--outgoing-message-color);
     border-radius: 20px;
@@ -92,6 +91,14 @@
     background-attachment: fixed !important;
     -webkit-background-clip: border-box !important;
     background-clip: border-box !important;
+}
+
+.smsMessage {
+    background: #3cd541 !important;
+}
+
+.emoji-mart-emoji {
+    vertical-align: middle;
 }
 
 .bigEmojis {
@@ -120,8 +127,7 @@
     margin-bottom: 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    display: flex;
-    align-items: center;
+    display: block;
 }
 
 .messageSubject {
@@ -133,7 +139,7 @@
 .MessageSender {
     margin: 10px 0 0 5px;
     color: var(--chat-label-color);
-    font-size: 11px;
+    font-size: calc(var(--message-font-size) - 3px);
 }
 
 .inChatContactCard {
@@ -267,7 +273,7 @@
     left: -7px;
     height: 20px;
     width: 20px;
-    background: var(--incoming-message-color);
+    background: var(--tail-colored-background);
     border-bottom-right-radius: 15px;
     transition: ease-in-out 0.25s;
 }
@@ -470,7 +476,7 @@
     margin: 0;
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 12px;
+    font-size: calc(var(--message-font-size) - 2px);
     margin: 5px 0px 0px 0px;
     white-space: nowrap;
     overflow: hidden;
@@ -481,7 +487,7 @@
     margin: 0;
     color: var(--main-title-color);
     font-family: "SF UI Display Light";
-    font-size: 12px;
+    font-size: calc(var(--message-font-size) - 2px);
     margin: 0 7px 0px 0px;
     white-space: nowrap;
     overflow: hidden;

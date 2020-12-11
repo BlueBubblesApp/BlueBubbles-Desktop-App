@@ -51,7 +51,7 @@
 .ContactName {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     margin: 0 0 0 10px;
 }
 

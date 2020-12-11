@@ -17,6 +17,7 @@ export type ResponseData =
 
 export type ResponseFormat = {
     status: ValidStatuses;
+    encrypted?: boolean;
     message: ResponseMessages | string;
     error?: Error;
     // Single or list of database objects, or null

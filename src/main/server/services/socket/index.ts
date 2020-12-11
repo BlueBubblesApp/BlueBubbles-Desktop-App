@@ -4,6 +4,7 @@ import * as os from "os";
 import * as path from "path";
 import * as Notifier from "node-notifier";
 import { Connection } from "typeorm";
+import * as CryptoJS from "crypto-js";
 
 // Internal Libraries
 import { FileSystem } from "@server/fileSystem";
@@ -12,7 +13,6 @@ import { ResponseFormat, ChatResponse, MessageResponse, AttachmentResponse } fro
 // Database Dependency Imports
 import { Server } from "@server/index";
 import { FCMService } from "@server/services";
-import { ConfigRepository } from "@server/databases/config";
 import { ChatRepository } from "@server/databases/chat";
 import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
 
@@ -110,10 +110,27 @@ export class SocketService {
         });
     }
 
+    static decryptPayload(payload: ResponseFormat): ResponseFormat {
+        if (!payload?.encrypted) return payload;
+
+        const output = { ...payload };
+        const pass: string = Server().configRepo.get("serverAddress") as string;
+        output.data = CryptoJS.AES.decrypt(output.data as string, pass).toString();
+
+        try {
+            output.data = JSON.parse(output.data);
+        } catch (ex) {
+            // Do nothing, aka, leave as is
+        }
+
+        return output;
+    }
+
     startSocketHandlers() {
         if (!this.server) return;
 
         const handleNewMessage = async (event: string, message: MessageResponse) => {
+            console.log(message);
             // First, add the message to the queue
             Server().queueService.add(event, message);
 
@@ -147,6 +164,9 @@ export class SocketService {
 
             // Don't show a notificaiton if they have been disabled
             if (Server().configRepo.get("globalNotificationsDisabled")) return;
+            // If the chat is in the muted chats list return
+            console.log(Server().configRepo.get("allMutedChats"));
+            if ((Server().configRepo.get("allMutedChats") as string).includes(message.chats[0].guid)) return;
 
             // Build the notification parameters
             if (message.error) {
@@ -226,6 +246,11 @@ export class SocketService {
             // console.log(mes)
         });
 
+        this.server.on("typing-indicator", res => {
+            console.log(res);
+            Server().emitToUI("typing-indicator", res);
+        });
+
         this.server.on("chat-read-status-changed", async params => {
             if (params.status === false && params.chatGuid != null) {
                 const chats = await Server().chatRepo.getChats(params.chatGuid);
@@ -253,7 +278,8 @@ export class SocketService {
         return new Promise<any>((resolve, reject) => {
             this.server.emit("get-fcm-client", null, res => {
                 if ([200, 201].includes(res.status)) {
-                    resolve(res.data);
+                    const cp = SocketService.decryptPayload({ ...res });
+                    resolve(cp.data);
                 } else {
                     reject(res.message);
                 }
@@ -265,7 +291,8 @@ export class SocketService {
         return new Promise<AttachmentResponse>((resolve, reject) => {
             this.server.emit("send-message-chunk", params, (res: ResponseFormat) => {
                 if ([200, 201].includes(res.status)) {
-                    resolve(res.data as AttachmentResponse);
+                    const cp = SocketService.decryptPayload({ ...res });
+                    resolve(cp.data as AttachmentResponse);
                 } else {
                     reject(res.message);
                 }
@@ -273,11 +300,12 @@ export class SocketService {
         });
     }
 
-    async getChats({ withParticipants = true }: GetChatsParams): Promise<ChatResponse[]> {
+    async getChats({ withSMS = true, withParticipants = true }: GetChatsParams): Promise<ChatResponse[]> {
         return new Promise<ChatResponse[]>((resolve, reject) => {
-            this.server.emit("get-chats", { withParticipants }, (res: ResponseFormat) => {
+            this.server.emit("get-chats", { withSMS, withParticipants }, (res: ResponseFormat) => {
                 if ([200, 201].includes(res.status)) {
-                    resolve(res.data as ChatResponse[]);
+                    const cp = SocketService.decryptPayload({ ...res });
+                    resolve(cp.data as ChatResponse[]);
                 } else {
                     reject(res.message);
                 }
@@ -295,6 +323,7 @@ export class SocketService {
         withHandle = true,
         withAttachments = true,
         withBlurhash = false,
+        withSMS = true,
         sort = "DESC",
         where = []
     }: GetChatMessagesParams): Promise<MessageResponse[]> {
@@ -311,12 +340,14 @@ export class SocketService {
                     withHandle,
                     withAttachments,
                     withBlurhash,
+                    withSMS,
                     where,
                     sort
                 },
                 res => {
                     if ([200, 201].includes(res.status)) {
-                        resolve(res.data as MessageResponse[]);
+                        const cp = SocketService.decryptPayload({ ...res });
+                        resolve(cp.data as MessageResponse[]);
                     } else {
                         reject(res.message);
                     }
@@ -340,7 +371,8 @@ export class SocketService {
                 },
                 res => {
                     if ([200, 201].includes(res.status)) {
-                        resolve(res.data as string);
+                        const cp = SocketService.decryptPayload({ ...res });
+                        resolve(cp.data as string);
                     } else {
                         reject(res.message);
                     }
@@ -355,13 +387,22 @@ export class SocketService {
 
     async getServerMetadata(): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            this.server.emit("get-server-metadata", null, res => {
+            this.server.emit("get-server-metadata", null, SocketService.decryptPayload, res => {
                 if ([200, 201].includes(res.status)) {
-                    resolve(res.data as string);
+                    const cp = SocketService.decryptPayload({ ...res });
+                    resolve(cp.data as string);
                 } else {
                     reject(res.message);
                 }
             });
         });
+    }
+
+    async sendTypingIndicator(isTyping: boolean, chatGuid: string) {
+        if (isTyping) {
+            this.server.emit("started-typing", { chatGuid });
+        } else {
+            this.server.emit("stopped-typing", { chatGuid });
+        }
     }
 }

@@ -17,7 +17,7 @@ input[type="range"]::-webkit-slider-thumb {
     border-radius: 2.5px;
 }
 
-input[type="range"]::-webkit-slider-runnable-track {
+.audioVisPrev::-webkit-slider-runnable-track {
     width: 100%;
     height: 5px;
     cursor: pointer;

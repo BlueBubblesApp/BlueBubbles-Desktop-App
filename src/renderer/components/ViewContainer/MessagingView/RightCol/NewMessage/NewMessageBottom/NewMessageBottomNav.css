@@ -57,14 +57,14 @@
 
 #messageFieldInput-NewMessage {
     resize: none;
-    max-height: 19px;
-    min-height: 19px;
+    max-height: calc(var(--message-font-size) + 5px);
+    min-height: calc(var(--message-font-size) + 5px);
     background-repeat: no-repeat;
     border-radius: 25px;
     flex-grow: 1;
     padding: 3px 35px 3px 8px;
     font-family: "SF UI Display Bold";
-    font-size: 15px;
+    font-size: calc(var(--message-font-size) + 1px);
     color: var(--right-primary-color);
     outline: none;
     border: 1px solid var(--right-secondary-color);
@@ -96,6 +96,10 @@
     height: 28px;
     transition: ease-in-out 0.1s;
     fill: var(--send-button-color);
+}
+
+.smsSendIcon {
+    fill: #3cd541 !important;
 }
 
 #deleteAudioIcon {

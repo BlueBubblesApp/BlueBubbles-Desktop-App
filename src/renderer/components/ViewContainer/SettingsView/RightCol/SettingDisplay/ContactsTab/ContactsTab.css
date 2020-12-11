@@ -17,6 +17,6 @@
 #ContactsTitle > h1 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 24px;
+    font-size: calc(var(--message-font-size) + 10px);
     margin: 0;
 }

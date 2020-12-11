@@ -10,7 +10,7 @@
 .StorageInfo > h1 {
     color: var(--main-title-color);
     margin-top: 20px;
-    font-size: 26px;
+    font-size: calc(var(--message-font-size) + 12px);
     font-family: "SF UI Display Bold";
 }
 
@@ -84,36 +84,36 @@
 #key-label-1 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     margin: 0 15px 0 3px;
 }
 
 #key-label-2 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     margin: 0 15px 0 3px;
 }
 
 #key-label-3 {
     color: var(--main-title-color);
     font-family: "SF UI Display Bold";
-    font-size: 14px;
+    font-size: var(--message-font-size);
     margin: 0 0px 0 3px;
 }
 
 @media only screen and (max-width: 800px) {
     #key-label-1 {
         margin: 0 5px 0 3px;
-        font-size: 12px;
+        font-size: calc(var(--message-font-size) - 2px);
     }
 
     #key-label-2 {
         margin: 0 5px 0 3px;
-        font-size: 12px;
+        font-size: calc(var(--message-font-size) - 2px);
     }
     #key-label-3 {
-        font-size: 12px;
+        font-size: calc(var(--message-font-size) - 2px);
     }
     #barWrapper {
         width: 80%;
@@ -122,6 +122,6 @@
         width: 80%;
     }
     .StorageInfo > h1 {
-        font-size: 20px;
+        font-size: calc(var(--message-font-size) + 6px);
     }
 }

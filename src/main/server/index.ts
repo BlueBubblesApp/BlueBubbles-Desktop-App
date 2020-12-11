@@ -2,7 +2,7 @@
 /* eslint-disable no-global-assign */
 /* eslint-disable no-param-reassign */
 /* eslint-disable max-len */
-import { ipcMain, BrowserWindow, shell, app, dialog, nativeImage, DownloadItem } from "electron";
+import { ipcMain, BrowserWindow, shell, app, dialog, nativeImage, DownloadItem, ipcRenderer } from "electron";
 import { Connection, DeepPartial } from "typeorm";
 import * as base64 from "byte-base64";
 import * as fs from "fs";
@@ -25,6 +25,10 @@ import { ChatResponse, MessageResponse, ResponseFormat, HandleResponse, SyncStat
 import { AttachmentChunkParams, GetChatMessagesParams } from "./services/socket/types";
 import { Attachment, Chat, Handle, Message } from "./databases/chat/entity";
 import { Theme } from "./databases/config/entity";
+
+const { autoUpdater } = require("electron-updater");
+
+autoUpdater.autoDownload = false;
 
 const AutoLaunch = require("auto-launch");
 
@@ -390,13 +394,8 @@ class BackendServer {
             withChats: true,
             withHandle: true,
             withAttachments: true,
-            withBlurhash: false
-            // where: [
-            //     {
-            //         statement: "message.service = 'iMessage'",
-            //         args: null
-            //     }
-            // ]
+            withBlurhash: false,
+            withSMS: true
         };
         const messages: MessageResponse[] = await this.socketService.getMessages(args);
         emitData.loadingMessage = `Syncing ${messages.length} messages`;
@@ -448,7 +447,7 @@ class BackendServer {
         };
 
         const now = new Date();
-        const chats: ChatResponse[] = await this.socketService.getChats({});
+        const chats: ChatResponse[] = await this.socketService.getChats({ withSMS: true });
 
         emitData.syncProgress = 1;
         emitData.loadingMessage = `Got ${chats.length} chats from the server`;
@@ -490,13 +489,8 @@ class BackendServer {
                 limit: 25,
                 offset: 0,
                 withBlurhash: false,
+                withSMS: true,
                 after: 1
-                // where: [
-                //     {
-                //         statement: "message.service = 'iMessage'",
-                //         args: null
-                //     }
-                // ]
             };
 
             // Third, let's fetch the messages from the DB
@@ -1318,6 +1312,53 @@ class BackendServer {
 
             app.quit();
             app.exit(0);
+        });
+
+        if (process.platform !== "linux") {
+            autoUpdater.on("checking-for-update", info => {
+                this.emitToUI("ckecking-for-update", info);
+            });
+
+            autoUpdater.on("error", err => {
+                this.emitToUI("update-err", err);
+            });
+
+            autoUpdater.on("update-available", info => {
+                this.emitToUI("update-available", info);
+            });
+
+            autoUpdater.on("update-not-available", info => {
+                this.emitToUI("update-not-available", info);
+            });
+
+            autoUpdater.on("update-downloaded", info => {
+                this.emitToUI("update-downloaded", info);
+            });
+
+            autoUpdater.on("download-progress", progressObj => {
+                this.emitToUI("update-download-progress", progressObj);
+            });
+
+            ipcMain.handle("check-for-updates", async () => {
+                return autoUpdater.checkForUpdates();
+            });
+
+            ipcMain.handle("download-update", async cancellationToken => {
+                return autoUpdater.downloadUpdate();
+            });
+
+            ipcMain.handle("quit-and-install", async () => {
+                autoUpdater.quitAndInstall(false, true);
+            });
+        }
+
+        ipcMain.handle("send-typing-indicator", (_, params) => {
+            const { isTyping, guid } = params;
+            if (guid !== null && isTyping !== null) {
+                console.log(guid);
+                console.log(isTyping);
+                this.socketService.sendTypingIndicator(isTyping, guid);
+            }
         });
     }
 
