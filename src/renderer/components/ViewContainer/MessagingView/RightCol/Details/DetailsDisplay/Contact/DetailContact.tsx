@@ -2,11 +2,14 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable max-len */
 import * as React from "react";
-import "./DetailContact.css";
+import { ipcRenderer } from "electron";
+
 import { Chat } from "@server/databases/chat/entity";
 import { getSender, generateDetailsIconText } from "@renderer/helpers/utils";
-import { ipcRenderer } from "electron";
+import { blankAvatarSrc } from "@renderer/helpers/constants";
 import DetailContactAvatar from "./DetailContactAvatar/DetailContactAvatar";
+
+import "./DetailContact.css";
 
 interface Props {
     chat: Chat;
@@ -55,6 +58,11 @@ class DetailContact extends React.Component<Props, State> {
         }
     }
 
+    onImageError(index: number) {
+        this.props.chat.participants[index].avatar = blankAvatarSrc;
+        this.setState({});
+    }
+
     async jumpToContactChat() {
         const payload = { newChatAddresses: this.props.address, matchingAddress: this.props.address };
         await ipcRenderer.invoke("start-new-chat", payload);
@@ -62,7 +70,6 @@ class DetailContact extends React.Component<Props, State> {
 
     render() {
         const detailsIconText = generateDetailsIconText(this.props.chat);
-        const participants = this.props.chat.participants.map(handle => getSender(handle));
 
         return (
             <div className="DetailContact">
@@ -74,6 +81,7 @@ class DetailContact extends React.Component<Props, State> {
                                 className="contactDetailsPhoto"
                                 src={this.props.chat.participants[this.props.index].avatar}
                                 alt={this.props.chat.participants[this.props.index].address}
+                                onError={() => this.onImageError(this.props.index)}
                             />
                         ) : (
                             <>

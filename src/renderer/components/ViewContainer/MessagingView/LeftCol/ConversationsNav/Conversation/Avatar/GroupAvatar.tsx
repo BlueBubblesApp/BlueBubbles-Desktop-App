@@ -5,6 +5,7 @@ import { generateChatIconText } from "@renderer/helpers/utils";
 
 import "./styles.css";
 import { ipcRenderer } from "electron";
+import { blankAvatarSrc } from "@renderer/helpers/constants";
 
 interface Props {
     chat: Chat;
@@ -73,6 +74,11 @@ class GroupAvatar extends React.Component<Props, State> {
         }
     }
 
+    setEmptyAvatar(index: number) {
+        this.props.chat.participants[index].avatar = blankAvatarSrc;
+        this.setState({});
+    }
+
     render() {
         const { chat, isPinned } = this.props;
         const chatIconText = generateChatIconText(chat);
@@ -109,6 +115,7 @@ class GroupAvatar extends React.Component<Props, State> {
                         x="-2px"
                         href={firstParticipant.avatar}
                         radius="52px"
+                        onError={() => this.setEmptyAvatar(0)}
                     />
                 ) : (
                     <>
@@ -167,6 +174,7 @@ class GroupAvatar extends React.Component<Props, State> {
                         x="17px"
                         href={secondParticipant.avatar}
                         radius="52px"
+                        onError={() => this.setEmptyAvatar(1)}
                     />
                 ) : (
                     <>

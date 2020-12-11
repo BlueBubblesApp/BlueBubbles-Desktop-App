@@ -11,7 +11,6 @@ import "./Conversation.css";
 import EmojiRegex from "emoji-regex";
 import data from "emoji-mart/data/apple.json";
 import { getEmojiDataFromNative, Emoji } from "emoji-mart";
-import { ipcRenderer } from "electron";
 import ConversationCloseIcon from "../../../../../../assets/icons/conversation-close-icon.png";
 import IndividualAvatar from "./Avatar/IndividualAvatar";
 import GroupAvatar from "./Avatar/GroupAvatar";
@@ -84,32 +83,41 @@ class Conversation extends React.Component<ConversationProps, State> {
         // });
     }
 
-    renderText = text => {
+    renderText = message => {
+        const msg = message?.text ?? "";
         if (this.props.config.useNativeEmojis) {
             return (
                 <p className="message-snip-example" style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
-                    {text}
+                    {msg}
                 </p>
             );
         }
 
         const parser = EmojiRegex();
-        const matches = text.match(parser);
+        const matches = msg.match(parser);
         let final = [];
 
         // final.push("test")
         if (matches?.length >= 1) {
             for (let i = 0; i < matches.length; i += 1) {
-                final = reactStringReplace(i === 0 ? text : final, matches[i], () => {
+                final = reactStringReplace(i === 0 ? msg : final, matches[i], () => {
                     const emojiData = getEmojiDataFromNative(matches[i], "apple", data);
                     if (emojiData) {
-                        return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={18} />;
+                        return (
+                            <Emoji
+                                key={`emoji-${message.guid}-${Math.floor(Math.random() * Math.floor(100))}`}
+                                emoji={emojiData}
+                                set="apple"
+                                skin={emojiData.skin || 1}
+                                size={18}
+                            />
+                        );
                     }
                     return matches[i];
                 });
             }
         } else {
-            final.push(text);
+            final.push(msg);
         }
 
         return (
@@ -233,7 +241,7 @@ class Conversation extends React.Component<ConversationProps, State> {
                                 ) : (
                                     <>
                                         <div className="message-snip">
-                                            <div>{this.renderText(lastText)}</div>
+                                            <div>{this.renderText(this.props.chat.lastMessage)}</div>
                                         </div>
                                         <div className="message-del">
                                             <img
