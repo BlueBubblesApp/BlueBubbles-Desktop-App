@@ -6,6 +6,7 @@
     z-index: 2;
     transition: ease-in-out 0.1s;
     border-radius: 0 0 5px 0;
+    padding: 5px;
 }
 
 .RightBottomNavBlurred {
@@ -47,7 +48,6 @@
 
 #messageField-NewMessage {
     flex-grow: 1;
-    min-height: 45px;
     height: auto;
     display: flex;
     justify-content: center;
@@ -55,21 +55,35 @@
     position: relative;
 }
 
-#messageFieldInput-NewMessage {
+#messageFieldContainer-NewMessage {
     resize: none;
-    max-height: calc(var(--message-font-size) + 5px);
-    min-height: calc(var(--message-font-size) + 5px);
+    width: 100%;
+    height: auto;
     background-repeat: no-repeat;
     border-radius: 25px;
     flex-grow: 1;
-    padding: 3px 35px 3px 8px;
+    padding: 3px 0px 3px 0px;
+    outline: none;
+    border: 1px solid var(--right-secondary-color);
+    background-color: var(--secondary-color);
+    flex-direction: row;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#messageFieldInput-NewMessage {
+    resize: none;
+    width: 100%;
+    flex-grow: 1;
+    border-radius: 25px;
     font-family: "SF UI Display Bold";
     font-size: calc(var(--message-font-size) + 1px);
     color: var(--right-primary-color);
     outline: none;
-    border: 1px solid var(--right-secondary-color);
-    margin: 0px 2px 0px 7px;
     background-color: var(--secondary-color);
+    border: none;
+    padding-left: 10px;
 }
 
 *::placeholder {

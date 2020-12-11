@@ -13,10 +13,9 @@
 }
 
 #leftAttachmentButton {
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
     background-color: var(--attachment-button-color);
-    margin-left: 10px;
     padding: 3px;
     border-radius: 3px;
     display: flex;
@@ -76,29 +75,43 @@
 
 #messageField {
     flex-grow: 1;
-    min-height: 45px;
     height: auto;
     display: flex;
+    flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     position: relative;
+}
+
+#messageFieldContainer {
+    resize: none;
+    width: 100%;
+    height: auto;
+    background-repeat: no-repeat;
+    border-radius: 25px;
+    flex-grow: 1;
+    padding: 3px 0px 3px 0px;
+    outline: none;
+    border: 1px solid var(--right-secondary-color);
+    background-color: var(--secondary-color);
+    flex-direction: row;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 #messageFieldInput {
     resize: none;
-    max-height: 19px;
-    min-height: 19px !important;
-    background-repeat: no-repeat;
-    border-radius: 25px;
+    width: 100%;
     flex-grow: 1;
-    padding: 3px 35px 3px 8px;
+    border-radius: 25px;
     font-family: "SF UI Display Bold";
     font-size: calc(var(--message-font-size) + 1px);
     color: var(--right-primary-color);
     outline: none;
-    border: 1px solid var(--right-secondary-color);
-    margin: 0px 2px 0px 7px;
     background-color: var(--secondary-color);
+    border: none;
+    padding-left: 10px;
 }
 
 *::placeholder {
@@ -106,16 +119,13 @@
 }
 
 #rightBottomButton {
-    margin-right: 2px;
     width: 45px;
-    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 #sendIcon {
-    margin-bottom: 2px;
     height: 28px;
     transition: ease-in-out 0.1s;
     fill: var(--send-button-color);
@@ -173,8 +183,6 @@
 }
 
 #emojiPickerButton {
-    position: absolute;
-    right: 7px;
     fill: var(--right-secondary-color);
     transition: ease-in-out 0.1s;
 }
@@ -439,11 +447,12 @@
 }
 
 #newAttachmentsContainer {
-    max-width: 40vw;
+    max-width: 100%;
     overflow-x: scroll;
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    margin-bottom: 5px;
 }
 
 .aNewAttachmentDiv {
@@ -451,13 +460,12 @@
     width: auto;
     height: auto;
     background-color: var(--right-accent-title-color);
-    margin: 5px;
-    margin-right: 0px;
     padding: 3px 6px 3px 5px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-radius: 5px;
+    margin-right: 5px;
 }
 
 .aNewAttachmentDiv > div {
@@ -467,7 +475,6 @@
     width: auto;
     justify-content: center;
     align-items: center;
-    margin-right: 5px;
 }
 
 .aNewAttachmentDiv > div > p {
@@ -506,6 +513,8 @@
 
 .RightBottomNav {
     height: auto !important;
+    padding: 5px;
+    align-items: flex-end;
 }
 
 .cantSupportPreview {
@@ -528,22 +537,4 @@
     font-family: "SF UI Display Bold";
     font-size: 12px;
     margin: 0;
-}
-
-@media (max-width: 1100px) {
-    #newAttachmentsContainer {
-        max-width: 30vw;
-    }
-}
-
-@media (max-width: 900px) {
-    #newAttachmentsContainer {
-        max-width: 17vw;
-    }
-}
-
-@media (max-width: 750px) {
-    #newAttachmentsContainer {
-        max-width: 13vw;
-    }
 }

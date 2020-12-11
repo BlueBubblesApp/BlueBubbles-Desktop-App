@@ -196,18 +196,21 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                 event.preventDefault();
                 const emoji = document
                     .getElementsByClassName("aEmojiMatch")
-                    [this.state.activeEmojiHoverNumber].getAttribute("data-emoji");
+                    [this.state.activeEmojiHoverNumber]?.getAttribute("data-emoji");
 
-                this.setState({
-                    enteredMessage: `${this.state.enteredMessage.replace(
-                        this.state.emojiSearchString,
-                        emoji.split(",")[1]
-                    )} `,
-                    showEmojiSearch: false,
-                    emojiSearchString: "",
-                    lookingForEmoji: false
-                });
-                document.getElementById("messageFieldInput-NewMessage").focus();
+                if (emoji) {
+                    this.setState({
+                        enteredMessage: `${this.state.enteredMessage.replace(
+                            this.state.emojiSearchString,
+                            emoji.split(",")[1]
+                        )} `,
+                        showEmojiSearch: false,
+                        emojiSearchString: "",
+                        lookingForEmoji: false
+                    });
+                    document.getElementById("messageFieldInput-NewMessage").focus();
+                }
+
                 return;
             }
 
@@ -323,14 +326,12 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
             input.style.height = "19px";
             input.style.maxHeight = "19px";
             input.style.borderRadius = "25px";
-            (document.getElementsByClassName("RightBottomNav-NewMessage")[0] as HTMLElement).style.padding = "0";
         } else {
             input.style.height = "";
             input.style.maxHeight = "";
             input.style.height = `${event.target.scrollHeight}px`;
             input.style.maxHeight = `${event.target.scrollHeight}px`;
             input.style.borderRadius = "10px";
-            (document.getElementsByClassName("RightBottomNav-NewMessage")[0] as HTMLElement).style.padding = "8px 0";
         }
 
         if (this.state.showGIFSelector) {
@@ -878,7 +879,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                                             });
                                         }}
                                         src={require("@renderer/assets/giphy-logo-circle.png")}
-                                        style={{ height: "26px", marginLeft: "7px" }}
+                                        style={{ height: "30px", marginLeft: "7px", marginRight: "5px" }}
                                     />
                                 </>
                             )}
@@ -934,25 +935,27 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                                           </div>
                                       ))
                                     : null}
-                                <textarea
-                                    id="messageFieldInput-NewMessage"
-                                    autoCapitalize="on"
-                                    spellCheck="true"
-                                    rows={1}
-                                    wrap="hard"
-                                    placeholder={this.state.showGIFSelector ? "Search for GIF" : "BlueBubbles"}
-                                    value={this.state.enteredMessage}
-                                    onChange={e => this.handleMessageChange(e)}
-                                />
-                                <svg
-                                    id="emojiPickerButton"
-                                    onClick={() => this.toggleEmojiPicker()}
-                                    height="21"
-                                    width="21"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path d="m12 24c6.617 0 12-5.383 12-12s-5.383-12-12-12-12 5.383-12 12 5.383 12 12 12zm5-16.935c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-10 0c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-3.354 7.24c.142-.192.366-.305.604-.305h15.5c.238 0 .462.113.604.305.141.192.183.439.112.667-1.16 3.737-4.562 6.248-8.466 6.248s-7.307-2.511-8.466-6.248c-.071-.227-.029-.475.112-.667z" />
-                                </svg>
+                                <div id="messageFieldContainer-NewMessage">
+                                    <textarea
+                                        id="messageFieldInput-NewMessage"
+                                        autoCapitalize="on"
+                                        spellCheck="true"
+                                        rows={1}
+                                        wrap="hard"
+                                        placeholder={this.state.showGIFSelector ? "Search for GIF" : "BlueBubbles"}
+                                        value={this.state.enteredMessage}
+                                        onChange={e => this.handleMessageChange(e)}
+                                    />
+                                    <svg
+                                        id="emojiPickerButton"
+                                        onClick={() => this.toggleEmojiPicker()}
+                                        height="21"
+                                        width="21"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path d="m12 24c6.617 0 12-5.383 12-12s-5.383-12-12-12-12 5.383-12 12 5.383 12 12 12zm5-16.935c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-10 0c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2zm-3.354 7.24c.142-.192.366-.305.604-.305h15.5c.238 0 .462.113.604.305.141.192.183.439.112.667-1.16 3.737-4.562 6.248-8.466 6.248s-7.307-2.511-8.466-6.248c-.071-.227-.029-.475.112-.667z" />
+                                    </svg>
+                                </div>
                             </div>
                         </>
                     )}
