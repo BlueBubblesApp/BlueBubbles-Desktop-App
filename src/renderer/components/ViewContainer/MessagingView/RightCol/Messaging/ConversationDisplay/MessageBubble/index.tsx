@@ -1470,7 +1470,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                                                         message.handle
                                                                                     ).length >= 2
                                                                                         ? "500px"
-                                                                                        : "650px"
+                                                                                        : "600px"
                                                                             }}
                                                                             className="cls-2"
                                                                             x="50%"
@@ -1760,7 +1760,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                                     generateReactionsDisplayIconText(message.handle)
                                                                         .length >= 2
                                                                         ? "500px"
-                                                                        : "650px"
+                                                                        : "600px"
                                                             }}
                                                             className="cls-2"
                                                             x="50%"
