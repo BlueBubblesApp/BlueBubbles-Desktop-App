@@ -1,12 +1,11 @@
 /* eslint-disable no-use-before-define */
 import "reflect-metadata";
-import { app, BrowserWindow, ipcMain, Menu, Tray } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, Tray, nativeTheme } from "electron";
 import * as path from "path";
 import * as url from "url";
 
 import { Server } from "@server/index";
 import { FileSystem } from "@server/fileSystem";
-import windowsTrayIcon from "@renderer/assets/icon.ico";
 
 require("dotenv").config();
 
@@ -19,6 +18,19 @@ let wasAutoStarted = false;
 const BlueBubbles = Server(win);
 
 const gotTheLock = app.requestSingleInstanceLock();
+const instantiateTray = () => {
+    if (process.platform === "linux") {
+        tray = new Tray(path.join(FileSystem.resources, "icons", "64x64.png"));
+    } else if (process.platform === "darwin") {
+        if (!nativeTheme.shouldUseDarkColors) {
+            tray = new Tray(path.join(FileSystem.resources, "icons", "macos", "tray-icon-light.png"));
+        } else {
+            tray = new Tray(path.join(FileSystem.resources, "icons", "macos", "tray-icon-dark.png"));
+        }
+    } else {
+        tray = new Tray(path.join(FileSystem.resources, "icons", "icon.ico"));
+    }
+};
 
 if (!gotTheLock) {
     app.quit();
@@ -39,11 +51,7 @@ if (!gotTheLock) {
             if (process.argv.includes("--hidden")) {
                 wasAutoStarted = true;
 
-                if (process.platform === "linux") {
-                    tray = new Tray(path.join(FileSystem.resources, "resources", "icons", "128x128.png"));
-                } else {
-                    tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
-                }
+                instantiateTray();
 
                 const contextMenu = Menu.buildFromTemplate([
                     {
@@ -96,11 +104,7 @@ if (!gotTheLock) {
             if (process.argv.includes("--hidden")) {
                 wasAutoStarted = true;
 
-                if (process.platform === "linux") {
-                    tray = new Tray(path.join(FileSystem.resources, "resources", "icons", "128x128.png"));
-                } else {
-                    tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
-                }
+                instantiateTray();
 
                 const contextMenu = Menu.buildFromTemplate([
                     {
@@ -229,11 +233,7 @@ ipcMain.handle("change-window-titlebar", async (_, args) => {
 
 ipcMain.handle("close-event", async () => {
     if (BlueBubbles.configRepo.get("closeToTray")) {
-        if (process.platform === "linux") {
-            tray = new Tray(path.join(FileSystem.resources, "resources", "icons", "128x128.png"));
-        } else {
-            tray = new Tray(path.join(FileSystem.resources, windowsTrayIcon));
-        }
+        instantiateTray();
 
         const contextMenu = Menu.buildFromTemplate([
             {

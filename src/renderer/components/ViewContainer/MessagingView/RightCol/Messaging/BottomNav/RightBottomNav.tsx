@@ -487,9 +487,9 @@ class RightBottomNav extends React.Component<Props, State> {
             (document.getElementsByClassName("RightBottomNav")[0] as HTMLElement).style.padding = "0";
         }
 
-        let resourcePath = __dirname.replace("app.asar/dist", "resources");
+        let resourcePath = __dirname.replace("app.asar/dist", "appResources");
         if (process.env.NODE_ENV !== "production") {
-            resourcePath = "./resources";
+            resourcePath = "./appResources";
         }
 
         if (config.sendAudio) {

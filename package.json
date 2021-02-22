@@ -60,13 +60,13 @@
       "appId": "com.BlueBubbles.BlueBubbles-Desktop",
       "directories": {
          "output": "release",
-         "buildResources": "resources"
+         "buildResources": "appResources"
       },
       "files": [
          "dist/",
          "node_modules/",
          "package.json",
-         "resources/"
+         "appResources/"
       ],
       "asar": true,
       "asarUnpack": [
@@ -74,12 +74,31 @@
          "**/node_modules/node-notifier/vendor/**"
       ],
       "extraResources": [
-         "**/resources/**"
+         "**/appResources/**"
       ],
       "mac": {
          "category": "public.app-category.social-networking",
-         "icon": "./resources/linux.icns"
+         "target": [
+            {
+               "target": "dmg"
+            },
+            {
+               "target": "zip"
+            }
+         ],
+         "type": "distribution",
+         "icon": "./resources/linux.icns",
+         "darkModeSupport": true,
+         "hardenedRuntime": true,
+         "entitlements": "./build/entitlements.mac.plist",
+         "entitlementsInherit": "./build/entitlements.mac.plist",
+         "gatekeeperAssess": false,
+         "minimumSystemVersion": "10.13.0"
       },
+      "dmg": {
+         "sign": false
+      },
+      "afterSign": "./build/notarize.js",
       "linux": {
          "target": "deb"
       },
@@ -124,6 +143,7 @@
       "electron": "^9.0.5",
       "electron-builder": "^22.7.0",
       "electron-devtools-installer": "^3.0.0",
+      "electron-notarize": "^1.0.0",
       "eslint": "^7.3.1",
       "eslint-config-airbnb": "^18.2.0",
       "eslint-config-prettier": "^6.11.0",

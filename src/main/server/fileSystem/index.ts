@@ -11,7 +11,13 @@ import { generateUuid } from "@renderer/helpers/utils";
 import { StorageData } from "./types";
 
 let subdir = "";
-if (process.env.NODE_ENV !== "production") subdir = "BlueBubbles-Desktop-App";
+let moddir = "app.asar.unpacked";
+let appPath = __dirname.replace("/app.asar/dist", "");
+if (process.env.NODE_ENV !== "production") {
+    appPath = __dirname.replace("/dist", "");
+    subdir = "BlueBubbles-Desktop-App";
+    moddir = "";
+}
 
 export class FileSystem {
     public static baseDir = path.join(app.getPath("userData"), subdir);
@@ -20,9 +26,9 @@ export class FileSystem {
 
     public static fcmDir = path.join(FileSystem.baseDir, "FCM");
 
-    public static modules = path.join(__dirname.replace("app.asar/dist", "app.asar.unpacked"), "node_modules");
+    public static modules = path.join(appPath, moddir, "node_modules");
 
-    public static resources = __dirname.replace("app.asar/dist", "resources");
+    public static resources = path.join(appPath, "appResources");
 
     // Creates required directories
     static setupDirectories(): void {
@@ -85,7 +91,7 @@ export class FileSystem {
 
     static async deleteTempFiles() {
         let tempPath;
-        if (process.platform === "linux") {
+        if (["linux", "darwin"].includes(process.platform)) {
             tempPath = `${FileSystem.attachmentsDir}/temp`;
         } else {
             tempPath = `${FileSystem.attachmentsDir}\\temp`;
