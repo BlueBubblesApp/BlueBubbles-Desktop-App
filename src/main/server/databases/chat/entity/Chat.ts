@@ -1,7 +1,7 @@
 import { Unique, Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "typeorm";
 import { Handle, Message } from "@server/databases/chat/entity";
 
-@Entity()
+@Entity("chat")
 @Unique(["guid"])
 export class Chat {
     @PrimaryGeneratedColumn()

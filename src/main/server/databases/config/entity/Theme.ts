@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryColumn } from "typeorm";
 
-@Entity()
+@Entity("theme")
 export class Theme {
     @PrimaryColumn("text", { name: "name" })
     name: string;

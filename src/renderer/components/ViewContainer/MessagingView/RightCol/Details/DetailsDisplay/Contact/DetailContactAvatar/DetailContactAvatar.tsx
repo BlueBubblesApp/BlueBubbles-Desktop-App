@@ -26,7 +26,7 @@ class DetailContactAvatar extends React.Component<Props, State> {
                     cy="50%"
                     r="50"
                 />
-                <text id="contactAvatarInitials" x="50" y="66" stroke="none" textAnchor="middle">
+                <text id="contactAvatarInitials" x="51" y="67" stroke="none" textAnchor="middle">
                     {this.props.contactInitials}
                 </text>
             </svg>

@@ -632,8 +632,10 @@ class BackendServer {
         ipcMain.handle("get-messages", async (_, args) => {
             const messages = await this.chatRepo.getMessages(args);
 
+            const regularMessages = messages.filter(item => !item.associatedMessageGuid);
+
             // If there are no messages, let's check the server
-            if (messages.length === 0) {
+            if (regularMessages.length === 0) {
                 const chats = await this.chatRepo.getChats(args.chatGuid);
                 if (chats.length > 0) {
                     const newMessages = await this.socketService.getMessages(args);

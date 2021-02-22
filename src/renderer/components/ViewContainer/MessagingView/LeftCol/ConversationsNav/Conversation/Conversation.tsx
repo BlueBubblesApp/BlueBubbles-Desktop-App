@@ -11,7 +11,6 @@ import "./Conversation.css";
 import EmojiRegex from "emoji-regex";
 import data from "emoji-mart/data/apple.json";
 import { getEmojiDataFromNative, Emoji } from "emoji-mart";
-import { ipcRenderer } from "electron";
 import ConversationCloseIcon from "../../../../../../assets/icons/conversation-close-icon.png";
 import IndividualAvatar from "./Avatar/IndividualAvatar";
 import GroupAvatar from "./Avatar/GroupAvatar";
@@ -39,8 +38,6 @@ function showDelMessage(e) {
     let id = e.target.getAttribute("id");
     id = document.getElementById(id);
     id.getElementsByClassName("message-del-conversation")[0].classList.remove("hideDelMessage");
-    console.log();
-    // console.log(document.querySelector(id));
 }
 
 function hideDelMessage(e) {
@@ -84,32 +81,43 @@ class Conversation extends React.Component<ConversationProps, State> {
         // });
     }
 
-    renderText = text => {
+    renderText = message => {
+        // Pull out the message
+        let msg = message?.text ?? "";
+        if (msg?.hasAttachments) msg = "1 Attachment";
+
         if (this.props.config.useNativeEmojis) {
             return (
                 <p className="message-snip-example" style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
-                    {text}
+                    {msg}
                 </p>
             );
         }
 
         const parser = EmojiRegex();
-        const matches = text.match(parser);
+        const matches = msg.match(parser);
         let final = [];
 
-        // final.push("test")
         if (matches?.length >= 1) {
             for (let i = 0; i < matches.length; i += 1) {
-                final = reactStringReplace(i === 0 ? text : final, matches[i], () => {
+                final = reactStringReplace(i === 0 ? msg : final, matches[i], () => {
                     const emojiData = getEmojiDataFromNative(matches[i], "apple", data);
                     if (emojiData) {
-                        return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={18} />;
+                        return (
+                            <Emoji
+                                key={`emoji-${message.guid}-${Math.floor(Math.random() * Math.floor(100))}`}
+                                emoji={emojiData}
+                                set="apple"
+                                skin={emojiData.skin || 1}
+                                size={18}
+                            />
+                        );
                     }
                     return matches[i];
                 });
             }
         } else {
-            final.push(text);
+            final.push(msg);
         }
 
         return (
@@ -125,9 +133,6 @@ class Conversation extends React.Component<ConversationProps, State> {
         const chatDate = this.props.chat.lastMessage?.dateCreated
             ? getDateText(new Date(this.props.chat.lastMessage.dateCreated))
             : "";
-        let lastText = this.props.chat.lastMessage?.text ?? "";
-        if (this.props.chat.lastMessage?.hasAttachments) lastText = "1 Attachment";
-
         return (
             <>
                 {this.state.showContextMenu ? (
@@ -233,7 +238,7 @@ class Conversation extends React.Component<ConversationProps, State> {
                                 ) : (
                                     <>
                                         <div className="message-snip">
-                                            <div>{this.renderText(lastText)}</div>
+                                            <div>{this.renderText(this.props.chat.lastMessage)}</div>
                                         </div>
                                         <div className="message-del">
                                             <img

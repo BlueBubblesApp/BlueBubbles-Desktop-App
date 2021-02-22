@@ -105,13 +105,18 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             this.setState({ chats });
         });
 
-        document.documentElement.addEventListener("mouseup", e2 => {
-            console.log("WINDOW MOUSE UP");
-            this.setState({ isScrolling: false, scrollLeft: 0, clientX: 0 });
-        });
+        // document.documentElement.addEventListener("mouseup", e2 => {
+        //     console.log("WINDOW MOUSE UP");
+        //     this.setState({ isScrolling: false, scrollLeft: 0, clientX: 0 });
+        // });
     }
 
     setCurrentChat(chat: Chat) {
+        const now = new Date();
+        ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
+        ipcRenderer.invoke("send-to-ui", { event: "toggle-giphy-selector", contents: false });
+        ipcRenderer.invoke("set-chat-last-viewed", { chat, lastViewed: now });
+
         if (chat === null) {
             this.setState({ activeChat: null });
             // Remove old attibutes
@@ -131,15 +136,10 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             return;
         }
 
-        const now = new Date();
         this.setState({ activeChat: chat });
-        ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
-        ipcRenderer.invoke("send-to-ui", { event: "toggle-giphy-selector", contents: false });
-        ipcRenderer.invoke("set-chat-last-viewed", { chat, lastViewed: now });
         this.removeNotification(chat.guid, now);
 
         const config = { isDetailsOpen: false };
-
         const chatParent = document.getElementById(chat.guid);
 
         // Remove old attibutes
@@ -519,9 +519,9 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                                       className={`conversationSlide ${
                                           activeChat?.guid === chat.guid ? "activeChat" : ""
                                       }`}
-                                      onMouseDown={e => this.onMouseDown(e, chat)}
-                                      onMouseUp={e => this.onMouseUp(e)}
-                                      onMouseMove={e => this.onMouseMove(e, chat)}
+                                      //   onMouseDown={e => this.onMouseDown(e, chat)}
+                                      //   onMouseUp={e => this.onMouseUp(e)}
+                                      //   onMouseMove={e => this.onMouseMove(e, chat)}
                                   >
                                       {hasNotification ? (
                                           <div className="notification" />

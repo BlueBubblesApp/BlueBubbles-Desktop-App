@@ -2,6 +2,7 @@
 import * as React from "react";
 import { Chat, Handle } from "@server/databases/chat/entity";
 import { generateChatIconText } from "@renderer/helpers/utils";
+import { blankAvatarSrc } from "@renderer/helpers/constants";
 
 import "./styles.css";
 import { ipcRenderer } from "electron";
@@ -73,6 +74,11 @@ class GroupAvatar extends React.Component<Props, State> {
         }
     }
 
+    setEmptyAvatar(index: number) {
+        this.props.chat.participants[index].avatar = blankAvatarSrc;
+        this.setState({});
+    }
+
     render() {
         const { chat, isPinned } = this.props;
         const chatIconText = generateChatIconText(chat);
@@ -109,6 +115,7 @@ class GroupAvatar extends React.Component<Props, State> {
                         x="-2px"
                         href={firstParticipant.avatar}
                         radius="52px"
+                        onError={() => this.setEmptyAvatar(0)}
                     />
                 ) : (
                     <>
@@ -167,6 +174,7 @@ class GroupAvatar extends React.Component<Props, State> {
                         x="17px"
                         href={secondParticipant.avatar}
                         radius="52px"
+                        onError={() => this.setEmptyAvatar(1)}
                     />
                 ) : (
                     <>

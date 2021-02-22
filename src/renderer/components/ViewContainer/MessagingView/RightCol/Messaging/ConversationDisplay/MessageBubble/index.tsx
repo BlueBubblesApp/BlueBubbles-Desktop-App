@@ -58,6 +58,7 @@ import { Theme } from "@server/databases/config/entity";
 
 const reactStringReplace = require("react-string-replace");
 const validUrl = require("valid-url");
+const seedrandom = require("seedrandom");
 
 // If we don't do this, the marker won't show
 // eslint-disable-next-line no-underscore-dangle
@@ -366,7 +367,10 @@ class MessageBubble extends React.Component<Props, State> {
                         onClick={() => openAttachment(attachmentPath)}
                         draggable="false"
                     >
-                        {vcfData && vcfData.FN ? <p>{vcfData.FN}</p> : <p>Contact</p>}
+                        <span className="contactCardText">
+                            <span>Contact Card</span>
+                            {vcfData && vcfData.FN ? <p>{vcfData.FN}</p> : <p>Contact</p>}
+                        </span>
                         <div>
                             {generateVCFIconText(vcfData) === "?" ? (
                                 <svg height="35px" width="35px" viewBox="0 0 1000 1000">
@@ -439,14 +443,18 @@ class MessageBubble extends React.Component<Props, State> {
         return false;
     };
 
+    delayedScroll() {
+        setTimeout(() => {
+            ipcRenderer.invoke("send-to-ui", { event: "scroll-to-bottom" });
+        }, 250);
+    }
+
     async componentDidMount() {
         try {
             const parent = document.getElementById(this.props.message.guid);
             if (this.props.colorfulChatBubbles && this.props.chat.participants.length > 1) {
                 let messageColor = "#686868";
                 if (this.props.message.handle) {
-                    const seedrandom = require("seedrandom");
-
                     const rng = seedrandom(this.props.message.handle.address);
                     const rand1 = rng();
 
@@ -490,24 +498,21 @@ class MessageBubble extends React.Component<Props, State> {
                 message.text.includes("Https")
             ) {
                 const linkPrev: any = await getLinkPreview(message.text);
-                this.setState({ linkPrev });
-                if (linkPrev.title) {
-                    this.setState({ linkTitle: linkPrev.title });
-                } else {
-                    this.setState({ linkTitle: linkPrev.description });
+                if (!linkPrev.title && linkPrev.description) {
+                    linkPrev.title = linkPrev.description;
                 }
-                // eslint-disable-next-line no-dupe-else-if
+
+                this.setState({ linkPrev }, this.delayedScroll);
             } else if (
                 (validUrl.isUri(`https://${message.text}`) !== undefined && this.isValidUrl(message.text)) ||
                 (validUrl.isUri(`http://${message.text}`) && this.isValidUrl(message.text))
             ) {
                 const linkPrev: any = await getLinkPreview(`http://${message.text}`);
-                this.setState({ linkPrev });
-                if (linkPrev.title) {
-                    this.setState({ linkTitle: linkPrev.title });
-                } else {
-                    this.setState({ linkTitle: linkPrev.description });
+                if (!linkPrev.title && linkPrev.description) {
+                    linkPrev.title = linkPrev.description;
                 }
+
+                this.setState({ linkPrev }, this.delayedScroll);
             }
 
             // Get the attachments
@@ -551,7 +556,7 @@ class MessageBubble extends React.Component<Props, State> {
             }
 
             // Add the attachments to the state
-            await new Promise((resolve, _) => this.setState({ attachments }, resolve));
+            await new Promise((resolve, _) => this.setState({ attachments }, () => resolve(null)));
 
             // Second, determine if we need to fetch the attachments based on it's progress
             // We do this later because we want to make sure all the attachments are in the state first
@@ -600,7 +605,7 @@ class MessageBubble extends React.Component<Props, State> {
                 }
             }
 
-            await new Promise((resolve, _) => this.setState({ stickers }, resolve));
+            await new Promise((resolve, _) => this.setState({ stickers }, () => resolve(null)));
 
             if (this.state.stickers) {
                 const stickersCopy = this.state.stickers;
@@ -916,7 +921,6 @@ class MessageBubble extends React.Component<Props, State> {
         const appleEmojis = [];
 
         for (const x of matches) {
-            console.log(typeof x);
             const emojiData = getEmojiDataFromNative(x, "apple", data);
             if (emojiData) {
                 appleEmojis.push(<Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={48} />);
@@ -955,9 +959,7 @@ class MessageBubble extends React.Component<Props, State> {
 
         return (
             <p style={{ fontWeight: process.platform === "linux" ? 400 : 300, color: messageTextColor }}>
-                {final.map(item => {
-                    return item;
-                })}
+                {final.map(item => item)}
             </p>
         );
     };
@@ -1133,9 +1135,6 @@ class MessageBubble extends React.Component<Props, State> {
         // If a url hostname is in this array, the preview will be forced to only show the favicon instead of the image
         const forceFaviconURLS = ["bluebubbles.app"];
 
-        // Generate message sender contact color
-        const seedrandom = require("seedrandom");
-
         let firstGradientNumber = 8;
         let messageColor = "#686868";
         let messageTextColor = this.props.theme.incomingMessageTextColor;
@@ -1189,7 +1188,7 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         return (
-            <>
+            <div style={{ marginTop: message.hasReactions ? "20px" : "0" }}>
                 {this.state.showContextMenu ? (
                     <div
                         id="ImageContextMenu"
@@ -1502,8 +1501,8 @@ class MessageBubble extends React.Component<Props, State> {
                                                                                     generateReactionsDisplayIconText(
                                                                                         message.handle
                                                                                     ).length >= 2
-                                                                                        ? "530px"
-                                                                                        : "650px"
+                                                                                        ? "500px"
+                                                                                        : "600px"
                                                                             }}
                                                                             className="cls-2"
                                                                             x="50%"
@@ -1792,8 +1791,8 @@ class MessageBubble extends React.Component<Props, State> {
                                                                 fontSize:
                                                                     generateReactionsDisplayIconText(message.handle)
                                                                         .length >= 2
-                                                                        ? "530px"
-                                                                        : "650px"
+                                                                        ? "500px"
+                                                                        : "600px"
                                                             }}
                                                             className="cls-2"
                                                             x="50%"
@@ -1957,7 +1956,7 @@ class MessageBubble extends React.Component<Props, State> {
                         </div>
                     </>
                 )}
-            </>
+            </div>
         );
     }
 }

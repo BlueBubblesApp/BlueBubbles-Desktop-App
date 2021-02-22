@@ -75,7 +75,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
     async componentDidMount() {
         ipcRenderer.on("message", async (_, payload: { message: Message; tempGuid?: string }) => {
             const { message } = payload;
-            console.log(message);
 
             // If the message isn't for this chat, ignore it
             if (!message.chats || message.chats[0].guid !== this.props.chat.guid) return;
@@ -86,29 +85,19 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
             // Otherwise, add the message to the state
             await this.addMessagesToState([msg]);
-
-            const view = document.getElementById("messageView");
-
-            // If scroll is within 300px from bottom of chat, scroll to bottom
-            if (view.scrollHeight - view.offsetHeight - view.scrollTop <= 300) {
-                console.log("NEAR BOTTOM");
-                view.scrollTop = view.scrollHeight;
-            }
         });
 
         ipcRenderer.on("add-message", async (_, message: Message) => {
-            console.log(message);
             // Otherwise, add the message to the state
             await this.addMessagesToState([message]);
 
             if (message.associatedMessageGuid) return;
-            // Scroll to new message
-            const view = document.getElementById("messageView");
-            view.scrollTop = view.scrollHeight;
+
+            // Scroll to bottom on new message
+            this.scrollToBottom();
         });
 
         ipcRenderer.on("typing-indicator", (_, res) => {
-            console.log(res);
             const { chat } = this.state;
 
             if (res.guid.includes(chat.guid)) {
@@ -118,13 +107,16 @@ class RightConversationDisplay extends React.Component<Props, State> {
                 if (res.display) {
                     const view = document.getElementById("messageView");
 
-                    // If scroll is within 300px from bottom of chat, scroll to bottom
-                    if (view.scrollHeight - view.offsetHeight - view.scrollTop <= 300) {
-                        console.log("NEAR BOTTOM");
-                        view.scrollTop = view.scrollHeight;
+                    // If scroll is within 500px from bottom of chat, scroll to bottom
+                    if (view.scrollHeight - view.offsetHeight - view.scrollTop <= 500) {
+                        this.scrollToBottom();
                     }
                 }
             }
+        });
+
+        ipcRenderer.on("scroll-to-bottom", async (_, __) => {
+            this.scrollToBottom();
         });
 
         const config = await ipcRenderer.invoke("get-config");
@@ -137,7 +129,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
             colorfulChatBubbles: config.colorfulChatBubbles,
             useNativeEmojis: config.useNativeEmojis
         });
-        console.log(config.gradientMessages);
+
         await this.chatChange();
     }
 
@@ -153,6 +145,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
             messageTimestamp = this.state.messages[0].dateCreated;
         }
 
+        console.log("FETCHING NEXT PAGE");
+
         // Set the loading state
         this.setState({ isLoading: true });
 
@@ -167,6 +161,11 @@ class RightConversationDisplay extends React.Component<Props, State> {
             before: messageTimestamp ?? new Date().getTime(),
             where: []
         });
+
+        console.log(`ADDING: ${messages.length}`);
+        if (messages.length === 3) {
+            console.log(messages);
+        }
 
         // Add each message to the state
         await this.addMessagesToState(messages as Message[]); // These won't have a tempGuid
@@ -189,7 +188,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
     // eslint-disable-next-line react/sort-comp
     async fetchReactions(messages: Message[]) {
-        console.log(messages);
         const updatedMessages = [...messages];
         const stateMessages = [...this.state.messages];
         let hasUpdates = false;
@@ -239,6 +237,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
     }
 
     async detectTop(e: React.UIEvent<HTMLDivElement, UIEvent>) {
+        if (!e.currentTarget) return;
+
         // First check if we are at the top
         if (e.currentTarget.scrollTop === 0) {
             // Save the current size
@@ -253,10 +253,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
             // Set the scroll position
             view.scrollTo(0, newSize - currentSize);
-        }
-
-        if (e.currentTarget.scrollTop === e.currentTarget.scrollHeight - e.currentTarget.offsetHeight) {
-            console.log("AT BOTTOM");
         }
     }
 
@@ -310,13 +306,10 @@ class RightConversationDisplay extends React.Component<Props, State> {
             }
         }
 
-        console.log(reactionList);
-
         // For each reaction, find the corresponding message, and merge the reactions
         for (const reaction of reactionList) {
             for (let i = 0; i < outputMessages.length; i += 1) {
                 if (reaction.associatedMessageGuid === outputMessages[i].guid) {
-                    console.log(outputMessages[i]);
                     if (outputMessages[i].reactions) {
                         outputMessages[i].reactions.push(reaction);
                         outputMessages[i].reactions = deduplicateReactions(outputMessages[i].reactions);
@@ -327,7 +320,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
                         outputMessages[i].reactions = deduplicateReactions(outputMessages[i].reactions);
                     }
 
-                    console.log(outputMessages[i]);
                     break;
                 }
             }
@@ -335,7 +327,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
         // Update the state (and wait for it to finish)
         await new Promise((resolve, _) =>
-            this.setState({ messages: outputMessages.filter(i => !i.associatedMessageGuid) }, resolve)
+            this.setState({ messages: outputMessages.filter(i => !i.associatedMessageGuid) }, () => resolve(null))
         );
 
         // Asynchronously fetch the reactions
@@ -392,7 +384,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
             return <ChatLabel text={`${sender} renamed the conversation to ${message.groupTitle}`} date={date} />;
         }
 
-        console.log(message);
         return <ChatLabel text={`Unknown chat event from ${sender}`} date={date} />;
     }
 
@@ -408,6 +399,11 @@ class RightConversationDisplay extends React.Component<Props, State> {
         const isOverflowHidden = overflowYStyle.indexOf("hidden") !== -1;
 
         return hasScrollableContent && !isOverflowHidden;
+    }
+
+    scrollToBottom() {
+        const view = document.getElementById("messageView");
+        view.scrollTop = view.scrollHeight;
     }
 
     render() {

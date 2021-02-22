@@ -26,7 +26,8 @@
     width: 92%;
     margin: 15px auto;
     background-color: var(--secondary-color);
-    padding: 0px 0;
+    padding-top: 10px;
+    padding-bottom: 5px;
     border-radius: 15px;
 }
 

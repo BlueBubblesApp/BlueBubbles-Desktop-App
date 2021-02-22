@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "t
 import { Message } from "@server/databases/chat/entity";
 import { BooleanTransformer } from "@server/databases/transformers";
 
-@Entity()
+@Entity("attachment")
 export class Attachment {
     @PrimaryGeneratedColumn()
     ROWID: number;

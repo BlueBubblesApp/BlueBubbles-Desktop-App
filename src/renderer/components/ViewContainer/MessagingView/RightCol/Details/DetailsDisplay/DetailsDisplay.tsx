@@ -106,7 +106,7 @@ class DetailsDisplay extends React.Component<Props, State> {
             }
         }
 
-        await new Promise((resolve, _) => this.setState({ attachments }, resolve));
+        await new Promise((resolve, _) => this.setState({ attachments }, () => resolve(null)));
     }
 
     isSupportedMime = (mimeType: string) => {
