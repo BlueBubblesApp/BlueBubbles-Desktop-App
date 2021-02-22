@@ -244,20 +244,48 @@ export const generateUuid = () => {
 type LongLat = { longitude: number; latitude: number };
 export const parseAppleLocation = (appleLocation: string): LongLat => {
     const lines = appleLocation.split("\n");
-    const url = lines[5];
-    const query = url.split("&q=")[1];
+    const emptyLocation = { longitude: null, latitude: null };
 
-    if (query.includes("\\")) {
-        return {
-            longitude: Number.parseFloat(query.split("\\,")[0]),
-            latitude: Number.parseFloat(query.split("\\,")[1])
-        };
+    let url: string | null = null;
+    for (const i of lines) {
+        if (i.includes(".URL:h") || i.includes(".URL;h")) {
+            url = i;
+        }
     }
 
-    return {
-        longitude: Number.parseFloat(query.split(",")[0]),
-        latitude: Number.parseFloat(query.split(",")[1])
-    };
+    if (!url) return emptyLocation;
+
+    let query: string | null = null;
+    const opts = ["&q=", "&ll="];
+    for (const i of opts) {
+        if (url.includes(i)) {
+            const items = url.split(i);
+            if (items.length >= 1) {
+                [, query] = items;
+            }
+        }
+    }
+
+    if (!query) return emptyLocation;
+    if (query.includes("&")) {
+        [query] = query.split("&");
+    }
+
+    try {
+        if (query.includes("\\")) {
+            return {
+                longitude: Number.parseFloat(query.split("\\,")[0]),
+                latitude: Number.parseFloat(query.split("\\,")[1])
+            };
+        }
+
+        return {
+            longitude: Number.parseFloat(query.split(",")[0]),
+            latitude: Number.parseFloat(query.split(",")[1])
+        };
+    } catch (ex) {
+        return emptyLocation;
+    }
 };
 
 export const bytesToSize = bytes => {
