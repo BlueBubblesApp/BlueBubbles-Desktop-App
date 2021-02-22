@@ -104,6 +104,7 @@ class RightBottomNav extends React.Component<Props, State> {
         this.setState({ config, capitalizeFirstLetter: config.capitalizeFirstLetter });
 
         const input = document.getElementById("messageFieldInput") as HTMLInputElement;
+        const emojiContainer = document.getElementById("pickerContainer") as HTMLInputElement;
 
         ipcRenderer.on("word-matches", (_, matches) => {
             console.log(matches);
@@ -124,6 +125,14 @@ class RightBottomNav extends React.Component<Props, State> {
 
             ipcRenderer.invoke("get-spelling-suggestions", selectedWord);
             this.setState({ contextX: event.clientX });
+        });
+
+        emojiContainer.addEventListener("keydown", event => {
+            if (this.state.showEmojiPicker && event.key === "Escape") {
+                this.setState({
+                    showEmojiPicker: false
+                });
+            }
         });
 
         input.addEventListener("keydown", event => {
@@ -809,24 +818,28 @@ class RightBottomNav extends React.Component<Props, State> {
                         )}
                     </div>
                 ) : null}
-                {this.state.showEmojiPicker ? (
-                    <Picker
-                        native={this.state.config.useNativeEmojis}
-                        set="apple"
-                        title="Pick your emoji…"
-                        emoji="point_up"
-                        autoFocus={true}
-                        style={{
-                            width: "calc(100vw - 320px)",
-                            height: "auto",
-                            position: "absolute",
-                            bottom: "55px",
-                            right: "15px",
-                            zIndex: "3"
-                        }}
-                        onSelect={e => this.setState({ enteredMessage: `${this.state.enteredMessage}${e.native}` })}
-                    />
-                ) : null}
+                <div id="pickerContainer">
+                    {this.state.showEmojiPicker ? (
+                        <Picker
+                            native={this.state.config.useNativeEmojis}
+                            set="apple"
+                            title="Pick your emoji…"
+                            emoji="point_up"
+                            autoFocus={true}
+                            enableFrequentEmojiSort={true}
+                            emojiToolTip={true}
+                            style={{
+                                width: "calc(100vw - 320px)",
+                                height: "auto",
+                                position: "absolute",
+                                bottom: "55px",
+                                right: "15px",
+                                zIndex: "3"
+                            }}
+                            onSelect={e => this.setState({ enteredMessage: `${this.state.enteredMessage}${e.native}` })}
+                        />
+                    ) : null}
+                </div>
                 <div className="RightBottomNav">
                     {this.state.isRecording || this.state.audioHasData ? (
                         <>
@@ -1055,6 +1068,11 @@ class RightBottomNav extends React.Component<Props, State> {
                                     placeholder={this.state.showGIFSelector ? "Search for GIF" : "BlueBubbles"}
                                     value={this.state.enteredMessage}
                                     onChange={e => this.handleMessageChange(e)}
+                                    onClick={() => {
+                                        if (this.state.showEmojiPicker) {
+                                            this.setState({ showEmojiPicker: false });
+                                        }
+                                    }}
                                 />
                                 <svg
                                     id="emojiPickerButton"
