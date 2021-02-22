@@ -94,7 +94,6 @@ type State = {
     isReactionsOpen: boolean;
     showContextMenu: boolean;
     currentContextMenuElement: Element;
-    linkTitle: string;
     playMessageAnimation: boolean;
     stickers: AttachmentDownload[];
     linkPrev: any;
@@ -198,7 +197,6 @@ class MessageBubble extends React.Component<Props, State> {
             isReactionsOpen: false,
             showContextMenu: false,
             currentContextMenuElement: null,
-            linkTitle: null,
             playMessageAnimation: false,
             stickers: [],
             linkPrev: null
@@ -257,6 +255,7 @@ class MessageBubble extends React.Component<Props, State> {
                                             left: `${messageCords.left - 295 + messageCords.width / 2}px`
                                         }}
                                         draggable="false"
+                                        onLoad={this.delayedScroll}
                                     />
                                 ) : (
                                     <img
@@ -269,6 +268,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         onContextMenu={e => this.handleImageRightClick(e)}
                                         onError={setFallbackImage}
                                         draggable="false"
+                                        onLoad={this.delayedScroll}
                                         // style={{left: `${messageCords.left - 295 + messageCords.width/2}px`}}
                                     />
                                 )}
@@ -289,6 +289,7 @@ class MessageBubble extends React.Component<Props, State> {
                         onError={setFallbackImage}
                         style={{ opacity: attachment.guid.includes("temp") ? 0.6 : 1 }}
                         draggable="false"
+                        onLoad={this.delayedScroll}
                     />
                 );
             }
@@ -312,6 +313,7 @@ class MessageBubble extends React.Component<Props, State> {
                                 ? (e.target as HTMLVideoElement).play()
                                 : (e.target as HTMLVideoElement).pause()
                         }
+                        onLoad={this.delayedScroll}
                     >
                         <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
                     </video>
@@ -498,6 +500,7 @@ class MessageBubble extends React.Component<Props, State> {
                 message.text.includes("Https")
             ) {
                 const linkPrev: any = await getLinkPreview(message.text);
+                console.log(linkPrev);
                 if (!linkPrev.title && linkPrev.description) {
                     linkPrev.title = linkPrev.description;
                 }
@@ -1301,10 +1304,10 @@ class MessageBubble extends React.Component<Props, State> {
                                                                     : "0px"
                                                         }}
                                                     >
-                                                        {this.state.linkTitle ? (
-                                                            <>{this.state.linkTitle}</>
+                                                        {linkPrev?.title ? (
+                                                            <>{this.state.linkPrev.title}</>
                                                         ) : (
-                                                            <>{linkPrev ? "Loading ..." : "Unavailable"}</>
+                                                            <>{linkPrev?.title ? "Loading ..." : "Unavailable"}</>
                                                         )}
                                                     </p>
                                                     <p>{new URL(links[0]).hostname}</p>
