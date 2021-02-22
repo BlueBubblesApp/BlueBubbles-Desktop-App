@@ -224,7 +224,6 @@ class BackendServer {
         try {
             console.log("Initializing queue service...");
             this.queueService = new QueueService((event: string, data: any) => this.emitToUI(event, data));
-            this.queueService.start();
         } catch (ex) {
             console.log(`Failed to setup queue service! ${ex.message}`);
         }

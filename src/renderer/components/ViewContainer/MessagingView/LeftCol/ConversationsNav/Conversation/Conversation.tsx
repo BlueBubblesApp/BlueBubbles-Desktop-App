@@ -83,15 +83,18 @@ class Conversation extends React.Component<ConversationProps, State> {
 
     renderText = message => {
         // Pull out the message
-        let msg = message?.text ?? "";
-        if (msg?.hasAttachments) msg = "1 Attachment";
+        const msg = message?.text ?? "";
+        const template = text => (
+            <p className="message-snip-example" style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
+                {text}
+            </p>
+        );
+
+        if (message?.hasAttachments && (message?.text ?? "").startsWith("http")) return template("1 Link");
+        if (message?.hasAttachments) return template("1 Attachment");
 
         if (this.props.config.useNativeEmojis) {
-            return (
-                <p className="message-snip-example" style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
-                    {msg}
-                </p>
-            );
+            return template(msg);
         }
 
         const parser = EmojiRegex();
@@ -120,19 +123,19 @@ class Conversation extends React.Component<ConversationProps, State> {
             final.push(msg);
         }
 
-        return (
-            <p className="message-snip-example" style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
-                {final.map(item => {
-                    return item;
-                })}
-            </p>
-        );
+        return template(final.map(item => item));
     };
 
     render() {
         const chatDate = this.props.chat.lastMessage?.dateCreated
             ? getDateText(new Date(this.props.chat.lastMessage.dateCreated))
             : "";
+        const title = generateChatTitle(this.props.chat);
+        if (title.startsWith("Ches Gargano")) {
+            console.log(this.props.chat.chatIdentifier);
+            console.log(this.props.chat.lastMessage);
+            console.log(this.props.chat.lastMessage.hasAttachments);
+        }
         return (
             <>
                 {this.state.showContextMenu ? (
@@ -164,7 +167,7 @@ class Conversation extends React.Component<ConversationProps, State> {
                         <div className="message-prev">
                             <div className="prev-top">
                                 <div className="message-recip">
-                                    <p className="message-recip-example">{generateChatTitle(this.props.chat)}</p>
+                                    <p className="message-recip-example">{title}</p>
                                 </div>
                                 <div className="message-time">
                                     <div>
