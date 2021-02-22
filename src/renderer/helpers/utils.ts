@@ -222,7 +222,7 @@ export const sanitizeStr = (val: string) => {
         output = output.replace(String.fromCharCode(65532), "");
     }
 
-    return output.trim();
+    return output;
 };
 
 export const parseUrls = (text: string) => {
