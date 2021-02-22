@@ -500,7 +500,6 @@ class MessageBubble extends React.Component<Props, State> {
                 message.text.includes("Https")
             ) {
                 const linkPrev: any = await getLinkPreview(message.text);
-                console.log(linkPrev);
                 if (!linkPrev.title && linkPrev.description) {
                     linkPrev.title = linkPrev.description;
                 }
@@ -1304,10 +1303,14 @@ class MessageBubble extends React.Component<Props, State> {
                                                                     : "0px"
                                                         }}
                                                     >
-                                                        {linkPrev?.title ? (
-                                                            <>{this.state.linkPrev.title}</>
+                                                        {linkPrev ? (
+                                                            <>
+                                                                {linkPrev?.title ??
+                                                                    linkPrev?.description ??
+                                                                    "Unavailable"}
+                                                            </>
                                                         ) : (
-                                                            <>{linkPrev?.title ? "Loading ..." : "Unavailable"}</>
+                                                            <>Loading...</>
                                                         )}
                                                     </p>
                                                     <p>{new URL(links[0]).hostname}</p>

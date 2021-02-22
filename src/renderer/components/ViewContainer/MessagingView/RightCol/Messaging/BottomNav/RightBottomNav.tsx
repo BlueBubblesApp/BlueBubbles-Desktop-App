@@ -815,6 +815,7 @@ class RightBottomNav extends React.Component<Props, State> {
                         set="apple"
                         title="Pick your emoji…"
                         emoji="point_up"
+                        autoFocus={true}
                         style={{
                             width: "calc(100vw - 320px)",
                             height: "auto",

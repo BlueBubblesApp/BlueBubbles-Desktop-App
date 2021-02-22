@@ -145,8 +145,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
             messageTimestamp = this.state.messages[0].dateCreated;
         }
 
-        console.log("FETCHING NEXT PAGE");
-
         // Set the loading state
         this.setState({ isLoading: true });
 
@@ -161,11 +159,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
             before: messageTimestamp ?? new Date().getTime(),
             where: []
         });
-
-        console.log(`ADDING: ${messages.length}`);
-        if (messages.length === 3) {
-            console.log(messages);
-        }
 
         // Add each message to the state
         await this.addMessagesToState(messages as Message[]); // These won't have a tempGuid

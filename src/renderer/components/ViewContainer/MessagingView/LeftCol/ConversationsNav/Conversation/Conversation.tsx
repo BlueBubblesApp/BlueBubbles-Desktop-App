@@ -149,8 +149,8 @@ class Conversation extends React.Component<ConversationProps, State> {
                 <div
                     className="Conversation"
                     id={this.props.chat.guid}
-                    onMouseOver={showDelMessage}
-                    onMouseOut={hideDelMessage}
+                    // onMouseOver={showDelMessage}
+                    // onMouseOut={hideDelMessage}
                     onClick={() => this.props.onChatSelect()}
                 >
                     <div className="convo-wrap">
