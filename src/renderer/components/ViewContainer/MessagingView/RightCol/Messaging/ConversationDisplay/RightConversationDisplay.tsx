@@ -28,6 +28,7 @@ type State = {
     useNativeEmojis: boolean;
     theme: any;
     chat: Chat;
+    showScrollToBottom: boolean;
 };
 
 type Message = DBMessage & {
@@ -56,6 +57,8 @@ const deduplicateReactions = (reactions: DBMessage[]) => {
     return Object.values(uniqueReactions);
 };
 
+let shouldAutoScroll = true;
+
 class RightConversationDisplay extends React.Component<Props, State> {
     constructor(props) {
         super(props);
@@ -68,7 +71,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
             colorfulChatBubbles: false,
             useNativeEmojis: false,
             chat: this.props.chat,
-            theme: ""
+            theme: "",
+            showScrollToBottom: false
         };
     }
 
@@ -115,7 +119,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
             }
         });
 
-        ipcRenderer.on("scroll-to-bottom", async (_, __) => {
+        ipcRenderer.on("scroll-to-bottom", async (_, force) => {
+            if (!force && !shouldAutoScroll) return;
             this.scrollToBottom();
         });
 
@@ -231,6 +236,13 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
     async detectTop(e: React.UIEvent<HTMLDivElement, UIEvent>) {
         if (!e.currentTarget) return;
+        const offsetFromBottom =
+            e.currentTarget.scrollHeight - e.currentTarget.scrollTop - e.currentTarget.offsetHeight;
+        if (offsetFromBottom > 200 && !this.state.showScrollToBottom) {
+            this.setState({ showScrollToBottom: true });
+        } else if (offsetFromBottom < 200 && this.state.showScrollToBottom) {
+            this.setState({ showScrollToBottom: false });
+        }
 
         // First check if we are at the top
         if (e.currentTarget.scrollTop === 0) {
@@ -246,6 +258,12 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
             // Set the scroll position
             view.scrollTo(0, newSize - currentSize);
+        }
+
+        // Default to true
+        shouldAutoScroll = false;
+        if (e.currentTarget.scrollTop === e.currentTarget.scrollHeight - e.currentTarget.offsetHeight) {
+            shouldAutoScroll = true;
         }
     }
 
@@ -425,6 +443,12 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
         return (
             <div id="messageView" onScroll={e => this.detectTop(e)} className="RightConversationDisplay">
+                {this.state.showScrollToBottom ? (
+                    <button id="stb-button" onClick={() => this.scrollToBottom()}>
+                        &#8595;
+                    </button>
+                ) : null}
+
                 {/* <div id="gradientOverlay" /> */}
                 {isLoading ? <div id="loader" className="inChatLoader" /> : null}
                 <ChatLabel text={`BlueBubbles Messaging with ${chatTitle}`} date={date} />
