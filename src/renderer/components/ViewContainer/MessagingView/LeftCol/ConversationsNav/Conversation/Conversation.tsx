@@ -131,11 +131,6 @@ class Conversation extends React.Component<ConversationProps, State> {
             ? getDateText(new Date(this.props.chat.lastMessage.dateCreated))
             : "";
         const title = generateChatTitle(this.props.chat);
-        if (title.startsWith("Ches Gargano")) {
-            console.log(this.props.chat.chatIdentifier);
-            console.log(this.props.chat.lastMessage);
-            console.log(this.props.chat.lastMessage.hasAttachments);
-        }
         return (
             <>
                 {this.state.showContextMenu ? (
