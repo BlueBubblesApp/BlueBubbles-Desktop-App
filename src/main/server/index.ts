@@ -343,7 +343,7 @@ class BackendServer {
      * This is what the server itself calls when it is refreshed or reloaded.
      * The front-end _should not_ call this function.
      */
-    async syncWithServer(): Promise<void> {
+    async syncWithServer(syncContacts): Promise<void> {
         if (!this.socketService?.server?.connected) {
             console.warn("Cannot fetch chats when no socket is connected!");
             return;
@@ -357,19 +357,21 @@ class BackendServer {
             await this.performIncrementalSync(lastFetch as number);
         }
 
-        try {
-            // Fetch contacts
-            if (this.configRepo.get("importContactsFrom") === "serverDB") {
-                this.fetchContactsFromServerDb();
-            } else if (this.configRepo.get("importContactsFrom") === "serverVCF") {
-                this.fetchContactsFromServerVcf();
-            } else if (this.configRepo.get("importContactsFrom") === "androidClient") {
-                console.log("Fetching contacts from android client");
-            } else if (this.configRepo.get("importContactsFrom") === "localVCF") {
-                console.log("Fetching contacts from local VCF");
+        if (syncContacts) {
+            try {
+                // Fetch contacts
+                if (this.configRepo.get("importContactsFrom") === "serverDB") {
+                    this.fetchContactsFromServerDb();
+                } else if (this.configRepo.get("importContactsFrom") === "serverVCF") {
+                    this.fetchContactsFromServerVcf();
+                } else if (this.configRepo.get("importContactsFrom") === "androidClient") {
+                    console.log("Fetching contacts from android client");
+                } else if (this.configRepo.get("importContactsFrom") === "localVCF") {
+                    console.log("Fetching contacts from local VCF");
+                }
+            } catch (ex) {
+                this.setSyncStatus({ message: ex.message, error: true, completed: true });
             }
-        } catch (ex) {
-            this.setSyncStatus({ message: ex.message, error: true, completed: true });
         }
 
         // Save the last fetch date

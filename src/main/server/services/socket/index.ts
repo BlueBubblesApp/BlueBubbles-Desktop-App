@@ -27,6 +27,8 @@ export class SocketService {
 
     passphrase: string;
 
+    hasSynced: boolean;
+
     /**
      * Starts up the initial Socket.IO connection and initializes other
      * required classes and variables
@@ -37,7 +39,7 @@ export class SocketService {
      */
     constructor(db: Connection) {
         this.db = db;
-
+        this.hasSynced = false;
         this.server = null;
     }
 
@@ -87,7 +89,8 @@ export class SocketService {
                     this.fetchFcmConfigs();
 
                     console.log("Syncing with server...");
-                    Server().syncWithServer();
+                    Server().syncWithServer(!this.hasSynced); // Only sync contacts if we haven't synced yet
+                    this.hasSynced = true;
                 }, 1000);
 
                 resolve(true);
