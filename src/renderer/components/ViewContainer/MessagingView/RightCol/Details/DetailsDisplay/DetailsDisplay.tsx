@@ -373,9 +373,9 @@ class DetailsDisplay extends React.Component<Props, State> {
                 <div id="recentImagesContainer">
                     {this.state.attachments.length > 0 ? (
                         <div id="recentImages">
-                            {this.state.attachments.map((attachment: AttachmentDownload) =>
-                                this.renderAttachment(attachment)
-                            )}
+                            {this.state.attachments
+                                .filter(item => item.mimeType)
+                                .map((attachment: AttachmentDownload) => this.renderAttachment(attachment))}
                         </div>
                     ) : (
                         <p>No Attachments</p>
