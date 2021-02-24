@@ -2,9 +2,10 @@
     color: var(--chat-label-color);
     font-family: "SF UI Display Bold";
     font-size: 12px;
-    margin-top: 1px;
+    margin-top: 2px;
     animation: fade 0.25s ease-in-out;
     transition: ease-in-out 0.25s;
+    float: right;
 }
 
 .IncomingMessage {
@@ -54,7 +55,7 @@
     align-items: flex-end;
     flex-direction: column;
     max-width: 65%;
-    margin: 0 13px 0 auto !important;
+    margin: 0 0 0 auto !important;
     animation: fade 0.25s ease-in-out;
     transition: ease-in-out 0.25s;
 }
@@ -79,6 +80,7 @@
     align-items: center;
     width: fit-content;
 }
+
 .gradientMessages {
     background: linear-gradient(
         180deg,
@@ -408,7 +410,7 @@
     justify-content: center;
     align-items: flex-end;
     flex-direction: column;
-    margin: 0 13px 0 0;
+    margin: 0;
     animation: fade 0.25s ease-in-out;
 }
 
@@ -439,7 +441,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    margin: 0 13px 0 0;
+    margin: 0;
 }
 
 .OutgoingLink > div > .Attachment {

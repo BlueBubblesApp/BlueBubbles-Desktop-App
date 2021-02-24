@@ -137,7 +137,6 @@ const loadAttachmentData = (attachment: AttachmentDownload) => {
         !supportedVideoTypes.includes(attachment.mimeType)
     ) {
         try {
-            console.log(attachment);
             const ext = attachment.mimeType.startsWith("video") ? "mp4" : "mp3";
             const newPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName.replace(
                 path.extname(attachment.transferName),
@@ -145,7 +144,6 @@ const loadAttachmentData = (attachment: AttachmentDownload) => {
             )}`;
             output = fs.readFileSync(newPath).toString(encoding);
         } catch (ex) {
-            console.log("ERRR HERER");
             console.log(ex);
             /* Do nothing */
         }
@@ -499,22 +497,30 @@ class MessageBubble extends React.Component<Props, State> {
                 message.text.includes("http") ||
                 message.text.includes("Https")
             ) {
-                const linkPrev: any = await getLinkPreview(message.text);
-                if (!linkPrev.title && linkPrev.description) {
-                    linkPrev.title = linkPrev.description;
-                }
+                try {
+                    const linkPrev: any = await getLinkPreview(message.text);
+                    if (!linkPrev.title && linkPrev.description) {
+                        linkPrev.title = linkPrev.description;
+                    }
 
-                this.setState({ linkPrev }, this.delayedScroll);
+                    this.setState({ linkPrev }, this.delayedScroll);
+                } catch (ex) {
+                    console.error(ex);
+                }
             } else if (
                 (validUrl.isUri(`https://${message.text}`) !== undefined && this.isValidUrl(message.text)) ||
                 (validUrl.isUri(`http://${message.text}`) && this.isValidUrl(message.text))
             ) {
-                const linkPrev: any = await getLinkPreview(`http://${message.text}`);
-                if (!linkPrev.title && linkPrev.description) {
-                    linkPrev.title = linkPrev.description;
-                }
+                try {
+                    const linkPrev: any = await getLinkPreview(`http://${message.text}`);
+                    if (!linkPrev.title && linkPrev.description) {
+                        linkPrev.title = linkPrev.description;
+                    }
 
-                this.setState({ linkPrev }, this.delayedScroll);
+                    this.setState({ linkPrev }, this.delayedScroll);
+                } catch (ex) {
+                    console.error(ex);
+                }
             }
 
             // Get the attachments
@@ -706,7 +712,6 @@ class MessageBubble extends React.Component<Props, State> {
         await delay(50);
         const messageCords = messageDiv.getBoundingClientRect();
 
-        console.log(messageCords);
         bg.style.background = "black";
         await delay(200);
         bg.style.background = `radial-gradient(circle at ${messageCords.left -
@@ -784,7 +789,6 @@ class MessageBubble extends React.Component<Props, State> {
             const mesCopy = document.getElementById(this.props.message.guid).cloneNode(true) as HTMLDivElement;
             const mesCopy2 = document.getElementById(this.props.message.guid).cloneNode(true) as HTMLDivElement;
 
-            console.log(mesCopy);
             mesCopy.classList.add("echo");
             mesCopy.style.cssText = `font-size: ${rFontSize}; left: ${rLeft}%; animation: echo ${rTime}s ease forwards; transform: scale(${rScale})`;
 
@@ -848,7 +852,12 @@ class MessageBubble extends React.Component<Props, State> {
 
     clickNHold(message) {
         const parent = document.getElementById(message.guid);
-        if (!parent || this.state.isReactionsOpen) return;
+        if (!parent) return;
+
+        if (this.state.isReactionsOpen) {
+            this.setState({ isReactionsOpen: false });
+            return;
+        }
 
         parent.classList.toggle("activeReactionMessage");
         parent.style.setProperty("--hide-pseudo", "0");
@@ -1290,6 +1299,10 @@ class MessageBubble extends React.Component<Props, State> {
 
         const useAvatar = this.shouldHaveAvatar();
         const avatar = this.buildAvatar(message, firstGradientNumber, useAvatar);
+        const bubbleStyle = {
+            marginLeft: useAvatar ? "5px" : "40px",
+            marginRight: message.isFromMe && useTail ? "5px" : "0px"
+        };
 
         return (
             <div style={{ marginTop: message.hasReactions ? "20px" : "0" }}>
@@ -1331,7 +1344,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         onClose={() => this.closeReactionView(message)}
                                     />
                                 ) : null}
-                                <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
+                                <div className={className} style={bubbleStyle}>
                                     <div
                                         style={{
                                             display: "flex",
@@ -1491,7 +1504,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                 onClose={() => this.closeReactionView(message)}
                                             />
                                         ) : null}
-                                        <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
+                                        <div className={className} style={bubbleStyle}>
                                             <div
                                                 style={{
                                                     display: "flex",
@@ -1643,16 +1656,16 @@ class MessageBubble extends React.Component<Props, State> {
                                                     </div>
                                                 </>
                                             ) : null}
-                                            {showStatus ? getStatusText(message) : null}
                                         </div>
                                     </>
                                 ) : null}
+                                {showStatus ? getStatusText(message) : null}
                             </>
                         )}
                     </>
                 ) : (
                     <>
-                        <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
+                        <div className={className} style={bubbleStyle}>
                             {this.state.isReactionsOpen ? (
                                 <NewReaction
                                     message={message}

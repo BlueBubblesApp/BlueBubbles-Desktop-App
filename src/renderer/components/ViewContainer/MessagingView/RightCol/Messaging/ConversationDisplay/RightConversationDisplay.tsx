@@ -29,6 +29,8 @@ type State = {
     theme: any;
     chat: Chat;
     showScrollToBottom: boolean;
+    myLastMessage: Message;
+    lastReadMessage: Message;
 };
 
 type Message = DBMessage & {
@@ -72,7 +74,9 @@ class RightConversationDisplay extends React.Component<Props, State> {
             useNativeEmojis: false,
             chat: this.props.chat,
             theme: "",
-            showScrollToBottom: false
+            showScrollToBottom: false,
+            myLastMessage: null,
+            lastReadMessage: null
         };
     }
 
@@ -223,15 +227,61 @@ class RightConversationDisplay extends React.Component<Props, State> {
             useNativeEmojis: config.useNativeEmojis
         });
 
-        // Reset the messages
-        this.setState({ messages: [] }, () => {
-            // Set the text field to active
-            const msgField = document.getElementById("messageFieldInput");
-            if (msgField) msgField.focus();
+        // Reset the messages and other state vars
+        this.setState(
+            {
+                messages: [],
+                myLastMessage: null,
+                lastReadMessage: null,
+                showScrollToBottom: false
+            },
+            () => {
+                // Set the text field to active
+                const msgField = document.getElementById("messageFieldInput");
+                if (msgField) msgField.focus();
 
-            // Get new messages
-            this.getNextMessagePage();
-        });
+                // Get new messages
+                this.getNextMessagePage();
+            }
+        );
+    }
+
+    tryUpdateMessageMarkers(msg: Message) {
+        if (!msg?.isFromMe) return;
+
+        let { myLastMessage, lastReadMessage } = this.state;
+
+        let lastChange = false;
+        if (
+            myLastMessage == null ||
+            (myLastMessage?.dateCreated != null &&
+                msg.dateCreated != null &&
+                msg.dateCreated > myLastMessage.dateCreated &&
+                msg.guid !== myLastMessage.guid)
+        ) {
+            myLastMessage = msg;
+            lastChange = true;
+        }
+
+        let lastRead = false;
+        if (
+            (lastReadMessage == null && msg.dateRead != null) ||
+            (lastReadMessage?.dateRead != null &&
+                msg.dateRead != null &&
+                msg.dateRead > lastReadMessage.dateRead &&
+                msg.guid !== lastReadMessage.guid)
+        ) {
+            lastReadMessage = msg;
+            lastRead = true;
+        }
+
+        const update: Partial<State> = {};
+        if (lastRead) update.myLastMessage = myLastMessage;
+        if (lastChange) update.lastReadMessage = lastReadMessage;
+
+        if (Object.keys(update).length > 0) {
+            this.setState(update as State);
+        }
     }
 
     async detectTop(e: React.UIEvent<HTMLDivElement, UIEvent>) {
@@ -336,6 +386,11 @@ class RightConversationDisplay extends React.Component<Props, State> {
             }
         }
 
+        // Update the markers
+        for (const i of outputMessages) {
+            this.tryUpdateMessageMarkers(i);
+        }
+
         // Update the state (and wait for it to finish)
         await new Promise((resolve, _) =>
             this.setState({ messages: outputMessages.filter(i => !i.associatedMessageGuid) }, () => resolve(null))
@@ -417,6 +472,23 @@ class RightConversationDisplay extends React.Component<Props, State> {
         view.scrollTop = view.scrollHeight;
     }
 
+    shouldShow(message: Message) {
+        // If we have no delivered date, don't show anything
+        if (message.dateDelivered === null) return false;
+
+        // If the passed params are null, try to get it from the current chat
+        if (this.state.myLastMessage === null || this.state.lastReadMessage === null) return false;
+
+        if (
+            message.guid === this.state.myLastMessage.guid ||
+            (message.dateDelivered !== null && this.state.myLastMessage.dateDelivered === null)
+        )
+            return true;
+
+        // If all else fails, return what our parent wants
+        return false;
+    }
+
     render() {
         const { messages, isLoading } = this.state;
         const { chat } = this.state;
@@ -462,11 +534,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
                     if (index - 1 >= 0 && index - 1 < messages.length) olderMessage = messages[index - 1];
                     if (index + 1 < messages.length && index + 1 >= 0) newerMessage = messages[index + 1];
 
-                    let myNewMessages = [];
-                    if (chat.participants.length <= 1 && index + 1 < messages.length) {
-                        myNewMessages = messages.slice(index + 1, messages.length).filter(i => i.isFromMe);
-                    }
-
                     return (
                         <div key={message.guid}>
                             {/* If the last previous message is older than 30 minutes, display the time */}
@@ -489,7 +556,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                         message={message}
                                         olderMessage={olderMessage}
                                         newerMessage={newerMessage}
-                                        showStatus={message.isFromMe && myNewMessages.length === 0}
+                                        showStatus={this.shouldShow(message)}
                                         messages={messages}
                                         gradientMessages={this.state.gradientMessages}
                                         colorfulContacts={this.state.colorfulContacts}
