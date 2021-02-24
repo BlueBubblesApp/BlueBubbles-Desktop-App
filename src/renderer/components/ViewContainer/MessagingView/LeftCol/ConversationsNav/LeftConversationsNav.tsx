@@ -110,6 +110,28 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             this.setCurrentChat(chats[index]);
         });
 
+        ipcRenderer.on("increment-current-chat-index", (_, __) => {
+            const chats = this.state.chats.filter(aChat => !this.state.allPinnedChats.includes(aChat.guid));
+
+            // If no chat is selected, set it to the first chat
+            if (!this.state.activeChat && chats.length > 0) {
+                this.setCurrentChat(chats[0]);
+                return;
+            }
+
+            let currentActiveIndex = -1;
+            for (let i = 0; i < chats.length; i += 1) {
+                if (chats[i].guid === this.state.activeChat.guid) {
+                    currentActiveIndex = i;
+                    break;
+                }
+            }
+
+            if (currentActiveIndex > -1 && currentActiveIndex + 1 < chats.length) {
+                this.setCurrentChat(chats[currentActiveIndex + 1]);
+            }
+        });
+
         // document.documentElement.addEventListener("mouseup", e2 => {
         //     console.log("WINDOW MOUSE UP");
         //     this.setState({ isScrolling: false, scrollLeft: 0, clientX: 0 });

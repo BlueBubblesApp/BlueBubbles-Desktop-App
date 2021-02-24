@@ -12,22 +12,26 @@ import "./ViewContainer.css";
 
 const handleHotKeys = (e: KeyboardEvent) => {
     if (!e.metaKey && !e.ctrlKey) return;
-    let index: string | number = e.key as string;
+    let index: any = e.key;
 
     try {
-        index = Number.parseInt(index, 10) as number;
+        index = Number.parseInt(index, 10);
     } catch (ex) {
-        return;
+        // Pass
     }
 
-    // If 0 is used, convert it to 10
-    if (index === 0) index = 10;
+    if (index instanceof Number) {
+        // If 0 is used, convert it to 10
+        if (index === 0) index = 10;
 
-    // Subtract 1 to account for the index
-    index = (index as number) - 1;
-    if (index < 0 || index > 9) return;
+        // Subtract 1 to account for the index
+        index = (index as number) - 1;
+        if (index < 0 || index > 9) return;
 
-    ipcRenderer.invoke("send-to-ui", { event: "set-current-chat-index", contents: index });
+        ipcRenderer.invoke("send-to-ui", { event: "set-current-chat-index", contents: index });
+    } else if (e.shiftKey && e.key === "Tab") {
+        ipcRenderer.invoke("send-to-ui", { event: "increment-current-chat-index" });
+    }
 };
 
 class ViewContainer extends React.Component {

@@ -7,6 +7,8 @@ import * as url from "url";
 import { Server } from "@server/index";
 import { FileSystem } from "@server/fileSystem";
 
+const UIContextMenu = require("electron-context-menu");
+
 require("dotenv").config();
 
 // To allow CORS
@@ -17,7 +19,10 @@ let tray;
 let wasAutoStarted = false;
 const BlueBubbles = Server(win);
 
+// Make sure we only have one instance of the app running
 const gotTheLock = app.requestSingleInstanceLock();
+
+// Function to set the tray icon accordingly
 const instantiateTray = () => {
     if (process.platform === "linux") {
         tray = new Tray(path.join(FileSystem.resources, "icons", "64x64.png"));
@@ -163,7 +168,7 @@ const createWindow = async (withFrame = false) => {
         minHeight: 350,
         transparent: true,
         frame: withFrame,
-        webPreferences: { nodeIntegration: true, webSecurity: false }
+        webPreferences: { nodeIntegration: true, webSecurity: false, enableRemoteModule: true, spellcheck: true }
     });
 
     if (process.env.NODE_ENV !== "production") {
@@ -209,6 +214,8 @@ const createWindow = async (withFrame = false) => {
     BlueBubbles.window = win;
 };
 
+const disposeContextMenu = UIContextMenu();
+
 ipcMain.handle("minimize-event", () => {
     if (win && win.webContents) win.minimize();
 });
@@ -232,6 +239,7 @@ ipcMain.handle("change-window-titlebar", async (_, args) => {
 });
 
 ipcMain.handle("close-event", async () => {
+    disposeContextMenu();
     if (BlueBubbles.configRepo.get("closeToTray")) {
         instantiateTray();
 
@@ -305,7 +313,6 @@ app.on("window-all-closed", async () => {
 });
 
 app.on("activate", () => {
-    console.log(BlueBubbles.configRepo.get("useNativeTitlebar"));
     if (BlueBubbles.configRepo.get("useNativeTitlebar")) {
         BlueBubbles.window.close();
         createWindow(true);

@@ -5124,7 +5124,7 @@ ejs@~2.5.6:
   resolved "https://registry.yarnpkg.com/ejs/-/ejs-2.5.9.tgz#7ba254582a560d267437109a68354112475b0ce5"
   integrity sha512-GJCAeDBKfREgkBtgrYSf9hQy9kTb3helv0zGdzqhM7iAkW8FA/ZF97VQDbwFiwIT8MQLLOe5VlPZOEvZAqtUAQ==
 
-electron-builder@^22.7.0:
+electron-builder@^22.9.1:
   version "22.9.1"
   resolved "https://registry.yarnpkg.com/electron-builder/-/electron-builder-22.9.1.tgz#a2962db6f2757bc01d02489f38fafe0809f68f60"
   integrity sha512-GXPt8l5Mxwm1QKYopUM6/Tdh9W3695G6Ax+IFyj5pQ51G4SD5L1uq4/RkPSsOgs3rP7jNSV6g6OfDzdtVufPdA==
@@ -5152,6 +5152,15 @@ electron-chromedriver@~3.0.0:
     electron-download "^4.1.0"
     extract-zip "^1.6.5"
 
+electron-context-menu@^2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/electron-context-menu/-/electron-context-menu-2.5.0.tgz#b00003890a6ac32c91502f4ee40ba939064f7dce"
+  integrity sha512-kzvp8XUmbp2TG2hELJUl7Yjlq4Ag549JQu/C8mxvy1CmAU15UFmPC3bPdXMGE/e3xbi97shgxfttxeQ/6h4MoQ==
+  dependencies:
+    cli-truncate "^2.1.0"
+    electron-dl "^3.1.0"
+    electron-is-dev "^1.2.0"
+
 electron-devtools-installer@^3.0.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/electron-devtools-installer/-/electron-devtools-installer-3.1.1.tgz#7b56c8c86475c5e4e10de6917d150c53c9ceb55e"
@@ -5165,6 +5174,15 @@ electron-dl@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/electron-dl/-/electron-dl-3.0.2.tgz#302a46f9a449ddce720cb8e7f2a24c386e19a26c"
   integrity sha512-pRgE9Jbhoo5z6Vk3qi+vIrfpMDlCp2oB1UeR96SMnsfz073jj0AZGQwp69EdIcEvlUlwBSGyJK8Jt6OB6JLn+g==
+  dependencies:
+    ext-name "^5.0.0"
+    pupa "^2.0.1"
+    unused-filename "^2.1.0"
+
+electron-dl@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/electron-dl/-/electron-dl-3.1.0.tgz#38d31f426a3b8a90e9c35ac03e74e10c2bf52d3e"
+  integrity sha512-nY3vvxX5w11+cFT6JkJwMHtH6dk5sPtjRtzjaj4NrS9CyYF3atvVt8yMfZtXruULU1JAuxEEf2B8O6YgXs9xsQ==
   dependencies:
     ext-name "^5.0.0"
     pupa "^2.0.1"
@@ -5184,6 +5202,11 @@ electron-download@^4.1.0:
     rc "^1.2.1"
     semver "^5.4.1"
     sumchecker "^2.0.2"
+
+electron-is-dev@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/electron-is-dev/-/electron-is-dev-1.2.0.tgz#2e5cea0a1b3ccf1c86f577cee77363ef55deb05e"
+  integrity sha512-R1oD5gMBPS7PVU8gJwH6CtT0e6VSoD0+SzSnYpNm+dBkcijgA+K7VAMHDfnRq/lkKPZArpzplTW6jfiMYosdzw==
 
 electron-notarize@^1.0.0:
   version "1.0.0"
@@ -5225,10 +5248,10 @@ electron-updater@^4.3.5:
     lodash.isequal "^4.5.0"
     semver "^7.3.2"
 
-electron@^9.0.5:
-  version "9.3.2"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-9.3.2.tgz#afa2942e2642ee25b422b90f1497f7d9bbeec550"
-  integrity sha512-0lleEf9msAXGDi2GukAuiGdw3VDgSTlONOnJgqDEz1fuSEVsXz5RX+hNPKDsVDerLTFg/C34RuJf4LwHvkKcBA==
+electron@^11.3.0:
+  version "11.3.0"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-11.3.0.tgz#87e8528fd23ae53b0eeb3a738f1fe0a3ad27c2db"
+  integrity sha512-MhdS0gok3wZBTscLBbYrOhLaQybCSAfkupazbK1dMP5c+84eVMxJE/QGohiWQkzs0tVFIJsAHyN19YKPbelNrQ==
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^12.0.12"
@@ -7702,11 +7725,6 @@ is-buffer@^1.1.5:
   resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-1.1.6.tgz#efaa2ea9daa0d7ab2ea13a97b2b8ad51fefbe8be"
   integrity sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==
 
-is-buffer@^2.0.0:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-2.0.5.tgz#ebc252e400d22ff8d77fa09888821a24a658c191"
-  integrity sha512-i2R6zNFDwgEHJyQUtJEk0XFi1i0dPFn/oqjK3/vPCcDeJvW5NQ83V8QbicfF1SupOaB0h8ntgBC2YiE7dfyctQ==
-
 is-callable@^1.1.4, is-callable@^1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/is-callable/-/is-callable-1.2.2.tgz#c7c6715cd22d4ddb48d3e19970223aceabb080d9"
@@ -9856,13 +9874,6 @@ npm-run-path@^4.0.0:
     console-control-strings "~1.1.0"
     gauge "~2.7.3"
     set-blocking "~2.0.0"
-
-nspell@^2.1.4:
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/nspell/-/nspell-2.1.4.tgz#2057f11ad19bf43ee510d2c2f6ba4082865bc9e6"
-  integrity sha512-nlMEyhE6kyR2GoTm2ldrVlEmK5xgFHXayQEqLhb+3yYa8ncKtjsoYJo3ahYwrZsNaCZr822S5ZRlEqYdMQy9xw==
-  dependencies:
-    is-buffer "^2.0.0"
 
 nth-check@^1.0.2, nth-check@~1.0.1:
   version "1.0.2"

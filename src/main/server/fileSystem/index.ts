@@ -6,7 +6,7 @@ import { app } from "electron";
 import { sync } from "read-chunk";
 
 import { Attachment } from "@server/databases/chat/entity";
-import { getAllAttachmentsInfo, getAllFilesInDirectory, getDirectorySize } from "@server/helpers/utils";
+import { getAllFilesInDirectory, getDirectorySize } from "@server/helpers/utils";
 import { generateUuid } from "@renderer/helpers/utils";
 import { StorageData } from "./types";
 

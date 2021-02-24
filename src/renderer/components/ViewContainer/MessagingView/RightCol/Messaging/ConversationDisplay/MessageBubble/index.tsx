@@ -12,7 +12,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable max-len */
 import * as React from "react";
-import { remote, ipcRenderer, IpcRendererEvent, dialog } from "electron";
+import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { Map, Marker, TileLayer } from "react-leaflet";

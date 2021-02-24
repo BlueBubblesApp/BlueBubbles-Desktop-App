@@ -8,15 +8,11 @@
 import * as React from "react";
 import * as fs from "fs";
 import "./NewMessageBottomNav.css";
-import { desktopCapturer, ipcRenderer, StringProtocolResponse } from "electron";
+import { desktopCapturer, ipcRenderer } from "electron";
 import CloseIcon from "@renderer/components/TitleBar/close.png";
-import { FileSystem } from "@server/fileSystem";
-import { Attachment } from "@server/databases/chat/entity";
-import { generateUuid } from "@renderer/helpers/utils";
 import "emoji-mart/css/emoji-mart.css";
 import { getEmojiDataFromNative, Emoji, Picker } from "emoji-mart";
 import emojiJSONData from "emoji-mart/data/apple.json";
-import EmojiRegex from "emoji-regex";
 import AudioAnalyser from "./AudioVisualizer/AudioVisualizer";
 
 const name = require("emoji-name-map");
@@ -32,12 +28,6 @@ interface NewMessageBottomNavState {
     audioLength: string;
     tempAudioFilePath: string;
     capitalizeFirstLetter: boolean;
-    showSpellingContextMenu: boolean;
-    contextX: number;
-    selectedWord: string;
-    sug1: string;
-    sug2: string;
-    sug3: string;
     showGIFSelector: boolean;
     showEmojiSearch: boolean;
     lookingForEmoji: boolean;
@@ -70,12 +60,6 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
             audioLength: null,
             tempAudioFilePath: null,
             capitalizeFirstLetter: null,
-            showSpellingContextMenu: false,
-            contextX: null,
-            selectedWord: null,
-            sug1: null,
-            sug2: null,
-            sug3: null,
             showGIFSelector: false,
             showEmojiSearch: false,
             lookingForEmoji: false,
@@ -96,33 +80,7 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
         this.setState({ config, capitalizeFirstLetter: config.capitalizeFirstLetter });
 
         const input = document.getElementById("messageFieldInput-NewMessage") as HTMLInputElement;
-
-        ipcRenderer.on("word-matches", (_, matches) => {
-            console.log(matches);
-            this.setState({
-                showSpellingContextMenu: true,
-                sug1: matches.ratings[0] ? matches.ratings[0].target : null,
-                sug2: matches.ratings[1] ? matches.ratings[1].target : null,
-                sug3: matches.ratings[2] ? matches.ratings[2].target : null
-            });
-        });
-
-        input.addEventListener("contextmenu", async event => {
-            this.setState({ showSpellingContextMenu: false, sug1: null, sug2: null, sug3: null });
-            console.log(input.value.substring(input.selectionStart, input.selectionEnd));
-
-            const selectedWord = input.value.substring(input.selectionStart, input.selectionEnd);
-            this.setState({ selectedWord });
-
-            ipcRenderer.invoke("get-spelling-suggestions", selectedWord);
-            this.setState({ contextX: event.clientX });
-        });
-
         input.addEventListener("keydown", (event: any) => {
-            if (this.state.showSpellingContextMenu) {
-                this.setState({ showSpellingContextMenu: false, sug1: null, sug2: null, sug3: null });
-            }
-
             if (this.state.lookingForEmoji && event.key === "Escape") {
                 this.setState({
                     showEmojiSearch: false,
@@ -246,14 +204,6 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                 attachmentPathsCopy.push(myClipboard.filePath);
                 this.setState({ attachmentPaths: attachmentPathsCopy });
             }
-        });
-
-        input.addEventListener("click", async event => {
-            this.setState({ showSpellingContextMenu: false, sug1: null, sug2: null, sug3: null });
-        });
-
-        document.getElementById("messageView-NewMessage").addEventListener("click", async event => {
-            this.setState({ showSpellingContextMenu: false, sug1: null, sug2: null, sug3: null });
         });
 
         ipcRenderer.on("focused", (_, args) => {
@@ -785,80 +735,6 @@ class NewMessageBottomNav extends React.Component<object, NewMessageBottomNavSta
                         </>
                     ) : (
                         <>
-                            {this.state.showSpellingContextMenu ? (
-                                <div id="spellingContextMenu" style={{ left: `${this.state.contextX - 15}px` }}>
-                                    <div>
-                                        {this.state.sug1 ? (
-                                            <p
-                                                onClick={() => {
-                                                    this.setState({
-                                                        enteredMessage: this.state.enteredMessage.replace(
-                                                            this.state.selectedWord,
-                                                            this.state.sug1
-                                                        ),
-                                                        showSpellingContextMenu: false,
-                                                        sug1: null,
-                                                        sug2: null,
-                                                        sug3: null
-                                                    });
-                                                    document.getElementById("messageFieldInput-NewMessage").focus();
-                                                }}
-                                            >
-                                                {this.state.sug1}
-                                            </p>
-                                        ) : null}
-                                        {this.state.sug2 ? (
-                                            <p
-                                                onClick={() => {
-                                                    this.setState({
-                                                        enteredMessage: this.state.enteredMessage.replace(
-                                                            this.state.selectedWord,
-                                                            this.state.sug2
-                                                        ),
-                                                        showSpellingContextMenu: false,
-                                                        sug1: null,
-                                                        sug2: null,
-                                                        sug3: null
-                                                    });
-                                                    document.getElementById("messageFieldInput-NewMessage").focus();
-                                                }}
-                                            >
-                                                {this.state.sug2}
-                                            </p>
-                                        ) : null}
-                                        {this.state.sug3 ? (
-                                            <p
-                                                onClick={() => {
-                                                    this.setState({
-                                                        enteredMessage: this.state.enteredMessage.replace(
-                                                            this.state.selectedWord,
-                                                            this.state.sug3
-                                                        ),
-                                                        showSpellingContextMenu: false,
-                                                        sug1: null,
-                                                        sug2: null,
-                                                        sug3: null
-                                                    });
-                                                    document.getElementById("messageFieldInput-NewMessage").focus();
-                                                }}
-                                            >
-                                                {this.state.sug3}
-                                            </p>
-                                        ) : null}
-                                    </div>
-                                    <img
-                                        src={CloseIcon}
-                                        onClick={() =>
-                                            this.setState({
-                                                showSpellingContextMenu: false,
-                                                sug1: null,
-                                                sug2: null,
-                                                sug3: null
-                                            })
-                                        }
-                                    />
-                                </div>
-                            ) : null}
                             {this.state.showGIFSelector ? (
                                 <img id="giphyFullLogo" src={require("@renderer/assets/giphy-logo.png")} />
                             ) : (
