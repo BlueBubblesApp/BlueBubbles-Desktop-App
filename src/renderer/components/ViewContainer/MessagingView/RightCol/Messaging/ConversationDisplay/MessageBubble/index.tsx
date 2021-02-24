@@ -875,7 +875,11 @@ class MessageBubble extends React.Component<Props, State> {
         const parent = document.getElementById(message.guid);
         parent.style.setProperty("--hide-pseudo", "1");
 
-        document.getElementsByClassName("activeReactionMessage")[0].classList.toggle("activeReactionMessage");
+        const active = document.getElementsByClassName("activeReactionMessage");
+
+        if (active && active.length > 0) {
+            active[0].classList.toggle("activeReactionMessage");
+        }
 
         const incomingReactions = document.getElementsByClassName("reactionOnIncoming") as HTMLCollectionOf<
             HTMLElement
@@ -885,10 +889,10 @@ class MessageBubble extends React.Component<Props, State> {
         >;
 
         // Show all reactions
-        for (let i = 0; i < incomingReactions.length; i += 1) {
+        for (let i = 0; i < incomingReactions?.length ?? 0; i += 1) {
             incomingReactions[i].style.display = "initial";
         }
-        for (let i = 0; i < outgoingReactions.length; i += 1) {
+        for (let i = 0; i < outgoingReactions?.length ?? 0; i += 1) {
             outgoingReactions[i].style.display = "initial";
         }
 
