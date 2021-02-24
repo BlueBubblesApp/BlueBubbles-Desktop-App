@@ -72,10 +72,9 @@
 
 #recipDiv > div > p {
     color: var(--main-title-color);
-    font-family: "SF UI Display Bold";
-    font-weight: 500;
-    font-size: calc(var(--message-font-size) - 1px);
-    margin: 0px 0px 0px 0px;
+    font-family: "SF UI Display Light";
+    font-size: var(--message-font-size);
+    margin: 1px 0px 0px 0px;
     white-space: nowrap;
 }
 
