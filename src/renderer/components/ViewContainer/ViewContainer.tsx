@@ -1,13 +1,41 @@
 /* eslint-disable react/prefer-stateless-function */
 import * as React from "react";
-import { BrowserRouter as Router, Route, HashRouter } from "react-router-dom";
-import "./ViewContainer.css";
+import { ipcRenderer } from "electron";
+import { Route, HashRouter } from "react-router-dom";
+
 import { AnimatedSwitch } from "react-router-transition";
 import MessagingView from "./MessagingView/MessagingView";
 import SettingsView from "./SettingsView/SettingsView";
 import LoginView from "./LoginView/LoginView";
 
+import "./ViewContainer.css";
+
+const handleHotKeys = (e: KeyboardEvent) => {
+    if (!e.metaKey && !e.ctrlKey) return;
+    let index: string | number = e.key as string;
+
+    try {
+        index = Number.parseInt(index, 10) as number;
+    } catch (ex) {
+        return;
+    }
+
+    // If 0 is used, convert it to 10
+    if (index === 0) index = 10;
+
+    // Subtract 1 to account for the index
+    index = (index as number) - 1;
+    if (index < 0 || index > 9) return;
+
+    ipcRenderer.invoke("send-to-ui", { event: "set-current-chat-index", contents: index });
+};
+
 class ViewContainer extends React.Component {
+    constructor(props) {
+        super(props);
+        document.addEventListener("keyup", handleHotKeys, false);
+    }
+
     render() {
         return (
             <div className="ViewContainer">
