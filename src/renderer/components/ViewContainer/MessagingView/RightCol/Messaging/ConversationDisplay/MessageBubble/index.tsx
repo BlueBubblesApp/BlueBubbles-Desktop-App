@@ -848,7 +848,7 @@ class MessageBubble extends React.Component<Props, State> {
 
     clickNHold(message) {
         const parent = document.getElementById(message.guid);
-        if (!parent) return;
+        if (!parent || this.state.isReactionsOpen) return;
 
         parent.classList.toggle("activeReactionMessage");
         parent.style.setProperty("--hide-pseudo", "0");
