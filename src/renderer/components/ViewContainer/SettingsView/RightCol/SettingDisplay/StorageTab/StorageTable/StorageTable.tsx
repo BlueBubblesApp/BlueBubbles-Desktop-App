@@ -12,7 +12,8 @@ interface State {
     isLoading: boolean;
     attachments: any;
     currentSort: string;
-    selectedFiles: Array<any>;
+    selectedFiles: any[];
+    selectedPaths: string[];
     showDeleteConfirm: boolean;
 }
 
@@ -29,6 +30,7 @@ class StorageTable extends React.Component<object, State> {
             attachments: null,
             currentSort: null,
             selectedFiles: [],
+            selectedPaths: [],
             showDeleteConfirm: false
         };
     }
@@ -287,28 +289,33 @@ class StorageTable extends React.Component<object, State> {
                                                       <input
                                                           className="aAttachmentSelector"
                                                           type="checkbox"
+                                                          defaultChecked={false}
+                                                          checked={this.state.selectedPaths.includes(
+                                                              attachment.filePath
+                                                          )}
                                                           id={`${attachment.filePath}-inputChild`}
                                                           onChange={() => {
                                                               const x = document.getElementById(
                                                                   attachment.filePath
                                                               ) as HTMLInputElement;
+
                                                               x.classList.toggle("selectedRow");
-                                                              // if(x.checked) {
-                                                              //     x.checked = false;
-                                                              // } else {
-                                                              //     x.checked = true;
-                                                              // }
                                                               const selectedFiles = [...this.state.selectedFiles];
+                                                              const selectedPaths = [...this.state.selectedPaths];
 
                                                               if (selectedFiles.includes(attachment)) {
                                                                   selectedFiles.splice(
                                                                       selectedFiles.indexOf(attachment)
                                                                   );
+                                                                  selectedPaths.splice(
+                                                                      selectedPaths.indexOf(attachment.filePath)
+                                                                  );
                                                               } else {
                                                                   selectedFiles.push(attachment);
+                                                                  selectedPaths.push(attachment.filePath);
                                                               }
 
-                                                              this.setState({ selectedFiles });
+                                                              this.setState({ selectedFiles, selectedPaths });
                                                           }}
                                                       />
                                                   </td>
