@@ -780,6 +780,8 @@ class BackendServer {
 
         // Handle setting last viewed date for a chat
         ipcMain.handle("set-chat-last-viewed", async (_, payload) => {
+            if (!payload?.chat) return;
+
             const updateData = { lastViewed: payload.lastViewed.getTime() };
             await this.chatRepo.updateChat(payload.chat, updateData);
 

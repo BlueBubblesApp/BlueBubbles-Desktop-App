@@ -62,9 +62,9 @@
     background-repeat: no-repeat;
     border-radius: 25px;
     flex-grow: 1;
-    padding: 3px 35px 3px 8px;
-    font-family: "SF UI Display Bold";
-    font-size: calc(var(--message-font-size) + 1px);
+    padding: 5px 35px 3px 8px;
+    font-family: "SF UI Display Light";
+    font-size: var(--message-font-size);
     color: var(--right-primary-color);
     outline: none;
     border: 1px solid var(--right-secondary-color);
