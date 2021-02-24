@@ -89,7 +89,7 @@ class ReactionsDisplay extends React.Component<Props, State> {
                     ))
                 ) : (
                     <>
-                        <p className="nothingPlaceholder">Nothing Yet</p>
+                        <p className="nothingPlaceholder">Nothing Yet&nbsp;&nbsp;&nbsp;</p>
                         <p className="nothingEmoji">&#128550;</p>
                     </>
                 )}

@@ -94,3 +94,7 @@
     cursor: pointer;
     padding-bottom: 5px;
 }
+
+#stb-button:focus {
+    outline: 0;
+}

@@ -481,7 +481,9 @@ class RightConversationDisplay extends React.Component<Props, State> {
                             ) : null}
                             {/* If the message text is null, it's a group event */}
                             {message.text || message.attachments.length > 0 ? (
-                                <>
+                                <div
+                                    style={{ marginTop: message?.isFromMe !== olderMessage?.isFromMe ? "5px" : "2px" }}
+                                >
                                     <MessageBubble
                                         chat={chat}
                                         message={message}
@@ -495,7 +497,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
                                         theme={this.state.theme}
                                         useNativeEmojis={this.state.useNativeEmojis}
                                     />
-                                </>
+                                </div>
                             ) : (
                                 this.getChatEvent(message)
                             )}

@@ -966,6 +966,104 @@ class MessageBubble extends React.Component<Props, State> {
         );
     };
 
+    buildAvatar(message: Message, firstGradientNumber: number, useAvatar: boolean) {
+        // Figure out if the message should show the handle avatar
+        if (message.isFromMe || !useAvatar) return null;
+
+        if (message.handle.avatar) {
+            return (
+                <img
+                    key={message.guid}
+                    src={message.handle.avatar}
+                    style={{
+                        borderRadius: "50%",
+                        marginRight: "10px",
+                        minWidth: "25px"
+                    }}
+                    height="25px"
+                    width="25px"
+                />
+            );
+        }
+
+        return (
+            <>
+                {generateReactionsDisplayIconText(message.handle) === "?" ? (
+                    <svg
+                        style={{
+                            marginRight: "10px",
+                            minWidth: "25px"
+                        }}
+                        height="25px"
+                        width="25px"
+                        viewBox="0 0 1000 1000"
+                        key={message.guid}
+                    >
+                        <defs>
+                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                <stop className="stop1" offset="0%" stopColor="#686868" />
+                                <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                            </linearGradient>
+                        </defs>
+                        <circle
+                            className="cls-1"
+                            cx="50%"
+                            cy="50%"
+                            r="500"
+                            fill={`url(#ColoredGradient${firstGradientNumber})`}
+                        />
+                        <mask id="rmvProfile">
+                            <circle cx="50%" cy="50%" r="435" fill="white" />
+                        </mask>
+                        <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                        <circle className="cls-2" mask="url(#rmvProfile)" fill="white" cx="50%" cy="106%" r="400" />
+                    </svg>
+                ) : (
+                    <svg
+                        style={{
+                            marginRight: "10px",
+                            minWidth: "25px"
+                        }}
+                        height="25px"
+                        width="25px"
+                        viewBox="0 0 1000 1000"
+                        key={message.guid}
+                    >
+                        <defs>
+                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                <stop className="stop1" offset="0%" stopColor="#686868" />
+                                <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                            </linearGradient>
+                        </defs>
+                        <circle
+                            className="cls-1"
+                            fill={`url(#ColoredGradient${firstGradientNumber})`}
+                            cx="50%"
+                            cy="50%"
+                            r="50%"
+                        />
+                        <text
+                            style={{
+                                fontFamily: "SF Pro Rounded",
+                                fontWeight: 700,
+                                fontStyle: "normal",
+                                fontSize:
+                                    generateReactionsDisplayIconText(message.handle).length >= 2 ? "500px" : "600px"
+                            }}
+                            className="cls-2"
+                            x="50%"
+                            y="69%"
+                            textAnchor="middle"
+                            fill="white"
+                        >
+                            {generateReactionsDisplayIconText(message.handle)}
+                        </text>
+                    </svg>
+                )}
+            </>
+        );
+    }
+
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
         const { attachments, linkPrev } = this.state;
@@ -986,9 +1084,6 @@ class MessageBubble extends React.Component<Props, State> {
         // Figure out if we should have a tail for the message
         const useTail = this.shouldHaveTail();
         let messageClass = useTail ? "message tail" : "message"; // Fix this to reflect having a tail
-
-        // Figure out if the message should show the handle avatar
-        const useAvatar = this.shouldHaveAvatar();
 
         // Figure out the "real string" and then figure out if we need to make it big emojis
         const text = sanitizeStr(message.text);
@@ -1189,6 +1284,9 @@ class MessageBubble extends React.Component<Props, State> {
             messageTextColor = this.props.theme.outgoingMessageTextColor;
         }
 
+        const useAvatar = this.shouldHaveAvatar();
+        const avatar = this.buildAvatar(message, firstGradientNumber, useAvatar);
+
         return (
             <div style={{ marginTop: message.hasReactions ? "20px" : "0" }}>
                 {this.state.showContextMenu ? (
@@ -1229,100 +1327,119 @@ class MessageBubble extends React.Component<Props, State> {
                                         onClose={() => this.closeReactionView(message)}
                                     />
                                 ) : null}
-                                <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
-                                    <div className={linkClassName} draggable="false">
-                                        <div
-                                            className="linkContainer"
-                                            id={message.guid}
-                                            onClick={() => openLink(links[0])}
-                                        >
-                                            {message.hasReactions === true ? (
-                                                <>
-                                                    {message.reactions.map((reaction, i) => (
-                                                        <InChatReaction
-                                                            reaction={reaction}
-                                                            key={reaction.guid}
-                                                            isMessageFromMe={message.isFromMe}
-                                                            isReactionFromMe={reaction.isFromMe}
-                                                            reactionType={reaction.associatedMessageType}
-                                                            offset={i}
-                                                        />
-                                                    ))}
-                                                </>
-                                            ) : null}
-                                            {linkPrev?.images?.length > 0 &&
-                                            !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
-                                                <img
-                                                    src={linkPrev.images[0]}
-                                                    className="Attachment"
-                                                    draggable="false"
-                                                />
-                                            ) : null}
-                                            <div
-                                                className={`linkBottomDiv ${useTail ? "tail" : ""}`}
-                                                style={{
-                                                    borderRadius:
-                                                        (linkPrev?.images?.length === 0 &&
-                                                            linkPrev?.favicons?.length > 0) ||
-                                                        (linkPrev &&
-                                                            forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
-                                                        (linkPrev?.images?.length === 0 &&
-                                                            linkPrev?.favicons?.length === 0) ||
-                                                        !linkPrev
-                                                            ? "15px"
-                                                            : "0 0 15px 15px",
-                                                    marginTop:
-                                                        (linkPrev?.images?.length === 0 &&
-                                                            linkPrev?.favicons?.length > 0) ||
-                                                        (linkPrev &&
-                                                            forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
-                                                        !linkPrev
-                                                            ? "3px"
-                                                            : "0px"
-                                                }}
-                                            >
+                                <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "flex-end",
+                                            justifyContent: message.isFromMe ? "flex-end" : "flex-start"
+                                        }}
+                                    >
+                                        {avatar}
+                                        <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
+                                            <div className={linkClassName} draggable="false">
                                                 <div
-                                                    style={{
-                                                        width:
-                                                            linkPrev?.images?.length > 0 &&
-                                                            !forceFaviconURLS.includes(new URL(links[0]).hostname)
-                                                                ? "93%"
-                                                                : "75%"
-                                                    }}
+                                                    className="linkContainer"
+                                                    id={message.guid}
+                                                    onClick={() => openLink(links[0])}
                                                 >
-                                                    <p
+                                                    {message.hasReactions === true ? (
+                                                        <>
+                                                            {message.reactions.map((reaction, i) => (
+                                                                <InChatReaction
+                                                                    reaction={reaction}
+                                                                    key={reaction.guid}
+                                                                    isMessageFromMe={message.isFromMe}
+                                                                    isReactionFromMe={reaction.isFromMe}
+                                                                    reactionType={reaction.associatedMessageType}
+                                                                    offset={i}
+                                                                />
+                                                            ))}
+                                                        </>
+                                                    ) : null}
+                                                    {linkPrev?.images?.length > 0 &&
+                                                    !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
+                                                        <img
+                                                            src={linkPrev.images[0]}
+                                                            className="Attachment"
+                                                            draggable="false"
+                                                        />
+                                                    ) : null}
+                                                    <div
+                                                        className={`linkBottomDiv ${useTail ? "tail" : ""}`}
                                                         style={{
+                                                            borderRadius:
+                                                                (linkPrev?.images?.length === 0 &&
+                                                                    linkPrev?.favicons?.length > 0) ||
+                                                                (linkPrev &&
+                                                                    forceFaviconURLS.includes(
+                                                                        new URL(links[0]).hostname
+                                                                    )) ||
+                                                                (linkPrev?.images?.length === 0 &&
+                                                                    linkPrev?.favicons?.length === 0) ||
+                                                                !linkPrev
+                                                                    ? "15px"
+                                                                    : "0 0 15px 15px",
                                                             marginTop:
                                                                 (linkPrev?.images?.length === 0 &&
                                                                     linkPrev?.favicons?.length > 0) ||
                                                                 (linkPrev &&
                                                                     forceFaviconURLS.includes(
                                                                         new URL(links[0]).hostname
-                                                                    ))
-                                                                    ? "2px"
+                                                                    )) ||
+                                                                !linkPrev
+                                                                    ? "3px"
                                                                     : "0px"
                                                         }}
                                                     >
-                                                        {linkPrev ? (
-                                                            <>
-                                                                {linkPrev?.title ??
-                                                                    linkPrev?.description ??
-                                                                    "Unavailable"}
-                                                            </>
-                                                        ) : (
-                                                            <>Loading...</>
-                                                        )}
-                                                    </p>
-                                                    <p>{new URL(links[0]).hostname}</p>
+                                                        <div
+                                                            style={{
+                                                                width:
+                                                                    linkPrev?.images?.length > 0 &&
+                                                                    !forceFaviconURLS.includes(
+                                                                        new URL(links[0]).hostname
+                                                                    )
+                                                                        ? "93%"
+                                                                        : "75%"
+                                                            }}
+                                                        >
+                                                            <p
+                                                                style={{
+                                                                    marginTop:
+                                                                        (linkPrev?.images?.length === 0 &&
+                                                                            linkPrev?.favicons?.length > 0) ||
+                                                                        (linkPrev &&
+                                                                            forceFaviconURLS.includes(
+                                                                                new URL(links[0]).hostname
+                                                                            ))
+                                                                            ? "2px"
+                                                                            : "0px"
+                                                                }}
+                                                            >
+                                                                {linkPrev ? (
+                                                                    <>
+                                                                        {linkPrev?.title ??
+                                                                            linkPrev?.description ??
+                                                                            "Unavailable"}
+                                                                    </>
+                                                                ) : (
+                                                                    <>Loading...</>
+                                                                )}
+                                                            </p>
+                                                            <p>{new URL(links[0]).hostname}</p>
+                                                        </div>
+                                                        {(linkPrev?.images?.length === 0 &&
+                                                            linkPrev?.favicons?.length > 0) ||
+                                                        (linkPrev &&
+                                                            forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
+                                                            <img src={linkPrev.favicons[0]} className="linkFavicon" />
+                                                        ) : null}
+                                                    </div>
                                                 </div>
-                                                {(linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
-                                                (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
-                                                    <img src={linkPrev.favicons[0]} className="linkFavicon" />
-                                                ) : null}
                                             </div>
-                                        </div>
+                                        </ClickNHold>
                                     </div>
-                                </ClickNHold>
+                                </div>
                             </>
                         ) : (
                             <>
@@ -1369,163 +1486,16 @@ class MessageBubble extends React.Component<Props, State> {
                                                 chat={chat}
                                                 onClose={() => this.closeReactionView(message)}
                                             />
-                                        ) : (
-                                            <div className="emptyDiv" />
-                                        )}
+                                        ) : null}
                                         <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
                                             <div
                                                 style={{
                                                     display: "flex",
-                                                    alignItems: "center",
+                                                    alignItems: "flex-end",
                                                     justifyContent: message.isFromMe ? "flex-end" : "flex-start"
                                                 }}
                                             >
-                                                {useAvatar && !message.isFromMe ? (
-                                                    <>
-                                                        {message.handle.avatar ? (
-                                                            <img
-                                                                key={message.guid}
-                                                                src={message.handle.avatar}
-                                                                style={{
-                                                                    borderRadius: "50%",
-                                                                    marginRight: "10px",
-                                                                    minWidth: "25px"
-                                                                }}
-                                                                height="25px"
-                                                                width="25px"
-                                                            />
-                                                        ) : (
-                                                            <>
-                                                                {generateReactionsDisplayIconText(message.handle) ===
-                                                                "?" ? (
-                                                                    <svg
-                                                                        style={{
-                                                                            marginRight: "10px",
-                                                                            minWidth: "25px"
-                                                                        }}
-                                                                        height="25px"
-                                                                        width="25px"
-                                                                        viewBox="0 0 1000 1000"
-                                                                        key={message.guid}
-                                                                    >
-                                                                        <defs>
-                                                                            <linearGradient
-                                                                                id="Gradient1"
-                                                                                x1="0"
-                                                                                x2="0"
-                                                                                y1="1"
-                                                                                y2="0"
-                                                                            >
-                                                                                <stop
-                                                                                    className="stop1"
-                                                                                    offset="0%"
-                                                                                    stopColor="#686868"
-                                                                                />
-                                                                                <stop
-                                                                                    className="stop2"
-                                                                                    offset="100%"
-                                                                                    stopColor="#928E8E"
-                                                                                />
-                                                                            </linearGradient>
-                                                                        </defs>
-                                                                        <circle
-                                                                            className="cls-1"
-                                                                            cx="50%"
-                                                                            cy="50%"
-                                                                            r="500"
-                                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
-                                                                        />
-                                                                        <mask id="rmvProfile">
-                                                                            <circle
-                                                                                cx="50%"
-                                                                                cy="50%"
-                                                                                r="435"
-                                                                                fill="white"
-                                                                            />
-                                                                        </mask>
-                                                                        <ellipse
-                                                                            className="cls-2"
-                                                                            fill="white"
-                                                                            cx="50%"
-                                                                            cy="34%"
-                                                                            rx="218"
-                                                                            ry="234"
-                                                                        />
-                                                                        <circle
-                                                                            className="cls-2"
-                                                                            mask="url(#rmvProfile)"
-                                                                            fill="white"
-                                                                            cx="50%"
-                                                                            cy="106%"
-                                                                            r="400"
-                                                                        />
-                                                                    </svg>
-                                                                ) : (
-                                                                    <svg
-                                                                        style={{
-                                                                            marginRight: "10px",
-                                                                            minWidth: "25px"
-                                                                        }}
-                                                                        height="25px"
-                                                                        width="25px"
-                                                                        viewBox="0 0 1000 1000"
-                                                                        key={message.guid}
-                                                                    >
-                                                                        <defs>
-                                                                            <linearGradient
-                                                                                id="Gradient1"
-                                                                                x1="0"
-                                                                                x2="0"
-                                                                                y1="1"
-                                                                                y2="0"
-                                                                            >
-                                                                                <stop
-                                                                                    className="stop1"
-                                                                                    offset="0%"
-                                                                                    stopColor="#686868"
-                                                                                />
-                                                                                <stop
-                                                                                    className="stop2"
-                                                                                    offset="100%"
-                                                                                    stopColor="#928E8E"
-                                                                                />
-                                                                            </linearGradient>
-                                                                        </defs>
-                                                                        <circle
-                                                                            className="cls-1"
-                                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
-                                                                            cx="50%"
-                                                                            cy="50%"
-                                                                            r="50%"
-                                                                        />
-                                                                        <text
-                                                                            style={{
-                                                                                fontFamily: "SF Pro Rounded",
-                                                                                fontWeight: 700,
-                                                                                fontStyle: "normal",
-                                                                                fontSize:
-                                                                                    generateReactionsDisplayIconText(
-                                                                                        message.handle
-                                                                                    ).length >= 2
-                                                                                        ? "500px"
-                                                                                        : "600px"
-                                                                            }}
-                                                                            className="cls-2"
-                                                                            x="50%"
-                                                                            y="69%"
-                                                                            textAnchor="middle"
-                                                                            fill="white"
-                                                                        >
-                                                                            {generateReactionsDisplayIconText(
-                                                                                message.handle
-                                                                            )}
-                                                                        </text>
-                                                                    </svg>
-                                                                )}
-                                                            </>
-                                                        )}
-                                                    </>
-                                                ) : null}
+                                                {avatar}
                                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                                     <div
                                                         className={`${expressiveSendStyle} ${messageClass} ${
@@ -1685,9 +1655,7 @@ class MessageBubble extends React.Component<Props, State> {
                                     chat={chat}
                                     onClose={() => this.closeReactionView(message)}
                                 />
-                            ) : (
-                                <div className="emptyDiv" />
-                            )}
+                            ) : null}
                             {chat.participants.length > 1 &&
                             message.handle &&
                             (!olderMessage || olderMessage.handleId !== message.handleId) ? (
@@ -1698,122 +1666,11 @@ class MessageBubble extends React.Component<Props, State> {
                             <div
                                 style={{
                                     display: "flex",
-                                    alignItems: "center",
+                                    alignItems: "flex-end",
                                     justifyContent: message.isFromMe ? "flex-end" : "flex-start"
                                 }}
                             >
-                                {useAvatar && !message.isFromMe ? (
-                                    <>
-                                        {message.handle.avatar ? (
-                                            <img
-                                                src={message.handle.avatar}
-                                                style={{ borderRadius: "50%", marginRight: "10px", minWidth: "25px" }}
-                                                height="25px"
-                                                width="25px"
-                                            />
-                                        ) : (
-                                            <>
-                                                {generateReactionsDisplayIconText(message.handle) === "?" ? (
-                                                    <svg
-                                                        style={{ marginRight: "10px", minWidth: "25px" }}
-                                                        height="25px"
-                                                        width="25px"
-                                                        viewBox="0 0 1000 1000"
-                                                    >
-                                                        <defs>
-                                                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                                                <stop
-                                                                    className="stop1"
-                                                                    offset="0%"
-                                                                    stopColor="#686868"
-                                                                />
-                                                                <stop
-                                                                    className="stop2"
-                                                                    offset="100%"
-                                                                    stopColor="#928E8E"
-                                                                />
-                                                            </linearGradient>
-                                                        </defs>
-                                                        <circle
-                                                            className="cls-1"
-                                                            cx="50%"
-                                                            cy="50%"
-                                                            r="500"
-                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
-                                                        />
-                                                        <mask id="rmvProfile">
-                                                            <circle cx="50%" cy="50%" r="435" fill="white" />
-                                                        </mask>
-                                                        <ellipse
-                                                            className="cls-2"
-                                                            fill="white"
-                                                            cx="50%"
-                                                            cy="34%"
-                                                            rx="218"
-                                                            ry="234"
-                                                        />
-                                                        <circle
-                                                            className="cls-2"
-                                                            mask="url(#rmvProfile)"
-                                                            fill="white"
-                                                            cx="50%"
-                                                            cy="106%"
-                                                            r="400"
-                                                        />
-                                                    </svg>
-                                                ) : (
-                                                    <svg
-                                                        style={{ marginRight: "10px", minWidth: "25px" }}
-                                                        height="25px"
-                                                        width="25px"
-                                                        viewBox="0 0 1000 1000"
-                                                    >
-                                                        <defs>
-                                                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                                                <stop
-                                                                    className="stop1"
-                                                                    offset="0%"
-                                                                    stopColor="#686868"
-                                                                />
-                                                                <stop
-                                                                    className="stop2"
-                                                                    offset="100%"
-                                                                    stopColor="#928E8E"
-                                                                />
-                                                            </linearGradient>
-                                                        </defs>
-                                                        <circle
-                                                            className="cls-1"
-                                                            fill={`url(#ColoredGradient${firstGradientNumber})`}
-                                                            cx="50%"
-                                                            cy="50%"
-                                                            r="50%"
-                                                        />
-                                                        <text
-                                                            style={{
-                                                                fontFamily: "SF Pro Rounded",
-                                                                fontWeight: 700,
-                                                                fontStyle: "normal",
-                                                                fontSize:
-                                                                    generateReactionsDisplayIconText(message.handle)
-                                                                        .length >= 2
-                                                                        ? "500px"
-                                                                        : "600px"
-                                                            }}
-                                                            className="cls-2"
-                                                            x="50%"
-                                                            y="69%"
-                                                            textAnchor="middle"
-                                                            fill="white"
-                                                        >
-                                                            {generateReactionsDisplayIconText(message.handle)}
-                                                        </text>
-                                                    </svg>
-                                                )}
-                                            </>
-                                        )}
-                                    </>
-                                ) : null}
+                                {avatar}
                                 {stickers && message.isFromMe
                                     ? stickers.map(sticker => {
                                           return this.renderAttachment(sticker);
