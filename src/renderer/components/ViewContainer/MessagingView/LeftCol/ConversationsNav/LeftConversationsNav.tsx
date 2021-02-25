@@ -323,25 +323,22 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         });
     }
 
-    onMouseDown = (e, chat) => {
-        console.log("MOUSE DOWN");
-        const { scrollLeft, scrollTop } = document.getElementById(chat.guid).parentElement;
-
+    onMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, chat) => {
+        if (this.state.isScrolling) return;
+        const { scrollLeft } = document.getElementById(chat.guid).parentElement;
         this.setState({ isScrolling: true, scrollLeft, clientX: e.clientX });
     };
 
-    onMouseUp = e => {
-        console.log("MOUSE UP");
+    onMouseUp = (_: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (!this.state.isScrolling) return;
         this.setState({ isScrolling: false, scrollLeft: 0, clientX: 0 });
     };
 
-    onMouseMove = (e, chat) => {
+    onMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, chat) => {
         const { clientX, scrollLeft } = this.state;
 
         if (this.state.isScrolling) {
-            // console.log(e.target.parentNode)
             document.getElementById(chat.guid).parentElement.scrollLeft = -1 * (scrollLeft - clientX + e.clientX);
-            //   this.setState({scrollX: scrollX + e.clientX - clientX, clientX: e.clientX})
         }
     };
 
@@ -545,9 +542,9 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                                       className={`conversationSlide ${
                                           activeChat?.guid === chat.guid ? "activeChat" : ""
                                       }`}
-                                      //   onMouseDown={e => this.onMouseDown(e, chat)}
-                                      //   onMouseUp={e => this.onMouseUp(e)}
-                                      //   onMouseMove={e => this.onMouseMove(e, chat)}
+                                      onMouseDown={e => this.onMouseDown(e, chat)}
+                                      onMouseUp={e => this.onMouseUp(e)}
+                                      onMouseMove={e => this.onMouseMove(e, chat)}
                                   >
                                       {hasNotification ? (
                                           <div className="notification" />
