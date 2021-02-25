@@ -295,47 +295,60 @@ class BackendServer {
 
         let now = new Date().getTime();
 
-        // First, fetch the corresponding contacts from the server
-        const results: ResponseFormat = await new Promise((resolve, _) =>
-            this.socketService.server.emit("get-contacts-from-vcf", null, resolve)
-        );
+        try {
+            // First, fetch the corresponding contacts from the server
+            const results: ResponseFormat = await new Promise((resolve, _) =>
+                this.socketService.server.emit("get-contacts-from-vcf", null, resolve)
+            );
 
-        this.setSyncStatus({ message: "Updating Contacts...", completed: false, error: false });
+            this.setSyncStatus({ message: "Updating Contacts...", completed: false, error: false });
 
-        if (results.status !== 200) throw new Error(results.error.message);
-        console.log("Parsing VCF file from server");
+            if (results.status !== 200) throw new Error(results.error.message);
+            console.log("Parsing VCF file from server");
 
-        // Parse the contacts
-        const contacts = parseVCards(results.data as string);
-        console.log(`Found ${contacts.length} contacts in VCF file. Saving.`);
+            // Parse the contacts
+            const contacts = parseVCards(results.data as string);
+            console.log(`Found ${contacts.length} contacts in VCF file. Saving.`);
 
-        // Get handles and compare
-        const handles = await this.chatRepo.getHandles();
+            // Get handles and compare
+            const handles = await this.chatRepo.getHandles();
 
-        // Check if there is a contact for each handle's address
-        now = new Date().getTime();
-        for (const handle of handles) {
-            for (const contact of contacts) {
-                if (
-                    sanitizeAddress(handle.address, handle.country) === sanitizeAddress(contact.address, handle.country)
-                ) {
-                    const updateData: DeepPartial<Handle> = {};
-                    if (contact.firstName || contact.lastName) {
-                        updateData.firstName = contact.firstName ?? "";
-                        updateData.lastName = contact.lastName ?? "";
+            // Check if there is a contact for each handle's address
+            now = new Date().getTime();
+            for (const handle of handles) {
+                for (const contact of contacts) {
+                    if (
+                        sanitizeAddress(handle.address, handle.country) ===
+                        sanitizeAddress(contact.address, handle.country)
+                    ) {
+                        const updateData: DeepPartial<Handle> = {};
+                        if (contact.firstName || contact.lastName) {
+                            updateData.firstName = contact.firstName ?? "";
+                            updateData.lastName = contact.lastName ?? "";
+                        }
+
+                        if (contact.avatar) updateData.avatar = contact.avatar;
+
+                        // Update the user only if there a non-null name
+                        if (Object.keys(updateData).length > 0) await this.chatRepo.updateHandle(handle, updateData);
                     }
-
-                    if (contact.avatar) updateData.avatar = contact.avatar;
-
-                    // Update the user only if there a non-null name
-                    if (Object.keys(updateData).length > 0) await this.chatRepo.updateHandle(handle, updateData);
                 }
             }
+
+            console.log("Finished importing contacts from server. Reloading window.");
+            this.setSyncStatus({ message: "Sync Finished", completed: true, error: false });
+            this.window.reload();
+        } catch (ex) {
+            console.error("Failed to fetch VCF from server! Error:");
+            console.error(ex);
+
+            this.setSyncStatus({ message: "Failed to Fetch Contacts!", completed: true, error: true });
         }
 
-        console.log("Finished importing contacts from server. Reloading window.");
-        this.setSyncStatus({ message: "Sync Finished", completed: true, error: false });
-        this.window.reload();
+        // After 5 seconds, reset the status to something generic
+        setTimeout(() => {
+            this.setSyncStatus({ message: "Connected", completed: true, error: false });
+        }, 5000);
     }
 
     /**
