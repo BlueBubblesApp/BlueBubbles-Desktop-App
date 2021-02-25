@@ -32,7 +32,7 @@ export class ChatRepository {
 
         this.db = await createConnection({
             name: "chat",
-            type: "better-sqlite3",
+            type: "sqlite",
             database: dbPath,
             entities: [Attachment, Chat, Handle, Message],
             synchronize: isDev,

@@ -30,7 +30,7 @@ export class ConfigRepository {
 
         this.db = await createConnection({
             name: "config",
-            type: "better-sqlite3",
+            type: "sqlite",
             database: dbPath,
             entities: [Config, Theme],
             synchronize: isDev,

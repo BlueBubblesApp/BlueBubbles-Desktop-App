@@ -1,5 +1,5 @@
 {
-   "type": "better-sqlite3",
+   "type": "sqlite",
    "synchronize": true,
    "logging": false,
    "database": "src/main/server/db/messaging.sqlite",
