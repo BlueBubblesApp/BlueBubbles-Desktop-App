@@ -72,8 +72,8 @@ class BackendServer {
 
         // Set a default sync status (defaults to being in progress)
         this.syncStatus = {
-            completed: false,
-            message: "Syncing...",
+            completed: true,
+            message: "",
             error: false
         };
     }
@@ -349,6 +349,11 @@ class BackendServer {
             return;
         }
 
+        // If we are not completed syncing don't re-sync
+        if (!this.syncStatus.completed) return;
+
+        this.setSyncStatus({ message: "Syncing...", error: false, completed: false });
+
         const now = new Date();
         const lastFetch = this.configRepo.get("lastFetch");
         if (!lastFetch) {
@@ -461,9 +466,27 @@ class BackendServer {
             // First, emit the chat to the front-end
             this.emitToUI("chat", chat);
 
-            // Second, save the chat to the database
-            const chatObj = ChatRepository.createChatFromResponse(chat);
-            const savedChat = await this.chatRepo.saveChat(chatObj);
+            const chatObj: Chat = ChatRepository.createChatFromResponse(chat);
+            let savedChat: Chat | null = null;
+
+            const tries = 3;
+            let err = "Unknown";
+            for (let i = 0; i < tries; i += 1) {
+                try {
+                    // Second, save the chat to the database
+                    savedChat = await this.chatRepo.saveChat(chatObj);
+                } catch (ex) {
+                    // If it fails, just try again for now
+                    err = ex.message;
+                }
+            }
+
+            // If we still can't get the chat, skip the chat
+            if (!savedChat) {
+                console.error("Failed to save chat! Error:");
+                console.error(err);
+                continue;
+            }
 
             // Third, save the participants for the chat
             for (const participant of chat.participants ?? []) {

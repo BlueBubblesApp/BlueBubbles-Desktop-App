@@ -53,7 +53,11 @@ export class FCMService {
                 const { serverUrl } = value.val();
                 console.log(`Setting new server URL: ${serverUrl}`);
 
-                // Save the new server address
+                // If the addresses are the same, don't restart or set the URL
+                const currentAddr = Server().configRepo.get("serverAddress") as string;
+                if (serverUrl.trim().toLowerCase() === currentAddr.trim().toLowerCase()) return;
+
+                // Save the new server address if it's different
                 await Server().configRepo.set("serverAddress", serverUrl);
 
                 // Restart the socket
