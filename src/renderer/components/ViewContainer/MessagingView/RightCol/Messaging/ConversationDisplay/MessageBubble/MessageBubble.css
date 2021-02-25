@@ -350,10 +350,12 @@
 }
 
 .attachmentContainer {
-    max-height: 40%;
-    max-width: 40%;
-    min-width: 40%;
+    max-width: 45%;
     position: relative;
+}
+
+.attachmentContainer > img {
+    border: 1.5px solid var(--main-title-color);
 }
 
 .Attachment {
@@ -421,6 +423,7 @@
     flex-direction: column;
     margin: 0 0 0 40px;
     animation: fade 0.25s ease-in-out;
+    max-width: 50%;
 }
 
 .IncomingLink {
@@ -428,13 +431,11 @@
     justify-content: flex-start;
     align-items: center;
     margin: 0 0 0 0px;
+    max-width: 50%;
 }
 
 .IncomingLink > div > .Attachment {
     border-radius: 15px 15px 0 0;
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
 }
 
 .OutgoingLink {
@@ -442,13 +443,12 @@
     justify-content: flex-end;
     align-items: center;
     margin: 0;
+    max-width: 50%;
+    float: right;
 }
 
 .OutgoingLink > div > .Attachment {
     border-radius: 15px 15px 0 0;
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
 }
 
 .linkBottomDiv {
@@ -500,7 +500,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    max-width: 50%;
+    max-width: 90%;
     transition: ease-in-out 0.15s;
 }
 
@@ -628,24 +628,17 @@
     }
 }
 
-@media (max-width: 1000px) {
-    .OutgoingMessage {
-        max-width: 75% !important;
-    }
-
-    .IncomingMessage {
-        max-width: 75% !important;
-    }
-}
-
 @media (max-width: 700px) {
     .OutgoingMessage {
         max-width: 85% !important;
     }
 
     .attachmentContainer {
-        max-width: 60% !important;
-        min-width: 60% !important;
+        max-width: 80% !important;
+    }
+
+    .linkContainer {
+        max-width: 100% !important;
     }
 
     .IncomingMessage {
@@ -654,28 +647,30 @@
 }
 
 @media (max-width: 1000px) {
+    .OutgoingMessage {
+        max-width: 75% !important;
+    }
+
+    .IncomingMessage {
+        max-width: 75% !important;
+    }
+
     .attachmentContainer {
-        max-height: 45%;
-        max-width: 45%;
-        min-width: 45%;
+        max-width: 45% !important;
     }
 
     .linkContainer {
-        max-width: 45%;
-        min-width: 45%;
+        max-width: 95% !important;
     }
 }
 
 @media (max-width: 900px) {
     .attachmentContainer {
-        max-height: 50%;
-        max-width: 50%;
-        min-width: 50%;
+        max-width: 65% !important;
     }
 
     .linkContainer {
-        max-width: 50%;
-        min-width: 50%;
+        max-width: 90% !important;
     }
 }
 

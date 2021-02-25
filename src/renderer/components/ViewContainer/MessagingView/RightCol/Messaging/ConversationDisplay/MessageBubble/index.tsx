@@ -253,7 +253,7 @@ class MessageBubble extends React.Component<Props, State> {
                                             left: `${messageCords.left - 295 + messageCords.width / 2}px`
                                         }}
                                         draggable="false"
-                                        onLoad={this.delayedScroll}
+                                        onLoad={this.stb}
                                     />
                                 ) : (
                                     <img
@@ -266,7 +266,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         onContextMenu={e => this.handleImageRightClick(e)}
                                         onError={setFallbackImage}
                                         draggable="false"
-                                        onLoad={this.delayedScroll}
+                                        onLoad={this.stb}
                                         // style={{left: `${messageCords.left - 295 + messageCords.width/2}px`}}
                                     />
                                 )}
@@ -287,7 +287,7 @@ class MessageBubble extends React.Component<Props, State> {
                         onError={setFallbackImage}
                         style={{ opacity: attachment.guid.includes("temp") ? 0.6 : 1 }}
                         draggable="false"
-                        onLoad={this.delayedScroll}
+                        onLoad={this.stb}
                     />
                 );
             }
@@ -311,7 +311,7 @@ class MessageBubble extends React.Component<Props, State> {
                                 ? (e.target as HTMLVideoElement).play()
                                 : (e.target as HTMLVideoElement).pause()
                         }
-                        onLoad={this.delayedScroll}
+                        onLoad={this.stb}
                     >
                         <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
                     </video>
@@ -443,10 +443,8 @@ class MessageBubble extends React.Component<Props, State> {
         return false;
     };
 
-    delayedScroll() {
-        setTimeout(() => {
-            ipcRenderer.invoke("send-to-ui", { event: "scroll-to-bottom" });
-        }, 250);
+    stb() {
+        ipcRenderer.invoke("send-to-ui", { event: "scroll-to-bottom" });
     }
 
     async componentDidMount() {
@@ -503,7 +501,7 @@ class MessageBubble extends React.Component<Props, State> {
                         linkPrev.title = linkPrev.description;
                     }
 
-                    this.setState({ linkPrev }, this.delayedScroll);
+                    this.setState({ linkPrev }, this.stb);
                 } catch (ex) {
                     console.error(ex);
                 }
@@ -517,7 +515,7 @@ class MessageBubble extends React.Component<Props, State> {
                         linkPrev.title = linkPrev.description;
                     }
 
-                    this.setState({ linkPrev }, this.delayedScroll);
+                    this.setState({ linkPrev }, this.stb);
                 } catch (ex) {
                     console.error(ex);
                 }
@@ -1079,6 +1077,7 @@ class MessageBubble extends React.Component<Props, State> {
 
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
+
         const { attachments, linkPrev } = this.state;
         const { stickers } = this.state;
         const animationHeight = document.getElementById("messageView").offsetHeight;
@@ -1354,11 +1353,16 @@ class MessageBubble extends React.Component<Props, State> {
                                     >
                                         {avatar}
                                         <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
-                                            <div className={linkClassName} draggable="false">
+                                            <div
+                                                className={linkClassName}
+                                                draggable="false"
+                                                style={{ maxWidth: linkPrev?.images ? "75%" : "100%" }}
+                                            >
                                                 <div
                                                     className="linkContainer"
                                                     id={message.guid}
                                                     onClick={() => openLink(links[0])}
+                                                    style={{ minWidth: linkPrev?.images ? "auto" : "100%" }}
                                                 >
                                                     {message.hasReactions === true ? (
                                                         <>

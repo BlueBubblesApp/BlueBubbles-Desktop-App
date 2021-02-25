@@ -14,7 +14,6 @@ import dndIconInactive from "./dnd-icon-inactive.png";
 import "./LeftConversationsNav.css";
 import Conversation from "./Conversation/Conversation";
 import IndividualAvatar from "./Conversation/Avatar/IndividualAvatar";
-import GroupAvatar from "./Conversation/Avatar/GroupAvatar";
 import { generateChatTitle } from "@renderer/helpers/utils";
 import PinnedGroupAvatar from "./Conversation/Avatar/PinnedGroupAvatar";
 
@@ -144,8 +143,10 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         ipcRenderer.invoke("send-to-ui", { event: "toggle-giphy-selector", contents: false });
         ipcRenderer.invoke("set-chat-last-viewed", { chat, lastViewed: now });
 
-        if (chat === null) {
-            this.setState({ activeChat: null });
+        // Set the active chat
+        this.setState({ activeChat: chat });
+
+        if (!chat) {
             // Remove old attibutes
             try {
                 const p = document.querySelectorAll(".cls-2-active");
@@ -160,10 +161,10 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                 document.getElementsByClassName("activeColor2")[0].classList.remove("activeColor2");
                 document.getElementsByClassName("activeColor3")[0].classList.remove("activeColor3");
             } catch {}
+
             return;
         }
 
-        this.setState({ activeChat: chat });
         this.removeNotification(chat.guid, now);
 
         const config = { isDetailsOpen: false };

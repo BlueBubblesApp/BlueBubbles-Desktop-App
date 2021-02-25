@@ -22,6 +22,10 @@
       "test:e2e": "jest '(\\/test\\/e2e/).*'",
       "pack": "npm run build && electron-builder --dir",
       "dist": "npm run build && electron-builder",
+      "dist-all": "npm run build && npm run dist-win && npm run dist-linux && npm run dist-osx",
+      "dist-win": "electron-builder build --win --publish never",
+      "dist-linux": "electron-builder build --linux --publish never",
+      "dist-osx": "electron-builder build --mac --publish never",
       "postinstall": "electron-builder install-app-deps"
    },
    "husky": {

@@ -33,7 +33,7 @@ const instantiateTray = () => {
             tray = new Tray(path.join(FileSystem.resources, "icons", "macos", "tray-icon-dark.png"));
         }
     } else {
-        tray = new Tray(path.join(FileSystem.resources, "icons", "icon.ico"));
+        tray = new Tray(path.join(FileSystem.resources, "icons", "64x64.png"));
     }
 };
 

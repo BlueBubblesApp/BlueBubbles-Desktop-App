@@ -4,7 +4,6 @@ import * as React from "react";
 import { ipcRenderer } from "electron";
 import { Chat as DBChat, Handle, Message as DBMessage } from "@server/databases/chat/entity";
 import { getDateText, getSender, getTimeText } from "@renderer/helpers/utils";
-import { ValidTapback } from "@server/types";
 
 import "./RightConversationDisplay.css";
 import { Theme } from "@server/databases/config/entity";
@@ -29,8 +28,8 @@ type State = {
     theme: any;
     chat: Chat;
     showScrollToBottom: boolean;
-    myLastMessage: Message;
     lastReadMessage: Message;
+    lastDeliveredMessage: Message;
 };
 
 type Message = DBMessage & {
@@ -75,8 +74,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
             chat: this.props.chat,
             theme: "",
             showScrollToBottom: false,
-            myLastMessage: null,
-            lastReadMessage: null
+            lastReadMessage: null,
+            lastDeliveredMessage: null
         };
     }
 
@@ -85,7 +84,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
             const { message } = payload;
 
             // If the message isn't for this chat, ignore it
-            if (!message.chats || message.chats[0].guid !== this.props.chat.guid) return;
+            if (!message?.chats || message?.chats[0].guid !== this.props.chat.guid) return;
 
             // Convert the message to a message with a tempGuid
             const msg = message as Message;
@@ -98,11 +97,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
         ipcRenderer.on("add-message", async (_, message: Message) => {
             // Otherwise, add the message to the state
             await this.addMessagesToState([message]);
-
-            if (message.associatedMessageGuid) return;
-
-            // Scroll to bottom on new message
-            this.scrollToBottom();
         });
 
         ipcRenderer.on("typing-indicator", (_, res) => {
@@ -231,8 +225,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
         this.setState(
             {
                 messages: [],
-                myLastMessage: null,
                 lastReadMessage: null,
+                lastDeliveredMessage: null,
                 showScrollToBottom: false
             },
             () => {
@@ -249,35 +243,22 @@ class RightConversationDisplay extends React.Component<Props, State> {
     tryUpdateMessageMarkers(msg: Message) {
         if (!msg?.isFromMe) return;
 
-        let { myLastMessage, lastReadMessage } = this.state;
-
-        let lastChange = false;
-        if (
-            myLastMessage == null ||
-            (myLastMessage?.dateCreated != null &&
-                msg.dateCreated != null &&
-                msg.dateCreated > myLastMessage.dateCreated &&
-                msg.guid !== myLastMessage.guid)
-        ) {
-            myLastMessage = msg;
-            lastChange = true;
-        }
-
-        let lastRead = false;
-        if (
-            (lastReadMessage == null && msg.dateRead != null) ||
-            (lastReadMessage?.dateRead != null &&
-                msg.dateRead != null &&
-                msg.dateRead > lastReadMessage.dateRead &&
-                msg.guid !== lastReadMessage.guid)
-        ) {
-            lastReadMessage = msg;
-            lastRead = true;
-        }
-
+        let { lastReadMessage, lastDeliveredMessage } = this.state;
         const update: Partial<State> = {};
-        if (lastRead) update.myLastMessage = myLastMessage;
-        if (lastChange) update.lastReadMessage = lastReadMessage;
+        const msgDelivered = msg?.dateDelivered ?? 0;
+        const msgRead = msg?.dateRead ?? 0;
+        const lastReadMsg = lastReadMessage?.dateRead ?? 0;
+        const lastDeliveredMsg = lastDeliveredMessage?.dateDelivered ?? 0;
+
+        if (msgRead > 0 && msgRead > lastReadMsg && msg.guid !== lastReadMessage?.guid) {
+            lastReadMessage = msg;
+            update.lastReadMessage = lastReadMessage;
+        }
+
+        if (msgDelivered > 0 && msgDelivered > lastDeliveredMsg && msg.guid !== lastDeliveredMessage?.guid) {
+            lastDeliveredMessage = msg;
+            update.lastDeliveredMessage = lastDeliveredMessage;
+        }
 
         if (Object.keys(update).length > 0) {
             this.setState(update as State);
@@ -310,9 +291,11 @@ class RightConversationDisplay extends React.Component<Props, State> {
             view.scrollTo(0, newSize - currentSize);
         }
 
-        // Default to true
+        // Default to false on scroll
         shouldAutoScroll = false;
-        if (e.currentTarget.scrollTop === e.currentTarget.scrollHeight - e.currentTarget.offsetHeight) {
+
+        // If the distance from the bottom is less than 50, assume auto scroll
+        if (Math.abs(offsetFromBottom) < 50) {
             shouldAutoScroll = true;
         }
     }
@@ -388,6 +371,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
         // Update the markers
         for (const i of outputMessages) {
+            if (i.associatedMessageGuid) continue;
             this.tryUpdateMessageMarkers(i);
         }
 
@@ -395,6 +379,10 @@ class RightConversationDisplay extends React.Component<Props, State> {
         await new Promise((resolve, _) =>
             this.setState({ messages: outputMessages.filter(i => !i.associatedMessageGuid) }, () => resolve(null))
         );
+
+        if (shouldAutoScroll) {
+            this.scrollToBottom();
+        }
 
         // Asynchronously fetch the reactions
         this.fetchReactions(messageList);
@@ -457,7 +445,7 @@ class RightConversationDisplay extends React.Component<Props, State> {
         // Compare the height to see if the element has scrollable content
         const hasScrollableContent = ele.scrollHeight > ele.clientHeight;
 
-        // It's not enough because the element's `overflow-y` style can be set as
+        // It's not eno6666 because the element's `overflow-y` style can be set as
         // * `hidden`
         // * `hidden !important`
         // In those cases, the scrollbar isn't shown
@@ -474,16 +462,14 @@ class RightConversationDisplay extends React.Component<Props, State> {
 
     shouldShow(message: Message) {
         // If we have no delivered date, don't show anything
-        if (message.dateDelivered === null) return false;
-
-        // If the passed params are null, try to get it from the current chat
-        if (this.state.myLastMessage === null || this.state.lastReadMessage === null) return false;
+        if (!message.dateDelivered) return false;
 
         if (
-            message.guid === this.state.myLastMessage.guid ||
-            (message.dateDelivered !== null && this.state.myLastMessage.dateDelivered === null)
-        )
+            (this.state.lastReadMessage && message.guid === this.state.lastReadMessage.guid) ||
+            (this.state.lastDeliveredMessage && message.guid === this.state.lastDeliveredMessage.guid)
+        ) {
             return true;
+        }
 
         // If all else fails, return what our parent wants
         return false;

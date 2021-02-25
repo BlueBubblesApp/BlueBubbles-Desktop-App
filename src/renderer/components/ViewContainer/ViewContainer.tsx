@@ -20,7 +20,7 @@ const handleHotKeys = (e: KeyboardEvent) => {
         // Pass
     }
 
-    if (index instanceof Number) {
+    if (!Number.isNaN(index) && typeof index === "number") {
         // If 0 is used, convert it to 10
         if (index === 0) index = 10;
 

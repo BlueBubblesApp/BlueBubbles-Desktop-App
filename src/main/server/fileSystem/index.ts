@@ -12,9 +12,21 @@ import { StorageData } from "./types";
 
 let subdir = "";
 let moddir = "app.asar.unpacked";
-let appPath = __dirname.replace("/app.asar/dist", "");
+let appPath = __dirname;
+
+if (process.platform === "win32") {
+    appPath = appPath.replace("\\app.asar\\dist", "");
+} else {
+    appPath = appPath.replace("/app.asar/dist", "");
+}
+
 if (process.env.NODE_ENV !== "production") {
-    appPath = __dirname.replace("/dist", "");
+    if (process.platform === "win32") {
+        appPath = appPath.replace("\\dist", "");
+    } else {
+        appPath = __dirname.replace("/dist", "");
+    }
+
     subdir = "BlueBubbles-Desktop-App";
     moddir = "";
 }

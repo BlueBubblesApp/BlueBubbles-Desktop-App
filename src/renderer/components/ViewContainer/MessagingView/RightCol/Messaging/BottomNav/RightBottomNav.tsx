@@ -97,6 +97,9 @@ class RightBottomNav extends React.Component<Props, State> {
                 this.setState({
                     showEmojiPicker: false
                 });
+
+                // Focus the main input
+                input.focus();
             }
         });
 
