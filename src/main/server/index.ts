@@ -248,6 +248,22 @@ class BackendServer {
         this.servicesStarted = true;
     }
 
+    resetSyncStatus(delay = false, ms = 5000) {
+        const func = () => {
+            if (this.socketService.server.connected) {
+                this.setSyncStatus({ message: "Connected", completed: true, error: false });
+            } else {
+                this.setSyncStatus({ message: "Disconnected", completed: true, error: true });
+            }
+        };
+
+        if (delay) {
+            setTimeout(func, ms);
+        } else {
+            func();
+        }
+    }
+
     async fetchContactsFromServerDb(): Promise<void> {
         console.log("Fetching contacts from server's Contacts Database...");
         this.setSyncStatus({ message: "Fetching Contacts...", completed: false, error: false });
@@ -344,11 +360,6 @@ class BackendServer {
 
             this.setSyncStatus({ message: "Failed to Fetch Contacts!", completed: true, error: true });
         }
-
-        // After 5 seconds, reset the status to something generic
-        setTimeout(() => {
-            this.setSyncStatus({ message: "Connected", completed: true, error: false });
-        }, 5000);
     }
 
     /**
@@ -356,7 +367,7 @@ class BackendServer {
      * This is what the server itself calls when it is refreshed or reloaded.
      * The front-end _should not_ call this function.
      */
-    async syncWithServer(syncContacts): Promise<void> {
+    async syncWithServer(syncContacts: boolean): Promise<void> {
         if (!this.socketService?.server?.connected) {
             console.warn("Cannot fetch chats when no socket is connected!");
             return;
@@ -390,6 +401,8 @@ class BackendServer {
             } catch (ex) {
                 this.setSyncStatus({ message: ex.message, error: true, completed: true });
             }
+
+            this.resetSyncStatus(true);
         }
 
         // Save the last fetch date
