@@ -30,6 +30,8 @@ const handleHotKeys = (e: KeyboardEvent) => {
 
         ipcRenderer.invoke("send-to-ui", { event: "set-current-chat-index", contents: index });
     } else if (e.shiftKey && e.key === "Tab") {
+        ipcRenderer.invoke("send-to-ui", { event: "decrement-current-chat-index" });
+    } else {
         ipcRenderer.invoke("send-to-ui", { event: "increment-current-chat-index" });
     }
 };
