@@ -329,19 +329,24 @@ class MessageBubble extends React.Component<Props, State> {
             // Nothing
         }
 
-        if (this.mounted) {
-            // Get the delivered text
-            getStatusText(this.props.message).then(statusText => {
-                if (this.mounted) {
-                    this.setState({ statusText });
-                }
-            });
+        this.mounted = true;
 
-            document.addEventListener("click", e => {
-                e.preventDefault();
+        // Get the delivered text
+        getStatusText(this.props.message).then(statusText => {
+            if (this.mounted) {
+                this.setState({ statusText });
+            }
+        });
+
+        document.addEventListener("click", e => {
+            e.preventDefault();
+
+            if (this.mounted) {
                 this.setState({ showContextMenu: false });
-            });
+            }
+        });
 
+        if (this.mounted) {
             const { message } = this.props;
 
             if (
