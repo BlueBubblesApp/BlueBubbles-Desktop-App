@@ -504,7 +504,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                                         <div className="pinnedBottomDiv">
                                             <p id="pinned-chat-title">
                                                 {generateChatTitle(chat)}
-                                                {hasNotification ? <div className="pinnedNotification" /> : null}
+                                                {hasNotification ? <span className="pinnedNotification" /> : null}
                                             </p>
                                             <p className="message-snip-example">
                                                 {chat.lastMessage.subject ?? chat.lastMessage.text}
