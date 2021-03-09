@@ -1,26 +1,17 @@
-/* eslint-disable react/sort-comp */
-/* eslint-disable prefer-template */
-/* eslint-disable no-unused-expressions */
-/* eslint-disable jsx-a11y/media-has-caption */
-/* eslint-disable react/prefer-stateless-function */
-/* eslint-disable max-len */
-/* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable react/self-closing-comp */
 import * as React from "react";
 import * as path from "path";
 import * as fs from "fs";
-import { Attachment, Chat, Message } from "@server/databases/chat/entity";
+import { Chat, Message } from "@server/databases/chat/entity";
 import { getSender, generateDetailsIconText, parseAppleLocation } from "@renderer/helpers/utils";
 import "./DetailsDisplay.css";
 import { Map, Marker, TileLayer } from "react-leaflet";
 import { ipcRenderer, remote } from "electron";
 import { supportedVideoTypes, supportedAudioTypes } from "@renderer/helpers/constants";
-import CloseIcon from "@renderer/components/TitleBar/close.png";
 import UnknownImage from "@renderer/assets/img/unknown_img.png";
+import { Config } from "@renderer/helpers/configSingleton";
 import { AttachmentDownload } from "../../Messaging/ConversationDisplay/MessageBubble/@types";
 import DetailContact from "./Contact/DetailContact";
 import DownloadProgress from "../../Messaging/ConversationDisplay/MessageBubble/DownloadProgress/DownloadProgress";
-import UnsupportedMedia from "../../Messaging/ConversationDisplay/MessageBubble/UnsupportedMedia";
 import AudioDisplay from "./AudioDisplay/AudioDisplay";
 import BubbleChatIcons from "./BubbleChatIcons/BubbleChatIcons";
 
@@ -51,9 +42,9 @@ class DetailsDisplay extends React.Component<Props, State> {
     }
 
     async componentDidMount() {
-        const config = await ipcRenderer.invoke("get-config");
+        await Config().refresh();
 
-        if (config.allMutedChats.includes(this.props.chat.guid)) {
+        if (Config().config.allMutedChats.includes(this.props.chat.guid)) {
             this.setState({ isChatMuted: true });
         }
 
@@ -157,10 +148,6 @@ class DetailsDisplay extends React.Component<Props, State> {
         e.currentTarget.src = UnknownImage;
     };
 
-    toggleShowAllContacts() {
-        this.setState({ showAllContacts: !this.state.showAllContacts });
-    }
-
     renderAttachment = (attachment: AttachmentDownload) => {
         if (attachment.progress === 100) {
             const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
@@ -215,13 +202,15 @@ class DetailsDisplay extends React.Component<Props, State> {
 
             if (attachment.mimeType === "text/x-vlocation") {
                 const longLat = parseAppleLocation(attachment.data);
-                const position = [longLat.longitude, longLat.latitude];
-                return (
-                    <Map center={position} zoom={13} className="Attachment MapLeaflet" key={attachment.guid}>
-                        <TileLayer url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}" />
-                        <Marker position={position} />
-                    </Map>
-                );
+                if (longLat) {
+                    const position = [longLat.longitude, longLat.latitude];
+                    return (
+                        <Map center={position} zoom={13} className="Attachment MapLeaflet" key={attachment.guid}>
+                            <TileLayer url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}" />
+                            <Marker position={position} />
+                        </Map>
+                    );
+                }
             }
 
             return (
@@ -246,11 +235,8 @@ class DetailsDisplay extends React.Component<Props, State> {
     toggleChatMuted = async () => {
         this.setState({ isChatMuted: !this.state.isChatMuted });
 
-        const config = await ipcRenderer.invoke("get-config");
         let finalMuteString = "";
-        const x = config.allMutedChats.split(",");
-
-        console.log(x);
+        const x = Config().config.allMutedChats.split(",");
 
         // If the chat is already in the mute string, remove it
         if (x.includes(this.props.chat.guid)) {
@@ -266,6 +252,10 @@ class DetailsDisplay extends React.Component<Props, State> {
         const newConfig = { allMutedChats: finalMuteString };
         await ipcRenderer.invoke("set-config", newConfig);
     };
+
+    toggleShowAllContacts() {
+        this.setState({ showAllContacts: !this.state.showAllContacts });
+    }
 
     render() {
         const participants = {
@@ -289,10 +279,10 @@ class DetailsDisplay extends React.Component<Props, State> {
                 if (!name || name === "undefined") return;
                 if (i >= 3) return;
                 if (i === participants.initials.length - 1) {
-                    finalString += "and " + participants.initials[i];
+                    finalString += `and ${participants.initials[i]}`;
                     return;
                 }
-                finalString += participants.initials[i] + ", ";
+                finalString += `${participants.initials[i]}, `;
             });
 
             if (participants.initials.length > 3) {
@@ -359,13 +349,14 @@ class DetailsDisplay extends React.Component<Props, State> {
                             <p>Mute Chat</p>
                         </div>
                         <div id="muteChatRight" onClick={() => this.toggleChatMuted()}>
+                            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                             <label className="form-switch">
                                 <input
                                     type="checkbox"
                                     checked={this.state.isChatMuted}
                                     onChange={() => this.toggleChatMuted()}
                                 />
-                                <i></i>
+                                <i />
                             </label>
                         </div>
                     </div>

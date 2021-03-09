@@ -124,6 +124,9 @@ class BackendServer {
                     throw err;
                 });
         }
+
+        // Load all gradients into handles
+        await this.chatRepo.fillHandleColors();
     }
 
     /**
@@ -302,7 +305,10 @@ class BackendServer {
 
         this.setSyncStatus({ message: "Sync Finished", completed: true, error: false });
         console.log("Finished importing contacts from server. Reloading window.");
-        this.window.reload();
+
+        if (this.window) {
+            this.window.reload();
+        }
     }
 
     async fetchContactsFromServerVcf(): Promise<void> {
@@ -353,7 +359,10 @@ class BackendServer {
 
             console.log("Finished importing contacts from server. Reloading window.");
             this.setSyncStatus({ message: "Sync Finished", completed: true, error: false });
-            this.window.reload();
+
+            if (this.window) {
+                this.window.reload();
+            }
         } catch (ex) {
             console.error("Failed to fetch VCF from server! Error:");
             console.error(ex);
@@ -435,6 +444,7 @@ class BackendServer {
         this.emitToUI("setup-update", emitData);
 
         let count = 1;
+        const savedMessages = [];
         for (const message of messages) {
             // Iterate over the chats that are associated with the message
             for (const chat of message.chats ?? []) {
@@ -446,6 +456,9 @@ class BackendServer {
                     // Create the message and link it to the chat
                     const msg = ChatRepository.createMessageFromResponse(message);
                     await this.chatRepo.saveMessage(savedChat, msg);
+
+                    // Add the saved message
+                    savedMessages.push(msg);
                 } catch (ex) {
                     console.error(`Failed to save message, [${message.guid}]`);
                     console.log(ex);
@@ -458,9 +471,11 @@ class BackendServer {
             if (emitData.syncProgress > 100) emitData.syncProgress = 100;
             console.log(emitData.loadingMessage);
             this.emitToUI("setup-update", emitData);
-            this.emitToUI("message", message);
             count += 1;
         }
+
+        // Emit all the saved messages to the UI
+        this.emitToUI("messages", savedMessages);
 
         emitData.loadingMessage = "Finished syncing messages";
         emitData.redirect = "/messaging";
@@ -867,7 +882,7 @@ class BackendServer {
                 );
             } catch (e) {
                 console.log(e);
-                console.log("FAIIIIIl");
+                console.log("Failed to send tapback!");
                 // const tapbackMes = payload.message as Message;
                 // tapbackMes.error = 500;
                 // this.chatRepo.saveMessage(payload.chat, tapbackMes);
@@ -934,13 +949,9 @@ class BackendServer {
                 // Check to see if a chat matching the address already exits and sets to current or makes a new chat
                 const chats = await this.chatRepo.getChats();
 
-                console.log(payload);
-
                 const checkIfAllChatAddressesMatch = (aChat: Chat) => {
                     let areAllEqual = true;
                     aChat.participants.forEach((handle: Handle, i) => {
-                        console.log(handle.address);
-                        console.log(payload.newChatAddresses[i]);
                         if (!payload.newChatAddresses.includes(handle.address)) {
                             areAllEqual = false;
                         }
@@ -956,7 +967,6 @@ class BackendServer {
                     );
                 });
 
-                console.log(newChats.length);
                 // If chat already exists
                 if (newChats.length === 1) {
                     this.emitToUI("set-current-new-chat", newChats[0]);
@@ -992,8 +1002,6 @@ class BackendServer {
                             const message: Message = ChatRepository.createMessage(attachMesPayload);
 
                             message.attachments.push(attachment);
-
-                            console.log(message);
 
                             // this.chatRepo.saveAttachment(newChats[0], message, attachment);
                             this.chatRepo.saveMessage(newChats[0], message);

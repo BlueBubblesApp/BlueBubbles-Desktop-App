@@ -5,11 +5,13 @@ import * as path from "path";
 import * as fs from "fs";
 import * as mime from "mime";
 
-import { createConnection, Connection, FindManyOptions, DeepPartial } from "typeorm";
+import { createConnection, Connection, FindManyOptions, DeepPartial, UsingJoinColumnIsNotAllowedError } from "typeorm";
 import { ChatResponse, HandleResponse, MessageResponse, AttachmentResponse } from "@server/types";
 
 import { Attachment, Chat, Handle, Message } from "./entity";
 import { GetMessagesParams, CreateMessageParams, CreateAttachmentParams } from "./types";
+import { getGradientIndex, gradientColorIndexMap } from "./entity/Handle";
+import { AddHandleColorColumn1615307901000 } from "./migration/1615307901000-addHandleColorColumn";
 
 export class ChatRepository {
     db: Connection = null;
@@ -35,12 +37,11 @@ export class ChatRepository {
             type: "sqlite",
             database: dbPath,
             entities: [Attachment, Chat, Handle, Message],
-            synchronize: isDev,
-            logging: false
+            logging: false,
+            migrationsTableName: "migrations",
+            migrationsRun: true,
+            migrations: [AddHandleColorColumn1615307901000]
         });
-
-        // Create the tables
-        if (!isDev) await this.db.synchronize();
 
         return this.db;
     }
@@ -267,6 +268,14 @@ export class ChatRepository {
         handle.uncanonicalizedId = res.uncanonicalizedId;
         handle.chats = (res.chats ?? []).map(chat => ChatRepository.createChatFromResponse(chat));
         handle.messages = (res.messages ?? []).map(msg => ChatRepository.createMessageFromResponse(msg));
+        handle.color = null;
+
+        // Get the color for the address
+        const idx = getGradientIndex(handle.address);
+        if (idx) {
+            handle.color = gradientColorIndexMap[idx].bgColor;
+        }
+
         return handle;
     }
 
@@ -444,7 +453,7 @@ export class ChatRepository {
         // Add the message to the chat if it doesn't already exist
         const chatIdx = (theMessage.chats ?? []).findIndex(i => i.ROWID === savedChat.ROWID);
         if (chatIdx === -1) {
-            theMessage.chats.push(savedChat);
+            theMessage.chats = [savedChat];
             await repo
                 .createQueryBuilder()
                 .relation(Message, "chats")
@@ -507,5 +516,18 @@ export class ChatRepository {
         }
 
         return theAttachment;
+    }
+
+    async fillHandleColors() {
+        // Get all handles that have a null color
+        const repo = this.db.getRepository(Handle);
+        const handles = await repo.find({ color: null });
+
+        // Iterate and fill the colors in
+        for (const handle of handles) {
+            if (!handle?.address) continue;
+            const gradientIdx = getGradientIndex(handle.address);
+            await repo.update({ ROWID: handle.ROWID }, { color: gradientColorIndexMap[gradientIdx].bgColor });
+        }
     }
 }

@@ -1,16 +1,3 @@
-/* eslint-disable no-nested-ternary */
-/* eslint-disable no-dupe-else-if */
-/* eslint-disable jsx-a11y/alt-text */
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable import/order */
-/* eslint-disable react/no-unused-state */
-/* eslint-disable react/sort-comp */
-/* eslint-disable no-loop-func */
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-unused-expressions */
-/* eslint-disable jsx-a11y/media-has-caption */
-/* eslint-disable class-methods-use-this */
-/* eslint-disable max-len */
 import * as React from "react";
 import { remote, ipcRenderer, IpcRendererEvent } from "electron";
 import * as fs from "fs";
@@ -21,6 +8,9 @@ import EmojiRegex from "emoji-regex";
 import ClickNHold from "react-click-n-hold";
 import { getLinkPreview } from "link-preview-js";
 import Confetti from "react-confetti";
+import FireworksCanvas from "fireworks-canvas";
+import data from "emoji-mart/data/apple.json";
+import { getEmojiDataFromNative, Emoji } from "emoji-mart";
 
 // Server imports
 import { Message as DBMessage, Chat } from "@server/databases/chat/entity";
@@ -33,32 +23,30 @@ import {
     getSender,
     parseAppleLocation,
     generateReactionsDisplayIconText,
-    bytesToSize
+    bytesToSize,
+    getGradient,
+    getAvatarGradientIndex
 } from "@renderer/helpers/utils";
-import { supportedVideoTypes, supportedAudioTypes } from "@renderer/helpers/constants";
+import { supportedVideoTypes, supportedAudioTypes, gradientColorIndexMap } from "@renderer/helpers/constants";
 import UnknownImage from "@renderer/assets/img/unknown_img.png";
 import defaultBlurhash from "@renderer/assets/default-blurhash.png";
+import { Theme } from "@server/databases/config/entity";
+import { Config } from "@renderer/helpers/configSingleton";
 
 // Relative imports
 import { AttachmentDownload } from "./@types";
-import DownloadProgress from "./DownloadProgress/DownloadProgress";
 import UnsupportedMedia from "./UnsupportedMedia";
-import ReactionParticipant from "./ReactionsDisplay/ReactionParticipant/ReactionParticipant";
 import ReactionsDisplay from "./ReactionsDisplay/ReactionsDisplay";
 
-import "./MessageBubble.css";
-import "leaflet/dist/leaflet.css";
 import NewReaction from "./NewReaction/NewReaction";
 import InChatReaction from "./InChatReaction/InChatReaction";
 import InChatAudio from "./InChatAudio/InChatAudio";
-import FireworksCanvas from "fireworks-canvas";
-import data from "emoji-mart/data/apple.json";
-import { getEmojiDataFromNative, Emoji } from "emoji-mart";
-import { Theme } from "@server/databases/config/entity";
+
+import "leaflet/dist/leaflet.css";
+import "./MessageBubble.css";
 
 const reactStringReplace = require("react-string-replace");
 const validUrl = require("valid-url");
-const seedrandom = require("seedrandom");
 
 // If we don't do this, the marker won't show
 // eslint-disable-next-line no-underscore-dangle
@@ -97,6 +85,7 @@ type State = {
     playMessageAnimation: boolean;
     stickers: AttachmentDownload[];
     linkPrev: any;
+    statusText: JSX.Element | null;
 };
 
 let subdir = "";
@@ -104,6 +93,11 @@ if (process.env.NODE_ENV !== "production") subdir = "BlueBubbles-Desktop-App";
 
 const baseDir = path.join(remote.app.getPath("userData"), subdir);
 const attachmentsDir = path.join(baseDir, "Attachments");
+let loadedAttachment = false;
+
+const stb = () => {
+    ipcRenderer.invoke("send-to-ui", { event: "scroll-to-bottom" });
+};
 
 const isSameSender = (message1: Message, message2: Message) => {
     if (!message1 || !message2) return false;
@@ -116,7 +110,11 @@ const isSameSender = (message1: Message, message2: Message) => {
 
 const isSupportedMime = (mimeType: string) => {
     if (!mimeType || mimeType.startsWith("image")) return true;
-    return mimeType.startsWith("audio") || mimeType.startsWith("video") || ["text/x-vlocation"].includes(mimeType);
+    return (
+        mimeType.startsWith("audio") ||
+        mimeType.startsWith("video") ||
+        ["text/x-vlocation", "text/vcard"].includes(mimeType)
+    );
 };
 
 const loadAttachmentData = (attachment: AttachmentDownload) => {
@@ -126,7 +124,7 @@ const loadAttachmentData = (attachment: AttachmentDownload) => {
     let encoding = "base64";
 
     // If it's a location card, read as utf-8
-    if (attachment.mimeType === "text/x-vlocation") encoding = "utf-8";
+    if (["text/x-vlocation", "text/vcard"].includes(attachment.mimeType)) encoding = "utf-8";
 
     // If it's an unsupported type, check for the converted video
     let output = null;
@@ -153,6 +151,10 @@ const loadAttachmentData = (attachment: AttachmentDownload) => {
         output = fs.readFileSync(fPath).toString(encoding);
     }
 
+    if (output) {
+        loadedAttachment = true;
+    }
+
     return output;
 };
 
@@ -168,9 +170,18 @@ const openAttachment = attachmentPath => {
     ipcRenderer.invoke("open-attachment", attachmentPath);
 };
 
-const getStatusText = (message: Message) => {
+const getStatusText = async (message: Message) => {
     if (message.dateRead) return <p className="MessageStatus">{`Read ${getDateText(new Date(message.dateRead))}`}</p>;
-    if (message.dateDelivered) return <p className="MessageStatus">Delivered</p>;
+    if (message.dateDelivered)
+        return (
+            <p className="MessageStatus">
+                {
+                    await (Config().get("showDeliveredTimestamps")
+                        ? `Delivered ${getDateText(new Date(message.dateDelivered))}`
+                        : "Delivered")
+                }
+            </p>
+        );
     return null;
 };
 
@@ -178,14 +189,118 @@ const openLink = link => {
     ipcRenderer.invoke("open-link", link);
 };
 
+const getBubbleGradient = handle => {
+    if (!Config().config.colorfulChatBubbles) return "#686868";
+    return handle?.color ?? "#686868";
+};
+
 const setFallbackImage = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = UnknownImage;
 };
+
+const buildAvatar = (message: Message, firstGradientNumber: number, useAvatar: boolean) => {
+    // Figure out if the message should show the handle avatar
+    if (message.isFromMe || !useAvatar) return null;
+
+    if (message.handle.avatar) {
+        return (
+            <img
+                key={message.guid}
+                src={message.handle.avatar}
+                style={{
+                    borderRadius: "50%",
+                    marginRight: "10px",
+                    minWidth: "25px"
+                }}
+                height="25px"
+                width="25px"
+                alt="avatar"
+            />
+        );
+    }
+
+    return (
+        <>
+            {generateReactionsDisplayIconText(message.handle) === "?" ? (
+                <svg
+                    style={{
+                        marginRight: "10px",
+                        minWidth: "25px"
+                    }}
+                    height="25px"
+                    width="25px"
+                    viewBox="0 0 1000 1000"
+                    key={message.guid}
+                >
+                    <defs>
+                        <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                            <stop className="stop1" offset="0%" stopColor="#686868" />
+                            <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                        </linearGradient>
+                    </defs>
+                    <circle
+                        className="cls-1"
+                        cx="50%"
+                        cy="50%"
+                        r="500"
+                        fill={`url(#ColoredGradient${getAvatarGradientIndex(message?.handle)})`}
+                    />
+                    <mask id="rmvProfile">
+                        <circle cx="50%" cy="50%" r="435" fill="white" />
+                    </mask>
+                    <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                    <circle className="cls-2" mask="url(#rmvProfile)" fill="white" cx="50%" cy="106%" r="400" />
+                </svg>
+            ) : (
+                <svg
+                    style={{
+                        marginRight: "10px",
+                        minWidth: "25px"
+                    }}
+                    height="25px"
+                    width="25px"
+                    viewBox="0 0 1000 1000"
+                    key={message.guid}
+                >
+                    <defs>
+                        <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                            <stop className="stop1" offset="0%" stopColor="#686868" />
+                            <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                        </linearGradient>
+                    </defs>
+                    <circle
+                        className="cls-1"
+                        fill={`url(#ColoredGradient${firstGradientNumber})`}
+                        cx="50%"
+                        cy="50%"
+                        r="50%"
+                    />
+                    <text
+                        style={{
+                            fontFamily: "SF Pro Rounded",
+                            fontWeight: 700,
+                            fontStyle: "normal",
+                            fontSize: generateReactionsDisplayIconText(message.handle).length >= 2 ? "500px" : "600px"
+                        }}
+                        className="cls-2"
+                        x="50%"
+                        y="69%"
+                        textAnchor="middle"
+                        fill="white"
+                    >
+                        {generateReactionsDisplayIconText(message.handle)}
+                    </text>
+                </svg>
+            )}
+        </>
+    );
+};
+
 let xPos;
 let yPos;
 
 class MessageBubble extends React.Component<Props, State> {
-    _isMounted = false;
+    private mounted = false;
 
     constructor(props) {
         super(props);
@@ -197,282 +312,16 @@ class MessageBubble extends React.Component<Props, State> {
             currentContextMenuElement: null,
             playMessageAnimation: false,
             stickers: [],
-            linkPrev: null
+            linkPrev: null,
+            statusText: null
         };
-    }
-
-    handleImageRightClick(e) {
-        xPos = `${e.pageX}px`;
-        yPos = `${e.pageY - 25}px`;
-        this.setState({ showContextMenu: true });
-        this.setState({ currentContextMenuElement: e.target });
-    }
-
-    async wait() {
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    // eslint-disable-next-line react/sort-comp
-    renderAttachment(attachment: AttachmentDownload) {
-        if (attachment.progress === 100) {
-            const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
-
-            if (attachment.uti.includes("coreaudio-format")) {
-                return (
-                    <UnsupportedMedia
-                        key={attachment.guid}
-                        attachment={attachment}
-                        onClick={() => openAttachment(attachmentPath)}
-                    />
-                );
-            }
-
-            // Render based on mime type
-            if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
-                const mime = attachment.mimeType ?? "image/pluginPayloadAttachment";
-
-                if (attachment.isSticker) {
-                    const messageDiv = document.getElementById(this.props.message.guid);
-
-                    if (messageDiv) {
-                        const messageCords = messageDiv.getBoundingClientRect();
-                        return (
-                            <>
-                                {this.props.message.isFromMe ? (
-                                    <img
-                                        key={attachment.guid}
-                                        id={attachmentPath}
-                                        className="Sticker"
-                                        src={`data:${mime};base64,${attachment.data}`}
-                                        alt={attachment.transferName}
-                                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
-                                        onContextMenu={e => this.handleImageRightClick(e)}
-                                        onError={setFallbackImage}
-                                        style={{
-                                            opacity: attachment.guid.includes("temp") ? 0.6 : 1,
-                                            left: `${messageCords.left - 295 + messageCords.width / 2}px`
-                                        }}
-                                        draggable="false"
-                                        onLoad={this.stb}
-                                    />
-                                ) : (
-                                    <img
-                                        key={attachment.guid}
-                                        id={attachmentPath}
-                                        className="Sticker"
-                                        src={`data:${mime};base64,${attachment.data}`}
-                                        alt={attachment.transferName}
-                                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
-                                        onContextMenu={e => this.handleImageRightClick(e)}
-                                        onError={setFallbackImage}
-                                        draggable="false"
-                                        onLoad={this.stb}
-                                        // style={{left: `${messageCords.left - 295 + messageCords.width/2}px`}}
-                                    />
-                                )}
-                            </>
-                        );
-                    }
-                }
-
-                return (
-                    <img
-                        key={attachment.guid}
-                        id={attachmentPath}
-                        className="Attachment"
-                        src={`data:${mime};base64,${attachment.data}`}
-                        alt={attachment.transferName}
-                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
-                        onContextMenu={e => this.handleImageRightClick(e)}
-                        onError={setFallbackImage}
-                        style={{ opacity: attachment.guid.includes("temp") ? 0.6 : 1 }}
-                        draggable="false"
-                        onLoad={this.stb}
-                    />
-                );
-            }
-
-            if (attachment.mimeType.startsWith("video") && attachment.data) {
-                let mime = attachment.mimeType;
-                if (!supportedVideoTypes.includes(mime)) mime = "video/mp4";
-                return (
-                    <video
-                        key={attachment.guid}
-                        id={attachment.guid}
-                        className="Attachment"
-                        autoPlay
-                        muted
-                        loop
-                        controls
-                        draggable="false"
-                        style={{ opacity: attachment.guid.includes("temp") ? 0.6 : 1 }}
-                        onClick={e =>
-                            (e.target as HTMLVideoElement).paused
-                                ? (e.target as HTMLVideoElement).play()
-                                : (e.target as HTMLVideoElement).pause()
-                        }
-                        onLoad={this.stb}
-                    >
-                        <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
-                    </video>
-                );
-            }
-
-            if (attachment.mimeType.startsWith("audio") && attachment.data) {
-                return <InChatAudio gradientMessages={this.props.gradientMessages} attachment={attachment} />;
-            }
-
-            if (attachment.mimeType === "text/x-vlocation") {
-                const longLat = parseAppleLocation(attachment.data);
-                const position = [longLat.longitude, longLat.latitude];
-                return (
-                    <Map center={position} zoom={13} className="Attachment MapLeaflet" key={attachment.guid}>
-                        <TileLayer url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}" />
-                        <Marker position={position} />
-                    </Map>
-                );
-            }
-
-            if (attachment.mimeType.includes("vcard")) {
-                const vCard = require("vcard");
-                // eslint-disable-next-line new-cap
-                const card = new vCard();
-
-                let vcfData;
-                card.readFile(attachmentPath, (err: any, json: any) => {
-                    vcfData = json;
-                });
-
-                const generateVCFIconText = json => {
-                    if (!json) {
-                        return "?";
-                    }
-                    if (json.FN) {
-                        if (json.FN.includes(" ")) {
-                            return json.FN.substr(0, 1) + json.FN.substr(json.FN.indexOf(" ") + 1, 1);
-                        }
-                        return json.FN.substr(0, 1);
-                    }
-                    return "?";
-                };
-
-                return (
-                    <div
-                        className="inChatContactCard"
-                        style={{
-                            backgroundColor: this.props.message.isFromMe
-                                ? "var(--outgoing-message-color)"
-                                : "var(--incoming-message-color)"
-                        }}
-                        onClick={() => openAttachment(attachmentPath)}
-                        draggable="false"
-                    >
-                        <span className="contactCardText">
-                            <span>Contact Card</span>
-                            {vcfData && vcfData.FN ? <p>{vcfData.FN}</p> : <p>Contact</p>}
-                        </span>
-                        <div>
-                            {generateVCFIconText(vcfData) === "?" ? (
-                                <svg height="35px" width="35px" viewBox="0 0 1000 1000">
-                                    <defs>
-                                        <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                            <stop className="stop1" offset="0%" stopColor="#686868" />
-                                            <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                        </linearGradient>
-                                    </defs>
-                                    <circle cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
-                                    <mask id="rmvProfile">
-                                        <circle cx="50%" cy="50%" r="435" fill="white" />
-                                    </mask>
-                                    <ellipse fill="white" cx="50%" cy="34%" rx="218" ry="234" />
-                                    <circle mask="url(#rmvProfile)" fill="white" cx="50%" cy="106%" r="400" />
-                                </svg>
-                            ) : (
-                                <svg height="35px" width="35px">
-                                    <defs>
-                                        <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                            <stop className="stop1" offset="0%" stopColor="#686868" />
-                                            <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                                        </linearGradient>
-                                    </defs>
-                                    <circle fill="url(#Gradient1)" cx="50%" cy="50%" r="50%" />
-                                    <text x="50%" y="69%" textAnchor="middle" fill="white" stroke="white">
-                                        {generateVCFIconText(vcfData)}
-                                    </text>
-                                </svg>
-                            )}
-                            <svg viewBox="0 0 574 1024">
-                                <path d="M10 9Q0 19 0 32t10 23l482 457L10 969Q0 979 0 992t10 23q10 9 24 9t24-9l506-480q10-10 10-23t-10-23L58 9Q48 0 34 0T10 9z" />
-                            </svg>
-                        </div>
-                    </div>
-                );
-            }
-
-            return (
-                <UnsupportedMedia
-                    key={attachment.guid}
-                    attachment={attachment}
-                    onClick={() => openAttachment(attachmentPath)}
-                />
-            );
-        }
-
-        return (
-            <div className="attachmentDownloadContainer" style={{ maxWidth: attachment.width === 0 ? "100%" : null }}>
-                <img style={{ height: "250px", width: "100%", borderRadius: "20px" }} src={defaultBlurhash} />
-                <div className="blurhashDownloadInfo">
-                    <p>Rendering Full Attachment</p>
-                    <div>
-                        <span style={{ width: `${attachment.progress}%` }} />
-                    </div>
-                    <p>{attachment.progress <= 0 ? "0%" : `${attachment.progress}%`}</p>
-                    <p>{attachment.transferName}</p>
-                    <p>{`(${bytesToSize(attachment.totalBytes)})`}</p>
-                </div>
-            </div>
-        );
-        // return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
-    }
-
-    isValidUrl = string => {
-        const regexp = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gim;
-        if (regexp.test(string)) {
-            return true;
-        }
-        return false;
-    };
-
-    stb() {
-        ipcRenderer.invoke("send-to-ui", { event: "scroll-to-bottom" });
     }
 
     async componentDidMount() {
         try {
             const parent = document.getElementById(this.props.message.guid);
-            if (this.props.colorfulChatBubbles && this.props.chat.participants.length > 1) {
-                let messageColor = "#686868";
-                if (this.props.message.handle) {
-                    const rng = seedrandom(this.props.message.handle.address);
-                    const rand1 = rng();
-
-                    if (rand1 <= 1 / 7) {
-                        messageColor = "#fd678d";
-                    } else if (rand1 > 1 / 7 && rand1 <= 2 / 7) {
-                        messageColor = "#ff534d";
-                    } else if (rand1 > 2 / 7 && rand1 <= 3 / 7) {
-                        messageColor = "#fea21c";
-                    } else if (rand1 > 3 / 7 && rand1 <= 4 / 7) {
-                        messageColor = "#ffca1c";
-                    } else if (rand1 > 4 / 7 && rand1 <= 5 / 7) {
-                        messageColor = "#5ede79";
-                    } else if (rand1 > 5 / 7 && rand1 <= 6 / 7) {
-                        messageColor = "#6bcff6";
-                    } else if (rand1 > 6 / 7 && rand1 <= 7 / 7) {
-                        messageColor = "#a78df3";
-                    }
-                }
-                parent.style.setProperty("--tail-colored-background", messageColor);
+            if (this.props.colorfulChatBubbles) {
+                parent.style.setProperty("--tail-colored-background", getGradient(this.props.message?.handle));
             } else {
                 parent.style.setProperty("--tail-colored-background", this.props.theme.incomingMessageColor);
             }
@@ -480,9 +329,14 @@ class MessageBubble extends React.Component<Props, State> {
             // Nothing
         }
 
-        this._isMounted = true;
+        if (this.mounted) {
+            // Get the delivered text
+            getStatusText(this.props.message).then(statusText => {
+                if (this.mounted) {
+                    this.setState({ statusText });
+                }
+            });
 
-        if (this._isMounted) {
             document.addEventListener("click", e => {
                 e.preventDefault();
                 this.setState({ showContextMenu: false });
@@ -501,7 +355,7 @@ class MessageBubble extends React.Component<Props, State> {
                         linkPrev.title = linkPrev.description;
                     }
 
-                    this.setState({ linkPrev }, this.stb);
+                    this.setState({ linkPrev }, stb);
                 } catch (ex) {
                     console.error(ex);
                 }
@@ -515,7 +369,7 @@ class MessageBubble extends React.Component<Props, State> {
                         linkPrev.title = linkPrev.description;
                     }
 
-                    this.setState({ linkPrev }, this.stb);
+                    this.setState({ linkPrev }, stb);
                 } catch (ex) {
                     console.error(ex);
                 }
@@ -661,11 +515,290 @@ class MessageBubble extends React.Component<Props, State> {
     }
 
     async componentWillUnmount() {
-        this._isMounted = false;
+        this.mounted = false;
         document.removeEventListener("click", e => {
             // Nothing
         });
     }
+
+    // eslint-disable-next-line react/sort-comp
+    renderAttachment(attachment: AttachmentDownload) {
+        if (attachment.progress === 100) {
+            const attachmentPath = `${attachmentsDir}/${attachment.guid}/${attachment.transferName}`;
+
+            if (attachment.uti.includes("coreaudio-format")) {
+                return (
+                    <UnsupportedMedia
+                        key={attachment.guid}
+                        attachment={attachment}
+                        onClick={() => openAttachment(attachmentPath)}
+                    />
+                );
+            }
+
+            // Render based on mime type
+            if (!attachment.mimeType || attachment.mimeType.startsWith("image")) {
+                const mime = attachment.mimeType ?? "image/pluginPayloadAttachment";
+
+                if (attachment.isSticker) {
+                    const messageDiv = document.getElementById(this.props.message.guid);
+
+                    if (messageDiv) {
+                        const messageCords = messageDiv.getBoundingClientRect();
+                        return (
+                            <>
+                                {this.props.message.isFromMe ? (
+                                    <img
+                                        key={attachment.guid}
+                                        id={attachmentPath}
+                                        className="Sticker"
+                                        src={`data:${mime};base64,${attachment.data}`}
+                                        alt={attachment.transferName}
+                                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                                        onContextMenu={e => this.handleImageRightClick(e)}
+                                        onError={setFallbackImage}
+                                        style={{
+                                            opacity: attachment.guid.includes("temp") ? 0.6 : 1,
+                                            left: `${messageCords.left - 295 + messageCords.width / 2}px`
+                                        }}
+                                        draggable="false"
+                                        onLoad={stb}
+                                    />
+                                ) : (
+                                    <img
+                                        key={attachment.guid}
+                                        id={attachmentPath}
+                                        className="Sticker"
+                                        src={`data:${mime};base64,${attachment.data}`}
+                                        alt={attachment.transferName}
+                                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                                        onContextMenu={e => this.handleImageRightClick(e)}
+                                        onError={setFallbackImage}
+                                        draggable="false"
+                                        onLoad={stb}
+                                        // style={{left: `${messageCords.left - 295 + messageCords.width/2}px`}}
+                                    />
+                                )}
+                            </>
+                        );
+                    }
+                }
+
+                return (
+                    <img
+                        key={attachment.guid}
+                        id={attachmentPath}
+                        className="Attachment"
+                        src={`data:${mime};base64,${attachment.data}`}
+                        alt={attachment.transferName}
+                        onClick={attachment.mimeType ? () => openAttachment(attachmentPath) : null}
+                        onContextMenu={e => this.handleImageRightClick(e)}
+                        onError={setFallbackImage}
+                        style={{ opacity: attachment.guid.includes("temp") ? 0.6 : 1 }}
+                        draggable="false"
+                        onLoad={stb}
+                    />
+                );
+            }
+
+            if (attachment.mimeType.startsWith("video") && attachment.data) {
+                let mime = attachment.mimeType;
+                if (!supportedVideoTypes.includes(mime)) mime = "video/mp4";
+                return (
+                    <video
+                        key={attachment.guid}
+                        id={attachment.guid}
+                        className="Attachment"
+                        autoPlay
+                        muted
+                        loop
+                        controls
+                        draggable="false"
+                        style={{ opacity: attachment.guid.includes("temp") ? 0.6 : 1 }}
+                        onClick={e =>
+                            (e.target as HTMLVideoElement).paused
+                                ? (e.target as HTMLVideoElement).play()
+                                : (e.target as HTMLVideoElement).pause()
+                        }
+                        onLoad={stb}
+                    >
+                        <source src={`data:${mime};base64,${attachment.data}`} type={mime} />
+                    </video>
+                );
+            }
+
+            if (attachment.mimeType.startsWith("audio") && attachment.data) {
+                return <InChatAudio gradientMessages={this.props.gradientMessages} attachment={attachment} />;
+            }
+            if (
+                (attachment.mimeType === "text/x-vlocation" || attachment.uti === "public.vlocation") &&
+                attachment.data
+            ) {
+                const longLat = parseAppleLocation(attachment.data);
+                if (longLat?.latitude && longLat?.longitude) {
+                    const position = [longLat.longitude, longLat.latitude];
+                    return (
+                        <Map center={position} zoom={13} className="Attachment MapLeaflet" key={attachment.guid}>
+                            <TileLayer url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}" />
+                            <Marker position={position} />
+                        </Map>
+                    );
+                }
+            }
+
+            if (attachment.mimeType.includes("vcard")) {
+                try {
+                    const vCard = require("vcard");
+                    // eslint-disable-next-line new-cap
+                    const card = new vCard();
+
+                    let vcfData;
+                    card.readFile(attachmentPath, (err: any, json: any) => {
+                        vcfData = json;
+                    });
+
+                    const generateVCFIconText = json => {
+                        if (!json) {
+                            return "?";
+                        }
+                        if (json.FN) {
+                            if (json.FN.includes(" ")) {
+                                return json.FN.substr(0, 1) + json.FN.substr(json.FN.indexOf(" ") + 1, 1);
+                            }
+                            return json.FN.substr(0, 1);
+                        }
+                        return "?";
+                    };
+
+                    return (
+                        <div
+                            className="inChatContactCard"
+                            style={{
+                                backgroundColor: this.props.message.isFromMe
+                                    ? "var(--outgoing-message-color)"
+                                    : "var(--incoming-message-color)"
+                            }}
+                            onClick={() => openAttachment(attachmentPath)}
+                            draggable="false"
+                        >
+                            <span className="contactCardText">
+                                <span>Contact Card</span>
+                                {vcfData && vcfData.FN ? <p>{vcfData.FN}</p> : <p>Contact</p>}
+                            </span>
+                            <div>
+                                {generateVCFIconText(vcfData) === "?" ? (
+                                    <svg height="35px" width="35px" viewBox="0 0 1000 1000">
+                                        <defs>
+                                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                                <stop className="stop1" offset="0%" stopColor="#686868" />
+                                                <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                                            </linearGradient>
+                                        </defs>
+                                        <circle cx="50%" cy="50%" r="500" fill="url(#Gradient1)" />
+                                        <mask id="rmvProfile">
+                                            <circle cx="50%" cy="50%" r="435" fill="white" />
+                                        </mask>
+                                        <ellipse fill="white" cx="50%" cy="34%" rx="218" ry="234" />
+                                        <circle mask="url(#rmvProfile)" fill="white" cx="50%" cy="106%" r="400" />
+                                    </svg>
+                                ) : (
+                                    <svg height="35px" width="35px">
+                                        <defs>
+                                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
+                                                <stop className="stop1" offset="0%" stopColor="#686868" />
+                                                <stop className="stop2" offset="100%" stopColor="#928E8E" />
+                                            </linearGradient>
+                                        </defs>
+                                        <circle fill="url(#Gradient1)" cx="50%" cy="50%" r="50%" />
+                                        <text
+                                            x="50%"
+                                            y="69%"
+                                            textAnchor="middle"
+                                            fill="white"
+                                            stroke="white"
+                                            style={{ fontWeight: 100, letterSpacing: "2px" }}
+                                        >
+                                            {generateVCFIconText(vcfData)}
+                                        </text>
+                                    </svg>
+                                )}
+                                <svg viewBox="0 0 574 1024">
+                                    {/* eslint-disable-next-line max-len */}
+                                    <path d="M10 9Q0 19 0 32t10 23l482 457L10 969Q0 979 0 992t10 23q10 9 24 9t24-9l506-480q10-10 10-23t-10-23L58 9Q48 0 34 0T10 9z" />
+                                </svg>
+                            </div>
+                        </div>
+                    );
+                } catch (ex) {
+                    // We failed!
+                }
+            }
+
+            return (
+                <UnsupportedMedia
+                    key={attachment.guid}
+                    attachment={attachment}
+                    onClick={() => openAttachment(attachmentPath)}
+                />
+            );
+        }
+
+        return (
+            <div className="attachmentDownloadContainer" style={{ maxWidth: attachment.width === 0 ? "100%" : null }}>
+                <img
+                    style={{ height: "250px", width: "100%", borderRadius: "20px" }}
+                    src={defaultBlurhash}
+                    alt="default-blurhash"
+                />
+                <div className="blurhashDownloadInfo">
+                    <p>Rendering Full Attachment</p>
+                    <div>
+                        <span style={{ width: `${attachment.progress}%` }} />
+                    </div>
+                    <p>{attachment.progress <= 0 ? "0%" : `${attachment.progress}%`}</p>
+                    <p>{attachment.transferName}</p>
+                    <p>{`(${bytesToSize(attachment.totalBytes)})`}</p>
+                </div>
+            </div>
+        );
+        // return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
+    }
+
+    onAttachmentUpdate(_: IpcRendererEvent, args: any) {
+        const { attachment, progress } = args;
+
+        // Search for the attachment and update the progress
+        const updatedAttachments = [...this.state.attachments];
+        for (let i = 0; i < updatedAttachments.length; i += 1) {
+            if (updatedAttachments[i].guid === attachment.guid) {
+                updatedAttachments[i].progress = progress;
+
+                // If the progress is finished, load the attachment
+                if (updatedAttachments[i].progress === 100) {
+                    updatedAttachments[i].data = loadAttachmentData(updatedAttachments[i]);
+                }
+                break;
+            }
+        }
+
+        this.setState({ attachments: updatedAttachments });
+    }
+
+    handleImageRightClick(e) {
+        xPos = `${e.pageX}px`;
+        yPos = `${e.pageY - 25}px`;
+        this.setState({ showContextMenu: true });
+        this.setState({ currentContextMenuElement: e.target });
+    }
+
+    isValidUrl = string => {
+        // eslint-disable-next-line max-len
+        const regexp = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gim;
+        if (regexp.test(string)) {
+            return true;
+        }
+        return false;
+    };
 
     async createBalloons(numOfBallons) {
         const random = num => {
@@ -788,6 +921,7 @@ class MessageBubble extends React.Component<Props, State> {
             const mesCopy2 = document.getElementById(this.props.message.guid).cloneNode(true) as HTMLDivElement;
 
             mesCopy.classList.add("echo");
+            // eslint-disable-next-line max-len
             mesCopy.style.cssText = `font-size: ${rFontSize}; left: ${rLeft}%; animation: echo ${rTime}s ease forwards; transform: scale(${rScale})`;
 
             container.append(mesCopy);
@@ -810,26 +944,6 @@ class MessageBubble extends React.Component<Props, State> {
             return false;
         }
         return true;
-    }
-
-    onAttachmentUpdate(_: IpcRendererEvent, args: any) {
-        const { attachment, progress } = args;
-
-        // Search for the attachment and update the progress
-        const updatedAttachments = [...this.state.attachments];
-        for (let i = 0; i < updatedAttachments.length; i += 1) {
-            if (updatedAttachments[i].guid === attachment.guid) {
-                updatedAttachments[i].progress = progress;
-
-                // If the progress is finished, load the attachment
-                if (updatedAttachments[i].progress === 100) {
-                    updatedAttachments[i].data = loadAttachmentData(updatedAttachments[i]);
-                }
-                break;
-            }
-        }
-
-        this.setState({ attachments: updatedAttachments });
     }
 
     shouldHaveTail(): boolean {
@@ -977,104 +1091,6 @@ class MessageBubble extends React.Component<Props, State> {
         );
     };
 
-    buildAvatar(message: Message, firstGradientNumber: number, useAvatar: boolean) {
-        // Figure out if the message should show the handle avatar
-        if (message.isFromMe || !useAvatar) return null;
-
-        if (message.handle.avatar) {
-            return (
-                <img
-                    key={message.guid}
-                    src={message.handle.avatar}
-                    style={{
-                        borderRadius: "50%",
-                        marginRight: "10px",
-                        minWidth: "25px"
-                    }}
-                    height="25px"
-                    width="25px"
-                />
-            );
-        }
-
-        return (
-            <>
-                {generateReactionsDisplayIconText(message.handle) === "?" ? (
-                    <svg
-                        style={{
-                            marginRight: "10px",
-                            minWidth: "25px"
-                        }}
-                        height="25px"
-                        width="25px"
-                        viewBox="0 0 1000 1000"
-                        key={message.guid}
-                    >
-                        <defs>
-                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                <stop className="stop1" offset="0%" stopColor="#686868" />
-                                <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                            </linearGradient>
-                        </defs>
-                        <circle
-                            className="cls-1"
-                            cx="50%"
-                            cy="50%"
-                            r="500"
-                            fill={`url(#ColoredGradient${firstGradientNumber})`}
-                        />
-                        <mask id="rmvProfile">
-                            <circle cx="50%" cy="50%" r="435" fill="white" />
-                        </mask>
-                        <ellipse className="cls-2" fill="white" cx="50%" cy="34%" rx="218" ry="234" />
-                        <circle className="cls-2" mask="url(#rmvProfile)" fill="white" cx="50%" cy="106%" r="400" />
-                    </svg>
-                ) : (
-                    <svg
-                        style={{
-                            marginRight: "10px",
-                            minWidth: "25px"
-                        }}
-                        height="25px"
-                        width="25px"
-                        viewBox="0 0 1000 1000"
-                        key={message.guid}
-                    >
-                        <defs>
-                            <linearGradient id="Gradient1" x1="0" x2="0" y1="1" y2="0">
-                                <stop className="stop1" offset="0%" stopColor="#686868" />
-                                <stop className="stop2" offset="100%" stopColor="#928E8E" />
-                            </linearGradient>
-                        </defs>
-                        <circle
-                            className="cls-1"
-                            fill={`url(#ColoredGradient${firstGradientNumber})`}
-                            cx="50%"
-                            cy="50%"
-                            r="50%"
-                        />
-                        <text
-                            style={{
-                                fontFamily: "SF Pro Rounded",
-                                fontWeight: 700,
-                                fontStyle: "normal",
-                                fontSize:
-                                    generateReactionsDisplayIconText(message.handle).length >= 2 ? "500px" : "600px"
-                            }}
-                            className="cls-2"
-                            x="50%"
-                            y="69%"
-                            textAnchor="middle"
-                            fill="white"
-                        >
-                            {generateReactionsDisplayIconText(message.handle)}
-                        </text>
-                    </svg>
-                )}
-            </>
-        );
-    }
-
     render() {
         const { message, olderMessage, showStatus, chat } = this.props;
 
@@ -1153,16 +1169,14 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         // Parse out any links. We can minimize parsing if we do a simple "contains" first
-        if (
-            validUrl.isUri(text) !== undefined ||
-            this.isValidUrl(text) ||
-            text.includes("http") ||
-            text.includes("Https")
-        ) {
+        if (validUrl.isUri(text) || this.isValidUrl(text) || text.includes("http") || text.includes("Https")) {
             links = parseUrls(text);
-        } else if (
-            (validUrl.isUri(`https://${text}`) !== undefined && this.isValidUrl(text)) ||
-            (validUrl.isUri(`http://${text}`) && this.isValidUrl(text))
+        }
+
+        if (
+            (!links || links.length === 0) &&
+            this.isValidUrl(text) &&
+            (validUrl.isUri(`https://${text}`) || validUrl.isUri(`http://${text}`))
         ) {
             links = parseUrls(`https://${text}`);
         }
@@ -1244,60 +1258,8 @@ class MessageBubble extends React.Component<Props, State> {
         // If a url hostname is in this array, the preview will be forced to only show the favicon instead of the image
         const forceFaviconURLS = ["bluebubbles.app"];
 
-        let firstGradientNumber = 8;
-        let messageColor = "#686868";
-        let messageTextColor = this.props.theme.incomingMessageTextColor;
-        if (message.handle) {
-            const rng = seedrandom(message.handle.address);
-            const rand1 = rng();
-
-            if (rand1 <= 1 / 7) {
-                firstGradientNumber = 1;
-                messageColor = "#fd678d";
-                messageTextColor = "#861431";
-            } else if (rand1 > 1 / 7 && rand1 <= 2 / 7) {
-                firstGradientNumber = 2;
-                messageColor = "#ff534d";
-                messageTextColor = "#6f120f";
-            } else if (rand1 > 2 / 7 && rand1 <= 3 / 7) {
-                firstGradientNumber = 3;
-                messageColor = "#fea21c";
-                messageTextColor = "#573b11";
-            } else if (rand1 > 3 / 7 && rand1 <= 4 / 7) {
-                firstGradientNumber = 4;
-                messageColor = "#ffca1c";
-                messageTextColor = "#58460c";
-            } else if (rand1 > 4 / 7 && rand1 <= 5 / 7) {
-                firstGradientNumber = 5;
-                messageColor = "#5ede79";
-                messageTextColor = "#105d20";
-            } else if (rand1 > 5 / 7 && rand1 <= 6 / 7) {
-                firstGradientNumber = 6;
-                messageColor = "#6bcff6";
-                messageTextColor = "#094860";
-            } else if (rand1 > 6 / 7 && rand1 <= 7 / 7) {
-                firstGradientNumber = 7;
-                messageColor = "#a78df3";
-                messageTextColor = "#230971";
-            }
-        }
-
-        // If colorful contacts is off, use default gray color
-        if (!this.props.colorfulContacts) {
-            firstGradientNumber = 8;
-        }
-        // If colorful chats is off use default incoming message color
-        if (!this.props.colorfulChatBubbles || chat.participants.length === 1) {
-            messageColor = this.props.theme.incomingMessageColor;
-            messageTextColor = this.props.theme.incomingMessageTextColor;
-        }
-        if (message.isFromMe) {
-            messageColor = this.props.theme.outgoingMessageColor;
-            messageTextColor = this.props.theme.outgoingMessageTextColor;
-        }
-
         const useAvatar = this.shouldHaveAvatar();
-        const avatar = this.buildAvatar(message, firstGradientNumber, useAvatar);
+        const avatar = buildAvatar(message, getAvatarGradientIndex(message?.handle), useAvatar);
         const bubbleStyle = {
             marginLeft: useAvatar ? "5px" : "40px",
             marginRight: message.isFromMe && useTail ? "5px" : "0px"
@@ -1384,6 +1346,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                             src={linkPrev.images[0]}
                                                             className="Attachment"
                                                             draggable="false"
+                                                            alt="link-preview"
                                                         />
                                                     ) : null}
                                                     <div
@@ -1453,7 +1416,11 @@ class MessageBubble extends React.Component<Props, State> {
                                                             linkPrev?.favicons?.length > 0) ||
                                                         (linkPrev &&
                                                             forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
-                                                            <img src={linkPrev.favicons[0]} className="linkFavicon" />
+                                                            <img
+                                                                src={linkPrev.favicons[0]}
+                                                                className="linkFavicon"
+                                                                alt="link-favicon"
+                                                            />
                                                         ) : null}
                                                     </div>
                                                 </div>
@@ -1520,6 +1487,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                                     <div
                                                         className={`${expressiveSendStyle} ${messageClass} ${
+                                                            // eslint-disable-next-line no-nested-ternary
                                                             message.isFromMe &&
                                                             this.props.gradientMessages &&
                                                             !message.chats[0].guid.includes("SMS")
@@ -1532,7 +1500,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                         id={message.guid}
                                                         style={{
                                                             marginBottom: useAvatar ? "3px" : "0",
-                                                            backgroundColor: messageColor
+                                                            backgroundColor: getBubbleGradient(message?.handle)
                                                         }}
                                                     >
                                                         {message.hasReactions === true ? (
@@ -1555,7 +1523,16 @@ class MessageBubble extends React.Component<Props, State> {
                                                         {messageClass.includes("bigEmoji") && text ? (
                                                             this.renderBigEmojis(text)
                                                         ) : (
-                                                            <>{text ? this.renderText(text, messageTextColor) : null}</>
+                                                            <>
+                                                                {text
+                                                                    ? this.renderText(
+                                                                          text,
+                                                                          gradientColorIndexMap[
+                                                                              getAvatarGradientIndex(message?.handle)
+                                                                          ].color
+                                                                      )
+                                                                    : null}
+                                                            </>
                                                         )}
                                                     </div>
                                                 </ClickNHold>
@@ -1649,12 +1626,8 @@ class MessageBubble extends React.Component<Props, State> {
                                                             />
                                                         ) : null}
                                                         <svg viewBox="0 0 74.999 74.999" height="10px" width="10px">
-                                                            <path
-                                                                d="M33.511,71.013c15.487,0,28.551-10.563,32.375-24.859h9.113L61.055,22L47.111,46.151h8.006
-                                                            c-3.44,8.563-11.826,14.628-21.605,14.628c-12.837,0-23.28-10.443-23.28-23.28c0-12.836,10.443-23.28,23.28-23.28
-                                                            c6.604,0,12.566,2.768,16.809,7.196l5.258-9.108c-5.898-5.176-13.619-8.32-22.065-8.32C15.034,3.987,0,19.019,0,37.5
-                                                            C-0.002,55.981,15.03,71.013,33.511,71.013z"
-                                                            />
+                                                            {/* eslint-disable-next-line max-len */}
+                                                            <path d="M33.511,71.013c15.487,0,28.551-10.563,32.375-24.859h9.113L61.055,22L47.111,46.151h8.006 c-3.44,8.563-11.826,14.628-21.605,14.628c-12.837,0-23.28-10.443-23.28-23.28c0-12.836,10.443-23.28,23.28-23.28 c6.604,0,12.566,2.768,16.809,7.196l5.258-9.108c-5.898-5.176-13.619-8.32-22.065-8.32C15.034,3.987,0,19.019,0,37.5 C-0.002,55.981,15.03,71.013,33.511,71.013z" />
                                                         </svg>
                                                         <p>Replay</p>
                                                     </div>
@@ -1663,7 +1636,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         </div>
                                     </>
                                 ) : null}
-                                {showStatus ? getStatusText(message) : null}
+                                {showStatus ? this.state.statusText : null}
                             </>
                         )}
                     </>
@@ -1700,6 +1673,7 @@ class MessageBubble extends React.Component<Props, State> {
                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                     <div
                                         className={`${expressiveSendStyle} ${messageClass} ${
+                                            // eslint-disable-next-line no-nested-ternary
                                             message.isFromMe &&
                                             this.props.gradientMessages &&
                                             !message.chats[0].guid.includes("SMS")
@@ -1709,7 +1683,10 @@ class MessageBubble extends React.Component<Props, State> {
                                                 : ""
                                         }`}
                                         id={message.guid}
-                                        style={{ marginBottom: useAvatar ? "3px" : "0", backgroundColor: messageColor }}
+                                        style={{
+                                            marginBottom: useAvatar ? "3px" : "0",
+                                            backgroundColor: getBubbleGradient(message?.handle)
+                                        }}
                                     >
                                         {message.hasReactions === true ? (
                                             <>
@@ -1732,7 +1709,15 @@ class MessageBubble extends React.Component<Props, State> {
                                         {messageClass.includes("bigEmoji") && text ? (
                                             this.renderBigEmojis(text)
                                         ) : (
-                                            <>{text ? this.renderText(text, messageTextColor) : null}</>
+                                            <>
+                                                {text
+                                                    ? this.renderText(
+                                                          text,
+                                                          gradientColorIndexMap[getAvatarGradientIndex(message?.handle)]
+                                                              .color
+                                                      )
+                                                    : null}
+                                            </>
                                         )}
                                     </div>
                                 </ClickNHold>
@@ -1825,18 +1810,14 @@ class MessageBubble extends React.Component<Props, State> {
                                             />
                                         ) : null}
                                         <svg viewBox="0 0 74.999 74.999" height="10px" width="10px">
-                                            <path
-                                                d="M33.511,71.013c15.487,0,28.551-10.563,32.375-24.859h9.113L61.055,22L47.111,46.151h8.006
-                                            c-3.44,8.563-11.826,14.628-21.605,14.628c-12.837,0-23.28-10.443-23.28-23.28c0-12.836,10.443-23.28,23.28-23.28
-                                            c6.604,0,12.566,2.768,16.809,7.196l5.258-9.108c-5.898-5.176-13.619-8.32-22.065-8.32C15.034,3.987,0,19.019,0,37.5
-                                            C-0.002,55.981,15.03,71.013,33.511,71.013z"
-                                            />
+                                            {/* eslint-disable-next-line max-len */}
+                                            <path d="M33.511,71.013c15.487,0,28.551-10.563,32.375-24.859h9.113L61.055,22L47.111,46.151h8.006 c-3.44,8.563-11.826,14.628-21.605,14.628c-12.837,0-23.28-10.443-23.28-23.28c0-12.836,10.443-23.28,23.28-23.28 c6.604,0,12.566,2.768,16.809,7.196l5.258-9.108c-5.898-5.176-13.619-8.32-22.065-8.32C15.034,3.987,0,19.019,0,37.5 C-0.002,55.981,15.03,71.013,33.511,71.013z" />
                                         </svg>
                                         <p>Replay</p>
                                     </div>
                                 </>
                             ) : null}
-                            {showStatus ? getStatusText(message) : null}
+                            {showStatus ? this.state.statusText : null}
                         </div>
                     </>
                 )}

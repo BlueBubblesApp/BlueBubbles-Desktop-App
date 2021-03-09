@@ -419,7 +419,6 @@
 .IncomingAttachment {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
     flex-direction: column;
     margin: 0 0 0 40px;
     animation: fade 0.25s ease-in-out;

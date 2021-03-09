@@ -109,7 +109,9 @@
 }
 
 #close-button > img {
-    height: 9px;
+    height: 8px;
+    padding-top: 1px;
+    padding-left: 1px;
 }
 
 #close-button .hideIcon {
@@ -121,7 +123,9 @@
 }
 
 #minimize-button > img {
-    height: 11px;
+    height: 10px;
+    padding-top: 1px;
+    padding-left: 0.5px;
 }
 
 #minimize-button .hideIcon {
@@ -133,7 +137,9 @@
 }
 
 #maximize-button > img {
-    height: 11px;
+    height: 10px;
+    padding-top: 1px;
+    padding-left: 0.5px;
 }
 
 #maximize-button .hideIcon {
@@ -145,7 +151,9 @@
 }
 
 #unmaximize-button > img {
-    height: 11px;
+    height: 10px;
+    padding-top: 1px;
+    padding-left: 0.5px;
 }
 
 #unmaximize-button .hideIcon {

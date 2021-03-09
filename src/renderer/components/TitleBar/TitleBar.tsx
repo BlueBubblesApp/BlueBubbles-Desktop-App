@@ -3,7 +3,8 @@
 import * as React from "react";
 import "./TitleBar.css";
 import { Theme } from "@server/databases/config/entity";
-import { ipcRenderer, net } from "electron";
+import { ipcRenderer } from "electron";
+import { Config } from "@renderer/helpers/configSingleton";
 import CloseIcon from "./close.png";
 import MinimizeIcon from "./minimize.png";
 import MaximizeIcon from "./maximize.png";
@@ -51,20 +52,15 @@ class TitleBar extends React.Component<unknown, State> {
     }
 
     async componentDidMount() {
-        let config = await ipcRenderer.invoke("get-config");
-
-        this.setState({ leftTitlebar: config.leftTitlebar });
-
+        this.setState({ leftTitlebar: await Config().get("leftTitlebar") });
         ipcRenderer.on("titlebar-update", async () => {
-            config = await ipcRenderer.invoke("get-config");
-
-            this.setState({ leftTitlebar: config.leftTitlebar });
+            this.setState({ leftTitlebar: await Config().get("leftTitlebar") });
         });
 
-        const theme: Theme = await ipcRenderer.invoke("get-theme", config.currentTheme);
+        const theme: Theme = await ipcRenderer.invoke("get-theme", await Config().get("currentTheme"));
 
         // Set all theme colors as css variables
-        document.documentElement.style.setProperty("--message-font-size", config.messageFontSize);
+        document.documentElement.style.setProperty("--message-font-size", await Config().get("messageFontSize"));
         document.documentElement.style.setProperty("--title-bar-close", theme.titleBarCloseColor);
         document.documentElement.style.setProperty("--title-bar-minimize", theme.titleBarMinimizeColor);
         document.documentElement.style.setProperty("--title-bar-maximize", theme.titleBarMaximizeColor);
@@ -94,7 +90,7 @@ class TitleBar extends React.Component<unknown, State> {
 
         ipcRenderer.on("config-update", async (_, args) => {
             const newTheme = await ipcRenderer.invoke("get-theme", args.currentTheme);
-            const newConfig = await ipcRenderer.invoke("get-config");
+            const newConfig = await Config().config;
 
             // Set all theme colors as css variables
             document.documentElement.style.setProperty("--message-font-size", newConfig.messageFontSize);
@@ -136,8 +132,7 @@ class TitleBar extends React.Component<unknown, State> {
         });
 
         ipcRenderer.on("focused", async (_, args) => {
-            config = await ipcRenderer.invoke("get-config");
-            const newTheme: Theme = await ipcRenderer.invoke("get-theme", config.currentTheme);
+            const newTheme: Theme = await ipcRenderer.invoke("get-theme", await Config().get("currentTheme"));
 
             document.getElementById("TitleBarLeft").classList.remove("TitleBarLeftBlurred");
             document.getElementById("TitleBarRight").classList.remove("TitleBarRightBlurred");

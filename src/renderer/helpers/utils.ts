@@ -1,6 +1,8 @@
 /* eslint-disable no-bitwise */
 import { PhoneNumberUtil } from "google-libphonenumber";
 import { Chat, Handle } from "@server/databases/chat/entity";
+import { Config } from "./configSingleton";
+import { gradientColorToIndex } from "./constants";
 
 export const addTapbackTextMap = {
     like: "Liked",
@@ -248,7 +250,7 @@ export const parseAppleLocation = (appleLocation: string): LongLat => {
 
     let url: string | null = null;
     for (const i of lines) {
-        if (i.includes(".URL:h") || i.includes(".URL;h")) {
+        if (i.includes(".URL:") || i.includes(".URL;") || i.startsWith("URL")) {
             url = i;
         }
     }
@@ -267,6 +269,7 @@ export const parseAppleLocation = (appleLocation: string): LongLat => {
     }
 
     if (!query) return emptyLocation;
+
     if (query.includes("&")) {
         [query] = query.split("&");
     }
@@ -302,4 +305,14 @@ export const bytesToSize = bytes => {
     }
 
     return `${(bytes / 1024 ** i).toFixed(1)} ${sizes[i]}`;
+};
+
+export const getGradient = (handle: Handle) => handle?.color ?? "#686868";
+export const getGradientIndex = (handle: Handle) => {
+    return gradientColorToIndex[getGradient(handle)];
+};
+
+export const getAvatarGradientIndex = handle => {
+    if (!Config().config.colorfulContacts) return 8;
+    return getGradientIndex(handle);
 };

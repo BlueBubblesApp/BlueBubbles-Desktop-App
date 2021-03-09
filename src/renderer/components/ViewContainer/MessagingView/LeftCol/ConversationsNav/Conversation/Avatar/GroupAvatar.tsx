@@ -1,86 +1,24 @@
 /* eslint-disable max-len */
 import * as React from "react";
 import { Chat, Handle } from "@server/databases/chat/entity";
-import { generateChatIconText } from "@renderer/helpers/utils";
+import { generateChatIconText, getAvatarGradientIndex } from "@renderer/helpers/utils";
 import { blankAvatarSrc } from "@renderer/helpers/constants";
 
 import "./styles.css";
-import { ipcRenderer } from "electron";
 
 interface Props {
     chat: Chat;
     isPinned?: boolean;
 }
 
-interface State {
-    firstGradientNumber: number;
-    secondGradientNumber: number;
-}
-
-class GroupAvatar extends React.Component<Props, State> {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            firstGradientNumber: 8,
-            secondGradientNumber: 8
-        };
-    }
-
-    async componentDidMount() {
-        const seedrandom = require("seedrandom");
-        const rng1 = seedrandom(this.props.chat.participants[0].address);
-        const rng2 = seedrandom(this.props.chat.participants[1].address);
-
-        const rand1 = rng1();
-        const rand2 = rng2();
-
-        if (rand1 <= 1 / 7) {
-            this.setState({ firstGradientNumber: 1 });
-        } else if (rand1 > 1 / 7 && rand1 <= 2 / 7) {
-            this.setState({ firstGradientNumber: 2 });
-        } else if (rand1 > 2 / 7 && rand1 <= 3 / 7) {
-            this.setState({ firstGradientNumber: 3 });
-        } else if (rand1 > 3 / 7 && rand1 <= 4 / 7) {
-            this.setState({ firstGradientNumber: 4 });
-        } else if (rand1 > 4 / 7 && rand1 <= 5 / 7) {
-            this.setState({ firstGradientNumber: 5 });
-        } else if (rand1 > 5 / 7 && rand1 <= 6 / 7) {
-            this.setState({ firstGradientNumber: 6 });
-        } else if (rand1 > 6 / 7 && rand1 <= 7 / 7) {
-            this.setState({ firstGradientNumber: 7 });
-        }
-
-        if (rand2 <= 1 / 7) {
-            this.setState({ secondGradientNumber: 1 });
-        } else if (rand2 > 1 / 7 && rand2 <= 2 / 7) {
-            this.setState({ secondGradientNumber: 2 });
-        } else if (rand2 > 2 / 7 && rand2 <= 3 / 7) {
-            this.setState({ secondGradientNumber: 3 });
-        } else if (rand2 > 3 / 7 && rand2 <= 4 / 7) {
-            this.setState({ secondGradientNumber: 4 });
-        } else if (rand2 > 4 / 7 && rand2 <= 5 / 7) {
-            this.setState({ secondGradientNumber: 5 });
-        } else if (rand2 > 5 / 7 && rand2 <= 6 / 7) {
-            this.setState({ secondGradientNumber: 6 });
-        } else if (rand2 > 6 / 7 && rand2 <= 7 / 7) {
-            this.setState({ secondGradientNumber: 7 });
-        }
-
-        const config = await ipcRenderer.invoke("get-config");
-
-        if (!config.colorfulContacts) {
-            this.setState({ firstGradientNumber: 8, secondGradientNumber: 8 });
-        }
-    }
-
+class GroupAvatar extends React.Component<Props, unknown> {
     setEmptyAvatar(index: number) {
         this.props.chat.participants[index].avatar = blankAvatarSrc;
         this.setState({});
     }
 
     render() {
-        const { chat, isPinned } = this.props;
+        const { chat } = this.props;
         const chatIconText = generateChatIconText(chat);
 
         const firstParticipant: Handle = chat.participants[0];
@@ -101,7 +39,7 @@ class GroupAvatar extends React.Component<Props, State> {
                 <circle
                     className="cls-1"
                     mask="url(#rmvCir)"
-                    fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
+                    fill={`url(#ColoredGradient${getAvatarGradientIndex(firstParticipant)}`}
                     cx="32%"
                     cy="40%"
                     r="16px"
@@ -160,7 +98,7 @@ class GroupAvatar extends React.Component<Props, State> {
 
                 <circle
                     className="cls-1"
-                    fill={`url(#ColoredGradient${this.state.secondGradientNumber})`}
+                    fill={`url(#ColoredGradient${getAvatarGradientIndex(secondParticipant)})`}
                     cx="68%"
                     cy="60%"
                     r="16px"

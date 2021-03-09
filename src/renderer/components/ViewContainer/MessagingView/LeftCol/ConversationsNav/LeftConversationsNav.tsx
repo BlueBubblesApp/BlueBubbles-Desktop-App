@@ -16,6 +16,7 @@ import Conversation from "./Conversation/Conversation";
 import IndividualAvatar from "./Conversation/Avatar/IndividualAvatar";
 import { generateChatTitle } from "@renderer/helpers/utils";
 import PinnedGroupAvatar from "./Conversation/Avatar/PinnedGroupAvatar";
+import { Config } from "@renderer/helpers/configSingleton";
 
 type Chat = DBChat & {
     lastMessage: DBMessage | null;
@@ -61,7 +62,8 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         ipcRenderer.on("chat", (_, args) => this.addChatsToState([args]));
 
         // Second, let's register a handler for new messages
-        ipcRenderer.on("message", (_, payload) => this.updateLastMessage(payload.message));
+        ipcRenderer.on("message", (_, payload) => this.updateLastMessage([payload.message]));
+        ipcRenderer.on("messages", (_, payload) => this.updateLastMessage(payload));
 
         // Third, let's fetch the current chats and add them to the state
         ipcRenderer.invoke("get-chats", null).then(async chats => {
@@ -93,9 +95,6 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             // console.log(res);
             const { chats } = this.state;
             for (const chat of chats) {
-                console.log(chat.guid);
-                console.log(res.guid.includes(chat.guid));
-
                 if (res.guid.includes(chat.guid)) {
                     chat.isTyping = res.display;
                 }
@@ -229,7 +228,7 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             chatParent.querySelector(".message-time-example").classList.add("activeColor3");
         }
 
-        ipcRenderer.invoke("set-config", config);
+        Config().setAll(config);
     }
 
     removeNotification(guid: string, lastViewed: Date) {
@@ -251,20 +250,39 @@ class LeftConversationsNav extends React.Component<unknown, State> {
      *
      * @param message The new message
      */
-    async updateLastMessage(message: DBMessage) {
-        if (!message.chats || message.chats.length === 0) return;
-
-        // Add the chat to the state, if needed
-        const chats = message.chats as Chat[];
-        for (let i = 0; i < chats.length; i += 1) {
-            chats[i].lastMessage = message;
-
-            // If the chat has never been viewed, let's make it seem
-            // like it has been viewed so we can show the notification
-            if (!chats[i].lastViewed) chats[i].lastViewed = 1;
+    async updateLastMessage(messages: DBMessage[]) {
+        // Get a list of chats (key) with their latest message (value)
+        const cache: { [key: string]: DBMessage } = {};
+        for (const msg of messages) {
+            for (const chat of msg.chats ?? []) {
+                // Add chat's to a cache, along with the newest message
+                if (!Object.keys(cache).includes(chat.guid)) {
+                    cache[chat.guid] = msg;
+                } else if (msg.dateCreated > cache[chat.guid].dateCreated) {
+                    cache[chat.guid] = msg;
+                }
+            }
         }
 
-        await this.addChatsToState(chats);
+        // Take all the latest messages and update their corresponding chat's lastMessage
+        // Then add that chat to be updated
+        const updates: Chat[] = [];
+        for (const msg of Object.values(cache)) {
+            for (const chat of msg.chats ?? []) {
+                // If the chat has never been viewed, let's make it seem
+                // like it has been viewed so we can show the notification
+                if (!chat.lastViewed) chat.lastViewed = 1;
+
+                // Update the last message and add to the updates
+                (chat as Chat).lastMessage = msg;
+                updates.push(chat as Chat);
+            }
+        }
+
+        if (updates.length > 0) {
+            console.log(updates);
+            this.addChatsToState(updates);
+        }
     }
 
     /**
@@ -366,46 +384,39 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
     handleChangeMute = async (e, chat) => {
         const config = await ipcRenderer.invoke("get-config");
-        let finalMuteString = "";
-        const x = config.allMutedChats.split(",");
-
-        console.log(x);
+        const muted = config.allMutedChats.split(",");
 
         // If the chat is already in the mute string, remove it
-        if (x.includes(chat.guid)) {
-            x.splice(x.indexOf(chat.guid), 1);
+        if (muted.includes(chat.guid)) {
+            muted.splice(muted.indexOf(chat.guid), 1);
         } else {
-            x.push(chat.guid);
+            muted.push(chat.guid);
         }
 
-        finalMuteString = x.join();
+        // Re-create the comma-separated list
+        const finalMuteString = muted.join(",");
 
-        console.log(finalMuteString);
+        // Set the config value
+        Config().set("allMutedChats", finalMuteString);
+        this.setState({ config: Config().config });
 
-        const newConfig = { allMutedChats: finalMuteString };
-        await ipcRenderer.invoke("set-config", newConfig);
-        config.allMutedChats = finalMuteString;
-        this.setState({ config });
-
+        // Reset the scroll distance
         console.log("change mute");
         document.getElementById(chat.guid).parentElement.scrollLeft = 0;
     };
 
     handleChangePin = async chat => {
         const config = await ipcRenderer.invoke("get-config");
-        let finalPinnedString = "";
-        const x = config.allPinnedChats.split(",");
-
-        console.log(x);
+        const pinned = config.allPinnedChats.split(",");
 
         // If the chat is already in the mute string, remove it
-        if (x.includes(chat.guid)) {
-            x.splice(x.indexOf(chat.guid), 1);
+        if (pinned.includes(chat.guid)) {
+            pinned.splice(pinned.indexOf(chat.guid), 1);
         } else {
-            x.push(chat.guid);
+            pinned.push(chat.guid);
         }
 
-        if (x.length > 1) {
+        if (pinned.length > 1) {
             Array.from(
                 document.getElementsByClassName("Conversation") as HTMLCollectionOf<HTMLElement>
             )[0].style.borderTop = "1px solid gray";
@@ -415,12 +426,8 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             )[0].style.borderTop = "none";
         }
 
-        finalPinnedString = x.join();
-
-        console.log(finalPinnedString);
-
-        const newConfig = { allPinnedChats: finalPinnedString };
-        await ipcRenderer.invoke("set-config", newConfig);
+        const finalPinnedString = pinned.join(",");
+        Config().set("allPinnedChats", finalPinnedString);
 
         this.setState({ allPinnedChats: finalPinnedString.split(",") });
 
@@ -440,7 +447,6 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                         {this.state.allPinnedChats
                             .filter(arrItem => arrItem.length > 0)
                             .map(chatGuid => {
-                                console.log(chats);
                                 if (chats.length === 0) return null;
                                 const chat = chats.filter(aChat => aChat.guid === chatGuid)[0];
 
@@ -491,13 +497,18 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                                             />
                                         </svg>
                                         {chat.participants.length > 1 ? (
-                                            <PinnedGroupAvatar isPinned={true} chat={chat} />
+                                            <PinnedGroupAvatar chat={chat} />
                                         ) : (
                                             <IndividualAvatar isPinned={true} chat={chat} />
                                         )}
                                         <div className="pinnedBottomDiv">
-                                            {hasNotification ? <div className="pinnedNotification" /> : null}
-                                            <p>{generateChatTitle(chat)}</p>
+                                            <p id="pinned-chat-title">
+                                                {generateChatTitle(chat)}
+                                                {hasNotification ? <div className="pinnedNotification" /> : null}
+                                            </p>
+                                            <p className="message-snip-example">
+                                                {chat.lastMessage.subject ?? chat.lastMessage.text}
+                                            </p>
                                         </div>
                                     </div>
                                 );

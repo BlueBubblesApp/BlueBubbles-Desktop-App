@@ -14,6 +14,7 @@ type State = {
     colorfulContacts: boolean;
     colorfulChatBubbles: boolean;
     useNativeEmojis: boolean;
+    showDeliveredTimestamps: boolean;
 };
 
 class VisualTitle extends React.Component<Props, State> {
@@ -24,7 +25,8 @@ class VisualTitle extends React.Component<Props, State> {
             gradientMessages: false,
             colorfulContacts: false,
             colorfulChatBubbles: false,
-            useNativeEmojis: false
+            useNativeEmojis: false,
+            showDeliveredTimestamps: false
         };
     }
 
@@ -34,16 +36,21 @@ class VisualTitle extends React.Component<Props, State> {
             gradientMessages: config.gradientMessages,
             colorfulContacts: config.colorfulContacts,
             colorfulChatBubbles: config.colorfulChatBubbles,
-            useNativeEmojis: config.useNativeEmojis
+            useNativeEmojis: config.useNativeEmojis,
+            showDeliveredTimestamps: config.showDeliveredTimestamps
         });
-
-        console.log(config);
     }
 
     async handleGradientMessages() {
         const newConfig = { gradientMessages: !this.state.gradientMessages };
         await ipcRenderer.invoke("set-config", newConfig);
         this.setState({ gradientMessages: !this.state.gradientMessages });
+    }
+
+    async handleDeliveredTimestamps() {
+        const newConfig = { showDeliveredTimestamps: !this.state.showDeliveredTimestamps };
+        await ipcRenderer.invoke("set-config", newConfig);
+        this.setState({ showDeliveredTimestamps: !this.state.showDeliveredTimestamps });
     }
 
     async handleColorfulContacts() {
@@ -108,6 +115,17 @@ class VisualTitle extends React.Component<Props, State> {
                             type="checkbox"
                             checked={this.state.useNativeEmojis}
                             onChange={() => this.handleUseNativeEmojis()}
+                        />
+                        <i />
+                    </label>
+                </div>
+                <div>
+                    <p>Show Delivered Timestamps</p>
+                    <label className="form-switch" onClick={() => this.handleDeliveredTimestamps()}>
+                        <input
+                            type="checkbox"
+                            checked={this.state.showDeliveredTimestamps}
+                            onChange={() => this.handleDeliveredTimestamps()}
                         />
                         <i />
                     </label>

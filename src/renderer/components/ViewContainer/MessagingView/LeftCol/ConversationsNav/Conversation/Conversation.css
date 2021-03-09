@@ -64,6 +64,7 @@
     align-items: flex-end;
     text-align: right;
     margin-right: 5px;
+    margin-left: 5px;
 }
 
 .message-time > div {
