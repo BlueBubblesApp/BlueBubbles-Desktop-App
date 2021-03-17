@@ -187,7 +187,7 @@
       "leaflet": "^1.6.0",
       "link-preview-js": "^2.0.4",
       "mime": "^2.4.6",
-      "node-notifier": "^5.4.3",
+      "node-notifier": "^8.0.1",
       "node-pre-gyp": "^0.15.0",
       "nspell": "^2.1.4",
       "react": "^16.13.1",
