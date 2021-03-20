@@ -7,6 +7,9 @@ export class Attachment {
     @PrimaryGeneratedColumn()
     ROWID: number;
 
+    @Column({ type: "integer", nullable: true })
+    originalROWID: number;
+
     @Column("text")
     guid: string;
 

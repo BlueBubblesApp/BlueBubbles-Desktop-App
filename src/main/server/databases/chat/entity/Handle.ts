@@ -8,6 +8,9 @@ export class Handle {
     @PrimaryGeneratedColumn()
     ROWID: number;
 
+    @Column({ type: "integer", nullable: true })
+    originalROWID: number;
+
     @Column("text")
     address: string;
 

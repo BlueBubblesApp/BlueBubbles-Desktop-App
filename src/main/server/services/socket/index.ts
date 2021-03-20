@@ -150,8 +150,6 @@ export class SocketService {
 
             // Don't show a notificaiton if they have been disabled
             if (Server().configRepo.get("globalNotificationsDisabled")) return;
-            // If the chat is in the muted chats list return
-            console.log(Server().configRepo.get("allMutedChats"));
             if ((Server().configRepo.get("allMutedChats") as string).includes(message.chats[0].guid)) return;
 
             // Build the notification parameters

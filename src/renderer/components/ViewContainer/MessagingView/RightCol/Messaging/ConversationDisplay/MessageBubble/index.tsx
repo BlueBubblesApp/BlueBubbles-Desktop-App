@@ -1089,11 +1089,8 @@ class MessageBubble extends React.Component<Props, State> {
             final.push(text);
         }
 
-        return (
-            <p style={{ fontWeight: process.platform === "linux" ? 400 : 300, color: messageTextColor }}>
-                {final.map(item => item)}
-            </p>
-        );
+        const color = this.props.message.isFromMe ? this.props.theme.outgoingMessageTextColor : messageTextColor;
+        return <p style={{ fontWeight: process.platform === "linux" ? 400 : 300, color }}>{final.map(item => item)}</p>;
     };
 
     render() {

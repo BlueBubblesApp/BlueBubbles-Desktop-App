@@ -34,6 +34,7 @@ export type ResponseFormat = {
 export type MessageResponse = {
     tempGuid?: string;
     guid: string;
+    originalROWID: number;
     text: string;
     handle?: HandleResponse | null;
     handleId: number;
@@ -66,6 +67,7 @@ export type MessageResponse = {
 };
 
 export type HandleResponse = {
+    originalROWID: number;
     messages?: MessageResponse[];
     chats?: ChatResponse[];
     address: string;
@@ -75,6 +77,7 @@ export type HandleResponse = {
 
 export type ChatResponse = {
     guid: string;
+    originalROWID: number;
     participants?: HandleResponse[];
     messages?: MessageResponse[];
     style: number;
@@ -86,6 +89,7 @@ export type ChatResponse = {
 
 export type AttachmentResponse = {
     guid: string;
+    originalROWID: number;
     messages: string[];
     data: string; // Base64 string
     blurhash: string;

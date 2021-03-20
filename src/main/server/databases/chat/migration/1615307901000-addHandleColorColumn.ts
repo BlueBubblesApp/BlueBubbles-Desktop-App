@@ -1,8 +1,11 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
+import { tableExists } from "./helpers";
 
 export class AddHandleColorColumn1615307901000 implements MigrationInterface {
     // eslint-disable-next-line class-methods-use-this
     async up(queryRunner: QueryRunner): Promise<void> {
+        if (!(await tableExists(queryRunner, "handle"))) return;
+
         const res = await queryRunner.query(
             `SELECT COUNT(*) AS CNTREC FROM pragma_table_info('handle') WHERE name = 'color';`
         );

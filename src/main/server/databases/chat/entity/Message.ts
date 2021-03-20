@@ -8,6 +8,9 @@ export class Message {
     ROWID: number;
 
     @Column({ type: "integer", nullable: true })
+    originalROWID: number;
+
+    @Column({ type: "integer", nullable: true })
     handleId: number;
 
     @Column("text")

@@ -12,6 +12,7 @@ import { Attachment, Chat, Handle, Message } from "./entity";
 import { GetMessagesParams, CreateMessageParams, CreateAttachmentParams } from "./types";
 import { getGradientIndex, gradientColorIndexMap } from "./entity/Handle";
 import { AddHandleColorColumn1615307901000 } from "./migration/1615307901000-addHandleColorColumn";
+import { AddOriginalRowIDColumn1615324026000 } from "./migration/1615324026000-AddOriginalRowIDColumn";
 
 export class ChatRepository {
     db: Connection = null;
@@ -40,8 +41,16 @@ export class ChatRepository {
             logging: false,
             migrationsTableName: "migrations",
             migrationsRun: true,
-            migrations: [AddHandleColorColumn1615307901000]
+            migrations: [AddHandleColorColumn1615307901000, AddOriginalRowIDColumn1615324026000]
         });
+
+        try {
+            const repo = this.db.getRepository("message");
+            await repo.count();
+        } catch (ex) {
+            // If this fails, we need to synchronize
+            this.db.synchronize();
+        }
 
         return this.db;
     }
@@ -253,6 +262,7 @@ export class ChatRepository {
         const chat = new Chat();
         chat.guid = res.guid;
         chat.chatIdentifier = res.chatIdentifier;
+        chat.originalROWID = res.originalROWID;
         chat.displayName = res.displayName;
         chat.isArchived = res.isArchived ? 1 : 0;
         chat.style = res.style;
@@ -263,6 +273,7 @@ export class ChatRepository {
 
     static createHandleFromResponse(res: HandleResponse): Handle {
         const handle = new Handle();
+        handle.originalROWID = res.originalROWID;
         handle.address = res.address;
         handle.country = res.country;
         handle.uncanonicalizedId = res.uncanonicalizedId;
@@ -282,6 +293,7 @@ export class ChatRepository {
     static createAttachmentFromResponse(res: AttachmentResponse): Attachment {
         const attachment = new Attachment();
         attachment.guid = res.guid;
+        attachment.originalROWID = res.originalROWID;
         attachment.blurhash = res.blurhash;
         attachment.hideAttachment = res.hideAttachment;
         attachment.isOutgoing = res.isOutgoing;
@@ -298,6 +310,7 @@ export class ChatRepository {
 
     static createMessageFromResponse(res: MessageResponse): Message {
         const message = new Message();
+        message.originalROWID = res.originalROWID;
         message.handleId = res.handleId || res.handleId === 0 ? null : res.handleId;
         message.guid = res.guid;
         message.text = res.text;
@@ -419,6 +432,8 @@ export class ChatRepository {
             if (theMessage.guid !== message.guid) updateData.guid = message.guid;
             if (message.dateDelivered && theMessage.dateDelivered !== message.dateDelivered)
                 updateData.dateDelivered = message.dateDelivered;
+            if (message.dateCreated && theMessage.dateCreated !== message.dateCreated)
+                updateData.dateCreated = message.dateCreated;
             if (message.dateRead && theMessage.dateRead !== message.dateRead) updateData.dateRead = message.dateRead;
             if (message.error && theMessage.error !== message.error) updateData.error = message.error;
             if (theMessage.isArchived !== message.isArchived) updateData.isArchived = message.isArchived;
