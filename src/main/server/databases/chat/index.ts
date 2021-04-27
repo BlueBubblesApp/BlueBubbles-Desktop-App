@@ -134,6 +134,13 @@ export class ChatRepository {
         return repo.find(params);
     }
 
+    async getHandleById(id: number) {
+        const repo = this.db.getRepository(Handle);
+        const params: FindManyOptions<Handle> = {};
+        params.where = { ROWID: id };
+        return repo.find(params);
+    }
+
     async updateHandle(handle: Handle, updateData: DeepPartial<Handle>): Promise<void> {
         const repo = this.db.getRepository(Handle);
 
