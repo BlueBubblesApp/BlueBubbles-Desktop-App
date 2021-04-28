@@ -26,6 +26,8 @@ import { AttachmentChunkParams, GetChatMessagesParams } from "./services/socket/
 import { Attachment, Chat, Handle, Message } from "./databases/chat/entity";
 import { Theme } from "./databases/config/entity";
 
+const { writeFile, mkdir } = fs.promises;
+
 const { autoUpdater } = require("electron-updater");
 
 autoUpdater.autoDownload = false;
@@ -267,22 +269,21 @@ class BackendServer {
         }
     }
 
-    async syncContactAvatars(handles: Handle[]): Promise<void> {
+    static async syncContactAvatars(handles: Handle[]): Promise<void> {
         try {
-            await mkdir(path.join(FileSystem.resources, 'contacts'), { recursive: true });
+            await mkdir(path.join(FileSystem.resources, "contacts"), { recursive: true });
             for (let i = 0; i < handles.length; i += 1) {
-                let handle = handles[i];
+                const handle = handles[i];
 
                 // null check; if no handle/avatar, then skip
                 if (handle === null || handle === undefined || handle.avatar === null || handle.avatar === undefined)
                     continue;
 
-                let avatar = handle.avatar.replace(/^data:image\/jpeg;base64,/, "");
-                let avatarPath = path.join(FileSystem.resources, 'contacts', `${handle.ROWID}.jpeg`);
-                await writeFile(avatarPath, avatar, { encoding: 'base64', flag: 'w' });
+                const avatar = handle.avatar.replace(/^data:image\/jpeg;base64,/, "");
+                const avatarPath = path.join(FileSystem.resources, "contacts", `${handle.ROWID}.jpeg`);
+                await writeFile(avatarPath, avatar, { encoding: "base64", flag: "w" });
             }
-        }
-        catch (err) {
+        } catch (err) {
             console.error(`Error downloading contact avatars: ${err}`);
         }
     }
@@ -295,7 +296,7 @@ class BackendServer {
         const handles = await this.chatRepo.getHandles();
 
         // save off contact avatars
-        await this.syncContactAvatars(handles);
+        await BackendServer.syncContactAvatars(handles);
 
         // Second, fetch the corresponding contacts from the server
         const results: ResponseFormat = await new Promise((resolve, _) =>
@@ -358,8 +359,8 @@ class BackendServer {
             // Get handles and compare
             const handles = await this.chatRepo.getHandles();
 
-        // save off contact avatars
-        await this.syncContactAvatars(handles);
+            // save off contact avatars
+            await BackendServer.syncContactAvatars(handles);
 
             // Check if there is a contact for each handle's address
             now = new Date().getTime();
