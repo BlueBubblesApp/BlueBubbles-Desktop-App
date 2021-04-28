@@ -4,7 +4,6 @@ import * as os from "os";
 import * as path from "path";
 import * as Notifier from "node-notifier";
 import { Connection } from "typeorm";
-import * as fs from "fs";
 
 // Internal Libraries
 import { FileSystem } from "@server/fileSystem";
@@ -18,8 +17,6 @@ import { ChatRepository } from "@server/databases/chat";
 import { generateChatTitle, generateUuid } from "@renderer/helpers/utils";
 
 import { GetChatsParams, GetChatMessagesParams, GetAttachmentChunkParams, AttachmentChunkParams } from "./types";
-
-const { writeFile, mkdir } = fs.promises;
 
 export class SocketService {
     db: Connection;
