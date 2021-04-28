@@ -7,3 +7,5 @@ temp/
 dist/
 release/
 .env
+
+appResources/contacts/
