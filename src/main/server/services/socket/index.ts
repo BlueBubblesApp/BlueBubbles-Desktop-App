@@ -141,7 +141,7 @@ export class SocketService {
                 );
 
             const notificationData: any = {
-                appId: "com.BlueBubbles.BlueBubbles-Desktop",
+                appID: "com.BlueBubbles.BlueBubbles-Desktop",
                 id: message.guid,
                 title: chatTitle,
                 icon: path.join(FileSystem.resources, "logo64.png"),
