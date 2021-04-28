@@ -73,6 +73,10 @@ export type HandleResponse = {
     address: string;
     country: string;
     uncanonicalizedId: string;
+    /**
+     * base64 payload of the image
+     */
+    avatar: string;
 };
 
 export type ChatResponse = {

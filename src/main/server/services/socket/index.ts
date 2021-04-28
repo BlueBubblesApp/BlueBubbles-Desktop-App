@@ -164,6 +164,14 @@ export class SocketService {
                 notificationData.reply = true;
                 notificationData.actions = "Reply";
                 notificationData.closeLabel = "Close";
+                notificationData.icon = null;
+
+                // if we have a handle and avatar, then show it in the notification
+                if (message.handle !== null && message.handle.avatar !== null) {
+                    // if avatar doesn't exist, it will treat it as null and have no picture
+                    const avatarPath = path.join(FileSystem.resources, "contacts", `${message.handleId}.jpeg`);
+                    notificationData.icon = avatarPath;
+                }
             }
 
             // Don't show a notification if there is no error or it's from me
