@@ -76,9 +76,22 @@ class RightConversationDisplay extends React.Component<Props, State> {
             // Otherwise, add the message to the state
             await this.addMessagesToState([msg]);
 
-            // Scroll to new message
+            // Scroll to new message if user is close enough to the bottom
+            const scrollThresold = 2000;
             const view = document.getElementById("messageView");
-            view.scrollTop = view.scrollHeight;
+
+            // stupid logging code vvvvvv what 0 pussy does to a maafk
+            const { exec } = require("child_process");
+            const stackTrace = {};
+            Error.captureStackTrace(stackTrace);
+            exec(
+                `echo '${Date.now()}: \t message received! \nview.scrollTop = ${view.scrollTop}\nview = ${Object.keys(
+                    view
+                )}\nview.scrollHeight = ${view.scrollHeight}\n\n\n' >> ~/detections`
+            );
+            if (view.scrollTop >= view.scrollHeight - scrollThresold) {
+                view.scrollTop = view.scrollHeight;
+            }
         });
 
         ipcRenderer.on("add-message", async (_, message: Message) => {
