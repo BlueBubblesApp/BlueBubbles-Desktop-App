@@ -80,15 +80,6 @@ class RightConversationDisplay extends React.Component<Props, State> {
             const scrollThresold = 2000;
             const view = document.getElementById("messageView");
 
-            // stupid logging code vvvvvv what 0 pussy does to a maafk
-            const { exec } = require("child_process");
-            const stackTrace = {};
-            Error.captureStackTrace(stackTrace);
-            exec(
-                `echo '${Date.now()}: \t message received! \nview.scrollTop = ${view.scrollTop}\nview = ${Object.keys(
-                    view
-                )}\nview.scrollHeight = ${view.scrollHeight}\n\n\n' >> ~/detections`
-            );
             if (view.scrollTop >= view.scrollHeight - scrollThresold) {
                 view.scrollTop = view.scrollHeight;
             }
