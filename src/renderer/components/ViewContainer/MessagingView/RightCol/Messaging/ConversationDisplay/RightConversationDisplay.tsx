@@ -77,8 +77,8 @@ class RightConversationDisplay extends React.Component<Props, State> {
             await this.addMessagesToState([msg]);
 
             // Scroll to new message
-            // const view = document.getElementById("messageView");
-            // view.scrollTop = view.scrollHeight;
+            const view = document.getElementById("messageView");
+            view.scrollTop = view.scrollHeight;
         });
 
         ipcRenderer.on("add-message", async (_, message: Message) => {
