@@ -32,7 +32,7 @@ export class ChatRepository {
 
         this.db = await createConnection({
             name: "chat",
-            type: "sqlite",
+            type: "better-sqlite3",
             database: dbPath,
             entities: [Attachment, Chat, Handle, Message],
             synchronize: isDev,
@@ -231,11 +231,11 @@ export class ChatRepository {
         // Add date restraints
         if (after)
             query.andWhere("message.dateCreated >= :after", {
-                after: after as Date
+                after: (after as Date).getTime()
             });
         if (before)
             query.andWhere("message.dateCreated < :before", {
-                before: before as Date
+                before: (after as Date).getTime()
             });
 
         if (where && where.length > 0) for (const item of where) query.andWhere(item.statement, item.args);
