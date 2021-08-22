@@ -50,7 +50,7 @@
 #closeGIFSelector {
     margin: 0 !important;
     height: 28px;
-    width: 28px;
+    width: 30px;
     transition: ease-in-out 0.1s;
     background-color: var(--attachment-button-color);
     border-radius: 50%;

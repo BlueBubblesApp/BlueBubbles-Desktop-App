@@ -919,7 +919,6 @@ class MessageBubble extends React.Component<Props, State> {
         const appleEmojis = [];
 
         for (const x of matches) {
-            console.log(typeof x);
             const emojiData = getEmojiDataFromNative(x, "apple", data);
             if (emojiData) {
                 appleEmojis.push(<Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={48} />);

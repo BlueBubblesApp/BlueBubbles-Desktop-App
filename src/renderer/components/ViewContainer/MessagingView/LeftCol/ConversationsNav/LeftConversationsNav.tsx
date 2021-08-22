@@ -30,13 +30,16 @@ interface State {
     isLoading: boolean;
     chatSearchString: string;
     config: any;
-    isScrolling: boolean;
-    clientX: number;
-    scrollLeft: number;
     allPinnedChats: string[];
 }
 
 class LeftConversationsNav extends React.Component<unknown, State> {
+    isScrolling: boolean;
+
+    clientX: number;
+
+    scrollLeft: number;
+
     constructor(props: unknown) {
         super(props);
 
@@ -47,9 +50,6 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             isLoading: false,
             chatSearchString: "",
             config: null,
-            isScrolling: false,
-            clientX: 0,
-            scrollLeft: 0,
             allPinnedChats: []
         };
     }
@@ -106,40 +106,14 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         });
 
         document.documentElement.addEventListener("mouseup", e2 => {
-            console.log("WINDOW MOUSE UP");
-            this.setState({ isScrolling: false, scrollLeft: 0, clientX: 0 });
+            this.isScrolling = false;
+            this.scrollLeft = 0;
+            this.clientX = 0;
         });
     }
 
-    setCurrentChat(chat: Chat) {
-        if (chat === null) {
-            this.setState({ activeChat: null });
-            // Remove old attibutes
-            try {
-                const p = document.querySelectorAll(".cls-2-active");
-                p.forEach(x => x.classList.remove("cls-2-active"));
-            } catch {}
-            try {
-                const p = document.querySelectorAll(".cls-1-active");
-                p.forEach(x => x.classList.remove("cls-1-active"));
-            } catch {}
-            try {
-                document.getElementsByClassName("activeColor")[0].classList.remove("activeColor");
-                document.getElementsByClassName("activeColor2")[0].classList.remove("activeColor2");
-                document.getElementsByClassName("activeColor3")[0].classList.remove("activeColor3");
-            } catch {}
-            return;
-        }
-
-        const now = new Date();
-        this.setState({ activeChat: chat });
-        ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
-        ipcRenderer.invoke("send-to-ui", { event: "toggle-giphy-selector", contents: false });
-        ipcRenderer.invoke("set-chat-last-viewed", { chat, lastViewed: now });
-        this.removeNotification(chat.guid, now);
-
-        const config = { isDetailsOpen: false };
-
+    // eslint-disable-next-line class-methods-use-this
+    setActiveChat(chat: Chat) {
         const chatParent = document.getElementById(chat.guid);
 
         // Remove old attibutes
@@ -178,7 +152,42 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             chatParent.querySelector(".message-snip-example").classList.add("activeColor2");
             chatParent.querySelector(".message-time-example").classList.add("activeColor3");
         }
+    }
 
+    setCurrentChat(chat: Chat) {
+        if (chat === null) {
+            this.setState({ activeChat: null });
+            // Remove old attibutes
+            try {
+                const p = document.querySelectorAll(".cls-2-active");
+                p.forEach(x => x.classList.remove("cls-2-active"));
+            } catch {}
+            try {
+                const p = document.querySelectorAll(".cls-1-active");
+                p.forEach(x => x.classList.remove("cls-1-active"));
+            } catch {}
+            try {
+                document.getElementsByClassName("activeColor")[0].classList.remove("activeColor");
+                document.getElementsByClassName("activeColor2")[0].classList.remove("activeColor2");
+                document.getElementsByClassName("activeColor3")[0].classList.remove("activeColor3");
+            } catch {}
+
+            return;
+        }
+
+        const now = new Date();
+
+        // Tell the UI
+        ipcRenderer.invoke("send-to-ui", { event: "set-current-chat", contents: chat });
+        ipcRenderer.invoke("send-to-ui", { event: "toggle-giphy-selector", contents: false });
+        ipcRenderer.invoke("set-chat-last-viewed", { chat, lastViewed: now });
+        this.removeNotification(chat.guid, now);
+        this.setActiveChat(chat);
+
+        // Update the state
+        this.setState({ activeChat: chat });
+
+        const config = { isDetailsOpen: false };
         ipcRenderer.invoke("set-config", config);
     }
 
@@ -298,23 +307,24 @@ class LeftConversationsNav extends React.Component<unknown, State> {
     }
 
     onMouseDown = (e, chat) => {
-        console.log("MOUSE DOWN");
-        const { scrollLeft, scrollTop } = document.getElementById(chat.guid).parentElement;
+        const { scrollLeft } = document.getElementById(chat.guid).parentElement;
 
-        this.setState({ isScrolling: true, scrollLeft, clientX: e.clientX });
+        this.isScrolling = true;
+        this.scrollLeft = scrollLeft;
+        this.clientX = e.clientX;
     };
 
     onMouseUp = e => {
-        console.log("MOUSE UP");
-        this.setState({ isScrolling: false, scrollLeft: 0, clientX: 0 });
+        this.isScrolling = false;
+        this.scrollLeft = 0;
+        this.clientX = 0;
     };
 
     onMouseMove = (e, chat) => {
-        const { clientX, scrollLeft } = this.state;
-
-        if (this.state.isScrolling) {
+        if (this.isScrolling) {
             // console.log(e.target.parentNode)
-            document.getElementById(chat.guid).parentElement.scrollLeft = -1 * (scrollLeft - clientX + e.clientX);
+            document.getElementById(chat.guid).parentElement.scrollLeft =
+                -1 * (this.scrollLeft - this.clientX + e.clientX);
             //   this.setState({scrollX: scrollX + e.clientX - clientX, clientX: e.clientX})
         }
     };
