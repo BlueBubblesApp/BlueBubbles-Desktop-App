@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-dupe-else-if */
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable no-underscore-dangle */
@@ -53,6 +54,7 @@ import InChatAudio from "./InChatAudio/InChatAudio";
 import FireworksCanvas from "fireworks-canvas";
 import data from "emoji-mart/data/apple.json";
 import { getEmojiDataFromNative, Emoji } from "emoji-mart";
+import { Theme } from "@server/databases/config/entity";
 
 const reactStringReplace = require("react-string-replace");
 const validUrl = require("valid-url");
@@ -81,7 +83,9 @@ type Props = {
     messages: Message[];
     gradientMessages: boolean;
     colorfulContacts: boolean;
+    colorfulChatBubbles: boolean;
     useNativeEmojis: boolean;
+    theme: Theme;
 };
 
 type State = {
@@ -388,7 +392,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         </linearGradient>
                                     </defs>
                                     <circle fill="url(#Gradient1)" cx="50%" cy="50%" r="50%" />
-                                    <text x="50%" y="67%" textAnchor="middle" fill="white" stroke="white">
+                                    <text x="50%" y="69%" textAnchor="middle" fill="white" stroke="white">
                                         {generateVCFIconText(vcfData)}
                                     </text>
                                 </svg>
@@ -436,6 +440,40 @@ class MessageBubble extends React.Component<Props, State> {
     };
 
     async componentDidMount() {
+        try {
+            const parent = document.getElementById(this.props.message.guid);
+            if (this.props.colorfulChatBubbles && this.props.chat.participants.length > 1) {
+                let messageColor = "#686868";
+                if (this.props.message.handle) {
+                    const seedrandom = require("seedrandom");
+
+                    const rng = seedrandom(this.props.message.handle.address);
+                    const rand1 = rng();
+
+                    if (rand1 <= 1 / 7) {
+                        messageColor = "#fd678d";
+                    } else if (rand1 > 1 / 7 && rand1 <= 2 / 7) {
+                        messageColor = "#ff534d";
+                    } else if (rand1 > 2 / 7 && rand1 <= 3 / 7) {
+                        messageColor = "#fea21c";
+                    } else if (rand1 > 3 / 7 && rand1 <= 4 / 7) {
+                        messageColor = "#ffca1c";
+                    } else if (rand1 > 4 / 7 && rand1 <= 5 / 7) {
+                        messageColor = "#5ede79";
+                    } else if (rand1 > 5 / 7 && rand1 <= 6 / 7) {
+                        messageColor = "#6bcff6";
+                    } else if (rand1 > 6 / 7 && rand1 <= 7 / 7) {
+                        messageColor = "#a78df3";
+                    }
+                }
+                parent.style.setProperty("--tail-colored-background", messageColor);
+            } else {
+                parent.style.setProperty("--tail-colored-background", this.props.theme.incomingMessageColor);
+            }
+        } catch {
+            // Nothing
+        }
+
         this._isMounted = true;
 
         if (this._isMounted) {
@@ -880,13 +918,17 @@ class MessageBubble extends React.Component<Props, State> {
         for (const x of matches) {
             console.log(typeof x);
             const emojiData = getEmojiDataFromNative(x, "apple", data);
-            appleEmojis.push(<Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={48} />);
+            if (emojiData) {
+                appleEmojis.push(<Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={48} />);
+            } else {
+                appleEmojis.push(x);
+            }
         }
 
         return appleEmojis;
     };
 
-    renderText = text => {
+    renderText = (text, messageTextColor) => {
         if (this.props.useNativeEmojis) {
             return <p style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>{text}</p>;
         }
@@ -901,8 +943,10 @@ class MessageBubble extends React.Component<Props, State> {
             for (let i = 0; i < matches.length; i += 1) {
                 final = reactStringReplace(i === 0 ? text : final, matches[i], () => {
                     const emojiData = getEmojiDataFromNative(matches[i], "apple", data);
-
-                    return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={20} />;
+                    if (emojiData) {
+                        return <Emoji emoji={emojiData} set="apple" skin={emojiData.skin || 1} size={20} />;
+                    }
+                    return matches[i];
                 });
             }
         } else {
@@ -910,7 +954,7 @@ class MessageBubble extends React.Component<Props, State> {
         }
 
         return (
-            <p style={{ fontWeight: process.platform === "linux" ? 400 : 300 }}>
+            <p style={{ fontWeight: process.platform === "linux" ? 400 : 300, color: messageTextColor }}>
                 {final.map(item => {
                     return item;
                 })}
@@ -1093,29 +1137,55 @@ class MessageBubble extends React.Component<Props, State> {
         const seedrandom = require("seedrandom");
 
         let firstGradientNumber = 8;
+        let messageColor = "#686868";
+        let messageTextColor = this.props.theme.incomingMessageTextColor;
         if (message.handle) {
             const rng = seedrandom(message.handle.address);
             const rand1 = rng();
 
             if (rand1 <= 1 / 7) {
                 firstGradientNumber = 1;
+                messageColor = "#fd678d";
+                messageTextColor = "#861431";
             } else if (rand1 > 1 / 7 && rand1 <= 2 / 7) {
                 firstGradientNumber = 2;
+                messageColor = "#ff534d";
+                messageTextColor = "#6f120f";
             } else if (rand1 > 2 / 7 && rand1 <= 3 / 7) {
                 firstGradientNumber = 3;
+                messageColor = "#fea21c";
+                messageTextColor = "#573b11";
             } else if (rand1 > 3 / 7 && rand1 <= 4 / 7) {
                 firstGradientNumber = 4;
+                messageColor = "#ffca1c";
+                messageTextColor = "#58460c";
             } else if (rand1 > 4 / 7 && rand1 <= 5 / 7) {
                 firstGradientNumber = 5;
+                messageColor = "#5ede79";
+                messageTextColor = "#105d20";
             } else if (rand1 > 5 / 7 && rand1 <= 6 / 7) {
                 firstGradientNumber = 6;
+                messageColor = "#6bcff6";
+                messageTextColor = "#094860";
             } else if (rand1 > 6 / 7 && rand1 <= 7 / 7) {
                 firstGradientNumber = 7;
+                messageColor = "#a78df3";
+                messageTextColor = "#230971";
             }
         }
 
+        // If colorful contacts is off, use default gray color
         if (!this.props.colorfulContacts) {
             firstGradientNumber = 8;
+        }
+        // If colorful chats is off use default incoming message color
+        if (!this.props.colorfulChatBubbles || chat.participants.length === 1) {
+            messageColor = this.props.theme.incomingMessageColor;
+            messageTextColor = this.props.theme.incomingMessageTextColor;
+        }
+        if (message.isFromMe) {
+            messageColor = this.props.theme.outgoingMessageColor;
+            messageTextColor = this.props.theme.outgoingMessageTextColor;
         }
 
         return (
@@ -1144,122 +1214,159 @@ class MessageBubble extends React.Component<Props, State> {
                         </div>
                     </div>
                 ) : null}
+
                 {/* If the message has an attachment */}
                 {message.attachments?.length > 0 || links.length > 0 ? (
                     <>
                         {/* If the attachment is a link */}
                         {links.length > 0 ? (
                             <>
-                                <div className={linkClassName} draggable="false">
-                                    <div className="linkContainer" onClick={() => openLink(links[0])}>
-                                        {message.hasReactions === true ? (
-                                            <>
-                                                {message.reactions.map((reaction, i) => (
-                                                    <InChatReaction
-                                                        reaction={reaction}
-                                                        key={reaction.guid}
-                                                        isMessageFromMe={message.isFromMe}
-                                                        isReactionFromMe={reaction.isFromMe}
-                                                        reactionType={reaction.associatedMessageType}
-                                                        offset={i}
-                                                    />
-                                                ))}
-                                            </>
-                                        ) : null}
-                                        {linkPrev?.images?.length > 0 &&
-                                        !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
-                                            <img src={linkPrev.images[0]} className="Attachment" draggable="false" />
-                                        ) : null}
+                                {this.state.isReactionsOpen ? (
+                                    <NewReaction
+                                        message={message}
+                                        chat={chat}
+                                        onClose={() => this.closeReactionView(message)}
+                                    />
+                                ) : null}
+                                <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
+                                    <div className={linkClassName} draggable="false">
                                         <div
-                                            className={`linkBottomDiv ${useTail ? "tail" : ""}`}
-                                            style={{
-                                                borderRadius:
-                                                    (linkPrev?.images?.length === 0 &&
-                                                        linkPrev?.favicons?.length > 0) ||
-                                                    (linkPrev &&
-                                                        forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
-                                                    (linkPrev?.images?.length === 0 &&
-                                                        linkPrev?.favicons?.length === 0) ||
-                                                    !linkPrev
-                                                        ? "15px"
-                                                        : "0 0 15px 15px",
-                                                marginTop:
-                                                    (linkPrev?.images?.length === 0 &&
-                                                        linkPrev?.favicons?.length > 0) ||
-                                                    (linkPrev &&
-                                                        forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
-                                                    !linkPrev
-                                                        ? "3px"
-                                                        : "0px"
-                                            }}
+                                            className="linkContainer"
+                                            id={message.guid}
+                                            onClick={() => openLink(links[0])}
                                         >
+                                            {message.hasReactions === true ? (
+                                                <>
+                                                    {message.reactions.map((reaction, i) => (
+                                                        <InChatReaction
+                                                            reaction={reaction}
+                                                            key={reaction.guid}
+                                                            isMessageFromMe={message.isFromMe}
+                                                            isReactionFromMe={reaction.isFromMe}
+                                                            reactionType={reaction.associatedMessageType}
+                                                            offset={i}
+                                                        />
+                                                    ))}
+                                                </>
+                                            ) : null}
+                                            {linkPrev?.images?.length > 0 &&
+                                            !forceFaviconURLS.includes(new URL(links[0]).hostname) ? (
+                                                <img
+                                                    src={linkPrev.images[0]}
+                                                    className="Attachment"
+                                                    draggable="false"
+                                                />
+                                            ) : null}
                                             <div
+                                                className={`linkBottomDiv ${useTail ? "tail" : ""}`}
                                                 style={{
-                                                    width:
-                                                        linkPrev?.images?.length > 0 &&
-                                                        !forceFaviconURLS.includes(new URL(links[0]).hostname)
-                                                            ? "93%"
-                                                            : "75%"
+                                                    borderRadius:
+                                                        (linkPrev?.images?.length === 0 &&
+                                                            linkPrev?.favicons?.length > 0) ||
+                                                        (linkPrev &&
+                                                            forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
+                                                        (linkPrev?.images?.length === 0 &&
+                                                            linkPrev?.favicons?.length === 0) ||
+                                                        !linkPrev
+                                                            ? "15px"
+                                                            : "0 0 15px 15px",
+                                                    marginTop:
+                                                        (linkPrev?.images?.length === 0 &&
+                                                            linkPrev?.favicons?.length > 0) ||
+                                                        (linkPrev &&
+                                                            forceFaviconURLS.includes(new URL(links[0]).hostname)) ||
+                                                        !linkPrev
+                                                            ? "3px"
+                                                            : "0px"
                                                 }}
                                             >
-                                                <p
+                                                <div
                                                     style={{
-                                                        marginTop:
-                                                            (linkPrev?.images?.length === 0 &&
-                                                                linkPrev?.favicons?.length > 0) ||
-                                                            (linkPrev &&
-                                                                forceFaviconURLS.includes(new URL(links[0]).hostname))
-                                                                ? "2px"
-                                                                : "0px"
+                                                        width:
+                                                            linkPrev?.images?.length > 0 &&
+                                                            !forceFaviconURLS.includes(new URL(links[0]).hostname)
+                                                                ? "93%"
+                                                                : "75%"
                                                     }}
                                                 >
-                                                    {this.state.linkTitle ? (
-                                                        <>{this.state.linkTitle}</>
-                                                    ) : (
-                                                        <>{linkPrev ? "Loading ..." : "Unavailable"}</>
-                                                    )}
-                                                </p>
-                                                <p>{new URL(links[0]).hostname}</p>
+                                                    <p
+                                                        style={{
+                                                            marginTop:
+                                                                (linkPrev?.images?.length === 0 &&
+                                                                    linkPrev?.favicons?.length > 0) ||
+                                                                (linkPrev &&
+                                                                    forceFaviconURLS.includes(
+                                                                        new URL(links[0]).hostname
+                                                                    ))
+                                                                    ? "2px"
+                                                                    : "0px"
+                                                        }}
+                                                    >
+                                                        {this.state.linkTitle ? (
+                                                            <>{this.state.linkTitle}</>
+                                                        ) : (
+                                                            <>{linkPrev ? "Loading ..." : "Unavailable"}</>
+                                                        )}
+                                                    </p>
+                                                    <p>{new URL(links[0]).hostname}</p>
+                                                </div>
+                                                {(linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
+                                                (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
+                                                    <img src={linkPrev.favicons[0]} className="linkFavicon" />
+                                                ) : null}
                                             </div>
-                                            {(linkPrev?.images?.length === 0 && linkPrev?.favicons?.length > 0) ||
-                                            (linkPrev && forceFaviconURLS.includes(new URL(links[0]).hostname)) ? (
-                                                <img src={linkPrev.favicons[0]} className="linkFavicon" />
-                                            ) : null}
                                         </div>
                                     </div>
-                                </div>
+                                </ClickNHold>
                             </>
                         ) : (
                             <>
-                                <div className={attachmentClassName}>
-                                    {chat.participants.length > 1 &&
-                                    message.handle &&
-                                    (!olderMessage || olderMessage.handleId !== message.handleId) ? (
-                                        <p className="MessageSender">{sender}</p>
-                                    ) : null}
-                                    <div className="attachmentContainer">
-                                        {message.hasReactions === true ? (
-                                            <>
-                                                {message.reactions.map((reaction, i) => (
-                                                    <InChatReaction
-                                                        reaction={reaction}
-                                                        key={reaction.guid}
-                                                        isMessageFromMe={message.isFromMe}
-                                                        isReactionFromMe={reaction.isFromMe}
-                                                        reactionType={reaction.associatedMessageType}
-                                                        offset={i}
-                                                    />
-                                                ))}
-                                            </>
+                                {this.state.isReactionsOpen ? (
+                                    <NewReaction
+                                        message={message}
+                                        chat={chat}
+                                        onClose={() => this.closeReactionView(message)}
+                                    />
+                                ) : null}
+                                <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
+                                    <div className={attachmentClassName}>
+                                        {chat.participants.length > 1 &&
+                                        message.handle &&
+                                        (!olderMessage || olderMessage.handleId !== message.handleId) ? (
+                                            <p className="MessageSender">{sender}</p>
                                         ) : null}
-                                        {attachments.map((attachment: AttachmentDownload) => {
-                                            return this.renderAttachment(attachment);
-                                        })}
+                                        <div className="attachmentContainer" id={message.guid}>
+                                            {message.hasReactions === true ? (
+                                                <>
+                                                    {message.reactions.map((reaction, i) => (
+                                                        <InChatReaction
+                                                            reaction={reaction}
+                                                            key={reaction.guid}
+                                                            isMessageFromMe={message.isFromMe}
+                                                            isReactionFromMe={reaction.isFromMe}
+                                                            reactionType={reaction.associatedMessageType}
+                                                            offset={i}
+                                                        />
+                                                    ))}
+                                                </>
+                                            ) : null}
+                                            {attachments.map((attachment: AttachmentDownload) => {
+                                                return this.renderAttachment(attachment);
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
+                                </ClickNHold>
                                 {text ? (
                                     <>
-                                        <div className="emptyDiv" />
+                                        {this.state.isReactionsOpen ? (
+                                            <NewReaction
+                                                message={message}
+                                                chat={chat}
+                                                onClose={() => this.closeReactionView(message)}
+                                            />
+                                        ) : (
+                                            <div className="emptyDiv" />
+                                        )}
                                         <div className={className} style={{ marginLeft: useAvatar ? "5px" : "40px" }}>
                                             <div
                                                 style={{
@@ -1400,7 +1507,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                                             }}
                                                                             className="cls-2"
                                                                             x="50%"
-                                                                            y="67%"
+                                                                            y="69%"
                                                                             textAnchor="middle"
                                                                             fill="white"
                                                                         >
@@ -1417,12 +1524,20 @@ class MessageBubble extends React.Component<Props, State> {
                                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                                     <div
                                                         className={`${expressiveSendStyle} ${messageClass} ${
-                                                            message.isFromMe && this.props.gradientMessages
+                                                            message.isFromMe &&
+                                                            this.props.gradientMessages &&
+                                                            !message.chats[0].guid.includes("SMS")
                                                                 ? "gradientMessages"
+                                                                : message.isFromMe &&
+                                                                  message.chats[0].guid.includes("SMS")
+                                                                ? "smsMessage"
                                                                 : ""
                                                         }`}
                                                         id={message.guid}
-                                                        style={{ marginBottom: useAvatar ? "3px" : "0" }}
+                                                        style={{
+                                                            marginBottom: useAvatar ? "3px" : "0",
+                                                            backgroundColor: messageColor
+                                                        }}
                                                     >
                                                         {message.hasReactions === true ? (
                                                             <>
@@ -1444,7 +1559,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                         {messageClass.includes("bigEmoji") && text ? (
                                                             this.renderBigEmojis(text)
                                                         ) : (
-                                                            <>{text ? this.renderText(text) : null}</>
+                                                            <>{text ? this.renderText(text, messageTextColor) : null}</>
                                                         )}
                                                     </div>
                                                 </ClickNHold>
@@ -1682,7 +1797,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                             }}
                                                             className="cls-2"
                                                             x="50%"
-                                                            y="67%"
+                                                            y="69%"
                                                             textAnchor="middle"
                                                             fill="white"
                                                         >
@@ -1702,10 +1817,16 @@ class MessageBubble extends React.Component<Props, State> {
                                 <ClickNHold time={0.8} onClickNHold={() => this.clickNHold(message)}>
                                     <div
                                         className={`${expressiveSendStyle} ${messageClass} ${
-                                            message.isFromMe && this.props.gradientMessages ? "gradientMessages" : ""
+                                            message.isFromMe &&
+                                            this.props.gradientMessages &&
+                                            !message.chats[0].guid.includes("SMS")
+                                                ? "gradientMessages"
+                                                : message.isFromMe && message.chats[0].guid.includes("SMS")
+                                                ? "smsMessage"
+                                                : ""
                                         }`}
                                         id={message.guid}
-                                        style={{ marginBottom: useAvatar ? "3px" : "0" }}
+                                        style={{ marginBottom: useAvatar ? "3px" : "0", backgroundColor: messageColor }}
                                     >
                                         {message.hasReactions === true ? (
                                             <>
@@ -1728,7 +1849,7 @@ class MessageBubble extends React.Component<Props, State> {
                                         {messageClass.includes("bigEmoji") && text ? (
                                             this.renderBigEmojis(text)
                                         ) : (
-                                            <>{text ? this.renderText(text) : null}</>
+                                            <>{text ? this.renderText(text, messageTextColor) : null}</>
                                         )}
                                     </div>
                                 </ClickNHold>

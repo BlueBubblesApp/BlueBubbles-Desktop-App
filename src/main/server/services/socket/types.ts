@@ -1,5 +1,6 @@
 export type GetChatsParams = {
     withParticipants?: boolean;
+    withSMS?: boolean;
 };
 
 export type DBWhereItem = {
@@ -17,6 +18,7 @@ export type GetChatMessagesParams = {
     withBlurhash?: boolean;
     withHandle?: boolean;
     withAttachments?: boolean;
+    withSMS?: boolean;
     where?: DBWhereItem[];
     sort?: "DESC" | "ASC";
 };

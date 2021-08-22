@@ -34,3 +34,47 @@
 .inChatLoader:after {
     background: var(--background-color) !important;
 }
+
+/* #inChatTypingIndicator svg {
+    animation: typingIndicatorSpawn .25s ease-in 1 forwards;
+    transform-origin: bottom left;
+} */
+
+.foregroundTypingIndicator,
+.smallerCircle {
+    animation: typingIndicatorSpawn 0.25s ease-in 1 forwards;
+    transform-origin: bottom left;
+}
+
+.mainTypingCircle {
+    animation: mainTypingIndicatorBubble 0.35s ease-in 1 forwards;
+    transform-origin: bottom left;
+    position: relative;
+}
+
+@keyframes typingIndicatorSpawn {
+    0% {
+        transform: scale(0.1);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes mainTypingIndicatorBubble {
+    0% {
+        transform: scale(0.1);
+    }
+    50% {
+        transform: translateY(-5px);
+        /* transform: scale(1); */
+    }
+    80% {
+        transform: scale(1);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}

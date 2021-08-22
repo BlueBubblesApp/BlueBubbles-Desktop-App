@@ -52,6 +52,7 @@ type State = {
     activeEmojiHoverNumber: number;
     showEmojiPicker: boolean;
     config: any;
+    typingTimeout: NodeJS.Timeout;
 };
 
 declare const MediaRecorder: any;
@@ -89,7 +90,8 @@ class RightBottomNav extends React.Component<Props, State> {
             emojiNamesMap: null,
             activeEmojiHoverNumber: 0,
             showEmojiPicker: false,
-            config: null
+            config: null,
+            typingTimeout: null
         };
 
         this.tick = this.tick.bind(this);
@@ -325,6 +327,29 @@ class RightBottomNav extends React.Component<Props, State> {
     }
 
     handleMessageChange = async event => {
+        if (!this.state.typingTimeout) {
+            this.setState({
+                typingTimeout: setTimeout(() => {
+                    console.log("stopping typing 1");
+                    ipcRenderer.invoke("send-typing-indicator", { isTyping: false, guid: this.props.chat.guid });
+                    this.setState({ typingTimeout: null });
+                }, 5000)
+            });
+
+            ipcRenderer.invoke("send-typing-indicator", { isTyping: true, guid: this.props.chat.guid });
+        } else {
+            clearTimeout(this.state.typingTimeout);
+
+            this.setState({
+                typingTimeout: setTimeout(() => {
+                    console.log("stopping typing 2");
+                    ipcRenderer.invoke("send-typing-indicator", { isTyping: false, guid: this.props.chat.guid });
+                    clearInterval(this.state.typingTimeout);
+                    this.setState({ typingTimeout: null });
+                }, 5000)
+            });
+        }
+
         const input = document.getElementById("messageFieldInput") as HTMLTextAreaElement;
 
         const textWidth = () => {
@@ -387,6 +412,7 @@ class RightBottomNav extends React.Component<Props, State> {
     };
 
     async sendMessage() {
+        ipcRenderer.invoke("send-typing-indicator", { isTyping: false, guid: this.props.chat.guid });
         const config = await ipcRenderer.invoke("get-config");
 
         if (config.capitalizeFirstLetter) {
@@ -1102,6 +1128,9 @@ class RightBottomNav extends React.Component<Props, State> {
                                                     id="sendIcon"
                                                     viewBox="0 0 512 512"
                                                     onClick={() => this.addAudioToChat()}
+                                                    className={
+                                                        this.props.chat.guid.includes("SMS") ? "smsSendIcon" : ""
+                                                    }
                                                 >
                                                     <circle r="256" cx="256" cy="256" id="sendIconBackground" />
                                                     <line
@@ -1131,6 +1160,9 @@ class RightBottomNav extends React.Component<Props, State> {
                                                         id="sendIcon"
                                                         viewBox="0 0 1000 1000"
                                                         onClick={() => this.sendMessage()}
+                                                        className={
+                                                            this.props.chat.guid.includes("SMS") ? "smsSendIcon" : ""
+                                                        }
                                                     >
                                                         <circle r="500" cx="500" cy="500" id="sendIconBackground" />
                                                         <polyline
@@ -1208,7 +1240,12 @@ class RightBottomNav extends React.Component<Props, State> {
                         ) : (
                             <>
                                 {!this.state.showGIFSelector || this.state.attachmentPaths.length > 0 ? (
-                                    <svg id="sendIcon" viewBox="0 0 1000 1000" onClick={() => this.sendMessage()}>
+                                    <svg
+                                        id="sendIcon"
+                                        viewBox="0 0 1000 1000"
+                                        onClick={() => this.sendMessage()}
+                                        className={this.props.chat.guid.includes("SMS") ? "smsSendIcon" : ""}
+                                    >
                                         <circle r="500" cx="500" cy="500" id="sendIconBackground" />
                                         <polyline id="arrow" points="240 422 500 218 500 775 500 218 760 422" />
                                     </svg>

@@ -1,3 +1,6 @@
+/* eslint-disable import/order */
+/* eslint-disable no-lonely-if */
+/* eslint-disable react/sort-comp */
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable max-len */
 /* eslint-disable no-empty */
@@ -5,12 +8,19 @@ import * as React from "react";
 import { ipcRenderer } from "electron";
 
 import { Chat as DBChat, Message as DBMessage } from "@server/databases/chat/entity";
+import dndIconActive from "./dnd-icon-active.png";
+import dndIconInactive from "./dnd-icon-inactive.png";
 
 import "./LeftConversationsNav.css";
 import Conversation from "./Conversation/Conversation";
+import IndividualAvatar from "./Conversation/Avatar/IndividualAvatar";
+import GroupAvatar from "./Conversation/Avatar/GroupAvatar";
+import { generateChatTitle } from "@renderer/helpers/utils";
+import PinnedGroupAvatar from "./Conversation/Avatar/PinnedGroupAvatar";
 
 type Chat = DBChat & {
     lastMessage: DBMessage | null;
+    isTyping?: boolean;
 };
 
 interface State {
@@ -20,6 +30,10 @@ interface State {
     isLoading: boolean;
     chatSearchString: string;
     config: any;
+    isScrolling: boolean;
+    clientX: number;
+    scrollLeft: number;
+    allPinnedChats: string[];
 }
 
 class LeftConversationsNav extends React.Component<unknown, State> {
@@ -32,12 +46,18 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             chatGuids: [],
             isLoading: false,
             chatSearchString: "",
-            config: null
+            config: null,
+            isScrolling: false,
+            clientX: 0,
+            scrollLeft: 0,
+            allPinnedChats: []
         };
     }
 
     async componentDidMount() {
-        this.setState({ config: await ipcRenderer.invoke("get-config") });
+        const config = await ipcRenderer.invoke("get-config");
+
+        this.setState({ config, allPinnedChats: config.allPinnedChats.split(",") });
         // First, let's register a handler for new chats
         ipcRenderer.on("chat", (_, args) => this.addChatsToState([args]));
 
@@ -49,6 +69,11 @@ class LeftConversationsNav extends React.Component<unknown, State> {
             this.setState({ isLoading: true });
             await this.addChatsToState(chats);
             this.setState({ isLoading: false });
+            if (config.allPinnedChats.split(",").length > 1) {
+                Array.from(
+                    document.getElementsByClassName("Conversation") as HTMLCollectionOf<HTMLElement>
+                )[0].style.borderTop = "1px solid gray";
+            }
         });
 
         ipcRenderer.on("notification-clicked", (_, chat) => this.setCurrentChat(chat));
@@ -63,6 +88,26 @@ class LeftConversationsNav extends React.Component<unknown, State> {
 
         ipcRenderer.on("chat-last-viewed-update", (_, data) => {
             this.removeNotification(data.chat.guid, data.lastViewed);
+        });
+
+        ipcRenderer.on("typing-indicator", (_, res) => {
+            // console.log(res);
+            const { chats } = this.state;
+            for (const chat of chats) {
+                console.log(chat.guid);
+                console.log(res.guid.includes(chat.guid));
+
+                if (res.guid.includes(chat.guid)) {
+                    chat.isTyping = res.display;
+                }
+            }
+
+            this.setState({ chats });
+        });
+
+        document.documentElement.addEventListener("mouseup", e2 => {
+            console.log("WINDOW MOUSE UP");
+            this.setState({ isScrolling: false, scrollLeft: 0, clientX: 0 });
         });
     }
 
@@ -252,6 +297,92 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         });
     }
 
+    onMouseDown = (e, chat) => {
+        console.log("MOUSE DOWN");
+        const { scrollLeft, scrollTop } = document.getElementById(chat.guid).parentElement;
+
+        this.setState({ isScrolling: true, scrollLeft, clientX: e.clientX });
+    };
+
+    onMouseUp = e => {
+        console.log("MOUSE UP");
+        this.setState({ isScrolling: false, scrollLeft: 0, clientX: 0 });
+    };
+
+    onMouseMove = (e, chat) => {
+        const { clientX, scrollLeft } = this.state;
+
+        if (this.state.isScrolling) {
+            // console.log(e.target.parentNode)
+            document.getElementById(chat.guid).parentElement.scrollLeft = -1 * (scrollLeft - clientX + e.clientX);
+            //   this.setState({scrollX: scrollX + e.clientX - clientX, clientX: e.clientX})
+        }
+    };
+
+    handleChangeMute = async (e, chat) => {
+        const config = await ipcRenderer.invoke("get-config");
+        let finalMuteString = "";
+        const x = config.allMutedChats.split(",");
+
+        console.log(x);
+
+        // If the chat is already in the mute string, remove it
+        if (x.includes(chat.guid)) {
+            x.splice(x.indexOf(chat.guid), 1);
+        } else {
+            x.push(chat.guid);
+        }
+
+        finalMuteString = x.join();
+
+        console.log(finalMuteString);
+
+        const newConfig = { allMutedChats: finalMuteString };
+        await ipcRenderer.invoke("set-config", newConfig);
+        config.allMutedChats = finalMuteString;
+        this.setState({ config });
+
+        console.log("change mute");
+        document.getElementById(chat.guid).parentElement.scrollLeft = 0;
+    };
+
+    handleChangePin = async chat => {
+        const config = await ipcRenderer.invoke("get-config");
+        let finalPinnedString = "";
+        const x = config.allPinnedChats.split(",");
+
+        console.log(x);
+
+        // If the chat is already in the mute string, remove it
+        if (x.includes(chat.guid)) {
+            x.splice(x.indexOf(chat.guid), 1);
+        } else {
+            x.push(chat.guid);
+        }
+
+        if (x.length > 1) {
+            Array.from(
+                document.getElementsByClassName("Conversation") as HTMLCollectionOf<HTMLElement>
+            )[0].style.borderTop = "1px solid gray";
+        } else {
+            Array.from(
+                document.getElementsByClassName("Conversation") as HTMLCollectionOf<HTMLElement>
+            )[0].style.borderTop = "none";
+        }
+
+        finalPinnedString = x.join();
+
+        console.log(finalPinnedString);
+
+        const newConfig = { allPinnedChats: finalPinnedString };
+        await ipcRenderer.invoke("set-config", newConfig);
+
+        this.setState({ allPinnedChats: finalPinnedString.split(",") });
+
+        console.log("change pin");
+        document.getElementById(chat.guid).parentElement.scrollLeft = 0;
+    };
+
     render() {
         const { chats, isLoading, activeChat, chatSearchString } = this.state;
         chats.sort((a, b) => (a.lastMessage?.dateCreated > b.lastMessage?.dateCreated ? -1 : 1));
@@ -259,13 +390,82 @@ class LeftConversationsNav extends React.Component<unknown, State> {
         return (
             <div className="LeftConversationsNav">
                 {isLoading ? <div id="loader" /> : null}
+                {this.state.allPinnedChats.length > 1 && this.state.chatSearchString.length === 0 ? (
+                    <div id="pinnedChatsContainer">
+                        {this.state.allPinnedChats
+                            .filter(arrItem => arrItem.length > 0)
+                            .map(chatGuid => {
+                                console.log(chats);
+                                if (chats.length === 0) return null;
+                                const chat = chats.filter(aChat => aChat.guid === chatGuid)[0];
+
+                                let hasNotification =
+                                    chat.lastMessage &&
+                                    !chat.lastMessage.isFromMe &&
+                                    chat.lastViewed < chat.lastMessage.dateCreated;
+                                if (
+                                    !chat.lastViewed ||
+                                    (hasNotification && activeChat && activeChat.guid === chat.guid)
+                                )
+                                    hasNotification = false;
+
+                                return (
+                                    // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
+                                    <div
+                                        className={`aPinnedChatContainer ${
+                                            activeChat?.guid === chat.guid ? "activeChat" : ""
+                                        }`}
+                                        key={chatGuid}
+                                        id={chat.guid}
+                                        onClick={() => this.setCurrentChat(chat)}
+                                        onMouseEnter={() => {
+                                            (document.getElementById(chat.guid)
+                                                .firstChild as HTMLElement).style.visibility = "initial";
+                                        }}
+                                        onMouseLeave={() => {
+                                            (document.getElementById(chat.guid)
+                                                .firstChild as HTMLElement).style.visibility = "hidden";
+                                        }}
+                                    >
+                                        <svg
+                                            className="removePinnedChatIcon"
+                                            onClick={() => this.handleChangePin(chat)}
+                                            x="0px"
+                                            y="0px"
+                                            viewBox="0 0 193.826 193.826"
+                                        >
+                                            <path
+                                                d="M191.495,55.511L137.449,1.465c-1.951-1.953-5.119-1.953-7.07,0l-0.229,0.229c-3.314,3.313-5.14,7.72-5.14,12.406
+                                            c0,3.019,0.767,5.916,2.192,8.485l-56.55,48.533c-4.328-3.868-9.852-5.985-15.703-5.985c-6.305,0-12.232,2.455-16.689,6.913
+                                            l-0.339,0.339c-1.953,1.952-1.953,5.118,0,7.07l32.378,32.378l-31.534,31.533c-0.631,0.649-15.557,16.03-25.37,28.27
+                                            c-9.345,11.653-11.193,13.788-11.289,13.898c-1.735,1.976-1.639,4.956,0.218,6.822c0.973,0.977,2.256,1.471,3.543,1.471
+                                            c1.173,0,2.349-0.41,3.295-1.237c0.083-0.072,2.169-1.885,13.898-11.289c12.238-9.813,27.619-24.74,28.318-25.421l31.483-31.483
+                                            l30.644,30.644c0.976,0.977,2.256,1.465,3.535,1.465s2.56-0.488,3.535-1.465l0.339-0.339c4.458-4.457,6.913-10.385,6.913-16.689
+                                            c0-5.851-2.118-11.375-5.985-15.703l48.533-56.55c2.569,1.425,5.466,2.192,8.485,2.192c4.687,0,9.093-1.825,12.406-5.14l0.229-0.229
+                                            C193.448,60.629,193.448,57.463,191.495,55.511z"
+                                            />
+                                        </svg>
+                                        {chat.participants.length > 1 ? (
+                                            <PinnedGroupAvatar isPinned={true} chat={chat} />
+                                        ) : (
+                                            <IndividualAvatar isPinned={true} chat={chat} />
+                                        )}
+                                        <div className="pinnedBottomDiv">
+                                            {hasNotification ? <div className="pinnedNotification" /> : null}
+                                            <p>{generateChatTitle(chat)}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                    </div>
+                ) : null}
                 {chatSearchString.length > 0
                     ? chats
                           .filter(
-                              chat =>
-                                  chat.hasOwnProperty("lastMessage") &&
-                                  (chat.displayName?.toLowerCase().includes(chatSearchString.toLowerCase()) ||
-                                      chat.participants.some(handle => {
+                              Chat =>
+                                  Chat.hasOwnProperty("lastMessage") &&
+                                  (Chat.displayName?.toLowerCase().includes(chatSearchString.toLowerCase()) ||
+                                      Chat.participants.some(handle => {
                                           return (
                                               handle.firstName
                                                   ?.toLowerCase()
@@ -288,33 +488,78 @@ class LeftConversationsNav extends React.Component<unknown, State> {
                               return (
                                   <div
                                       key={filteredChat.guid}
-                                      onClick={() => this.setCurrentChat(filteredChat)}
                                       className={activeChat?.guid === filteredChat.guid ? "activeChat" : ""}
                                   >
-                                      {hasNotification ? <div className="notification" /> : null}
-                                      <Conversation config={this.state.config} chat={filteredChat} />
+                                      {hasNotification ? (
+                                          <div className="notification" />
+                                      ) : (
+                                          <div style={{ width: "20px", minWidth: "20px" }} />
+                                      )}
+                                      <Conversation
+                                          onChatSelect={() => this.setCurrentChat(filteredChat)}
+                                          config={this.state.config}
+                                          chat={filteredChat}
+                                      />
                                   </div>
                               );
                           })
-                    : chats.map(chat => {
-                          let hasNotification =
-                              chat.lastMessage &&
-                              !chat.lastMessage.isFromMe &&
-                              chat.lastViewed < chat.lastMessage.dateCreated;
-                          if (!chat.lastViewed || (hasNotification && activeChat && activeChat.guid === chat.guid))
-                              hasNotification = false;
-                          //   if (!chat.hasOwnProperty("lastMessage")) return null;
-                          return (
-                              <div
-                                  key={chat.guid}
-                                  onClick={() => this.setCurrentChat(chat)}
-                                  className={activeChat?.guid === chat.guid ? "activeChat" : ""}
-                              >
-                                  {hasNotification ? <div className="notification" /> : null}
-                                  <Conversation config={this.state.config} chat={chat} />
-                              </div>
-                          );
-                      })}
+                    : chats
+                          .filter(aChat => !this.state.allPinnedChats.includes(aChat.guid))
+                          .map(chat => {
+                              let hasNotification =
+                                  chat.lastMessage &&
+                                  !chat.lastMessage.isFromMe &&
+                                  chat.lastViewed < chat.lastMessage.dateCreated;
+                              if (!chat.lastViewed || (hasNotification && activeChat && activeChat.guid === chat.guid))
+                                  hasNotification = false;
+                              //   if (!chat.hasOwnProperty("lastMessage")) return null;
+                              return (
+                                  <div
+                                      key={chat.guid}
+                                      className={`conversationSlide ${
+                                          activeChat?.guid === chat.guid ? "activeChat" : ""
+                                      }`}
+                                      onMouseDown={e => this.onMouseDown(e, chat)}
+                                      onMouseUp={e => this.onMouseUp(e)}
+                                      onMouseMove={e => this.onMouseMove(e, chat)}
+                                  >
+                                      {hasNotification ? (
+                                          <div className="notification" />
+                                      ) : (
+                                          <div style={{ width: "20px", minWidth: "20px" }} />
+                                      )}
+                                      <Conversation
+                                          onChatSelect={() => this.setCurrentChat(chat)}
+                                          config={this.state.config}
+                                          chat={chat}
+                                      />
+                                      <div
+                                          className="afterSlide muteSlide"
+                                          onClick={e => this.handleChangeMute(e, chat)}
+                                      >
+                                          {this.state.config.allMutedChats.includes(chat.guid) ? (
+                                              <img alt="dnd" src={dndIconActive} />
+                                          ) : (
+                                              <img alt="dnd" src={dndIconInactive} />
+                                          )}
+                                      </div>
+                                      <div className="afterSlide pinSlide" onClick={() => this.handleChangePin(chat)}>
+                                          <svg x="0px" y="0px" viewBox="0 0 193.826 193.826">
+                                              <path
+                                                  d="M191.495,55.511L137.449,1.465c-1.951-1.953-5.119-1.953-7.07,0l-0.229,0.229c-3.314,3.313-5.14,7.72-5.14,12.406
+                                            c0,3.019,0.767,5.916,2.192,8.485l-56.55,48.533c-4.328-3.868-9.852-5.985-15.703-5.985c-6.305,0-12.232,2.455-16.689,6.913
+                                            l-0.339,0.339c-1.953,1.952-1.953,5.118,0,7.07l32.378,32.378l-31.534,31.533c-0.631,0.649-15.557,16.03-25.37,28.27
+                                            c-9.345,11.653-11.193,13.788-11.289,13.898c-1.735,1.976-1.639,4.956,0.218,6.822c0.973,0.977,2.256,1.471,3.543,1.471
+                                            c1.173,0,2.349-0.41,3.295-1.237c0.083-0.072,2.169-1.885,13.898-11.289c12.238-9.813,27.619-24.74,28.318-25.421l31.483-31.483
+                                            l30.644,30.644c0.976,0.977,2.256,1.465,3.535,1.465s2.56-0.488,3.535-1.465l0.339-0.339c4.458-4.457,6.913-10.385,6.913-16.689
+                                            c0-5.851-2.118-11.375-5.985-15.703l48.533-56.55c2.569,1.425,5.466,2.192,8.485,2.192c4.687,0,9.093-1.825,12.406-5.14l0.229-0.229
+                                            C193.448,60.629,193.448,57.463,191.495,55.511z"
+                                              />
+                                          </svg>
+                                      </div>
+                                  </div>
+                              );
+                          })}
             </div>
         );
     }

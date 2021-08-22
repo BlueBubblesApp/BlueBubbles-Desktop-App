@@ -8,6 +8,7 @@ import { ipcRenderer } from "electron";
 
 interface Props {
     chat: Chat;
+    isPinned?: boolean;
 }
 
 interface State {
@@ -52,15 +53,35 @@ class IndividualAvatar extends React.Component<Props, State> {
     }
 
     render() {
-        const { chat } = this.props;
+        const { chat, isPinned } = this.props;
         const chatIconText = generateChatIconText(chat);
 
         if (chat.participants.length === 1 && chat.participants[0].avatar)
-            return <img className="avatar" src={chat.participants[0].avatar} alt={chat.participants[0].address} />;
+            return (
+                <img
+                    style={{
+                        width: isPinned ? "90px" : "50px",
+                        height: isPinned ? "90px" : "50px",
+                        marginTop: isPinned ? "5px" : "0px",
+                        marginBottom: isPinned ? "5px" : "0px"
+                    }}
+                    className="avatar"
+                    src={chat.participants[0].avatar}
+                    alt={chat.participants[0].address}
+                />
+            );
 
         if (chatIconText === "?")
             return (
-                <svg height="50px" width="50px" viewBox="0 0 1000 1000">
+                <svg
+                    style={{
+                        width: isPinned ? "90" : "50px",
+                        height: isPinned ? "90" : "50px",
+                        marginTop: isPinned ? "5px" : "0px",
+                        marginBottom: isPinned ? "5px" : "0px"
+                    }}
+                    viewBox="0 0 1000 1000"
+                >
                     <defs>
                         <linearGradient id="ColoredGradient1" x1="0" x2="0" y1="1" y2="0">
                             <stop className="stop1" offset="0%" stopColor="#fd678d" />
@@ -111,7 +132,14 @@ class IndividualAvatar extends React.Component<Props, State> {
             );
 
         return (
-            <svg height="50px" width="50px">
+            <svg
+                style={{
+                    width: isPinned ? "90" : "50px",
+                    height: isPinned ? "90" : "50px",
+                    marginTop: isPinned ? "5px" : "0px",
+                    marginBottom: isPinned ? "5px" : "0px"
+                }}
+            >
                 <defs>
                     <linearGradient id="ColoredGradient1" x1="0" x2="0" y1="1" y2="0">
                         <stop className="stop1" offset="0%" stopColor="#fd678d" />
@@ -151,9 +179,16 @@ class IndividualAvatar extends React.Component<Props, State> {
                     fill={`url(#ColoredGradient${this.state.firstGradientNumber})`}
                     cx="50%"
                     cy="50%"
-                    r="25px"
+                    r="50%"
                 />
-                <text className="cls-2" x="50%" y="33px" textAnchor="middle" fill="white">
+                <text
+                    className="cls-2"
+                    x="50%"
+                    y="66%"
+                    textAnchor="middle"
+                    fill="white"
+                    style={{ fontSize: isPinned ? "46px" : "23px" }}
+                >
                     {generateChatIconText(chat)}
                 </text>
             </svg>

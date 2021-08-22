@@ -1,3 +1,4 @@
+/* eslint-disable react/sort-comp */
 /* eslint-disable prefer-template */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable jsx-a11y/media-has-caption */
@@ -30,6 +31,7 @@ interface Props {
 interface State {
     showAllContacts: boolean;
     attachments: AttachmentDownload[];
+    isChatMuted: boolean;
 }
 
 let subdir = "";
@@ -43,11 +45,18 @@ class DetailsDisplay extends React.Component<Props, State> {
 
         this.state = {
             showAllContacts: false,
-            attachments: []
+            attachments: [],
+            isChatMuted: false
         };
     }
 
     async componentDidMount() {
+        const config = await ipcRenderer.invoke("get-config");
+
+        if (config.allMutedChats.includes(this.props.chat.guid)) {
+            this.setState({ isChatMuted: true });
+        }
+
         if (this.props.chat.participants.length > 5) {
             this.setState({ showAllContacts: false });
         }
@@ -234,6 +243,30 @@ class DetailsDisplay extends React.Component<Props, State> {
         return <DownloadProgress key={`${attachment.guid}-in-progress`} attachment={attachment} />;
     };
 
+    toggleChatMuted = async () => {
+        this.setState({ isChatMuted: !this.state.isChatMuted });
+
+        const config = await ipcRenderer.invoke("get-config");
+        let finalMuteString = "";
+        const x = config.allMutedChats.split(",");
+
+        console.log(x);
+
+        // If the chat is already in the mute string, remove it
+        if (x.includes(this.props.chat.guid)) {
+            x.splice(x.indexOf(this.props.chat.guid), 1);
+        } else {
+            x.push(this.props.chat.guid);
+        }
+
+        finalMuteString = x.join();
+
+        console.log(finalMuteString);
+
+        const newConfig = { allMutedChats: finalMuteString };
+        await ipcRenderer.invoke("set-config", newConfig);
+    };
+
     render() {
         const participants = {
             initials: this.props.chat.participants.map(handle => getSender(handle)),
@@ -325,9 +358,13 @@ class DetailsDisplay extends React.Component<Props, State> {
                         <div id="muteChatLeft">
                             <p>Mute Chat</p>
                         </div>
-                        <div id="muteChatRight">
+                        <div id="muteChatRight" onClick={() => this.toggleChatMuted()}>
                             <label className="form-switch">
-                                <input type="checkbox" />
+                                <input
+                                    type="checkbox"
+                                    checked={this.state.isChatMuted}
+                                    onChange={() => this.toggleChatMuted()}
+                                />
                                 <i></i>
                             </label>
                         </div>

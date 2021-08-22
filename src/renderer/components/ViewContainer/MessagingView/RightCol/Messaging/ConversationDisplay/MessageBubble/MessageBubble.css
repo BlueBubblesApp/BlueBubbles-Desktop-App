@@ -93,6 +93,10 @@
     background-clip: border-box !important;
 }
 
+.smsMessage {
+    background: #3cd541 !important;
+}
+
 .emoji-mart-emoji {
     vertical-align: middle;
 }
@@ -269,7 +273,7 @@
     left: -7px;
     height: 20px;
     width: 20px;
-    background: var(--incoming-message-color);
+    background: var(--tail-colored-background);
     border-bottom-right-radius: 15px;
     transition: ease-in-out 0.25s;
 }

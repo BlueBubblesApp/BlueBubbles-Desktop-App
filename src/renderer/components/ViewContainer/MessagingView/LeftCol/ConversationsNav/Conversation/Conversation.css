@@ -1,5 +1,5 @@
 .Conversation {
-    margin-left: 20px;
+    /* margin-left: 20px; */
     height: 65px;
     min-height: 65px;
     display: flex;
@@ -194,4 +194,12 @@
 
 #ConversationContextMenu:hover div p {
     color: var(--background-color);
+}
+
+.backgroundTypingIndicator {
+    fill: var(--incoming-message-color);
+}
+
+.foregroundTypingIndicator {
+    fill: var(--incoming-message-text-color);
 }

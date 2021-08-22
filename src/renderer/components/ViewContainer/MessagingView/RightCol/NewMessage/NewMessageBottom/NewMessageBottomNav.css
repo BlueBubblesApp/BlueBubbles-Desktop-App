@@ -98,6 +98,10 @@
     fill: var(--send-button-color);
 }
 
+.smsSendIcon {
+    fill: #3cd541 !important;
+}
+
 #deleteAudioIcon {
     margin-bottom: 2px;
     height: 28px;

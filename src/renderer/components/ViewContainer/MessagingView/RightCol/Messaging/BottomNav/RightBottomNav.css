@@ -121,6 +121,10 @@
     fill: var(--send-button-color);
 }
 
+.smsSendIcon {
+    fill: #3cd541 !important;
+}
+
 #arrow {
     fill: none;
     stroke: var(--send-button-arrow-color);

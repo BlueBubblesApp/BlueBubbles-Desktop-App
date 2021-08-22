@@ -147,6 +147,9 @@ export class SocketService {
 
             // Don't show a notificaiton if they have been disabled
             if (Server().configRepo.get("globalNotificationsDisabled")) return;
+            // If the chat is in the muted chats list return
+            console.log(Server().configRepo.get("allMutedChats"));
+            if ((Server().configRepo.get("allMutedChats") as string).includes(message.chats[0].guid)) return;
 
             // Build the notification parameters
             if (message.error) {
@@ -226,6 +229,11 @@ export class SocketService {
             // console.log(mes)
         });
 
+        this.server.on("typing-indicator", res => {
+            console.log(res);
+            Server().emitToUI("typing-indicator", res);
+        });
+
         this.server.on("chat-read-status-changed", async params => {
             if (params.status === false && params.chatGuid != null) {
                 const chats = await Server().chatRepo.getChats(params.chatGuid);
@@ -273,9 +281,9 @@ export class SocketService {
         });
     }
 
-    async getChats({ withParticipants = true }: GetChatsParams): Promise<ChatResponse[]> {
+    async getChats({ withSMS = true, withParticipants = true }: GetChatsParams): Promise<ChatResponse[]> {
         return new Promise<ChatResponse[]>((resolve, reject) => {
-            this.server.emit("get-chats", { withParticipants }, (res: ResponseFormat) => {
+            this.server.emit("get-chats", { withSMS, withParticipants }, (res: ResponseFormat) => {
                 if ([200, 201].includes(res.status)) {
                     resolve(res.data as ChatResponse[]);
                 } else {
@@ -295,6 +303,7 @@ export class SocketService {
         withHandle = true,
         withAttachments = true,
         withBlurhash = false,
+        withSMS = true,
         sort = "DESC",
         where = []
     }: GetChatMessagesParams): Promise<MessageResponse[]> {
@@ -311,6 +320,7 @@ export class SocketService {
                     withHandle,
                     withAttachments,
                     withBlurhash,
+                    withSMS,
                     where,
                     sort
                 },
@@ -363,5 +373,13 @@ export class SocketService {
                 }
             });
         });
+    }
+
+    async sendTypingIndicator(isTyping: boolean, chatGuid: string) {
+        if (isTyping) {
+            this.server.emit("started-typing", { chatGuid });
+        } else {
+            this.server.emit("stopped-typing", { chatGuid });
+        }
     }
 }
