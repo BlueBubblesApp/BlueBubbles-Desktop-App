@@ -461,14 +461,27 @@ class BackendServer {
             this.emitToUI("chat", chat);
 
             // Second, save the chat to the database
-            const chatObj = ChatRepository.createChatFromResponse(chat);
-            const savedChat = await this.chatRepo.saveChat(chatObj);
+            let savedChat: Chat;
+            let tries = 0;
 
             // Third, save the participants for the chat
-            for (const participant of chat.participants ?? []) {
-                const handle = ChatRepository.createHandleFromResponse(participant);
-                await this.chatRepo.saveHandle(savedChat, handle);
+            // Attempt this a couple of times. If there is a failure, try again (for 3 tries)
+            while (!savedChat || tries < 2) {
+                try {
+                    const chatObj = ChatRepository.createChatFromResponse(chat);
+                    savedChat = await this.chatRepo.saveChat(chatObj);
+
+                    // Third, save the participants for the chat
+                    for (const participant of chat.participants ?? []) {
+                        const handle = ChatRepository.createHandleFromResponse(participant);
+                        await this.chatRepo.saveHandle(savedChat, handle);
+                    }
+                } finally {
+                    tries += 1;
+                }
             }
+
+            if (!savedChat) continue;
 
             // Build message request params
             const payload: GetChatMessagesParams = {
