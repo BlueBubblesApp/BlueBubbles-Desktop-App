@@ -1500,12 +1500,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                                                 fontFamily: "SF Pro Rounded",
                                                                                 fontWeight: 700,
                                                                                 fontStyle: "normal",
-                                                                                fontSize:
-                                                                                    generateReactionsDisplayIconText(
-                                                                                        message.handle
-                                                                                    ).length >= 2
-                                                                                        ? "500px"
-                                                                                        : "650px"
+                                                                                fontSize: 500
                                                                             }}
                                                                             className="cls-2"
                                                                             x="50%"
@@ -1791,11 +1786,7 @@ class MessageBubble extends React.Component<Props, State> {
                                                                 fontFamily: "SF Pro Rounded",
                                                                 fontWeight: 700,
                                                                 fontStyle: "normal",
-                                                                fontSize:
-                                                                    generateReactionsDisplayIconText(message.handle)
-                                                                        .length >= 2
-                                                                        ? "500px"
-                                                                        : "650px"
+                                                                fontSize: 500
                                                             }}
                                                             className="cls-2"
                                                             x="50%"
